@@ -1,0 +1,67 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    // "declarationDir": "types",
+    "declaration": false,
+    "sourceMap": false,
+    "declarationMap": false /* Create sourcemaps for d.ts files. */,
+    "removeComments": true,
+    "allowSyntheticDefaultImports": true,
+    /* Bundler mode */
+    "moduleResolution": "node", // Specifies how modules are resolved when bundling.
+    "allowImportingTsExtensions": true, // Allows importing TypeScript files with extensions.
+    "jsx": "preserve", // Configures JSX support for React.
+    /* --- Bundler mode */
+    "allowJs": false,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    // "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    // "jsx": "preserve",
+    "incremental": true,
+    "experimentalDecorators": true /* Enable experimental support for TC39 stage 2 draft decorators. */,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@fonts/*": [
+        "./src/fonts/*"
+      ],
+      "@public/*": [
+        "./public/*"
+      ]
+    },
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tsconfig.json"
+  ],
+  "ts-node": {
+    // "transpileOnly": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  }
+}

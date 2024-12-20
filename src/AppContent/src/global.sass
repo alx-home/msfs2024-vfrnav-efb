@@ -1,0 +1,210 @@
+
+@tailwind base
+@tailwind components
+@tailwind utilities
+
+:root
+   --highlight-gold: #ffdd00
+   --highlight-blue: #00aeff
+   --highlight-dark-blue: #008ccd
+   --highlight-red: #ff736e
+
+   --aircraft-tile-min-width: 180px
+   --background: #141414
+   --foreground: #ffffff
+   --highlight-color: #00b4ff
+   --border-msfs: var(--highlight-color)
+   --search-bar-background-color: #374151
+   --select-color: #374151
+   --border-color: #384252
+   --button-background-color: #4b5563
+   --text-field-color: #111827
+   --menu-bg: #1f2937
+   --item-color-filter: brightness(0) saturate(100%) invert(90%) sepia(89%) saturate(1%) hue-rotate(233deg) brightness(109%) contrast(99%)
+   --item-color-hover: #ffffff
+   --item-background-color: #4b5563
+   --field-background-color: var(--item-background-color)
+   --field-background-color-hover: var(--menu-bg)
+   --field-border-color-focus: var(--highlight-color)
+   --item-border-bg: var(--highlight-color)
+   --item-bg: var(--border-color)
+   --item-bg-hocus: var(--foreground)
+   --item-active-bg: var(--highlight-color)
+   --item-color-active: #000000
+   --item-color-hover-filter: brightness(0) saturate(100%) invert(33%) sepia(15%) saturate(526%) hue-rotate(176deg) brightness(92%) contrast(91%)
+   --item-color-active-filter: brightness(0) saturate(100%) invert(54%) sepia(30%) saturate(6068%) hue-rotate(169deg) brightness(106%) contrast(102%)
+   --overlay-bg: #1e5987
+
+   --tw-border-spacing-x: 0
+   --tw-border-spacing-y: 0
+   --tw-translate-x: 0
+   --tw-translate-y: 0
+   --tw-rotate: 0
+   --tw-skew-x: 0
+   --tw-skew-y: 0
+   --tw-scale-x: 1
+   --tw-scale-y: 1
+   --tw-scroll-snap-strictness: proximity
+   --tw-ring-offset-width: 0px
+   --tw-ring-offset-color: #fff
+   --tw-ring-color: rgb(59 130 246 / .5)
+   --tw-ring-offset-shadow: 0 0 #0000
+   --tw-ring-shadow: 0 0 #0000
+   --tw-shadow: 0 0 #0000
+   --tw-shadow-colored: 0 0 #0000
+
+button
+   background-color: rgba(0, 0, 0, 0)
+
+@layer utilities
+   .shadow-md
+      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px
+
+   .border-msfs
+      border-color: var(--border-msfs)
+
+   .bg-msfs
+      border-color: var(--border-msfs)
+
+   .filter-msfs
+      filter: invert(53%) sepia(49%) saturate(3264%) hue-rotate(166deg) brightness(103%) contrast(104%)
+
+   .bg-menu
+      background-color: var(--menu-bg)
+
+   .bg-item
+      background-color: var(--item-bg)
+
+   .bg-item-hocus
+      background-color: var(--item-bg-hocus)
+
+   .bg-active-item
+      background-color: var(--item-active-bg)
+
+   .border-l-msfs
+      border-left-color: var(--border-msfs)
+
+   .bg-msfs
+      background-color: var(--highlight-color)
+
+   .bg-overlay
+      background-color: var(--overlay-bg)
+
+   .bg-highlight
+      background-color: var(--highlight-color)
+
+*:focus
+   outline: none
+
+.ol-attribution
+   display: none !important
+
+@keyframes ping
+   75%, 100%
+      transform: scale(2)
+      opacity: 0
+
+.animate-ping-1
+   animation: ping 1s cubic-bezier(0, 0, 0.2, 1) forwards
+   animation-iteration-count: 1
+
+@media (prefers-color-scheme: dark)
+   :root
+      --background: #141414
+      --foreground: #ededed
+
+/* cyrillic-ext */
+@font-face
+   font-family: 'Inter'
+   font-style: normal
+   font-weight: normal
+   src: url('/Fonts/Inter_28pt-Black.ttf') format('ttf')
+   unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F
+
+/* cyrillic-ext */
+@font-face
+   font-family: 'Inter'
+   font-style: italic
+   font-weight: normal
+   src: url('/Fonts/Inter_28pt-BlackItalic.ttf') format('ttf')
+   unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F
+
+/* cyrillic-ext */
+@font-face
+   font-family: 'Inter'
+   font-style: normal
+   font-weight: bold
+   src: url('/Fonts/Inter_28pt-Bold.ttf') format('ttf')
+   unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F
+
+/* cyrillic-ext */
+@font-face
+   font-family: 'Inter'
+   font-style: italic
+   font-weight: bold
+   src: url('/Fonts/Inter_28pt-BoldItalic.ttf') format('ttf')
+   unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F
+
+/* cyrillic-ext */
+@font-face
+   font-family: 'Inter'
+   font-style: normal
+   font-weight: bolder
+   src: url('/Fonts/Inter_28pt-ExtraBold.ttf') format('ttf')
+   unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F
+
+/* cyrillic-ext */
+@font-face
+   font-family: 'Inter'
+   font-style: italic
+   font-weight: bolder
+   src: url('/Fonts/Inter_28pt-ExtraBoldItalic.ttf') format('ttf')
+   unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F
+
+/* cyrillic-ext */
+@font-face
+   font-family: 'Inter'
+   font-style: normal
+   font-weight: lighter
+   src: url('/Fonts/Inter_28pt-Light.ttf') format('ttf')
+   unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F
+
+/* cyrillic-ext */
+@font-face
+   font-family: 'Inter'
+   font-style: italic
+   font-weight: lighter
+   src: url('/Fonts/Inter_28pt-LightItalic.ttf') format('ttf')
+   unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F
+
+html,
+.map,
+#root,
+#root > *,
+body
+   height: 100%
+
+html
+   overflow: hidden
+   color: var(--foreground)
+   background: var(--background)
+   background-color: #141414
+   margin: 0
+   padding: 0
+   -webkit-font-smoothing: antialiased
+   -moz-osx-font-smoothing: grayscale
+   font-size: 11px
+   line-height: 1.5
+
+   font-family: Inter, sans-serif
+   tab-size: 4
+   font-feature-settings: normal
+   font-variation-settings: normal
+   font-variant-ligatures: none
+
+   scrollbar-width: thin !important
+   scrollbar-color: rgb(107 114 128) rgb(17 24 39) !important
+   scrollbar-gutter: stable !important
+
+body > div
+   height: 100%
