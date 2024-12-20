@@ -1,0 +1,23 @@
+{
+	"name": "@efb/msfs2024-vfrnav",
+	"version": "1.0.0",
+	"author": "alex-home",
+	"license": "GPL-3.0-only",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"module": "./dist/index.es.js",
+	"types": "./dist/src/index.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"default": "./dist/index.es.js",
+				"types": "./dist/src/index.d.ts"
+			}
+		}
+	},
+	"dependencies": {
+		"@microsoft/msfs-sdk": "^2.0.5"
+	}
+}

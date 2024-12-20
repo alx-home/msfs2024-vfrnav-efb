@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Version="2" Name="EFB_VFR" FolderName="Packages" MetadataFolderName="PackagesMetadata">
+	<OutputDirectory>.</OutputDirectory>
+	<TemporaryOutputDirectory>_PackageInt</TemporaryOutputDirectory>
+	<Packages>
+		<Package>PackageDefinitions\msfs2024-vfrnav.xml</Package>
+	</Packages>
+</Project>

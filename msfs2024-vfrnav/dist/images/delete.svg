@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<svg width="800px" height="800px" viewBox="0 0 16.000001 16.000001"
+   xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg"
+   version="1.1" id="svg2">
+
+   <g transform="matrix(.7 0 0 .7 .6 -6.7)" style="display:inline" id="layer4">
+      <path id="rect833" transform="translate(-.857 9.571) scale(1.42857)"
+         d="M3 6v8c0 .554.446 1 1 1h8c.554 0 1-.446 1-1V6z"
+         style="opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2.46936798;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:3.20000005;stroke-opacity:.55063291" />
+      <path id="rect840" transform="translate(-.857 9.571) scale(1.42857)"
+         d="M5 1v2H2v2h12V3h-3V1zm1 1h4v1H6z"
+         style="opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2.79999995;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:3.20000005;stroke-opacity:.55063291" />
+   </g>
+
+</svg>
