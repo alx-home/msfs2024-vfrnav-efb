@@ -28,7 +28,7 @@ export default defineConfig({
       BASE_URL: JSON.stringify(`coui://html_ui/efb_ui/efb_apps/msfs2024-vfrnav`)
    },
    build: {
-      minify: false,
+      minify: true,
       lib: {
          entry: "./src/App.tsx",
          fileName: () => "App.js",

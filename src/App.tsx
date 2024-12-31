@@ -86,7 +86,7 @@ class VfrNavApp extends App {
    * @returns string
    */
   public get name(): string {
-    return VfrNavApp.name;
+    return "Vfr Nav'";
   }
 
   /**
