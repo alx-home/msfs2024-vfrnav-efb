@@ -9,22 +9,16 @@ import {
   RequiredProps,
   TVNode,
 } from "@efb/efb-api";
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import { FSComponent, VNode } from "@microsoft/msfs-sdk";
-import { AppPage } from "./AppPage";
+import { MainPage } from "./Components/MainPage";
 
-/**
- * BASE_URL is a global var defined in build.js
- * It points to the dist folder of the app when builded.
- * Mainly used to load assets (icons, fonts, etc)
- */
-declare const BASE_URL: string;
-
-class TemplateAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
+class VfrNavAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
   /**
    * Optional property
    * Default view key to show if using AppViewService
    */
-  protected defaultView = "Home";
+  protected defaultView = "main";
 
   /**
    * Optional method
@@ -32,8 +26,9 @@ class TemplateAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
    * Default behavior : nothing
    */
   protected registerViews(): void {
-    this.appViewService.registerPage("Home", () => (<AppPage appViewService={this.appViewService} title="Home" color="" />));
-    // this.appViewService.registerPopup("SamplePopup", () => <SamplePopup appViewService={this.appViewService} />);
+    this.appViewService.registerPage("main", () => (
+      <MainPage appViewService={this.appViewService} color="#7f8fa6" title="main" />
+    ));
   }
 
   /**
@@ -75,23 +70,23 @@ class TemplateAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
   /**
    * Optional method
    * Default behavior is rendering AppContainer which works with AppViewService
-   * We usually surround it with <div class="template-app">{super.render}</div>
+   * We usually surround it with <div className="template-app">{super.render}</div>
    * Can render anything (JSX, Component) so it doesn't require to use AppViewService and/or AppContainer
    * @returns VNode
    */
   public render(): VNode {
-    return <div>{super.render()}</div>;
+    return <div className="app" style="height: 100%">{super.render()}</div>;
   }
 }
 
-class TemplateApp extends App {
+class VfrNavApp extends App {
   /**
    * Required getter for friendly app-name.
    * Used by the EFB as App's name shown to the user.
    * @returns string
    */
   public get name(): string {
-    return TemplateApp.name;
+    return VfrNavApp.name;
   }
 
   /**
@@ -130,8 +125,9 @@ class TemplateApp extends App {
    * @param _props props used when app has been setted up.
    * @returns Promise<void>
    */
-  public async install(): Promise<void> {
-    // Efb.loadCss(`${BASE_URL}/TemplateApp.css`);
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  public async install(_props: AppInstallProps): Promise<void> {
+    Efb.loadCss(`${BASE_URL}/App.css`);
     return Promise.resolve();
   }
 
@@ -149,12 +145,13 @@ class TemplateApp extends App {
   /*
    * @returns {AppView} created above
    */
-  public render(): TVNode<TemplateAppView> {
-    return <TemplateAppView bus={this.bus} />;
+  public render(): TVNode<VfrNavAppView> {
+    return <VfrNavAppView bus={this.bus} />;
   }
 }
 
 /**
  * App definition to be injected into EFB
  */
-Efb.use(TemplateApp);
+// eslint-disable-next-line react-hooks/rules-of-hooks
+Efb.use(VfrNavApp);
