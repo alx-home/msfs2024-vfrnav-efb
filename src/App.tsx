@@ -127,7 +127,6 @@ class VfrNavApp extends App {
    */
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   public async install(_props: AppInstallProps): Promise<void> {
-    Efb.loadCss(`${BASE_URL}/App.css`);
     return Promise.resolve();
   }
 
