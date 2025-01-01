@@ -17,7 +17,7 @@ This is a pluggin for Microsoft simulator 2024 embeded EFB to retrieve what whas
 <br>
 <br> 
 
-![demo](https://github.com/user-attachments/assets/d52f3cd8-213a-48b4-a0e0-20eb25aed108) 
+![demo](https://github.com/user-attachments/assets/ac67060b-d26c-40d1-b385-e11fa8e43bbc) 
 
 Pour me payer un petit caffé afin de me redonner de l'énergie : \
 For buying me a coffee in order to fullfill my energie gauge :
