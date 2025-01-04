@@ -27,14 +27,6 @@
 			<AssetDir>dist\</AssetDir>
 			<OutputDir>html_ui\efb_ui\efb_apps\msfs2024-vfrnav\</OutputDir>
 		</AssetGroup>
-		<AssetGroup Name="fonts">
-			<Type Version="0">Copy</Type>
-			<Flags>
-				<FSXCompatibility>false</FSXCompatibility>
-			</Flags>
-			<AssetDir>src\AppContent\src\fonts\</AssetDir>
-			<OutputDir>html_ui\Fonts\</OutputDir>
-		</AssetGroup>
 	</AssetGroups>
 </AssetPackage>
 

@@ -297,25 +297,33 @@ export const OlRouteLayer = ({
                            angle = angle - Math.PI;
                         }
 
+                        const geoDistance = getLength((new LineString([geoCoords[0][index], geoCoords[0][index + 1]]))) * 0.0005399568;
                         const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
+                        const hours = geoDistance / (settings.speed);
+                        const minutes = (hours - Math.floor(hours)) * 60;
+                        const seconds = (minutes - Math.floor(minutes)) * 60;
 
-                        const geoDistance = (getLength((new LineString([geoCoords[0][index], geoCoords[0][index + 1]]))) * 0.0005399568);
-                        const text = mag.toFixed(0) + "\u00b0 " + geoDistance.toFixed(0) + " nm  " + (geoDistance * 60 / settings.speed).toFixed(0) + "'";
+                        const text = mag.toFixed(0) + "\u00b0 "
+                           + geoDistance.toFixed(0) + " nm  "
+                           + (Math.floor(hours) ? hours.toFixed(0) + "h" : "")
+                           + (Math.floor(minutes) ? minutes.toFixed(0) + "m" : "")
+                           + seconds.toFixed(0);
 
                         const maxSize = 24;//@todo parameter
 
                         const center = [(coord[0] + nextCoord[0]) / 2, (coord[1] + nextCoord[1]) / 2];
-                        const textSize = Math.min(distance * 2 / text.length - 10 /* @todo parameter */, maxSize);
+                        const textSize = Math.min(distance * 2 / text.length - 10/* @todo parameter */, maxSize);
+
                         context.save();
-                        if (textSize > 5/* @todo parameter */) {
-                           context.font = "900 "/* @todo parameter */ + textSize.toFixed(0) + "px Inter, sans-serif";
+                        if (textSize > 10/* @todo parameter */) {
+                           context.font = "900 "/* @todo parameter */ + textSize.toFixed(0) + "px Inter-bold, sans-serif";
                            context.textAlign = "center";
                            context.translate(center[0], center[1]);
                            context.rotate(angle);
-                           context.translate(10, -8);
+                           context.translate((mag > 90 && mag < 180) || (mag > 270) ? -20 : 20, -8);
 
                            context.lineWidth = 10;
-                           context.strokeStyle = 'rgba(255, 255, 255, 0.8)';//@todo degree msfs
+                           context.strokeStyle = 'rgba(255, 255, 255, 0.8)';//@todo parameter
                            context.strokeText(text, 0, 0);
 
                            context.fillStyle = 'rgba(31, 41, 55, 0.8)';//@todo parameter
