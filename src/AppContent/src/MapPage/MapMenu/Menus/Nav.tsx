@@ -32,8 +32,8 @@ const Label = ({ name, shortName, editMode }: {
       <div className="text-nowrap hidden @[55px]/label:flex @[85px]/label:hidden">nav: {shortName}</div>
       <div className="text-nowrap flex @[55px]/label:hidden">{shortName}</div>
        */}
-      <div className="text-nowrap flex group-hocus:hidden">{name}</div>
-      <div className="text-nowrap hidden group-hocus:flex">{shortName}</div>
+      <div className="text-nowrap overflow-hidden h-[20px] flex group-hocus:hidden">{name}</div>
+      <div className="text-nowrap overflow-hidden h-[20px] hidden group-hocus:flex">{shortName}</div>
    </div>;
 };
 
@@ -63,7 +63,7 @@ const Input = ({ editMode, setEditMode, name }: {
       }
    }, [editMode]);
 
-   return <input className={'bg-transparent h-8 pt-[3px] pointer-events-auto'} value={value} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
+   return <input className={'bg-transparent h-8 pt-[2px] pointer-events-auto'} value={value} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
       onBlur={e => {
          mapContext.editNav(name, e.currentTarget.value)
          setEditMode(false);
