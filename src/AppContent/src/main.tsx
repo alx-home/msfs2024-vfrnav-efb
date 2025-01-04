@@ -6,15 +6,14 @@ import { polyfill } from './drag-events/index';
 import './drag-events/default.css';
 import './pointer-events.js';
 
-// import '@/fonts/Inter_28pt-Black.ttf';
-// import '@/fonts/Inter_28pt-BlackItalic.ttf';
-// import '@/fonts/Inter_28pt-Bold.ttf';
-// import '@/fonts/Inter_28pt-BoldItalic.ttf';
-// import '@/fonts/Inter_28pt-ExtraBold.ttf';
-// import '@/fonts/Inter_28pt-ExtraBoldItalic.ttf';
-// import '@/fonts/Inter_28pt-Light.ttf';
-// import '@/fonts/Inter_28pt-LightItalic.ttf';
-
+import InterBlackFont from './fonts/Inter_28pt-Black.ttf';
+import InterBlackItalicFont from './fonts/Inter_28pt-BlackItalic.ttf';
+import InterBoldFont from './fonts/Inter_28pt-Bold.ttf';
+import InterBoldItalicFont from './fonts/Inter_28pt-BoldItalic.ttf';
+import InterExtraBoldFont from './fonts/Inter_28pt-ExtraBold.ttf';
+import InterExtraBoldItalicFont from './fonts/Inter_28pt-ExtraBoldItalic.ttf';
+import InterExtraLightFont from './fonts/Inter_28pt-ExtraLight.ttf';
+import InterExtraLightItalicFont from './fonts/Inter_28pt-ExtraLightItalic.ttf';
 
 if (!globalThis.PointerEvent) {
 
@@ -49,6 +48,29 @@ if (!globalThis.PointerEvent) {
 polyfill({
   // holdToDrag: 1000 @todo
 });
+
+const loadFont = (font: string, weight: "normal" | "bold" | "bolder" | "lighter", style: "normal" | "italic") => {
+  const fontFace = new FontFace(
+    "Inter",
+    `url(${font})`,
+    {
+      weight: weight,
+      style: style
+    }
+  );
+
+  document.fonts.add(fontFace);
+  fontFace.load();
+}
+
+loadFont(InterBlackFont, "normal", "normal"); 
+loadFont(InterBlackItalicFont, "normal", "italic");
+loadFont(InterBoldFont, "bold", "normal");
+loadFont(InterBoldItalicFont, "bold", "italic");
+loadFont(InterExtraBoldFont, "bolder", "normal");
+loadFont(InterExtraBoldItalicFont, "bolder", "italic");
+loadFont(InterExtraLightFont, "lighter", "normal");
+loadFont(InterExtraLightItalicFont, "lighter", "italic");
 
 import './global.sass';
 

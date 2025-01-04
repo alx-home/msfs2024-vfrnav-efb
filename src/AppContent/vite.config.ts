@@ -19,14 +19,6 @@ const msfsPostProcess = () => {
                key.endsWith('.html') ||
                (elem.type === 'asset' && elem.fileName.endsWith('.css'))) {
                const process = (content) => content
-                  // .replace(/url\((\/[^)]+)\)/, ((_, filepath) => {
-                  // if (filepath.endsWith('.ttf')) {
-                  //    const filename = filepath.substring(8);
-                  //    const file = readFileSync(path.resolve(__dirname, `./src/fonts/${filename.substring(0, filename.length - 13)}.ttf`), 'utf8')
-                  //    return `url("data:application/font-ttf;charset=utf-8;base64,${Buffer.from(file, 'binary').toString('base64')}")`
-                  // }
-                  // return `url('${filepath}')`;
-                  // }))
                   .replace(/\/assets\/([^"]+\.(?!css))/g, "coui://html_ui/efb_ui/efb_apps/msfs2024-vfrnav/efb/assets/$1")
                   .replace(/rgb\(([^ ]+) ([^ ]+) ([^ ]+) \/ ([^)]+)\)/g, `rgba($1,$2,$3,$4)`);
 
