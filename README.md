@@ -34,6 +34,29 @@ https://github.com/alx-home/msfs2024-vfrnav-efb/wiki
 <br>
 <br> 
 
+## For building this project / Pour compiler ce projet
+
+- Commencer par suivre les instructions de https://github.com/coreybutler/nvm-windows pour installer npm sous windows
+- Installez les modules node `npm install --save`
+- Compillez le projet `npm run build`
+- Ouvrez FlightSimulator
+- Activez le mode développeur
+- Selectionnez `file/open project`
+- Selectionnez le projet `msfs2024-vfrnavProject.xml`
+- Clickez sur `Build All In Project`
+___
+- First install npm for windows as per https://github.com/coreybutler/nvm-windows
+- Install node modules `npm install --save`
+- Build the project `npm run build`
+- Open FlightSimulator
+- Enable dev mode
+- Go to `file/open project`
+- Select `msfs2024-vfrnavProject.xml` project
+- Click on `Build All In Project`
+
+<br>
+<br> 
+
 ## Credits / Crédits
 
 ### OpenLayers 
