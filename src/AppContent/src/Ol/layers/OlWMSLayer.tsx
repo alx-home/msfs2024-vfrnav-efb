@@ -7,7 +7,8 @@ export const OlWMSLayer = ({
    url,
    crossOrigin,
    order,
-   active
+   active,
+   removeWhiteBackground
 }: OlLayerProp & {
    url: string,
    crossOrigin?: string | null,
@@ -19,5 +20,5 @@ export const OlWMSLayer = ({
          crossOrigin: crossOrigin ?? "anonymous"
       },
    }), [crossOrigin, url]);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} removeWhiteBackground={removeWhiteBackground} />;
 };

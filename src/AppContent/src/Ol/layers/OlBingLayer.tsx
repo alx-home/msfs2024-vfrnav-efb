@@ -5,7 +5,8 @@ import { useMemo } from "react";
 export const OlBingLayer = ({
    opacity,
    order,
-   active
+   active,
+   removeWhiteBackground
 }: OlLayerProp & {
    opacity?: number
 }) => {
@@ -13,5 +14,5 @@ export const OlBingLayer = ({
       key: "@TODO",
       imagerySet: 'AerialWithLabels'
    }), []);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} removeWhiteBackground={removeWhiteBackground} />;
 };

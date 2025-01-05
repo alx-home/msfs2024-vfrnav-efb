@@ -19,7 +19,8 @@ export const OlWMTSLayer = ({
    order,
    active,
    minZoom,
-   maxZoom
+   maxZoom,
+   removeWhiteBackground
 }: {
    opacity?: number,
    url: string,
@@ -46,6 +47,7 @@ export const OlWMTSLayer = ({
       tileGrid: new WMTSTileGrid(tileGrid),
       style: style ?? 'normal',
       wrapX: wrapX ?? true,
+      crossOrigin: '',
    }), [format, layer, matrixSet, projection, style, tileGrid, url, version, wrapX]);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} removeWhiteBackground={removeWhiteBackground} />;
 };

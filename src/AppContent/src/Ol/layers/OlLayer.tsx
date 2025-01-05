@@ -6,10 +6,10 @@ import { MapContext } from "@/MapPage/MapContext";
 
 export class OlLayerProp {
    // eslint-disable-next-line no-unused-vars
-   constructor(public order?: number, public active?: boolean, public maxZoom?: number, public minZoom?: number) { }
+   constructor(public order?: number, public active?: boolean, public maxZoom?: number, public minZoom?: number, public removeWhiteBackground?: boolean) { }
 }
 
-const useLayer = (source: TileImage, map?: Map) => {
+const useLayer = (source: TileImage, map?: Map, removeWhiteBackground?: boolean) => {
    const [layer, setLayer] = useState<TileLayer>();
 
    useEffect(() => {
@@ -21,8 +21,52 @@ const useLayer = (source: TileImage, map?: Map) => {
 
             const layer = new TileLayer({
                source: source,
-               visible: false
+               visible: false,
             })
+
+            if (removeWhiteBackground === true) {
+               layer.on('postrender', (event) => {
+                  const context = event.context;
+                  if (context && context instanceof CanvasRenderingContext2D) {
+                     try {
+                        const canvas = context.canvas;
+                        const width = canvas.width;
+                        const height = canvas.height;
+
+                        const inputData = context.getImageData(0, 0, width, height).data;
+
+                        const output = context.createImageData(width, height);
+                        const outputData = output.data;
+
+                        for (let pixelY = 0; pixelY < height; ++pixelY) {
+                           for (let pixelX = 0; pixelX < width; ++pixelX) {
+                              const index = (pixelY * width + pixelX);
+
+                              const isWhite = (index: number) => {
+                                 const r = inputData[index * 4];
+                                 const g = inputData[index * 4 + 1];
+                                 const b = inputData[index * 4 + 2];
+
+                                 return r > 250 && g > 250 && b > 250;
+                              }
+
+                              outputData[index * 4] = inputData[index * 4];
+                              outputData[index * 4 + 1] = inputData[index * 4 + 1];
+                              outputData[index * 4 + 2] = inputData[index * 4 + 2];
+                              if (isWhite(index)) {
+                                 outputData[index * 4 + 3] = 50;
+                              } else {
+                                 outputData[index * 4 + 3] = inputData[index * 4 + 3];
+                              }
+                           }
+                        }
+                        context.putImageData(output, 0, 0);
+                        /* eslint-disable @typescript-eslint/no-unused-vars,no-empty */
+                     } catch (e) {
+                     }
+                  }
+               });
+            }
 
             map.addLayer(layer);
             return layer;
@@ -38,17 +82,19 @@ const useLayer = (source: TileImage, map?: Map) => {
             return undefined;
          });
       };
-   }, [map, source]);
+   }, [map, source, removeWhiteBackground]);
 
    return layer;
 };
 
-export const OlLayer = ({ opacity, source, order, active, maxZoom, minZoom }: OlLayerProp & {
-   opacity?: number,
-   source: TileImage
-}) => {
+export const OlLayer = ({ opacity, source, order, active, maxZoom, minZoom, removeWhiteBackground }:
+   OlLayerProp & {
+      opacity?: number,
+      source: TileImage,
+      removeWhiteBackground?: boolean
+   }) => {
    const mapContext = useContext(MapContext)!;
-   const layer = useLayer(source, mapContext.map);
+   const layer = useLayer(source, mapContext.map, removeWhiteBackground);
 
    useEffect(() => {
       layer?.setVisible(active ?? false);
