@@ -44,9 +44,8 @@ if (!globalThis.PointerEvent) {
   globalThis.PointerEvent = PointerEventImpl;
 }
 
-// options are optional ;)
 polyfill({
-  // holdToDrag: 1000 @todo
+  holdToDrag: 100
 });
 
 const loadFont = (font: string, weight: "normal" | "bold" | "bolder" | "lighter", style: "normal" | "italic") => {

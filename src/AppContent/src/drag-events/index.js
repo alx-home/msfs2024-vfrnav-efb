@@ -53,16 +53,6 @@ function addDocumentListener(ev, handler, passive) {
 function removeDocumentListener(ev, handler) {
     document.removeEventListener(ev, handler);
 }
-function onEvt(el, event, handler, capture) {
-    if (capture === void 0) { capture = false; }
-    var options = supportsPassive ? { passive: true, capture: capture } : capture;
-    el.addEventListener(event, handler, options);
-    return {
-        off: function () {
-            el.removeEventListener(event, handler, options);
-        }
-    };
-}
 function prepareNodeCopyAsDragImage(srcNode, dstNode) {
     if (srcNode.nodeType === 1) {
         var cs = getComputedStyle(srcNode);
@@ -665,37 +655,77 @@ function onTouchstart(e) {
     }
 }
 
-function onDelayTouchstart(evt) {//@todo
-    if (activeDragOperation) {
-        dragOperationEnded(config, e, 3);
+
+function createEvent(type, originalEvent, params, bubbles) {
+    const pointerEventProperties = 'screenX screenY clientX clientY pageX pageY ctrlKey shiftKey altKey metaKey relatedTarget detail button buttons pointerId pointerType width height pressure tiltX tiltY isPrimary'.split(' ');
+    var pointerEvent, i;
+
+    pointerEvent = new UIEvent(type, { view: window, bubbles: bubbles });
+
+    i = pointerEventProperties.length;
+    while (i--) {
+        Object.defineProperty(pointerEvent, pointerEventProperties[i], {
+            value: params[pointerEventProperties[i]],
+            writable: false
+        });
     }
 
-    var el = evt.target;
-    var heldItem = function () {
-        end.off();
-        cancel.off();
-        move.off();
-        scroll.off();
-        onTouchstart(evt);
-    };
-    var onReleasedItem = function () {
-        end.off();
-        cancel.off();
-        move.off();
-        scroll.off();
-        if (el) {
-            el.dispatchEvent(new CustomEvent(EVENT_DRAG_DRAGSTART_CANCEL, { bubbles: true, cancelable: true }));
-        }
-        clearTimeout(timer);
-    };
-    if (el) {
-        el.dispatchEvent(new CustomEvent(EVENT_DRAG_DRAGSTART_PENDING, { bubbles: true, cancelable: true }));
+    Object.defineProperty(pointerEvent, 'originalEvent', {
+        value: originalEvent,
+        writable: false
+    });
+
+    Object.defineProperty(pointerEvent, 'preventDefault', {
+        value: originalEvent.preventDefault,
+        writable: false
+    });
+
+    return pointerEvent;
+};
+
+var dragPending = null;
+
+function onDelayTouchCancel(_evt) {
+    if (dragPending) {
+        dragPending.cancel();
     }
-    var timer = window.setTimeout(heldItem, config.holdToDrag);
-    var end = onEvt(el, "pointerend", onReleasedItem);
-    var cancel = onEvt(el, "pointercancel", onReleasedItem);
-    var move = onEvt(el, "pointermove", onReleasedItem);
-    var scroll = onEvt(window, "scroll", onReleasedItem, true);
+}
+
+function onDelayTouchstart(_evt) {
+    if (dragPending) {
+        return;
+    }
+
+    if (activeDragOperation) {
+        activeDragOperation._cancelDrag();
+    }
+
+    var heldItem = function () {
+        if (dragPending) {
+            dragPending.el.dispatchEvent(dragPending.evt);
+            dragPending.clear();
+        }
+    };
+    if (_evt.target) {
+        _evt.target.dispatchEvent(new CustomEvent(EVENT_DRAG_DRAGSTART_PENDING, { bubbles: true, cancelable: true }));
+    }
+
+    dragPending = {
+        evt: createEvent("pointerdownDelayed", _evt, _evt, _evt.bubbles),
+        el: _evt.target,
+        currentTarget: _evt.currentTarget,
+        timer: window.setTimeout(heldItem, config.holdToDrag),
+        cancel: () => {
+            if (dragPending.el) {
+                dragPending.el.dispatchEvent(new CustomEvent(EVENT_DRAG_DRAGSTART_CANCEL, { bubbles: true, cancelable: true }));
+            }
+            clearTimeout(dragPending.timer);
+            dragPending.clear();
+        },
+        clear: () => {
+            dragPending = null;
+        }
+    };
 }
 
 function dragOperationEnded(_config, event, state) {
@@ -728,7 +758,11 @@ export function polyfill(override) {
         }
     }
     if (config.holdToDrag) {
+        addDocumentListener("pointerup", onDelayTouchCancel, false);
+        addDocumentListener("pointercancel", onDelayTouchCancel, false);
+        addDocumentListener("scroll", onDelayTouchCancel, false);
         addDocumentListener("pointerdown", onDelayTouchstart, false);
+        addDocumentListener("pointerdownDelayed", onTouchstart, false);
     }
     else {
         addDocumentListener("pointerdown", onTouchstart, false);

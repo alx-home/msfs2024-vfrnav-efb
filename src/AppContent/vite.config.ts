@@ -36,7 +36,7 @@ const msfsPostProcess = () => {
 
 export default defineConfig({
    build: {
-      minify: true,
+      minify: false,
       rollupOptions: {
          output: {
             manualChunks: undefined,

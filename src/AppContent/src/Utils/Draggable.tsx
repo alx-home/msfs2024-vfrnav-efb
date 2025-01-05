@@ -51,7 +51,7 @@ export const Draggable = ({ children, vertical, onOrdersChange, className, activ
       return boundings;
    };
 
-   const onDragStart = (mousePos: number) => {
+   const onDragStart = (ref: HTMLDivElement, mousePos: number) => {
       const boundings = updateBoundings();
 
       if (boundings) {
@@ -60,7 +60,7 @@ export const Draggable = ({ children, vertical, onOrdersChange, className, activ
 
             if (vertical) {
                if (bounding.Collapse(mousePos)) {
-                  dragRef.current = getRef(order);
+                  dragRef.current = ref;
                   dragRef.current?.focus()
                   break;
                }
@@ -119,7 +119,7 @@ export const Draggable = ({ children, vertical, onOrdersChange, className, activ
                   key={child.key}
                   tabIndex={-1}
                   ref={el => { itemsRef.current[index] = el; }}
-                  onDragStart={e => onDragStart(vertical ? e.pageY : e.pageX)}
+                  onDragStart={e => onDragStart(itemsRef.current[index]!, vertical ? e.pageY : e.pageX)}
                   onDragEnd={onDragEnd}
                   {...((itemsRef.current[index] === dragRef.current && dragRef.current !== undefined) ? { style: { opacity: 0 } } : {})}
                >
