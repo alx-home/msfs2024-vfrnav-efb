@@ -93,6 +93,8 @@ export const MapPage = ({ active }: {
             layer={'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-OACI'}
             version={'1.0.0'}
             projection={projection}
+            minZoom={6}
+            maxZoom={11}
             tileGrid={{
                origin: getTopLeft(projectionExtent),
                resolutions: resolutions,

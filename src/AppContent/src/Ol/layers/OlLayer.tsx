@@ -25,7 +25,6 @@ const useLayer = (source: TileImage, map?: Map) => {
             })
 
             map.addLayer(layer);
-
             return layer;
          });
       }

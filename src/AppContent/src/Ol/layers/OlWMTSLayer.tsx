@@ -17,7 +17,9 @@ export const OlWMTSLayer = ({
    style,
    wrapX,
    order,
-   active
+   active,
+   minZoom,
+   maxZoom
 }: {
    opacity?: number,
    url: string,
@@ -45,5 +47,5 @@ export const OlWMTSLayer = ({
       style: style ?? 'normal',
       wrapX: wrapX ?? true,
    }), [format, layer, matrixSet, projection, style, tileGrid, url, version, wrapX]);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} />;
 };
