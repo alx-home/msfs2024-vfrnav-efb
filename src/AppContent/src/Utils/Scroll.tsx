@@ -33,7 +33,6 @@ export const Scroll = ({ children, className, style }: PropsWithChildren<{
          if (scrolling.vertical) {
             ref.current?.scroll({ top: (mousePosition.y + offset - (boundings?.top ?? 0) - scroll.height / 2) * scroll.ratioY });
          } else {
-            console.log((mousePosition.x - (boundings?.left ?? 0) - scroll.width / 2) * scroll.ratioX)
             ref.current?.scroll({ left: (mousePosition.x + offset - (boundings?.left ?? 0) - scroll.width / 2) * scroll.ratioX });
          }
       }
