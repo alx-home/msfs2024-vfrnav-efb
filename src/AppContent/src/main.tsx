@@ -2,9 +2,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './app/App.tsx'
 
-import { polyfill } from './drag-events/index';
-import './drag-events/default.css';
-import './pointer-events.js';
+import { polyfill } from '@polyfills/drag-events/index';
+import '@polyfills/drag-events/default.css';
+import '@polyfills/pointer-events.js';
 
 import InterBlackFont from './fonts/Inter-Regular.ttf';
 import InterBlackItalicFont from './fonts/Inter-Italic.ttf';
@@ -75,5 +75,5 @@ import './global.sass';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 )

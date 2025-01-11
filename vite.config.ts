@@ -48,19 +48,19 @@ export default defineConfig({
       lib: {
          entry: "./src/App.tsx",
          fileName: () => "App.js",
-         cssFileName: "App.css",
+         // cssFileName: "App.css",
          formats: ["es"],
       },
       rollupOptions: {
          output: {
-            manualChunks: undefined,
+            manualChunks: undefined
          },
          external: [...Object.keys(peerDependencies)],
       },
       ssr: false,
       sourcemap: true,
-      emptyOutDir: false,
-      target: 'es2017'
+      emptyOutDir: true,
+      target: 'es2017',
    },
    resolve: {
       alias: {

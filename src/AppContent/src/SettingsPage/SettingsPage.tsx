@@ -100,7 +100,7 @@ const CheckItem = ({ children, name, category, _default, _onChange }: PropsWithC
 
    return <Item name={name} category={category} onReset={resetCallback}>
       <CheckBox reset={reset} className="flex flex-row my-auto" active={true} _default={_default} _onChange={_onChange}>
-         <div className="flex grow basis-0 my-auto">
+         <div className="flex grow my-auto">
             {children}
          </div>
       </CheckBox>
@@ -130,7 +130,7 @@ export const SettingsPage = ({ active }: {
       }
    }, [active]);
 
-   return <div className="flex grow justify-center m-2 p-4 basis-0" style={active ? {} : { display: 'none' }}>
+   return <div className="flex grow justify-center m-2 p-4" style={active ? {} : { display: 'none' }}>
       <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col"
          + " hocus:border-msfs"
          + opacity

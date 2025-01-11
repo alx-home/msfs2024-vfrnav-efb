@@ -29,7 +29,7 @@
     "noUncheckedSideEffectImports": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
+    "module": "es6",
     // "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -42,6 +42,18 @@
       ],
       "@fonts/*": [
         "./src/fonts/*"
+      ],
+      "@images/*": [
+        "./src/images/*"
+      ],
+      "@polyfills/*": [
+        "./src/polyfills/*"
+      ],
+      "@Events/*": [
+        "./src/Events/*"
+      ],
+      "@Utils/*": [
+        "./src/Utils/*"
       ],
       "@public/*": [
         "./public/*"
@@ -56,7 +68,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "tsconfig.json"
+    "tsconfig.json",
   ],
   "ts-node": {
     // "transpileOnly": true,

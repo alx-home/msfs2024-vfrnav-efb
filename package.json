@@ -5,8 +5,8 @@
   "author": "alex-home",
   "scripts": {
     "dev": "vite",
-    "prebuild": "cd src/AppContent && tsc -b && vite build",
     "build": "tsc -b && vite build",
+    "postbuild": "cd src/AppContent && npm run build",
     "lint": "eslint './src/**/*.{js,mjs,cjs,ts,jsx,tsx}'",
     "preview": "vite preview",
     "prepublishOnly": "npm run build"
@@ -17,10 +17,12 @@
   "dependencies": {
     "@microsoft/msfs-sdk": "^2.0.5",
     "@microsoft/msfs-types": "^1.14.6",
+    "@netless/canvas-polyfill": "^0.0.4",
     "@tailwindcss/container-queries": "^0.1.1",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
     "@vitejs/plugin-legacy": "^6.0.0",
+    "abortcontroller-polyfill": "^1.7.8",
     "autoprefixer": "^10.4.20",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.7.0",

@@ -55,8 +55,8 @@ export const Draggable = ({ children, vertical, onOrdersChange, className, activ
       const boundings = updateBoundings();
 
       if (boundings) {
-         for (let order = 0; order < boundings.length; ++order) {
-            const bounding = boundings[order];
+         for (const element of boundings) {
+            const bounding = element;
 
             if (vertical) {
                if (bounding.Collapse(mousePos)) {

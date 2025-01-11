@@ -1,5 +1,5 @@
 import { Draggable } from "@/Utils/Draggable";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export class Layer {
    // eslint-disable-next-line no-unused-vars
@@ -46,15 +46,17 @@ export const Layers = ({ layers, onLayerChange }: { layers: Layer[], onLayerChan
          onActiveChange={active => onLayerChange([{ index: index, active: active }])} />
    ), [layers, onLayerChange]);
 
+   const onOrdersChange = useCallback((orders: number[]) => {
+      onLayerChange(orders.map((order, index) => ({ index: index, order: order })));
+   }, [onLayerChange]);
+
    return <>
       <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
          Layers
       </div>
       <Draggable className='@container flex flex-col p-4 [&>*:not(:first-child)]:mt-[7px] w-full'
          vertical={true}
-         onOrdersChange={(orders: number[]) => {
-            onLayerChange(orders.map((order, index) => ({ index: index, order: order })));
-         }}>
+         onOrdersChange={onOrdersChange}>
          {childs}
       </Draggable>
    </>;
