@@ -80,7 +80,9 @@ export const Scroll = ({ children, className, style }: PropsWithChildren<{
          onMouseDown={(e) => onClick(e, true)}
       >
          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-         <div className={'transition grow bg-gray-700 group-hover/scroll:bg-msfs'} style={{ marginTop: scroll.y, height: scroll.height }}
+         <div className={'transition grow bg-gray-700 group-hover/scroll:bg-msfs'
+            + (scrolling?.vertical ? ' bg-msfs' : '')}
+            style={{ marginTop: scroll.y, height: scroll.height }}
             onMouseDown={e => onScrollClick(e, true)}
          />
       </div>
@@ -93,7 +95,9 @@ export const Scroll = ({ children, className, style }: PropsWithChildren<{
          onMouseDown={(e) => onClick(e, false)}
       >
          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-         <div className={'transition grow bg-gray-700 group-hover/scroll:bg-msfs'} style={{ marginLeft: scroll.x, width: scroll.width }}
+         <div className={'transition grow bg-gray-700 group-hover/scroll:bg-msfs'
+            + ((scrolling ? !scrolling.vertical : false) ? ' bg-msfs' : '')}
+            style={{ marginLeft: scroll.x, width: scroll.width }}
             onMouseDown={e => onScrollClick(e, false)}
          />
       </div>
