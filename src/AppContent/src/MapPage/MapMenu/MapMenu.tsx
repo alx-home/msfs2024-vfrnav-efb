@@ -4,9 +4,9 @@ import { MouseContext } from '@/Events/MouseContext';
 import { Layer, Layers, OnLayerChange } from './Menus/Layers';
 import { Nav, NavItem } from './Menus/Nav';
 
-import useMouseDrag from '@/Events/MouseDrag';
 import { Scroll } from '@/Utils/Scroll';
 import { MapContext } from '../MapContext';
+import useMouseMove from '@/Events/MouseMove';
 
 // eslint-disable-next-line no-unused-vars
 export enum Menu { layers, nav };
@@ -31,7 +31,7 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
 
    const handleRef = useRef<HTMLDivElement>(null);
 
-   const mousePosition = useMouseDrag(!!initialDelta);
+   const mousePosition = useMouseMove(initialDelta !== undefined);
    const mouseUp = useMouseRelease();
    const { cursorChangeHandler } = useContext(MouseContext);
 

@@ -61,8 +61,8 @@ const useLayer = (source: TileImage, map?: Map, removeWhiteBackground?: boolean)
                            }
                         }
                         context.putImageData(output, 0, 0);
-                        /* eslint-disable @typescript-eslint/no-unused-vars,no-empty */
                      } catch (e) {
+                        console.warn(e);
                      }
                   }
                });

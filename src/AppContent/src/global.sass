@@ -55,11 +55,8 @@
 
 button
    background-color: rgba(0, 0, 0, 0)
-   
-@layer utilities
-   .shadow-md
-      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px
 
+@layer utilities
    .border-msfs
       border-color: var(--border-msfs)
 
@@ -98,7 +95,7 @@ button
 
    .inter-normal
       font-family: Inter-normal
-      
+
    .inter-bold
       font-family: Inter-bold
 
@@ -150,9 +147,20 @@ html
    font-variation-settings: normal
    font-variant-ligatures: none
 
-   scrollbar-width: thin !important
-   scrollbar-color: rgb(107 114 128) rgb(17 24 39) !important
+   scrollbar-width: none !important
+   scrollbar-color: transparent !important
    scrollbar-gutter: stable !important
+   scrollbar-track-color: transparent
+   scrollbar-arrow-color: transparent
+   scrollbar-base-color: transparent
+   scrollbar-color: transparent
+   scrollbar-darkshadow-color: transparent
+   scrollbar-face-color: transparent
+   scrollbar-highlight-color: transparent
+   scrollbar-shadow-color: transparent
+
+*::-webkit-scrollbar
+   display: none
 
 body > div
    height: 100%

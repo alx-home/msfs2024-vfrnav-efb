@@ -4,10 +4,10 @@ import { MapPage } from '@/MapPage/MapPage';
 import { Menu } from '@/app/Menu';
 import { JSX, useState } from 'react';
 
-import mapImg from '@/images/map.svg';
-import navlogImg from '@/images/navlog.svg';
-import settingsImg from '@/images/settings.svg';
-import creditsImg from '@/images/credits.svg';
+import mapImg from '@images/map.svg';
+import navlogImg from '@images/navlog.svg';
+import settingsImg from '@images/settings.svg';
+import creditsImg from '@images/credits.svg';
 import { CreditsPage } from '@/CreditsPage/CreditsPage';
 import { SettingsPage } from '@/SettingsPage/SettingsPage';
 import SettingsContextProvider from '@/Settings';
