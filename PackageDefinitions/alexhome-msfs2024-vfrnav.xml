@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<AssetPackage Version="0.1.1">
+<AssetPackage ReleaseNotes="PackageDefinitions\alexhome-msfs2024-vfrnav\ReleaseNotes.xml" Version="0.1.2">
 	<ItemSettings>
 		<ContentType>MISC</ContentType>
 		<Title>EFB MSFS2024 VfrNav</Title>
