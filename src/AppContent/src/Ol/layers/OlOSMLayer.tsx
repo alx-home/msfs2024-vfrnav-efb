@@ -16,6 +16,6 @@ export const OlOSMLayer = ({
    crossOrigin?: string | null,
    opacity?: number
 }) => {
-   const source = useMemo(() => new OSM({ url: url, crossOrigin: crossOrigin ?? '' }), [url, crossOrigin]);
+   const source = useMemo(() => new OSM({ url: url, crossOrigin: crossOrigin ?? null }), [url, crossOrigin]);
    return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} removeWhiteBackground={removeWhiteBackground} />;
 };
