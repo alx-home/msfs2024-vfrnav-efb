@@ -1,4 +1,4 @@
-import { GamepadUiView, RequiredProps, TVNode, UiViewProps } from "@efb/efb-api";
+import { GamepadUiView, RequiredProps, TVNode, UiViewProps } from "@alx-home/efb-api";
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import { FSComponent } from "@microsoft/msfs-sdk";
 

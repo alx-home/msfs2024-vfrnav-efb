@@ -32,7 +32,7 @@
     "vite-plugin-static-copy": "^2.2.0"
   },
   "devDependencies": {
-    "@efb/efb-api": "^1.0.0",
+    "@alx-home/efb-api": "^1.0.0",
     "@eslint/js": "^9.17.0",
     "@types/node": "^22.10.2",
     "cross-env": "^7.0.3",

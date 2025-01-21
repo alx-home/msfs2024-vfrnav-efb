@@ -8,7 +8,7 @@ import {
   Efb,
   RequiredProps,
   TVNode,
-} from "@efb/efb-api";
+} from "@alx-home/efb-api";
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import { FSComponent, VNode } from "@microsoft/msfs-sdk";
 import { MainPage } from "./Components/MainPage";
