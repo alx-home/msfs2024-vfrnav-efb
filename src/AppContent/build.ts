@@ -15,11 +15,18 @@ const __dirname = path.dirname(__filename);
 
 const minify = false;
 
+const msfsEmbeded = process.env.MSFS_EMBEDED;
+console.assert(msfsEmbeded !== undefined)
+
 const efbPlugin = (): Plugin => {
    return {
       name: "msfsPostProcess",
       enforce: "post",
       async generateBundle(options, bundle): Promise<void> {
+         if (!msfsEmbeded) {
+            return;
+         }
+
          const promises: Promise<void>[] = [];
 
          for (const key in bundle) {
@@ -54,7 +61,7 @@ const efbPlugin = (): Plugin => {
 const EFBConfig: UserConfig = {
    mode: process.env.BUILD_TYPE,
    define: {
-      MsfsEmbeded: true
+      MsfsEmbeded: msfsEmbeded
    },
    build: {
       lib: false,

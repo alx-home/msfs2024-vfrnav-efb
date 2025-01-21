@@ -4,6 +4,7 @@ declare global {
          REACT_APP_ENVIRONMENT: string;
          NODE_ENV: 'development' | 'production';
          BUILD_TYPE: 'development' | 'production';
+         MSFS_EMBEDED: boolean;
       }
    }
 }
