@@ -1,9 +1,13 @@
-import { createContext, PropsWithChildren, useMemo, useState } from "react";
+import { sha512 } from "js-sha512";
+import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useMemo, useState } from "react";
 
 export type Settings = {
+   emptyPopup: ReactElement,
    speed: number,
    adjustHeading: boolean,
    adjustTime: boolean,
+   SIAAuth: string,
+   SIAAddr: string,
 
    OACIEnabled: boolean,
    germanyEnabled: boolean,
@@ -16,8 +20,13 @@ export type Settings = {
    openStreetEnabled: boolean,
 
    setSpeed: (_speed: number) => void,
+   setSIAAddr: (_addr: string) => void,
+   setSIAAuth: (_token: string) => void,
    setAdjustHeading: (_enable: boolean) => void,
    setAdjustTime: (_enable: boolean) => void,
+
+   getSIAPDF: (_icao: string) => Promise<Uint8Array>,
+   setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>
 
    setOACIEnabled: (_enable: boolean) => void
    setGermanyEnabled: (_enable: boolean) => void
@@ -32,10 +41,45 @@ export type Settings = {
 
 export const SettingsContext = createContext<Settings | undefined>(undefined);
 
-const SettingsContextProvider = ({ children }: PropsWithChildren) => {
+
+const getSIAAuth = async (SIAAuth: string, SIAAddr: string) => {
+   return btoa(JSON.stringify({ tokenUri: sha512(SIAAuth + "/api/" + SIAAddr.split('/api/')[1]) }));
+}
+
+const SIACache = new Map<string, Promise<Uint8Array>>();
+
+const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithChildren<{
+   setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>,
+   emptyPopup: ReactElement
+}>) => {
    const [speed, setSpeed] = useState(95);
+   const [SIAAuth, setSIAAuth] = useState(__SIA_AUTH__);
+   const [SIAAddr, setSIAAddr] = useState(__SIA_ADDR__);
    const [adjustHeading, setAdjustHeading] = useState(true);
    const [adjustTime, setAdjustTime] = useState(true);
+   const getSIAPDF = useCallback(async (icao: string) => {
+      {
+         const cached = SIACache.get(icao);
+         if (!cached) {
+            const addr = SIAAddr.replace('{icao}', icao);
+
+            SIACache.set(icao, fetch(addr, {
+               method: 'GET',
+               headers: {
+                  'Auth': await getSIAAuth(SIAAuth, addr)
+               }
+            }).then(async (response) => {
+               if (response.ok) {
+                  return new Uint8Array(await response.arrayBuffer())
+               } else {
+                  throw new Error('SIA fetch ' + icao + ' error: ' + response.statusText);
+               }
+            }));
+         }
+      }
+
+      return SIACache.get(icao)!;
+   }, [SIAAddr, SIAAuth]);
 
    const [OACIEnabled, setOACIEnabled] = useState(true);
    const [germanyEnabled, setGermanyEnabled] = useState(true);
@@ -48,7 +92,10 @@ const SettingsContextProvider = ({ children }: PropsWithChildren) => {
    const [openStreetEnabled, setOpenStreetEnabled] = useState(false);
 
    const provider = useMemo(() => ({
+      emptyPopup: emptyPopup,
       speed: speed,
+      SIAAuth: SIAAuth,
+      SIAAddr: SIAAddr,
       adjustHeading: adjustHeading,
       adjustTime: adjustTime,
 
@@ -75,7 +122,13 @@ const SettingsContextProvider = ({ children }: PropsWithChildren) => {
       setSpeed: setSpeed,
       setAdjustHeading: setAdjustHeading,
       setAdjustTime: setAdjustTime,
-   }), [speed, adjustHeading, adjustTime, OACIEnabled, germanyEnabled, USSectionalEnabled, USIFRHighEnabled, USIFRLowEnabled, openTopoEnabled, mapForFreeEnabled, googleMapEnabled, openStreetEnabled]);
+      setSIAAuth: setSIAAuth,
+      setSIAAddr: setSIAAddr,
+      setPopup: setPopup,
+      getSIAPDF: getSIAPDF
+   }), [speed, adjustHeading, adjustTime, OACIEnabled, germanyEnabled, USSectionalEnabled,
+      USIFRHighEnabled, USIFRLowEnabled, openTopoEnabled, mapForFreeEnabled, googleMapEnabled,
+      openStreetEnabled, emptyPopup, SIAAuth, SIAAddr, setPopup, getSIAPDF]);
 
    return (
       <SettingsContext.Provider

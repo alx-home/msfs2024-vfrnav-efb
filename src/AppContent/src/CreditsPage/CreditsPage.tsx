@@ -28,7 +28,7 @@ export const CreditsPage = ({ active }: {
       <div className={"flex flex-col m-auto max-h-full transition transition-std shadow-md rounded-sm border-2 bg-gray-700 border-gray-900 hocus:border-msfs"
          + opacity
       }>
-         <Scroll>
+         <Scroll className="flex flex-col">
             <Section title='OpenLayer'>
                <li>
                   ©<a href="https://github.com/openlayers/openlayers/blob/main/LICENSE.md" target="_blank" rel="noreferrer">openlayers</a>.

@@ -132,15 +132,18 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
          onMouseDown={e => onDragStart(e.pageX)}
          onMouseUp={onDragEnd}
          onKeyDown={handleKey}
-         className='select-none transition-std transition-colors w-2 bg-slate-900 hocus:bg-msfs' />
+         className='relative z-10 select-none transition-std transition-colors w-2 bg-slate-900 hocus:bg-msfs shadow-smd' />
 
-      <Scroll className={'overflow-hidden shrink-0 border-l border-gray-700 pointer-events-auto flex'
-         + ' flex-col [&>*:not(:first-child)]:mt-[7px] bg-gray-800 text-center text-white'
-         + (width > 0 ? ' p-3 pt-[25px]' : '')}
-         style={{ width: width, ...(width > 0 ? {} : { display: 'none' }) }}>
-         {menu === Menu.layers ?
-            <Layers layers={layers} onLayerChange={onLayerChange} /> :
-            <Nav>{childs}</Nav>}
-      </Scroll>
+      <div className={'overflow-hidden shrink-0 border-l border-gray-700 pointer-events-auto'
+         + 'flex flex-col bg-gray-800 text-center text-white'
+         + (width > 0 ? '' : ' hidden')}>
+         <Scroll className={'overflow-hidden shrink-0 flex flex-col [&>*:not(:first-child)]:mt-[7px]'
+            + (width > 0 ? ' p-3 pt-[25px]' : ' hidden')}
+            style={{ width: width }}>
+            {menu === Menu.layers ?
+               <Layers layers={layers} onLayerChange={onLayerChange} /> :
+               <Nav>{childs}</Nav>}
+         </Scroll>
+      </div>
    </>
 };

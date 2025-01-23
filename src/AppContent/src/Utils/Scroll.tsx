@@ -87,7 +87,7 @@ const ScrollImpl = ({ children, className, style, hidden, onWheel }: ScrollProps
       }
    }, [onWheel]);
 
-   return <div className='group/container flex relative overflow-hidden'>
+   return <div className='group/container flex w-full relative overflow-hidden'>
       {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div className={'group/scroll absolute transition duration-1000 hover:duration-200 cursor-pointer z-10'
          + ' flex flex-row right-0 top-0 w-[7px] bottom-[7px] bg-gray-800 bg-opacity-50 opacity-0 hover:opacity-100'

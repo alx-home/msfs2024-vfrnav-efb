@@ -195,7 +195,7 @@ export const MapPage = ({ active }: {
       [layers]);
 
    return <MapContextProvider>
-      <div className={'transition transition-std relative grow h-100' + opacity} style={active ? {} : { display: 'none' }}>
+      <div className={'transition transition-std relative grow h-full' + opacity} style={active ? {} : { display: 'none' }}>
          <OlMap id='map' className='absolute w-full h-full top-0 left-0'>
             {olLayers}
             <OlRouteLayer

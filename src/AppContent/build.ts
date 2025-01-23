@@ -1,12 +1,13 @@
 import { Plugin, UserConfig, build, createServer } from "vite";
 import eslint from 'vite-plugin-eslint';
 import react from '@vitejs/plugin-react'
-import sass from 'vite-plugin-sass';
 import legacy from '@vitejs/plugin-legacy';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import { OutputAsset, OutputChunk } from "rollup";
 import path from "path";
 import { fileURLToPath } from "url";
+import tailwindcss from "tailwindcss";
+import autoprefixer from "autoprefixer";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,7 +60,9 @@ const efbPlugin = (): Plugin => {
 const EFBConfig: UserConfig = {
    mode: process.env.BUILD_TYPE,
    define: {
-      MsfsEmbeded: msfsEmbeded
+      __MSFS_EMBEDED__: msfsEmbeded,
+      __SIA_AUTH__: JSON.stringify("Y9Q3Ve72nN3PnTXmEtKnS4sggmdsigRMWH9kCDGHpCHyenFKKGhDq5vgBWZ4"),
+      __SIA_ADDR__: JSON.stringify("https://bo-prod-sofia-vac.sia-france.fr/api/v1/custom/file-path/{icao}/AD"),
    },
    build: {
       lib: false,
@@ -73,7 +76,6 @@ const EFBConfig: UserConfig = {
       ssr: false,
       sourcemap: process.env.BUILD_TYPE === 'development',
       emptyOutDir: true,
-      target: 'es2017',
    },
    resolve: {
       alias: {
@@ -96,15 +98,19 @@ const EFBConfig: UserConfig = {
    plugins: [
       efbPlugin(),
       react(),
-      sass(),
       cssInjectedByJsPlugin(),
       eslint(),
       legacy({
-         targets: ['chrome > 48 and chrome < 50']
-      })
+         targets: ['chrome >= 49']
+      }),
    ],
    css: {
-      postcss: './postcss.config.mjs',
+      postcss: {
+         plugins: [
+            autoprefixer,
+            tailwindcss
+         ]
+      },
    }
 };
 

@@ -2,18 +2,18 @@ import MouseContextProvider from '@/Events/MouseContext';
 
 import { MapPage } from '@/MapPage/MapPage';
 import { Menu } from '@/app/Menu';
-import { JSX, useState } from 'react';
+import { JSX, ReactElement, useMemo, useState } from 'react';
 
 import mapImg from '@images/map.svg';
 import navlogImg from '@images/navlog.svg';
 import settingsImg from '@images/settings.svg';
+import filesImg from '@images/files.svg';
 import creditsImg from '@images/credits.svg';
 import { CreditsPage } from '@/CreditsPage/CreditsPage';
 import { SettingsPage } from '@/SettingsPage/SettingsPage';
 import SettingsContextProvider from '@/Settings';
 
-import "./ol.css";
-import '@/global.sass';
+import { ChartsPage } from '@/ChartsPage/ChartsPage';
 
 export class Page {
   public readonly type: string = 'page';
@@ -61,6 +61,11 @@ export const App = () => {
       disabled: true
     }),
     new Page({
+      name: "charts",
+      icon: <img src={filesImg} alt='charts' />,
+      elem: <ChartsPage key="charts" active={page === "charts"} />
+    }),
+    new Page({
       name: "settings",
       icon: <img src={settingsImg} alt='settings' />,
       elem: <SettingsPage key="settings" active={page === "settings"} />
@@ -73,10 +78,22 @@ export const App = () => {
     })
   ];
 
+  const empty = useMemo(() => <></>, []);
+  const [popup, setPopup] = useState<ReactElement>(empty);
+
   return (
     <MouseContextProvider>
-      <SettingsContextProvider>
-        <div key='home' className='flex flex-row h-full'>
+      <SettingsContextProvider setPopup={setPopup} emptyPopup={empty}>
+        <div className={'absolute flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center'
+          + (popup === empty ? ' hidden' : '')
+        }>
+          <div className='m-auto w-full max-w-4xl'>
+            <div className='flex flex-col bg-menu border-2 hover:border-msfs px-8 py-5 shadow-slate-950 shadow-md m-8'>
+              {popup}
+            </div>
+          </div>
+        </div>
+        <div key='home' className='flex flex-row h-full' inert={popup !== empty}>
           <Menu pages={pages} setPage={page => setPage(page)} activePage={page} />
           {pages.map(elem => elem.elem)}
         </div>

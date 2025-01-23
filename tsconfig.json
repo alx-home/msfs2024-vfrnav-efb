@@ -25,7 +25,8 @@
     "baseUrl": ".",
     "skipLibCheck": true,
     /* Linting */
-    "strict": true,
+    "strict": false,
+    "alwaysStrict": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,

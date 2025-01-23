@@ -2,9 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './app/App.tsx'
 
+import 'abortcontroller-polyfill/dist/polyfill-patch-fetch'
+
 import { polyfill } from '@polyfills/drag-events/index';
 import '@polyfills/drag-events/default.css';
 import '@polyfills/pointer-events.js';
+import "@polyfills/canvas/canvas";
+import "@polyfills/Url.ts";
 
 import InterBlackFont from './fonts/Inter-Regular.ttf';
 import InterBlackItalicFont from './fonts/Inter-Italic.ttf';
@@ -14,6 +18,10 @@ import InterExtraBoldFont from './fonts/Inter-ExtraBold.ttf';
 import InterExtraBoldItalicFont from './fonts/Inter-ExtraBoldItalic.ttf';
 import InterExtraLightFont from './fonts/Inter-ExtraLight.ttf';
 import InterExtraLightItalicFont from './fonts/Inter-ExtraLightItalic.ttf';
+
+import "@alx-home/pdfjs-dist/build/pdf.worker.min.mjs";
+
+import 'geometry-polyfill';
 
 if (!globalThis.PointerEvent) {
 
@@ -70,7 +78,8 @@ loadFont(InterExtraBoldItalicFont, "bolder", "italic");
 loadFont(InterExtraLightFont, "lighter", "normal");
 loadFont(InterExtraLightItalicFont, "lighter", "italic");
 
-import './global.sass';
+import './global.css';
+import "./ol.css";
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

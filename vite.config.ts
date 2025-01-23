@@ -3,7 +3,7 @@ import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import eslint from 'vite-plugin-eslint';
 import path from "path";
 import sass from 'vite-plugin-sass';
-import externalGlobals from 'rollup-plugin-external-globals';
+import { externalGlobals } from 'rollup-plugin-external-globals';
 import { minify } from "terser";
 
 import { peerDependencies } from "./package.json";

@@ -45,7 +45,7 @@ const Edit = ({ onClick, image, alt, background }: {
 }) => {
    return <button className={'flex w-11 h-11 hover:brightness-125 focus:border-2 focus:border-with ' + ' ' + background}
       onClick={onClick}>
-      <img className='w-8 h-8 grow mt-auto mb-auto justify-center' src={image} alt={alt} />
+      <img className='w-8 h-8 grow mt-auto mb-auto justify-center cursor-pointer' src={image} alt={alt} />
    </button>;
 };
 

@@ -7,8 +7,10 @@ import undoImg from '@/images/undo.svg';
 import { SettingsContext } from "@/Settings";
 
 const List = ({ children }: PropsWithChildren) => {
-   return <Scroll>
-      {children}
+   return <Scroll className="flex flex-col">
+      <div>
+         {children}
+      </div>
    </Scroll>;
 }
 
@@ -33,14 +35,14 @@ const Item = ({ children, name, category, className, onReset }: PropsWithChildre
             {(category ? <div className="flex text-neutral-500">{category}:&nbsp;</div> : <></>)}
             {name}
          </div>
-         <div className={"flex flex-col my-auto [&>*:not(:first-child)]:mt-[11px] p-2 pl-0 text-xl text-neutral-500 font-semibold pb-5 "
+         <div className={"flex flex-col my-auto [&>*:not(:first-child,.no-margin)]:mt-[11px] p-2 pl-0 text-xl text-neutral-500 font-semibold pb-5 "
             + (className ?? '')
          }>
             {children}
          </div>
       </div>
       <div className="w-8">
-         <button className="p-1"
+         <button className="p-1 bg-transparent"
             onClick={() => { setReset(true) }} >
             <img className="invert hover:filter-msfs cursor-pointer" src={undoImg} alt='undo' />
          </button>
@@ -54,12 +56,13 @@ const ErrorMessage = ({ children }: PropsWithChildren<{
    return children;
 };
 
-const InputItem = ({ children, name, category, _default, pattern, className, type, inputMode, validate, onChange }: PropsWithChildren<{
+const InputItem = ({ children, name, category, placeholder, pattern, className, type, inputMode, validate, onChange, defaultValue }: PropsWithChildren<{
    name: string,
    category?: string,
-   _default?: string,
+   placeholder?: string,
    pattern?: string,
    className?: string,
+   defaultValue?: string,
    inputMode?: "email" | "search" | "tel" | "text" | "url" | "none" | "numeric" | "decimal",
    validate?: (_value: string) => boolean,
    type?: HTMLInputTypeAttribute,
@@ -77,10 +80,12 @@ const InputItem = ({ children, name, category, _default, pattern, className, typ
 
    return <Item name={name} category={category} onReset={resetCallback}>
       {childs.filter(child => isValidElement<{ type: string }>(child) ? child.props.type !== 'Error' : true)}
-      <Input reset={reset} className={"max-w-3xl peer " + (className ?? '')} validate={validate} onChange={onChange} inputMode={inputMode} type={type} active={true} _default={_default} pattern={pattern} />
-      <p className="pl-8 hidden peer-[.invalid]:flex text-red-500 text-base">
-         {childs.filter(child => isValidElement<{ type: string }>(child) && child.props.type === 'Error')}
-      </p>
+      <Input reset={reset} defaultValue={defaultValue} className={"max-w-3xl peer " + (className ?? '')} validate={validate} onChange={onChange} inputMode={inputMode} type={type} active={true} placeholder={placeholder} pattern={pattern} />
+      <div className="no-margin hidden h-0 peer-[.invalid]:flex">
+         <p className="pl-8 pt-1 text-red-500 text-base">
+            {childs.filter(child => isValidElement<{ type: string }>(child) && child.props.type === 'Error')}
+         </p>
+      </div>
    </Item>;
 }
 
@@ -154,12 +159,15 @@ const CheckItems = ({ children, name, category }: PropsWithChildren<{
    </Item>;
 }
 
-const Group = ({ children, name }: PropsWithChildren<{
-   name: string
+const Group = ({ children, name, className }: PropsWithChildren<{
+   name: string,
+   className?: string
 }>) => {
-   return <div className="flex flex-col pl-0">
+   return <div className={"flex-col pl-0 " + className}>
       <div className="flex text-4xl font-semibold p-2 pl-6 hover:bg-white hover:text-slate-700">{name}</div>
-      {children}
+      <div className="content flex-col">
+         {children}
+      </div>
    </div>;
 }
 
@@ -168,6 +176,7 @@ export const SettingsPage = ({ active }: {
 }) => {
    const settings = useContext(SettingsContext)!;
    const [opacity, setOpacity] = useState(' opacity-0');
+   const [advanced, setAdvanced] = useState(false);
 
    useEffect(() => {
       if (active) {
@@ -189,7 +198,9 @@ export const SettingsPage = ({ active }: {
          </div>
          <List>
             <Group name="Flight">
-               <InputItem name="Speed" type="text" _default="95" inputMode="decimal" validate={value => /^\d*$/g.test(value)} onChange={(value: string) => settings.setSpeed(+value)}>
+               <InputItem name="Speed" type="text" placeholder="95" defaultValue="95" inputMode="decimal"
+                  validate={value => /^\d*$/g.test(value)}
+                  onChange={(value: string) => settings.setSpeed(+value)}>
                   <div>
                      Set the cruise speed of the aircraft. Leg duration will be calculated on belief of this settings.
                   </div>
@@ -244,6 +255,39 @@ export const SettingsPage = ({ active }: {
                      Use Openstreet map Layer.
                   </CheckItem>
                </CheckItems>
+            </Group>
+            <Group name="Enroute Charts" className={advanced ? "" : 'hidden'}>
+               <div className={advanced ? "" : 'hidden'}>
+                  <InputItem category="SIA" name="Address" inputMode="text"
+                     validate={value =>
+                        (value.substring(0, 8) === 'https://'.substring(0, value.length))
+                        && (value.length < 9 || /^(\w|:|\/|-|_|\.)+(?:\{|$)(?:i|$)(?:c|$)(?:a|$)(?:o|$)(?:\}|$)(\w|:|\/|-|_|\.)*$/g.test(value.substring(8)))
+                     }
+                     placeholder={__SIA_ADDR__}
+                     defaultValue={__SIA_ADDR__}
+                     onChange={(value: string) => settings.setSIAAddr(value)}>
+                     PDF template Address with {'{icao}'} placeholder.<br />
+                     If the default address does not works anymore, please go to the addon wiki for more information: <br />
+                     <a href="https://github.com/alx-home/msfs2024-vfrnav-efb">https://github.com/alx-home/msfs2024-vfrnav-efb</a>
+                     <ErrorMessage type='Error'>
+                        Invalid Address! pattern: https://***{'{icao}'}***
+                     </ErrorMessage>
+                  </InputItem>
+                  <InputItem category="SIA" name="Authorization token" inputMode="text"
+                     validate={value => /^(\w+)?=?$/g.test(value)}
+                     placeholder='Please enter an authorization token'
+                     defaultValue={__SIA_AUTH__}
+                     onChange={(value: string) => settings.setSIAAuth(value)}>
+                     Authorization token for accessing SIA Enroute charts on the PDF page.<br />
+                     If the default authorization token value does not works anymore, please go to the addon wiki for more information: <br />
+                     <a href="https://github.com/alx-home/msfs2024-vfrnav-efb">https://github.com/alx-home/msfs2024-vfrnav-efb</a>
+                  </InputItem>
+               </div>
+            </Group>
+            <Group name="Expert">
+               <CheckItem category="Settings" name="Advanced" _default={false} _onChange={setAdvanced}>
+                  Display advanced settings.
+               </CheckItem>
             </Group>
          </List>
       </div>
