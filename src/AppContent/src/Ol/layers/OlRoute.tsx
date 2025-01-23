@@ -28,62 +28,13 @@ const useMap = () => {
    const [modify, setModify] = useState<Modify>();
    const [snap, setSnap] = useState<Snap>();
    const [layer, setLayer] = useState<VectorLayer>();
-   const source = useMemo(() => new VectorSource<Feature<Geometry>>({
-      features: []
-   }), []);
    const [modified, setModified] = useState<Feature[]>();
    const [newFeatures, setNewFeatures] = useState<Feature[]>();
 
-   const updateLayer = useCallback((layer: VectorLayer | undefined) => {
-      setLayer(oldLayer => {
-         if (oldLayer) {
-            map.removeLayer(oldLayer);
-         }
-
-         if (layer) {
-            map.addLayer(layer);
-         }
-         return layer;
-      });
-   }, [map]);
-
-   const updateModify = useCallback((modify: Modify | undefined) => {
-      setModify(oldModify => {
-         if (oldModify) {
-            map.removeInteraction(oldModify);
-         }
-
-         if (modify) {
-            map.addInteraction(modify);
-         }
-
-         return modify;
-      });
-   }, [map]);
-
-   const updateSnap = useCallback((snap: Snap | undefined) => {
-      setSnap(oldSnap => {
-         if (oldSnap) {
-            map.removeInteraction(oldSnap);
-         }
-
-         if (snap) {
-            map.addInteraction(snap);
-         }
-
-         return snap;
-      });
-   }, [map]);
-
-   const removeRefs = useCallback(() => {
-      updateLayer(undefined);
-      updateModify(undefined);
-      updateSnap(undefined);
-   }, [updateLayer, updateModify, updateSnap]);
-
-   useEffect(() => {
-      removeRefs();
-
+   const source = useMemo(() => {
+      const source = new VectorSource<Feature<Geometry>>({
+         features: []
+      })
       source.on('addfeature', e => {
          if (e.feature && e.feature.getId() === undefined) {
             setNextId(id => {
@@ -106,15 +57,26 @@ const useMap = () => {
          }
       });
 
-      updateLayer(new VectorLayer({
-         source: source
-      }));
+      return source;
+   }, []);
 
+
+
+   useEffect(() => {
+      const layer = new VectorLayer({
+         source: source
+      });
+      map.addLayer(layer);
+      setLayer(layer);
+
+      return () => { map.removeLayer(layer) };
+   }, [source, map]);
+
+   useEffect(() => {
       const modify = new Modify({
          source: source,
          deleteCondition: doubleClick
       });
-      const snap = new Snap({ source: source });
 
       modify.on('modifyend', e => {
          setModified(features => {
@@ -133,13 +95,19 @@ const useMap = () => {
          });
       });
 
-      updateModify(modify);
-      updateSnap(snap);
+      map.addInteraction(modify);
+      setModify(modify);
 
-      return () => {
-         removeRefs();
-      };
-   }, [map, removeRefs, setNewFeatures, setNextId, source, updateLayer, updateModify, updateSnap]);
+      return () => { map.removeInteraction(modify) };
+   }, [source, map]);
+
+   useEffect(() => {
+      const snap = new Snap({ source: source });
+      map.addInteraction(snap);
+      setSnap(snap);
+
+      return () => { map.removeInteraction(snap) };
+   }, [source, map]);
 
    useEffect(() => {
       if (modified) {
