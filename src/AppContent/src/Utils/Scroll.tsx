@@ -89,8 +89,8 @@ const ScrollImpl = ({ children, className, style, hidden, onWheel }: ScrollProps
 
    return <div className='group/container flex relative overflow-hidden'>
       {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-      <div className={'group/scroll absolute transition duration-1000 hover:duration-200 hover:cursor-pointer'
-         + ' flex flex-row right-0 top-0 w-[7px] bottom-0 bg-gray-800 bg-opacity-50 opacity-0 hover:opacity-100'
+      <div className={'group/scroll absolute transition duration-1000 hover:duration-200 cursor-pointer z-10'
+         + ' flex flex-row right-0 top-0 w-[7px] bottom-[7px] bg-gray-800 bg-opacity-50 opacity-0 hover:opacity-100'
          + ' group-hover/container:opacity-100'
          + (scroll.displayY ? '' : ' hidden')
       }
@@ -104,8 +104,8 @@ const ScrollImpl = ({ children, className, style, hidden, onWheel }: ScrollProps
          />
       </div>
       {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-      <div className={'group/scroll absolute transition duration-1000 hover:duration-200 hover:cursor-pointer'
-         + ' flex flex-col left-0 right-0 h-[7px] bottom-0 bg-gray-800 bg-opacity-50 opacity-0 hover:opacity-100'
+      <div className={'group/scroll absolute transition duration-1000 hover:duration-200 cursor-pointer z-10'
+         + ' flex flex-col left-0 right-[7px] h-[7px] bottom-0 bg-gray-800 bg-opacity-50 opacity-0 hover:opacity-100'
          + ' group-hover/container:opacity-100'
          + (scroll.displayX ? '' : ' hidden')
       }
@@ -118,7 +118,13 @@ const ScrollImpl = ({ children, className, style, hidden, onWheel }: ScrollProps
             onMouseDown={e => onScrollClick(e, false)}
          />
       </div>
-      <div className={'peer box-content overflow-scroll [scrollbar-width:none] '
+      <div className={'group/scroll absolute transition duration-1000 hover:duration-200 z-10'
+         + ' flex flex-col right-0 w-[7px] h-[7px] bottom-0 bg-gray-800 bg-opacity-50 opacity-0 hover:opacity-100'
+         + ' group-hover/container:opacity-100'
+         + ((scroll.displayX || scroll.displayY) ? '' : ' hidden')
+      }
+      />
+      <div className={'peer flex w-full box-content overflow-scroll [scrollbar-width:none] '
          + (className ?? '')
          + (selectable ? '' : ' select-none')
          + ((hidden ?? false) ? ' hidden' : '')}
