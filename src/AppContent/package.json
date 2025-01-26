@@ -26,9 +26,8 @@
     "@eslint/eslintrc": "3.2.0",
     "@eslint/js": "9.18.0",
     "@rollup/plugin-babel": "6.0.4",
-    "@tailwindcss/container-queries": "0.1.1",
-    "@types/node": "22.10.7",
-    "@types/react": "19.0.7",
+    "@types/node": "^22.10.10",
+    "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
     "@typescript-eslint/eslint-plugin": "8.21.0",
     "@typescript-eslint/parser": "8.21.0",
@@ -36,7 +35,7 @@
     "@vitejs/plugin-react": "4.3.4",
     "autoprefixer": "10.4.20",
     "dotenv-cli": "8.0.0",
-    "eslint": "9.18.0",
+    "eslint": "9.19.0",
     "eslint-config-prettier": "10.0.1",
     "eslint-import-resolver-typescript": "3.7.0",
     "eslint-plugin-import": "2.31.0",
@@ -56,8 +55,7 @@
     "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-dts": "4.5.0",
     "vite-plugin-eslint": "1.8.1",
-    "vite-plugin-lib-inject-css": "2.2.1",
-    "vite-plugin-sass": "0.1.0"
+    "vite-plugin-lib-inject-css": "2.2.1"
   },
   "browserslist": [
     "defaults and fully supports es6-module",

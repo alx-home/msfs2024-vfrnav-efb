@@ -1,7 +1,7 @@
 import { CheckBox } from "@/Utils/CheckBox";
 import { Input } from "@/Utils/Input";
 import { Scroll } from "@/Utils/Scroll";
-import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useContext, useEffect, useMemo, useState } from 'react';
 
 import undoImg from '@/images/undo.svg';
 import { SettingsContext } from "@/Settings";
@@ -83,12 +83,16 @@ const InputItem = ({ children, name, category, _default, pattern, className, typ
       </p>
    </Item>;
 }
-const CheckItem = ({ children, name, category, _default, _onChange }: PropsWithChildren<{
+
+type CheckItemProps = PropsWithChildren<{
    name: string,
    category?: string,
    _default?: boolean,
    _onChange?: (_checked: boolean) => void
-}>) => {
+}>;
+
+
+const CheckItem = ({ children, name, category, _default, _onChange }: CheckItemProps) => {
    const [reset, setReset] = useState(false);
    const resetCallback = useMemo(() => () => setReset(true), [setReset]);
 
@@ -104,6 +108,49 @@ const CheckItem = ({ children, name, category, _default, _onChange }: PropsWithC
             {children}
          </div>
       </CheckBox>
+   </Item>;
+}
+
+const isCheckItem = (child: unknown): child is ReactElement<CheckItemProps> => {
+   if (!isValidElement(child)) {
+      return false;
+   }
+
+   const keys = [
+      "name" as keyof CheckItemProps
+   ];
+   for (const key of keys) {
+      if ((child.props as CheckItemProps)[key] === undefined) {
+         return false
+      }
+   }
+
+   return true
+};
+
+const CheckItems = ({ children, name, category }: PropsWithChildren<{
+   name: string,
+   category?: string
+}>) => {
+   const [reset, setReset] = useState(false);
+   const resetCallback = useMemo(() => () => setReset(true), [setReset]);
+   const childs = useMemo(() =>
+      Children.toArray(children).filter(child => isCheckItem(child)).map((child) =>
+         <CheckBox key={child.key} reset={reset} className="flex flex-row my-auto" active={true} _default={child.props._default} _onChange={child.props._onChange}>
+            <div className="flex grow my-auto">
+               {child.props.children}
+            </div>
+         </CheckBox>
+      ), [children, reset]);
+
+   useEffect(() => {
+      if (reset) {
+         setReset(false);
+      }
+   }, [reset, setReset]);
+
+   return <Item name={name} category={category} onReset={resetCallback}>
+      {childs}
    </Item>;
 }
 
@@ -131,7 +178,7 @@ export const SettingsPage = ({ active }: {
    }, [active]);
 
    return <div className="flex grow justify-center m-2 p-4" style={active ? {} : { display: 'none' }}>
-      <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col"
+      <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col grow"
          + " hocus:border-msfs"
          + opacity
       }>
@@ -160,6 +207,43 @@ export const SettingsPage = ({ active }: {
                   Adjust navigation time by taking into account the given leg wind.<br />
                   (not yet implemented)
                </CheckItem>
+            </Group>
+            <Group name="Map">
+               <CheckItems name="VFR" category="Layers">
+                  <CheckItem name="OACI" _default={true} _onChange={settings.setOACIEnabled}>
+                     Use France OACI Layer (geoportal)
+                  </CheckItem>
+                  <CheckItem name="Germany" _default={true} _onChange={settings.setGermanyEnabled}>
+                     Use Germany VFR Layer (secais).
+                  </CheckItem>
+                  <CheckItem name="US" _default={true} _onChange={settings.setUSSectionalEnabled}>
+                     Use US sectional Layers (iflightplanner).
+                  </CheckItem>
+               </CheckItems>
+               <CheckItems name="IFR" category="Layers">
+                  <CheckItem name="US" _default={false} _onChange={settings.setUSIFRHighEnabled}>
+                     Use US High IFR Layers (iflightplanner).
+                  </CheckItem>
+                  <CheckItem name="US" _default={false} _onChange={settings.setUSIFRLowEnabled}>
+                     Use US Low IFR Layers (iflightplanner).
+                  </CheckItem>
+               </CheckItems>
+               <CheckItems name="Topographic" category="Layers">
+                  <CheckItem name="Open Topo" _default={false} _onChange={settings.setOpenTopoEnabled}>
+                     Use Open Topo Layer.
+                  </CheckItem>
+                  <CheckItem name="Map for free" _default={true} _onChange={settings.setMapForFreeEnabled}>
+                     Use Map for free Layer.
+                  </CheckItem>
+               </CheckItems>
+               <CheckItems name="World" category="Layers">
+                  <CheckItem name="Google Map" _default={true} _onChange={settings.setGoogleMapEnabled}>
+                     Use Google map Layer.
+                  </CheckItem>
+                  <CheckItem name="Openstreet map" _default={false} _onChange={settings.setOpenStreetEnabled}>
+                     Use Openstreet map Layer.
+                  </CheckItem>
+               </CheckItems>
             </Group>
          </List>
       </div>

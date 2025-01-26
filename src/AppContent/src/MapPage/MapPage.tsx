@@ -21,6 +21,7 @@ import osmImg from '@/images/osm.jpg';
 
 import { OnLayerChange } from './MapMenu/Menus/Layers';
 import MapContextProvider, { MapContext } from "./MapContext";
+import { Settings } from "@/Settings";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -103,47 +104,56 @@ export const MapPage = ({ active }: {
          />,
          src: oaciImg,
          alt: 'oaci layer',
-         active: true
+         active: true,
+         enabled: (_settings: Settings) => _settings.OACIEnabled
       },
       {
          olLayer: <OlOSMLayer key="dsf" url="https://secais.dfs.de/static-maps/icao500/tiles/{z}/{x}/{y}.png" crossOrigin={null} />,
          src: dsfImg,
-         alt: 'dsf layer'
-      },
-      {
-         olLayer: <OlOSMLayer key="map-for-free" url="https://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg" crossOrigin={null} />,
-         src: map4freeImg,
-         alt: 'map for free layer'
-      },
-      {
-         olLayer: <OlOSMLayer key="google" url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}" crossOrigin={null} />,
-         src: bingImg,
-         alt: 'google layer'
-      },
-      {
-         olLayer: <OlOSMLayer key="open-topo" url="https://tile.opentopomap.org/{z}/{x}/{y}.png" crossOrigin={null} />,
-         src: opentopoImg,
-         alt: 'open topo layer'
-      },
-      {
-         olLayer: <OlOSMLayer key="ifr low" url="https://maps.iflightplanner.com/Maps/Tiles/IFRLow/Z{z}/{y}/{x}.png" crossOrigin={null} />,
-         src: ifrLowImg,
-         alt: 'ifr low layer'
-      },
-      {
-         olLayer: <OlOSMLayer key="ifr high" url="https://maps.iflightplanner.com/Maps/Tiles/IFRHigh/Z{z}/{y}/{x}.png" crossOrigin={null} />,
-         src: ifrHighImg,
-         alt: 'ifr high layer'
+         alt: 'dsf layer',
+         enabled: (_settings: Settings) => _settings.germanyEnabled
       },
       {
          olLayer: <OlOSMLayer key="sectional" url="https://maps.iflightplanner.com/Maps/Tiles/Sectional/Z{z}/{y}/{x}.png" crossOrigin={null} />,
          src: sectionalImg,
-         alt: 'sectional layer'
+         alt: 'sectional layer',
+         enabled: (_settings: Settings) => _settings.USSectionalEnabled
+      },
+      {
+         olLayer: <OlOSMLayer key="map-for-free" url="https://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg" crossOrigin={null} />,
+         src: map4freeImg,
+         alt: 'map for free layer',
+         enabled: (_settings: Settings) => _settings.mapForFreeEnabled
+      },
+      {
+         olLayer: <OlOSMLayer key="google" url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}" crossOrigin={null} />,
+         src: bingImg,
+         alt: 'google layer',
+         enabled: (_settings: Settings) => _settings.googleMapEnabled
+      },
+      {
+         olLayer: <OlOSMLayer key="open-topo" url="https://tile.opentopomap.org/{z}/{x}/{y}.png" crossOrigin={null} />,
+         src: opentopoImg,
+         alt: 'open topo layer',
+         enabled: (_settings: Settings) => _settings.openTopoEnabled
+      },
+      {
+         olLayer: <OlOSMLayer key="ifr low" url="https://maps.iflightplanner.com/Maps/Tiles/IFRLow/Z{z}/{y}/{x}.png" crossOrigin={null} />,
+         src: ifrLowImg,
+         alt: 'ifr low layer',
+         enabled: (_settings: Settings) => _settings.USIFRLowEnabled
+      },
+      {
+         olLayer: <OlOSMLayer key="ifr high" url="https://maps.iflightplanner.com/Maps/Tiles/IFRHigh/Z{z}/{y}/{x}.png" crossOrigin={null} />,
+         src: ifrHighImg,
+         alt: 'ifr high layer',
+         enabled: (_settings: Settings) => _settings.USIFRHighEnabled
       },
       {
          olLayer: <OlOSMLayer key="osm" />,
          src: osmImg,
-         alt: 'osm layer'
+         alt: 'osm layer',
+         enabled: (_settings: Settings) => _settings.openStreetEnabled
       },
       // {
       //    olLayer: <OlBingLayer key="bing" />,
@@ -180,7 +190,9 @@ export const MapPage = ({ active }: {
       }
    }, [active]);
 
-   const olLayers = useMemo(() => layers.map(layer => ({ ...layer.olLayer, props: { ...layer.olLayer.props, order: layers.length - 1 - layer.order, active: layer.active } })), [layers]);
+   const olLayers = useMemo(() =>
+      layers.map(layer => ({ ...layer.olLayer, props: { ...layer.olLayer.props, order: layers.length - 1 - layer.order, active: layer.active } })),
+      [layers]);
 
    return <MapContextProvider>
       <div className={'transition transition-std relative grow h-100' + opacity} style={active ? {} : { display: 'none' }}>
