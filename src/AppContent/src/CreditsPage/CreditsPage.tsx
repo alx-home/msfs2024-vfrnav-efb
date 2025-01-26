@@ -53,7 +53,7 @@ export const CreditsPage = ({ active }: {
             </Section>
             <Section title='MSFS2024 VFRNav'>
                <li>
-                  ©<a href="https://github.com/alx-home/msfs2024-vfrnav/blob/master/LICENSE" target="_blank" rel="noreferrer">MSFS2024 VFRNav&apos;</a>.
+                  ©<a href="https://github.com/alx-home/msfs2024-vfrnav-efb/blob/master/LICENSE" target="_blank" rel="noreferrer">MSFS2024 VFRNav&apos;</a>.
                </li>
             </Section>
          </Scroll>
