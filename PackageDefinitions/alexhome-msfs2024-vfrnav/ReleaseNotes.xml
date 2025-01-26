@@ -1,4 +1,8 @@
 <ReleaseNotes>
+	<ReleaseNote Version="0.2.0" Date="2025-1-26">Improvements / améliorations ;
+- Performance improvements / Amélioration des performances
+- Add Pdf Support (Preview version) / Ajout Suport des Pdf (avant première)
+- Add settings to enable/disable layers / Ajout de paramètres pour activer/désactiver les layers</ReleaseNote>
 	<ReleaseNote Version="0.1.1" Date="2025-1-5">Improvements / améliorations ;
 - Improve text overlay on the map / Amélioration de l&apos;affichage du texte sur la map
 - Hide layers when their corresponding min/max zoom is reached / Les layers sont maintenant cachés lorsque leurs zoom max/min est atteint
@@ -12,6 +16,5 @@ Fixes :
 
 Fixes :
 - Scrollbar glitches</ReleaseNote>
-	<ReleaseNote Version="0.1.3" Date="0-1-1"/>
 </ReleaseNotes>
 
