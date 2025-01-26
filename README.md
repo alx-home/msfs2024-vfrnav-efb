@@ -70,4 +70,4 @@ ___
 - © 2024 TomTom. 
 
 ### MSFS2024 VFRNav 
-- © <a href="https://github.com/alx-home/msfs2024-vfrnav/blob/master/LICENSE" target="_blank">MSFS2024 VFRNav&apos;</a>. 
+- © <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/blob/master/LICENSE" target="_blank">MSFS2024 VFRNav&apos;</a>. 
