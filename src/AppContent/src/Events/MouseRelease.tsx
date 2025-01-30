@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function useMouseRelease() {
+const useMouseRelease = () => {
    const [mousePosition, setMousePosition] = useState<{ x: number, y: number } | undefined>();
 
    useEffect(() => {
@@ -20,3 +20,5 @@ export default function useMouseRelease() {
 
    return mousePosition;
 }
+
+export default useMouseRelease;

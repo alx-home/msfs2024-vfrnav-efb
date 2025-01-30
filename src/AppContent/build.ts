@@ -12,7 +12,7 @@ import autoprefixer from "autoprefixer";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const minify = true;
+const minify = false;
 
 const msfsEmbeded = process.env.MSFS_EMBEDED;
 console.assert(msfsEmbeded !== undefined)
@@ -79,13 +79,17 @@ const EFBConfig: UserConfig = {
    },
    resolve: {
       alias: {
-         "@": path.resolve(__dirname, "./src"),
+         "@Events": path.resolve(__dirname, "./src/Events"),
          "@fonts": path.resolve(__dirname, "./src/fonts"),
          "@images": path.resolve(__dirname, "./src/images"),
+         "@app": path.resolve(__dirname, "./src/app"),
+         "@Ol": path.resolve(__dirname, "./src/Ol"),
+         "@pages": path.resolve(__dirname, "./src/pages"),
          "@polyfills": path.resolve(__dirname, "./src/polyfills"),
-         "@Events": path.resolve(__dirname, "./src/Events"),
-         "@Utils": path.resolve(__dirname, "./src/Utils"),
          "@public": path.resolve(__dirname, "./public"),
+         "@Settings": path.resolve(__dirname, "./src/Settings.tsx"),
+         "@shared": path.resolve(__dirname, "./shared"),
+         "@Utils": path.resolve(__dirname, "./src/Utils"),
       },
       extensions: [
          '.js',

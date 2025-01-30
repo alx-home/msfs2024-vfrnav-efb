@@ -1,27 +1,27 @@
-import { MapMenu, Menu } from "@/MapPage/MapMenu/MapMenu";
-import { OlOSMLayer } from "@/Ol/layers/OlOSMLayer";
-import { OlRouteLayer } from "@/Ol/layers/OlRoute";
-import { OlWMTSLayer } from "@/Ol/layers/OlWMTSLayer";
-import { OlMap } from "@/Ol/OlMap";
+import { MapMenu, Menu } from "@pages/Map/MapMenu/MapMenu";
+import { OlOSMLayer } from "@Ol/layers/OlOSMLayer";
+import { OlRouteLayer } from "@Ol/layers/OlRoute";
+import { OlWMTSLayer } from "@Ol/layers/OlWMTSLayer";
+import { OlMap } from "@Ol/OlMap";
 import { getTopLeft, getWidth } from 'ol/extent';
 import { get as getProjection } from 'ol/proj';
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import flightPlanImg from '@/images/flight-plan.svg';
-import layersImg from '@/images/layers.svg';
-import oaciImg from '@/images/oaci.jpg';
-import dsfImg from '@/images/dsf.jpg';
-import map4freeImg from '@/images/map4free.jpg';
-import bingImg from '@/images/bing.jpg';
-import opentopoImg from '@/images/opentopo.jpg';
-import ifrLowImg from '@/images/ifr_low.jpg';
-import ifrHighImg from '@/images/ifr_high.jpg';
-import sectionalImg from '@/images/sectional.jpg';
-import osmImg from '@/images/osm.jpg';
+import flightPlanImg from '@images/flight-plan.svg';
+import layersImg from '@images/layers.svg';
+import oaciImg from '@images/oaci.jpg';
+import dsfImg from '@images/dsf.jpg';
+import map4freeImg from '@images/map4free.jpg';
+import bingImg from '@images/bing.jpg';
+import opentopoImg from '@images/opentopo.jpg';
+import ifrLowImg from '@images/ifr_low.jpg';
+import ifrHighImg from '@images/ifr_high.jpg';
+import sectionalImg from '@images/sectional.jpg';
+import osmImg from '@images/osm.jpg';
 
 import { OnLayerChange } from './MapMenu/Menus/Layers';
 import MapContextProvider, { MapContext } from "./MapContext";
-import { Settings } from "@/Settings";
+import { Settings } from "@Settings";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();

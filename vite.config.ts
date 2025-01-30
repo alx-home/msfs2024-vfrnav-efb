@@ -3,7 +3,7 @@ import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import eslint from 'vite-plugin-eslint';
 import path from "path";
 import sass from 'vite-plugin-sass';
-import { externalGlobals } from 'rollup-plugin-external-globals';
+import externalGlobals from 'rollup-plugin-external-globals';
 import { minify } from "terser";
 
 import { peerDependencies } from "./package.json";
@@ -41,7 +41,9 @@ const copyFiles = () => {
 
 export default defineConfig({
    define: {
-      BASE_URL: JSON.stringify(`coui://html_ui/efb_ui/efb_apps/msfs2024-vfrnav`)
+      BASE_URL: JSON.stringify(`coui://html_ui/efb_ui/efb_apps/msfs2024-vfrnav`),
+      __SIA_AUTH__: JSON.stringify("Y9Q3Ve72nN3PnTXmEtKnS4sggmdsigRMWH9kCDGHpCHyenFKKGhDq5vgBWZ4"),
+      __SIA_ADDR__: JSON.stringify("https://bo-prod-sofia-vac.sia-france.fr/api/v1/custom/file-path/{icao}/AD"),
    },
    build: {
       minify: true,
@@ -64,7 +66,7 @@ export default defineConfig({
    },
    resolve: {
       alias: {
-         "@": path.resolve(__dirname, "./src"),
+         "@shared": path.resolve(__dirname, "./src/AppContent/shared"),
       },
    },
    plugins: [

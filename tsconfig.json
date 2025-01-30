@@ -45,6 +45,9 @@
       ],
       "@public/*": [
         "./public/*"
+      ],
+      "@shared/*": [
+        "./src/AppContent/shared/*"
       ]
     },
     "forceConsistentCasingInFileNames": true,

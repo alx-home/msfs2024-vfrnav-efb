@@ -1,5 +1,5 @@
-import { Settings, SettingsContext } from "@/Settings";
-import { Draggable } from "@/Utils/Draggable";
+import { Settings, SettingsContext } from "@Settings";
+import { Draggable } from "@Utils/Draggable";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 export class Layer {

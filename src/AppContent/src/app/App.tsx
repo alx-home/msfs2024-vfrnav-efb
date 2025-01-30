@@ -1,19 +1,20 @@
-import MouseContextProvider from '@/Events/MouseContext';
+import MouseContextProvider from '@Events/MouseContext';
 
-import { MapPage } from '@/MapPage/MapPage';
-import { Menu } from '@/app/Menu';
+import { Menu } from '@app/Menu';
 import { JSX, ReactElement, useMemo, useState } from 'react';
+
+import { ChartsPage } from '@pages/Charts/ChartsPage';
+import { CreditsPage } from '@pages/Credits/CreditsPage';
+import { MapPage } from '@pages/Map/MapPage';
+import { SettingsPage } from '@pages/Settings/SettingsPage';
+
+import SettingsContextProvider from '@Settings';
 
 import mapImg from '@images/map.svg';
 import navlogImg from '@images/navlog.svg';
 import settingsImg from '@images/settings.svg';
 import filesImg from '@images/files.svg';
 import creditsImg from '@images/credits.svg';
-import { CreditsPage } from '@/CreditsPage/CreditsPage';
-import { SettingsPage } from '@/SettingsPage/SettingsPage';
-import SettingsContextProvider from '@/Settings';
-
-import { ChartsPage } from '@/ChartsPage/ChartsPage';
 
 export class Page {
   public readonly type: string = 'page';

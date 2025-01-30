@@ -1,23 +1,11 @@
 import { sha512 } from "js-sha512";
-import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useMemo, useState } from "react";
+import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
+import { SharedSettings, SharedSettingsRecord, SharedSettingsDefault } from '@shared/Settings';
+import { messageHandler } from "./main";
+import { reduce, deepEquals } from "@shared/Types";
 
 export type Settings = {
    emptyPopup: ReactElement,
-   speed: number,
-   adjustHeading: boolean,
-   adjustTime: boolean,
-   SIAAuth: string,
-   SIAAddr: string,
-
-   OACIEnabled: boolean,
-   germanyEnabled: boolean,
-   USSectionalEnabled: boolean,
-   USIFRHighEnabled: boolean,
-   USIFRLowEnabled: boolean,
-   openTopoEnabled: boolean,
-   mapForFreeEnabled: boolean,
-   googleMapEnabled: boolean,
-   openStreetEnabled: boolean,
 
    setSpeed: (_speed: number) => void,
    setSIAAddr: (_addr: string) => void,
@@ -37,7 +25,7 @@ export type Settings = {
    setMapForFreeEnabled: (_enable: boolean) => void
    setGoogleMapEnabled: (_enable: boolean) => void
    setOpenStreetEnabled: (_enable: boolean) => void
-};
+} & SharedSettings;
 
 export const SettingsContext = createContext<Settings | undefined>(undefined);
 
@@ -52,11 +40,11 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
    setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>,
    emptyPopup: ReactElement
 }>) => {
-   const [speed, setSpeed] = useState(95);
-   const [SIAAuth, setSIAAuth] = useState(__SIA_AUTH__);
-   const [SIAAddr, setSIAAddr] = useState(__SIA_ADDR__);
-   const [adjustHeading, setAdjustHeading] = useState(true);
-   const [adjustTime, setAdjustTime] = useState(true);
+   const [speed, setSpeed] = useState(SharedSettingsDefault.speed);
+   const [SIAAuth, setSIAAuth] = useState(SharedSettingsDefault.SIAAuth);
+   const [SIAAddr, setSIAAddr] = useState(SharedSettingsDefault.SIAAddr);
+   const [adjustHeading, setAdjustHeading] = useState(SharedSettingsDefault.adjustHeading);
+   const [adjustTime, setAdjustTime] = useState(SharedSettingsDefault.adjustTime);
    const getSIAPDF = useCallback(async (icao: string) => {
       {
          const cached = SIACache.get(icao);
@@ -81,15 +69,15 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
       return SIACache.get(icao)!;
    }, [SIAAddr, SIAAuth]);
 
-   const [OACIEnabled, setOACIEnabled] = useState(true);
-   const [germanyEnabled, setGermanyEnabled] = useState(true);
-   const [USSectionalEnabled, setUSSectionalEnabled] = useState(true);
-   const [mapForFreeEnabled, setMapForFreeEnabled] = useState(true);
-   const [googleMapEnabled, setGoogleMapEnabled] = useState(true);
-   const [USIFRHighEnabled, setUSIFRHighEnabled] = useState(false);
-   const [USIFRLowEnabled, setUSIFRLowEnabled] = useState(false);
-   const [openTopoEnabled, setOpenTopoEnabled] = useState(false);
-   const [openStreetEnabled, setOpenStreetEnabled] = useState(false);
+   const [OACIEnabled, setOACIEnabled] = useState(SharedSettingsDefault.OACIEnabled);
+   const [germanyEnabled, setGermanyEnabled] = useState(SharedSettingsDefault.germanyEnabled);
+   const [USSectionalEnabled, setUSSectionalEnabled] = useState(SharedSettingsDefault.USSectionalEnabled);
+   const [mapForFreeEnabled, setMapForFreeEnabled] = useState(SharedSettingsDefault.mapForFreeEnabled);
+   const [googleMapEnabled, setGoogleMapEnabled] = useState(SharedSettingsDefault.googleMapEnabled);
+   const [USIFRHighEnabled, setUSIFRHighEnabled] = useState(SharedSettingsDefault.USIFRHighEnabled);
+   const [USIFRLowEnabled, setUSIFRLowEnabled] = useState(SharedSettingsDefault.USIFRLowEnabled);
+   const [openTopoEnabled, setOpenTopoEnabled] = useState(SharedSettingsDefault.openTopoEnabled);
+   const [openStreetEnabled, setOpenStreetEnabled] = useState(SharedSettingsDefault.openStreetEnabled);
 
    const provider = useMemo(() => ({
       emptyPopup: emptyPopup,
@@ -129,6 +117,40 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
    }), [speed, adjustHeading, adjustTime, OACIEnabled, germanyEnabled, USSectionalEnabled,
       USIFRHighEnabled, USIFRLowEnabled, openTopoEnabled, mapForFreeEnabled, googleMapEnabled,
       openStreetEnabled, emptyPopup, SIAAuth, SIAAddr, setPopup, getSIAPDF]);
+
+   const [lastSent, setLastSent] = useState(reduce<SharedSettings>(provider, SharedSettingsRecord));
+
+   useEffect(() => {
+      const rprovider = reduce<SharedSettings>(provider, SharedSettingsRecord);
+      if (!deepEquals(rprovider, lastSent)) {
+         messageHandler.send(rprovider);
+         setLastSent(rprovider);
+      }
+   }, [lastSent, provider]);
+
+   useEffect(() => {
+      const callback = (settings: SharedSettings) => {
+         setOACIEnabled(settings.OACIEnabled);
+         setGermanyEnabled(settings.germanyEnabled);
+         setUSSectionalEnabled(settings.USSectionalEnabled);
+         setUSIFRHighEnabled(settings.USIFRHighEnabled);
+         setUSIFRLowEnabled(settings.USIFRLowEnabled);
+         setOpenTopoEnabled(settings.openTopoEnabled);
+         setMapForFreeEnabled(settings.mapForFreeEnabled);
+         setGoogleMapEnabled(settings.googleMapEnabled);
+         setOpenStreetEnabled(settings.openStreetEnabled);
+
+         setSpeed(settings.speed);
+         setAdjustHeading(settings.adjustHeading);
+         setAdjustTime(settings.adjustTime);
+         setSIAAuth(settings.SIAAuth);
+         setSIAAddr(settings.SIAAddr);
+      };
+
+      messageHandler.subscribe("SharedSettings", callback)
+      messageHandler.send("GetSettings");
+      return () => messageHandler.unsubscribe("SharedSettings", callback);
+   }, []);
 
    return (
       <SettingsContext.Provider

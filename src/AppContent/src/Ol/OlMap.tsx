@@ -1,9 +1,9 @@
-import useKeyUp from "@/Events/KeyUp";
-import useMouseRelease from "@/Events/MouseRelease";
+import useKeyUp from "@Events/KeyUp";
+import useMouseRelease from "@Events/MouseRelease";
 import { View } from "ol";
 import { fromLonLat } from "ol/proj";
 import { PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
-import { MapContext } from "@/MapPage/MapContext";
+import { MapContext } from "@pages/Map/MapContext";
 
 export const OlMap = ({ children, id, className }: PropsWithChildren<{ id: string, className: string }>) => {
    const mapContext = useContext(MapContext)!;

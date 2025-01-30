@@ -1,12 +1,12 @@
 import { Dispatch, KeyboardEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import useMouseRelease from '@/Events/MouseRelease';
-import { MouseContext } from '@/Events/MouseContext';
+import useMouseRelease from '@Events/MouseRelease';
+import { MouseContext } from '@Events/MouseContext';
 import { Layer, Layers, OnLayerChange } from './Menus/Layers';
 import { Nav, NavItem } from './Menus/Nav';
 
-import { Scroll } from '@/Utils/Scroll';
+import { Scroll } from '@Utils/Scroll';
 import { MapContext } from '../MapContext';
-import useMouseMove from '@/Events/MouseMove';
+import useMouseMove from '@Events/MouseMove';
 
 // eslint-disable-next-line no-unused-vars
 export enum Menu { layers, nav };

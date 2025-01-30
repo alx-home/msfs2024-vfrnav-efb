@@ -2,7 +2,7 @@ import { Map } from "ol";
 import TileLayer from "ol/layer/Tile";
 import { TileImage } from "ol/source";
 import { useContext, useEffect, useState } from "react";
-import { MapContext } from "@/MapPage/MapContext";
+import { MapContext } from "@pages/Map/MapContext";
 
 export class OlLayerProp {
    // eslint-disable-next-line no-unused-vars

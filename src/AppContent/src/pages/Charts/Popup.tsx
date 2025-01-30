@@ -1,11 +1,11 @@
-import { SettingsContext } from "@/Settings";
-import { Button } from "@/Utils/Button";
-import { Input } from "@/Utils/Input";
+import { SettingsContext } from "@Settings";
+import { Button } from "@Utils/Button";
+import { Input } from "@Utils/Input";
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Src } from "./ChartsPage";
 
 import loadingImg from '@images/loading.svg';
-import useKeyUp from "@/Events/KeyUp";
+import useKeyUp from "@Events/KeyUp";
 
 const sources = ['SIA', 'TEMSI', 'Weather Fronts', 'Local'] as const;
 type Source = typeof sources[number];

@@ -1,4 +1,4 @@
-import { Scroll } from "@/Utils/Scroll";
+import { Scroll } from "@Utils/Scroll";
 import { PropsWithChildren, useEffect, useState } from "react";
 
 

@@ -1,10 +1,11 @@
-import { CheckBox } from "@/Utils/CheckBox";
-import { Input } from "@/Utils/Input";
-import { Scroll } from "@/Utils/Scroll";
-import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useContext, useEffect, useMemo, useState } from 'react';
+import { CheckBox } from "@Utils/CheckBox";
+import { Input } from "@Utils/Input";
+import { Scroll } from "@Utils/Scroll";
+import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import undoImg from '@/images/undo.svg';
-import { SettingsContext } from "@/Settings";
+import undoImg from '@images/undo.svg';
+import { SettingsContext } from "@Settings";
+import { SharedSettingsDefault } from "@shared/Settings";
 
 const List = ({ children }: PropsWithChildren) => {
    return <Scroll className="flex flex-col">
@@ -56,13 +57,14 @@ const ErrorMessage = ({ children }: PropsWithChildren<{
    return children;
 };
 
-const InputItem = ({ children, name, category, placeholder, pattern, className, type, inputMode, validate, onChange, defaultValue }: PropsWithChildren<{
+const InputItem = ({ children, name, category, placeholder, pattern, className, type, inputMode, validate, onChange, defaultValue, value }: PropsWithChildren<{
    name: string,
    category?: string,
    placeholder?: string,
    pattern?: string,
    className?: string,
    defaultValue?: string,
+   value?: string,
    inputMode?: "email" | "search" | "tel" | "text" | "url" | "none" | "numeric" | "decimal",
    validate?: (_value: string) => boolean,
    type?: HTMLInputTypeAttribute,
@@ -80,7 +82,8 @@ const InputItem = ({ children, name, category, placeholder, pattern, className, 
 
    return <Item name={name} category={category} onReset={resetCallback}>
       {childs.filter(child => isValidElement<{ type: string }>(child) ? child.props.type !== 'Error' : true)}
-      <Input reset={reset} defaultValue={defaultValue} className={"max-w-3xl peer " + (className ?? '')} validate={validate} onChange={onChange} inputMode={inputMode} type={type} active={true} placeholder={placeholder} pattern={pattern} />
+      <Input reset={reset} defaultValue={defaultValue} value={value} className={"max-w-3xl peer " + (className ?? '')} validate={validate}
+         onChange={onChange} inputMode={inputMode} type={type} active={true} placeholder={placeholder} pattern={pattern} />
       <div className="no-margin hidden h-0 peer-[.invalid]:flex">
          <p className="pl-8 pt-1 text-red-500 text-base">
             {childs.filter(child => isValidElement<{ type: string }>(child) && child.props.type === 'Error')}
@@ -92,12 +95,13 @@ const InputItem = ({ children, name, category, placeholder, pattern, className, 
 type CheckItemProps = PropsWithChildren<{
    name: string,
    category?: string,
-   _default?: boolean,
-   _onChange?: (_checked: boolean) => void
+   defaultValue?: boolean,
+   value?: boolean,
+   onChange?: (_checked: boolean) => void
 }>;
 
 
-const CheckItem = ({ children, name, category, _default, _onChange }: CheckItemProps) => {
+const CheckItem = ({ children, name, category, value, defaultValue, onChange }: CheckItemProps) => {
    const [reset, setReset] = useState(false);
    const resetCallback = useMemo(() => () => setReset(true), [setReset]);
 
@@ -108,7 +112,7 @@ const CheckItem = ({ children, name, category, _default, _onChange }: CheckItemP
    }, [reset, setReset]);
 
    return <Item name={name} category={category} onReset={resetCallback}>
-      <CheckBox reset={reset} className="flex flex-row my-auto" active={true} _default={_default} _onChange={_onChange}>
+      <CheckBox reset={reset} className="flex flex-row my-auto" active={true} value={value} defaultValue={defaultValue} onChange={onChange}>
          <div className="flex grow my-auto">
             {children}
          </div>
@@ -141,7 +145,8 @@ const CheckItems = ({ children, name, category }: PropsWithChildren<{
    const resetCallback = useMemo(() => () => setReset(true), [setReset]);
    const childs = useMemo(() =>
       Children.toArray(children).filter(child => isCheckItem(child)).map((child) =>
-         <CheckBox key={child.key} reset={reset} className="flex flex-row my-auto" active={true} _default={child.props._default} _onChange={child.props._onChange}>
+         <CheckBox key={child.key} reset={reset} className="flex flex-row my-auto" active={true}
+            value={child.props.value} defaultValue={child.props.defaultValue} onChange={child.props.onChange}>
             <div className="flex grow my-auto">
                {child.props.children}
             </div>
@@ -177,6 +182,7 @@ export const SettingsPage = ({ active }: {
    const settings = useContext(SettingsContext)!;
    const [opacity, setOpacity] = useState(' opacity-0');
    const [advanced, setAdvanced] = useState(false);
+   const setSpeed = useCallback((value: string) => settings.setSpeed(+value), [settings]);
 
    useEffect(() => {
       if (active) {
@@ -198,9 +204,10 @@ export const SettingsPage = ({ active }: {
          </div>
          <List>
             <Group name="Flight">
-               <InputItem name="Speed" type="text" placeholder="95" defaultValue="95" inputMode="decimal"
+               <InputItem name="Speed" type="text" placeholder={SharedSettingsDefault.speed.toString()} inputMode="decimal"
+                  value={settings.speed.toString()} defaultValue={SharedSettingsDefault.speed.toString()}
                   validate={value => /^\d*$/g.test(value)}
-                  onChange={(value: string) => settings.setSpeed(+value)}>
+                  onChange={setSpeed}>
                   <div>
                      Set the cruise speed of the aircraft. Leg duration will be calculated on belief of this settings.
                   </div>
@@ -210,48 +217,61 @@ export const SettingsPage = ({ active }: {
                </InputItem>
             </Group>
             <Group name="Navigation">
-               <CheckItem category="Wind correction" name="Heading" _default={true} _onChange={settings.setAdjustHeading}>
+               <CheckItem category="Wind correction" name="Heading"
+                  value={settings.adjustHeading} defaultValue={SharedSettingsDefault.adjustHeading}
+                  onChange={settings.setAdjustHeading}>
                   Adjust navigation heading by taking into account the given leg wind.<br />
                   (not yet implemented)
                </CheckItem>
-               <CheckItem category="Wind correction" name="Time" _default={true} _onChange={settings.setAdjustTime}>
+               <CheckItem category="Wind correction" name="Time"
+                  value={settings.adjustTime} defaultValue={SharedSettingsDefault.adjustTime}
+                  onChange={settings.setAdjustTime}>
                   Adjust navigation time by taking into account the given leg wind.<br />
                   (not yet implemented)
                </CheckItem>
             </Group>
             <Group name="Map">
                <CheckItems name="VFR" category="Layers">
-                  <CheckItem name="OACI" _default={true} _onChange={settings.setOACIEnabled}>
+                  <CheckItem name="OACI" onChange={settings.setOACIEnabled}
+                     value={settings.OACIEnabled} defaultValue={SharedSettingsDefault.OACIEnabled}>
                      Use France OACI Layer (geoportal)
                   </CheckItem>
-                  <CheckItem name="Germany" _default={true} _onChange={settings.setGermanyEnabled}>
+                  <CheckItem name="Germany" onChange={settings.setGermanyEnabled}
+                     value={settings.germanyEnabled} defaultValue={SharedSettingsDefault.germanyEnabled} >
                      Use Germany VFR Layer (secais).
                   </CheckItem>
-                  <CheckItem name="US" _default={true} _onChange={settings.setUSSectionalEnabled}>
+                  <CheckItem name="US" onChange={settings.setUSSectionalEnabled}
+                     value={settings.USSectionalEnabled} defaultValue={SharedSettingsDefault.USSectionalEnabled} >
                      Use US sectional Layers (iflightplanner).
                   </CheckItem>
                </CheckItems>
                <CheckItems name="IFR" category="Layers">
-                  <CheckItem name="US" _default={false} _onChange={settings.setUSIFRHighEnabled}>
+                  <CheckItem name="US" onChange={settings.setUSIFRHighEnabled}
+                     value={settings.USIFRHighEnabled} defaultValue={SharedSettingsDefault.USIFRHighEnabled} >
                      Use US High IFR Layers (iflightplanner).
                   </CheckItem>
-                  <CheckItem name="US" _default={false} _onChange={settings.setUSIFRLowEnabled}>
+                  <CheckItem name="US" onChange={settings.setUSIFRLowEnabled}
+                     value={settings.USIFRLowEnabled} defaultValue={SharedSettingsDefault.USIFRLowEnabled} >
                      Use US Low IFR Layers (iflightplanner).
                   </CheckItem>
                </CheckItems>
                <CheckItems name="Topographic" category="Layers">
-                  <CheckItem name="Open Topo" _default={false} _onChange={settings.setOpenTopoEnabled}>
+                  <CheckItem name="Open Topo" onChange={settings.setOpenTopoEnabled}
+                     value={settings.openTopoEnabled} defaultValue={SharedSettingsDefault.openTopoEnabled} >
                      Use Open Topo Layer.
                   </CheckItem>
-                  <CheckItem name="Map for free" _default={true} _onChange={settings.setMapForFreeEnabled}>
+                  <CheckItem name="Map for free" onChange={settings.setMapForFreeEnabled}
+                     value={settings.mapForFreeEnabled} defaultValue={SharedSettingsDefault.mapForFreeEnabled} >
                      Use Map for free Layer.
                   </CheckItem>
                </CheckItems>
                <CheckItems name="World" category="Layers">
-                  <CheckItem name="Google Map" _default={true} _onChange={settings.setGoogleMapEnabled}>
+                  <CheckItem name="Google Map" onChange={settings.setGoogleMapEnabled}
+                     value={settings.googleMapEnabled} defaultValue={SharedSettingsDefault.googleMapEnabled}>
                      Use Google map Layer.
                   </CheckItem>
-                  <CheckItem name="Openstreet map" _default={false} _onChange={settings.setOpenStreetEnabled}>
+                  <CheckItem name="Openstreet map" onChange={settings.setOpenStreetEnabled}
+                     value={settings.openStreetEnabled} defaultValue={SharedSettingsDefault.openStreetEnabled} >
                      Use Openstreet map Layer.
                   </CheckItem>
                </CheckItems>
@@ -264,8 +284,8 @@ export const SettingsPage = ({ active }: {
                         && (value.length < 9 || /^(\w|:|\/|-|_|\.)+(?:\{|$)(?:i|$)(?:c|$)(?:a|$)(?:o|$)(?:\}|$)(\w|:|\/|-|_|\.)*$/g.test(value.substring(8)))
                      }
                      placeholder={__SIA_ADDR__}
-                     defaultValue={__SIA_ADDR__}
-                     onChange={(value: string) => settings.setSIAAddr(value)}>
+                     value={settings.SIAAddr} defaultValue={SharedSettingsDefault.SIAAddr}
+                     onChange={settings.setSIAAddr}>
                      PDF template Address with {'{icao}'} placeholder.<br />
                      If the default address does not works anymore, please go to the addon wiki for more information: <br />
                      <a href="https://github.com/alx-home/msfs2024-vfrnav-efb">https://github.com/alx-home/msfs2024-vfrnav-efb</a>
@@ -276,8 +296,8 @@ export const SettingsPage = ({ active }: {
                   <InputItem category="SIA" name="Authorization token" inputMode="text"
                      validate={value => /^(\w+)?=?$/g.test(value)}
                      placeholder='Please enter an authorization token'
-                     defaultValue={__SIA_AUTH__}
-                     onChange={(value: string) => settings.setSIAAuth(value)}>
+                     value={settings.SIAAuth} defaultValue={SharedSettingsDefault.SIAAuth}
+                     onChange={settings.setSIAAuth}>
                      Authorization token for accessing SIA Enroute charts on the PDF page.<br />
                      If the default authorization token value does not works anymore, please go to the addon wiki for more information: <br />
                      <a href="https://github.com/alx-home/msfs2024-vfrnav-efb">https://github.com/alx-home/msfs2024-vfrnav-efb</a>
@@ -285,7 +305,7 @@ export const SettingsPage = ({ active }: {
                </div>
             </Group>
             <Group name="Expert">
-               <CheckItem category="Settings" name="Advanced" _default={false} _onChange={setAdvanced}>
+               <CheckItem category="Settings" name="Advanced" onChange={setAdvanced} defaultValue={false} >
                   Display advanced settings.
                </CheckItem>
             </Group>

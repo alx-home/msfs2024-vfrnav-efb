@@ -15,12 +15,12 @@ import { toContext } from "ol/render";
 import Fill from "ol/style/Fill";
 import { Coordinate } from "ol/coordinate";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { SettingsContext } from "@/Settings";
+import { SettingsContext } from "@Settings";
 
-import greenMarker from '@/images/marker-icon-green.svg';
-import redMarker from '@/images/marker-icon-red.svg';
-import blueMarker from '@/images/marker-icon-blue.svg';
-import { MapContext } from "@/MapPage/MapContext";
+import greenMarker from '@images/marker-icon-green.svg';
+import redMarker from '@images/marker-icon-red.svg';
+import blueMarker from '@images/marker-icon-blue.svg';
+import { MapContext } from "@pages/Map/MapContext";
 
 const useMap = () => {
    const { map } = useContext(MapContext)!;

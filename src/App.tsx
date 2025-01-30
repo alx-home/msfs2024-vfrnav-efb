@@ -13,7 +13,8 @@ import {
 import { FSComponent, VNode } from "@microsoft/msfs-sdk";
 import { MainPage } from "./Components/MainPage";
 
-class VfrNavAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
+class VfrNavAppView extends AppView<RequiredProps<AppViewProps & {
+}, "bus">> {
   /**
    * Optional property
    * Default view key to show if using AppViewService
@@ -125,9 +126,8 @@ class VfrNavApp extends App {
    * @param _props props used when app has been setted up.
    * @returns Promise<void>
    */
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async install(_props: AppInstallProps): Promise<void> {
-    // Efb.loadCss(`${BASE_URL}/App.css`);
     return Promise.resolve();
   }
 

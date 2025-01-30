@@ -1,10 +1,10 @@
-import { SettingsContext } from "@/Settings";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-import { Pdf } from "@/Utils/Pdf";
-import { Button } from "@/Utils/Button";
+import { Button } from "@Utils/Button";
+import { Pdf } from "@Utils/Pdf";
 import { Popup } from "./Popup";
-import { Scroll } from "@/Utils/Scroll";
+import { Scroll } from "@Utils/Scroll";
+import { SettingsContext } from "@Settings";
 
 import deleteImg from '@images/delete.svg';
 

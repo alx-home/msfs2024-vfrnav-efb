@@ -1,25 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export default function useMouseMove(active?: boolean) {
-   const [mousePosition, setMousePosition] = useState<{ x: number, y: number } | undefined>();
-   const [resultPosition, setResultPosition] = useState<{ x: number, y: number } | undefined>();
-
-   useEffect(() => {
-      if (active) {
-         setResultPosition(mousePosition);
-      } else {
-         setResultPosition(undefined);
-      }
-   }, [active, mousePosition]);
+const useMouseMove = (active?: boolean) => {
+   const savedPosition = useRef<{ x: number, y: number }>(undefined);
+   const [position, setPosition] = useState<{ x: number, y: number }>();
+   const [needsUpdate, setNeedsUpdate] = useState(0);
 
    useEffect(() => {
       const handleMouseMove = (e: MouseEvent) => {
-         setMousePosition({ x: e.clientX, y: e.clientY });
+         savedPosition.current = { x: e.clientX, y: e.clientY };
+         if (active) {
+            setNeedsUpdate(count => count + 1);
+         }
       };
 
       document.addEventListener('mousemove', handleMouseMove);
       return () => document.removeEventListener('mousemove', handleMouseMove);
-   }, []);
+   }, [active]);
 
-   return resultPosition;
+   useEffect(() => {
+      if (active) {
+         setPosition(savedPosition.current);
+      } else {
+         setPosition(undefined);
+      }
+   }, [active, needsUpdate])
+
+   return position;
 }
+
+export default useMouseMove;

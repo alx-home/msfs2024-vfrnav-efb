@@ -4,15 +4,15 @@ import { Children, Dispatch, isValidElement, MouseEventHandler, PropsWithChildre
 import { Feature } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
 
-import { Button } from '@/Utils/Button';
+import { Button } from '@Utils/Button';
+import { Draggable } from '@Utils/Draggable';
+import { MapContext } from '@pages/Map/MapContext';
 
-import newFileImg from '@/images/new-file.svg';
-import importImg from '@/images/import.svg';
-import exportImg from '@/images/export.svg';
-import editImg from "@/images/edit.svg";
-import deleteImg from "@/images/delete.svg";
-import { Draggable } from '@/Utils/Draggable';
-import { MapContext } from '@/MapPage/MapContext';
+import newFileImg from '@images/new-file.svg';
+import importImg from '@images/import.svg';
+import exportImg from '@images/export.svg';
+import editImg from "@images/edit.svg";
+import deleteImg from "@images/delete.svg";
 
 export class NavData {
    // eslint-disable-next-line no-unused-vars

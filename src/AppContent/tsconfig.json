@@ -37,9 +37,6 @@
     "incremental": true,
     "experimentalDecorators": true /* Enable experimental support for TC39 stage 2 draft decorators. */,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
       "@fonts/*": [
         "./src/fonts/*"
       ],
@@ -49,11 +46,26 @@
       "@polyfills/*": [
         "./src/polyfills/*"
       ],
+      "@app/*": [
+        "./src/app/*"
+      ],
+      "@Ol/*": [
+        "./src/Ol/*"
+      ],
       "@Events/*": [
         "./src/Events/*"
       ],
+      "@Settings": [
+        "./src/Settings.tsx"
+      ],
       "@Utils/*": [
         "./src/Utils/*"
+      ],
+      "@pages/*": [
+        "./src/pages/*"
+      ],
+      "@shared/*": [
+        "./shared/*"
       ],
       "@public/*": [
         "./public/*"
