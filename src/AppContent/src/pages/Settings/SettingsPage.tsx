@@ -409,7 +409,7 @@ export const SettingsPage = ({ active }: {
                            }}>A</div>
                            <div className="position absolute top-0 bottom-0 left-0 right-0 z-10 text-[var(--background)] group-hover:text-[var(--menu-bg)]">A</div></div>
                      </div>
-                     <div className="flex flex-col justify-center">Set navigation legs text max size.</div>
+                     <div className="flex flex-col justify-center">Set navigation legs text border size.</div>
                   </div>
                </SliderItem>
                <Items name="Text Color" category="Legs" Comp={Slider}>
