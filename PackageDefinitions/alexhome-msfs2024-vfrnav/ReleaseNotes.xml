@@ -3,6 +3,12 @@
 - Performance improvements / Amélioration des performances
 - Add Pdf Support (Preview version) / Ajout Suport des Pdf (avant première)
 - Add settings to enable/disable layers / Ajout de paramètres pour activer/désactiver les layers</ReleaseNote>
+	<ReleaseNote Version="0.2.1" Date="0-1-1">Improvements / améliorations ;
+- Add settings to customize display / Ajout de paramètres de configuration de l&apos;affichage
+- Make settings permanent accross sim loads / Rend les paramètres permanents entre les exécutions
+- Closes Nav menu when drawing nav legs / Fermeture du menu lors du dessin des points de nav
+- Performance improvements / Amélioration des performances
+</ReleaseNote>
 	<ReleaseNote Version="0.1.1" Date="2025-1-5">Improvements / améliorations ;
 - Improve text overlay on the map / Amélioration de l&apos;affichage du texte sur la map
 - Hide layers when their corresponding min/max zoom is reached / Les layers sont maintenant cachés lorsque leurs zoom max/min est atteint
