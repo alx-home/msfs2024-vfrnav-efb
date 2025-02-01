@@ -164,7 +164,9 @@ const Item = ({ children, className, setDraggable }: PropsWithChildren<{
    return <div className={className}>{child}</div>;
 };
 
-export const Nav = ({ children }: PropsWithChildren<unknown>) => {
+export const Nav = ({ children, closeMenu }: PropsWithChildren<{
+   closeMenu: () => void
+}>) => {
    const { addNav, navData, reorderNav } = useContext(MapContext)!;
    const key = navData.reduce((prev, elem) => { return prev + ";" + elem.name; }, "");
    const [draggable, setDraggable] = useState(true);
@@ -175,7 +177,10 @@ export const Nav = ({ children }: PropsWithChildren<unknown>) => {
    })
       , [children, navData]);
 
-   const onAdd = useCallback(() => addNav?.(), [addNav]);
+   const onAdd = useCallback(() => {
+      addNav?.()
+      closeMenu()
+   }, [addNav, closeMenu]);
    const noop = useCallback(() => { }, []);
 
    const onOrdersChange = useMemo(() => (orders: number[]) => {

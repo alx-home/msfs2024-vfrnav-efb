@@ -116,6 +116,10 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
       }
    }, [resizing, cursorChangeHandler]);
 
+   const closeMenu = useCallback(() => {
+      setOpen(false);
+   }, [setOpen]);
+
    return <>
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions,jsx-a11y/no-noninteractive-tabindex */}
       <div ref={handleRef} role="separator" aria-orientation="vertical" tabIndex={0}
@@ -142,7 +146,7 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
             style={{ width: width }}>
             {menu === Menu.layers ?
                <Layers layers={layers} onLayerChange={onLayerChange} /> :
-               <Nav>{childs}</Nav>}
+               <Nav closeMenu={closeMenu}>{childs}</Nav>}
          </Scroll>
       </div>
    </>
