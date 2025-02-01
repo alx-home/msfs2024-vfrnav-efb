@@ -25,6 +25,27 @@ export type Settings = {
    setMapForFreeEnabled: (_enable: boolean) => void
    setGoogleMapEnabled: (_enable: boolean) => void
    setOpenStreetEnabled: (_enable: boolean) => void
+
+   map: {
+      text: {
+         setMaxSize: (_size: number) => void
+         setMinSize: (_size: number) => void
+         setBorderSize: (_size: number) => void,
+         setColor: Dispatch<SetStateAction<{
+            red: number;
+            green: number;
+            blue: number;
+            alpha: number;
+         }>>,
+         setBorderColor: Dispatch<SetStateAction<{
+            red: number;
+            green: number;
+            blue: number;
+            alpha: number;
+         }>>
+      }
+      setMarkerSize: (_size: number) => void
+   }
 } & SharedSettings;
 
 export const SettingsContext = createContext<Settings | undefined>(undefined);
@@ -79,6 +100,15 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
    const [openTopoEnabled, setOpenTopoEnabled] = useState(SharedSettingsDefault.openTopoEnabled);
    const [openStreetEnabled, setOpenStreetEnabled] = useState(SharedSettingsDefault.openStreetEnabled);
 
+   const [mapTextMaxSize, setMapTextMaxSize] = useState(SharedSettingsDefault.map.text.maxSize);
+   const [mapTextMinSize, setMapTextMinSize] = useState(SharedSettingsDefault.map.text.minSize);
+   const [mapTextBorderSize, setMapTextBorderSize] = useState(SharedSettingsDefault.map.text.borderSize);
+   const [mapTextColor, setMapTextColor] = useState(SharedSettingsDefault.map.text.color);
+   const [mapTextBorderColor, setMapTextBorderColor] = useState(SharedSettingsDefault.map.text.borderColor);
+
+
+   const [mapMarkerSize, setMapMarkerSize] = useState(SharedSettingsDefault.map.markerSize);
+
    const provider = useMemo(() => ({
       emptyPopup: emptyPopup,
       speed: speed,
@@ -113,10 +143,26 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
       setSIAAuth: setSIAAuth,
       setSIAAddr: setSIAAddr,
       setPopup: setPopup,
-      getSIAPDF: getSIAPDF
-   }), [speed, adjustHeading, adjustTime, OACIEnabled, germanyEnabled, USSectionalEnabled,
-      USIFRHighEnabled, USIFRLowEnabled, openTopoEnabled, mapForFreeEnabled, googleMapEnabled,
-      openStreetEnabled, emptyPopup, SIAAuth, SIAAddr, setPopup, getSIAPDF]);
+      getSIAPDF: getSIAPDF,
+
+      map: {
+         text: {
+            minSize: mapTextMinSize,
+            maxSize: mapTextMaxSize,
+            borderSize: mapTextBorderSize,
+            color: mapTextColor,
+            borderColor: mapTextBorderColor,
+
+            setMinSize: setMapTextMinSize,
+            setMaxSize: setMapTextMaxSize,
+            setBorderSize: setMapTextBorderSize,
+            setColor: setMapTextColor,
+            setBorderColor: setMapTextBorderColor,
+         },
+         markerSize: mapMarkerSize,
+         setMarkerSize: setMapMarkerSize
+      }
+   }), [emptyPopup, speed, SIAAuth, SIAAddr, adjustHeading, adjustTime, OACIEnabled, germanyEnabled, USSectionalEnabled, USIFRHighEnabled, USIFRLowEnabled, openTopoEnabled, mapForFreeEnabled, googleMapEnabled, openStreetEnabled, setPopup, getSIAPDF, mapTextMinSize, mapTextMaxSize, mapTextBorderSize, mapTextColor, mapTextBorderColor, mapMarkerSize]);
 
    const [lastSent, setLastSent] = useState(reduce<SharedSettings>(provider, SharedSettingsRecord));
 
@@ -145,6 +191,14 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
          setAdjustTime(settings.adjustTime);
          setSIAAuth(settings.SIAAuth);
          setSIAAddr(settings.SIAAddr);
+
+         setMapMarkerSize(settings.map.markerSize);
+
+         setMapTextBorderColor(settings.map.text.borderColor);
+         setMapTextBorderSize(settings.map.text.borderSize);
+         setMapTextMaxSize(settings.map.text.maxSize);
+         setMapTextMinSize(settings.map.text.minSize);
+         setMapTextColor(settings.map.text.color);
       };
 
       messageHandler.subscribe("SharedSettings", callback)

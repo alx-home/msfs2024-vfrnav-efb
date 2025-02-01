@@ -96,7 +96,7 @@ html {
    overflow: hidden;
    color: var(--foreground);
    background: var(--background);
-   background-color: #141414;
+   background-color: var(--background);
    margin: 0;
    padding: 0;
    font-size: 11px;
@@ -138,8 +138,12 @@ body>div {
       border-color: var(--border-msfs);
    }
 
+   .border-item {
+      border-color: var(--border-color);
+   }
+
    .bg-msfs {
-      border-color: var(--border-msfs);
+      background-color: var(--border-msfs);
    }
 
    .filter-msfs {

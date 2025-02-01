@@ -5,7 +5,7 @@ import useMouseRelease from "@Events/MouseRelease";
 
 export const CheckBox = ({ className, active, children, value, defaultValue, onChange, reset }: PropsWithChildren<{
    className?: string,
-   active: boolean,
+   active?: boolean,
    defaultValue?: boolean,
    value?: boolean,
    onChange?: (_checked: boolean) => void,
@@ -30,10 +30,10 @@ export const CheckBox = ({ className, active, children, value, defaultValue, onC
    }, [reset, setChecked, defaultValue, value]);
 
    useEffect(() => {
-      if (active && mouseLeave !== undefined) {
+      if ((active ?? true) && mouseLeave !== undefined) {
          elemRef.current?.blur();
       }
-   }, [mouseLeave, active, checked]);
+   }, [mouseLeave, active]);
 
    useEffect(() => onChange?.(checked), [onChange, checked, setChecked]);
 
@@ -49,7 +49,7 @@ export const CheckBox = ({ className, active, children, value, defaultValue, onC
          <input type='checkbox' className={'peer absolute opacity-0 h-8 w-8 p-0 m-0 cursor-pointer'} checked={checked}
             onChange={onChangeC}
             ref={elemRef}
-            disabled={!active} />
+            disabled={!(active ?? true)} />
          <div className={"flex h-8 w-8 bg-gray-700 p-1 shadow-md text-left rounded-sm border-2 border-gray-900 mr-4"
             + " peer-hocus:bg-gray-800 peer-hocus:border-msfs cursor-pointer"} />
       </div>

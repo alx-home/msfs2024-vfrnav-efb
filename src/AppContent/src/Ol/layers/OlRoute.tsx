@@ -235,15 +235,17 @@ export const OlRouteLayer = ({
                   // Draw markers
                   //------------------------------
                   coords_.forEach((coord, index) => {
+                     const size = settings.map.markerSize;
+
                      if (index === 0) {
                         // First Coord
-                        context.drawImage(greenMarkerImg.current!, coord[0] - 25, coord[1] - 50, 50, 50);
+                        context.drawImage(greenMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
                      } else if (index === coords_.length - 1) {
                         // Last Coord
-                        context.drawImage(redMarkerImg.current!, coord[0] - 25, coord[1] - 50, 50, 50);
+                        context.drawImage(redMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
                      } else {
                         // Coord in between
-                        context.drawImage(blueMarkerImg.current!, coord[0] - 25, coord[1] - 50, 50, 50);
+                        context.drawImage(blueMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
                      }
                   });
 
@@ -254,15 +256,15 @@ export const OlRouteLayer = ({
                         const nextCoord = coords_[index + 1];
 
                         const vector = [nextCoord[0] - coord[0], nextCoord[1] - coord[1]];
-                        let angle = Math.atan2(vector[1], vector[0]);
-                        let mag = -angle * 180 / Math.PI;
+                        let angle = Math.atan2(vector[1], vector[0]) * 180 / Math.PI;
+                        let mag = -angle;
 
                         if (mag < 0) {
                            mag += 360;
                         }
 
-                        if ((angle * 2 < -Math.PI) || (2 * angle > Math.PI)) {
-                           angle = angle - Math.PI;
+                        if (angle < -90 || angle > 90) {
+                           angle = angle - 180;
                         }
 
                         const geoDistance = getLength((new LineString([geoCoords[0][index], geoCoords[0][index + 1]]))) * 0.0005399568;
@@ -277,24 +279,27 @@ export const OlRouteLayer = ({
                            + (Math.floor(minutes) ? minutes.toFixed(0) + "m" : "")
                            + seconds.toFixed(0);
 
-                        const maxSize = 24;//@todo parameter
+                        const maxSize = settings.map.text.maxSize;
 
-                        const center = [(coord[0] + nextCoord[0]) / 2, (coord[1] + nextCoord[1]) / 2];
-                        const textSize = Math.min(distance * 2 / text.length - 10/* @todo parameter */, maxSize);
+                        const center = [(coord[0] + nextCoord[0]) >> 1, (coord[1] + nextCoord[1]) >> 1];
 
                         context.save();
-                        if (textSize > 10/* @todo parameter */) {
-                           context.font = "900 "/* @todo parameter */ + textSize.toFixed(0) + "px Inter-bold, sans-serif";
+                        context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
+                        context.lineWidth = Math.floor(settings.map.text.borderSize);
+                        context.font = "900 " + maxSize.toFixed(0) + "px Inter-bold, sans-serif";
+                        const textWidth = context.measureText(text).width;
+                        const textSize = Math.min(maxSize, maxSize * (distance - settings.map.markerSize * 1.5) / textWidth);
+                        context.font = "900 " + textSize.toFixed(0) + "px Inter-bold, sans-serif";
+
+                        if (textSize >= settings.map.text.minSize) {
                            context.textAlign = "center";
                            context.translate(center[0], center[1]);
-                           context.rotate(angle);
-                           context.translate((mag > 90 && mag < 180) || (mag > 270) ? -20 : 20, -8);
+                           context.rotate(angle * Math.PI / 180);
+                           context.translate(((mag > 90 && mag < 180) || (mag >= 270)) ? -settings.map.markerSize * 0.25 : settings.map.markerSize * 0.25, -settings.map.text.borderSize * 0.25 - 5);
 
-                           context.lineWidth = 10;
-                           context.strokeStyle = 'rgba(255, 255, 255, 0.8)';//@todo parameter
                            context.strokeText(text, 0, 0);
 
-                           context.fillStyle = 'rgba(31, 41, 55, 0.8)';//@todo parameter
+                           context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
                            context.fillText(text, 0, 0);
                         }
                         context.restore();
@@ -306,7 +311,7 @@ export const OlRouteLayer = ({
       }
 
       return [];
-   }, [settings.speed]);
+   }, [settings.map.markerSize, settings.map.text.borderColor, settings.map.text.borderSize, settings.map.text.color, settings.map.text.maxSize, settings.map.text.minSize, settings.speed]);
 
    useEffect(() => {
       layer?.setZIndex(zIndex);
