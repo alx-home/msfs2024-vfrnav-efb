@@ -12,7 +12,7 @@ import autoprefixer from "autoprefixer";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const minify = false;
+const minify = true;
 
 const msfsEmbeded = process.env.MSFS_EMBEDED;
 console.assert(msfsEmbeded !== undefined)
