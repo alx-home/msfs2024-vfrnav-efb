@@ -62,6 +62,8 @@ export const ChartsPage = ({ active }: {
       })
    }, [activeDocument, srcs]);
 
+   const loadDocument = useCallback(() => setPopup(<Popup setSrcs={setSrcs} />), [setPopup]);
+
    return <div className="flex grow justify-center overflow-hidden max-w-full" style={active ? {} : { display: 'none' }}>
       <div className="flex flex-row grow justify-center max-w-full">
          <div className={"flex flex-col shrink transition transition-std py-1 px-2 h-full text-left"
@@ -84,7 +86,7 @@ export const ChartsPage = ({ active }: {
                      {buttons}
                      <div className={"flex flex-row " + (pdfs.length ? 'shrink' : 'grow')}>
                         <Button active={true} className="flex flex-row h-[22px] px-5 overflow-visible text-nowrap justify-center"
-                           onClick={() => setPopup(<Popup setSrcs={setSrcs} />)}>
+                           onClick={loadDocument}>
                            ...
                         </Button>
                      </div>

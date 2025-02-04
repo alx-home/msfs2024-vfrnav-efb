@@ -18,7 +18,7 @@ export const Input = ({ className, active, placeholder, pattern, type, inputMode
    const [valid, setValid] = useState(true);
    const [focused, setFocused] = useState(false);
    const [lastValue, setLastValue] = useState("");
-   const [lastPropValue, setLastPropValue] = useState("");
+   const [lastPropValue, setLastPropValue] = useState(value ?? "");
 
    const refInt = useRef<HTMLInputElement | null>(null);
    const ref = useMemo(() => parentRef ?? refInt, [parentRef]);
@@ -35,16 +35,18 @@ export const Input = ({ className, active, placeholder, pattern, type, inputMode
    }, [reset, ref, onChange, defaultValue]);
 
    useEffect(() => {
-      if (!focused && ref.current && (value ?? "") != lastPropValue) {
-         if (value == defaultValue) {
-            ref.current.value = ""
-            setLastValue("")
-         } else {
-            ref.current.value = value ?? ""
-            setLastValue(ref.current.value)
+      if ((value ?? "") != lastPropValue) {
+         if (!focused && ref.current) {
+            if (value == defaultValue) {
+               ref.current.value = ""
+               setLastValue("")
+            } else {
+               ref.current.value = value ?? ""
+               setLastValue(ref.current.value)
+            }
          }
+         setLastPropValue(value ?? "");
       }
-      setLastPropValue(value ?? "");
    }, [value, focused, placeholder, ref, lastPropValue, defaultValue]);
 
    const onBlur = useCallback(() => {
