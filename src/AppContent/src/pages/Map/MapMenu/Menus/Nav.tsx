@@ -1,5 +1,5 @@
 
-import { Children, Dispatch, isValidElement, MouseEventHandler, PropsWithChildren, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, Children, Dispatch, FocusEvent, isValidElement, KeyboardEvent, MouseEventHandler, PropsWithChildren, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Feature } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
@@ -57,24 +57,46 @@ const Input = ({ editMode, setEditMode, name }: {
    const mapContext = useContext(MapContext)!;
    const textArea = useRef<HTMLInputElement | null>(null);
    const [value, setValue] = useState(name);
+   const [focused, setFocused] = useState(false);
+
    useEffect(() => {
       if (editMode) {
          textArea.current?.focus()
       }
    }, [editMode]);
 
-   return <input className={'bg-transparent h-8 pt-[2px] pointer-events-auto'} value={value} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
-      onBlur={e => {
-         mapContext.editNav(name, e.currentTarget.value)
+   useEffect(() => {
+      if (textArea.current && !focused) {
+         textArea.current.value = value;
+      }
+   });
+
+   const onBlur = useCallback((e: FocusEvent<HTMLInputElement>) => {
+      setFocused(false);
+      mapContext.editNav(name, e.currentTarget.value)
+      setEditMode(false);
+   }, [mapContext, name, setEditMode])
+
+   const onFocus = useCallback(() => {
+      setFocused(true);
+   }, [])
+
+   const onChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+      setValue(e.target.value)
+   }, [])
+
+   const onKeyUp = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Escape' || e.key === 'Enter') {
+         mapContext.editNav(name, e.currentTarget.value);
          setEditMode(false);
-      }}
-      onChange={e => setValue(e.target.value)}
-      onKeyUp={e => {
-         if (e.key === 'Escape' || e.key === 'Enter') {
-            mapContext.editNav(name, e.currentTarget.value);
-            setEditMode(false);
-         }
-      }}
+      }
+   }, [mapContext, name, setEditMode])
+
+   return <input className={'bg-transparent h-8 pt-[2px] pointer-events-auto'} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
+      onBlur={onBlur}
+      onFocus={onFocus}
+      onChange={onChange}
+      onKeyUp={onKeyUp}
    />;
 };
 
