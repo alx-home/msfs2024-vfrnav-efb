@@ -18,7 +18,7 @@ const ScrollImpl = ({ children, className, style, hidden, onWheel }: ScrollProps
    const [selectable, setSelectable] = useState(true);
    const mousePosition = useMouseMove(scrolling !== undefined);
    const [offset, setOffset] = useState(0);
-   const mouseUp = useMouseRelease();
+   const mouseUp = useMouseRelease(scrolling !== undefined);
    const ref = useRef<HTMLDivElement | null>(null);
    const [dimensions, setResizeRef] = useResize();
 

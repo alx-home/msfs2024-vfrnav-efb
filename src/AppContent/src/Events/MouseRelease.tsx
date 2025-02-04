@@ -1,24 +1,26 @@
 import { useEffect, useState } from "react";
 
-const useMouseRelease = () => {
-   const [mousePosition, setMousePosition] = useState<{ x: number, y: number } | undefined>();
+const useMouseRelease = (active?: boolean) => {
+   const [position, setPosition] = useState<{ x: number, y: number } | undefined>();
 
    useEffect(() => {
-      const handleMouseUp = (e: MouseEvent) => {
-         setMousePosition({ x: e.clientX, y: e.clientY });
-      };
+      if (active ?? true) {
+         const handleMouseUp = (e: MouseEvent) => {
+            setPosition({ x: e.clientX, y: e.clientY });
+         };
 
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => document.removeEventListener('mouseup', handleMouseUp);
-   }, []);
-
-   useEffect(() => {
-      if (mousePosition !== undefined) {
-         setMousePosition(undefined);
+         document.addEventListener('mouseup', handleMouseUp);
+         return () => document.removeEventListener('mouseup', handleMouseUp);
       }
-   }, [mousePosition]);
+   }, [active]);
 
-   return mousePosition;
+   useEffect(() => {
+      if (position) {
+         setPosition(undefined)
+      }
+   }, [position])
+
+   return position;
 }
 
 export default useMouseRelease;

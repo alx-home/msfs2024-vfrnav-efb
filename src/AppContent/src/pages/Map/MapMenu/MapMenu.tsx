@@ -1,4 +1,4 @@
-import { Dispatch, KeyboardEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Dispatch, KeyboardEvent, MouseEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import useMouseRelease from '@Events/MouseRelease';
 import { MouseContext } from '@Events/MouseContext';
 import { Layer, Layers, OnLayerChange } from './Menus/Layers';
@@ -26,13 +26,11 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
    const [initialDelta, setInitialDelta] = useState<number | undefined>();
    const [width, setWidth] = useState(0);
    const [defaultWidth, setDefaultWidth] = useState(minWidth);
-   const [cursorOut, setCursorOut] = useState(false);
-   const [resizing, setResizing] = useState(false);
 
    const handleRef = useRef<HTMLDivElement>(null);
 
    const mousePosition = useMouseMove(initialDelta !== undefined);
-   const mouseUp = useMouseRelease();
+   const mouseUp = useMouseRelease(initialDelta !== undefined);
    const { cursorChangeHandler } = useContext(MouseContext);
 
    const childs = useMemo(() =>
@@ -53,11 +51,7 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
          setDefaultWidth(width);
       }
       setInitialDelta(undefined);
-
-      if (cursorOut) {
-         setResizing(false);
-      }
-   }, [width, setInitialDelta, setResizing, cursorOut]);
+   }, [width, setInitialDelta]);
 
    const updateWidth = useCallback((width: number) => {
       if (width < closeWidth) {
@@ -109,37 +103,29 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
    }, [open, defaultWidth, width]);
 
    useEffect(() => {
-      if (resizing) {
+      if (initialDelta) {
          cursorChangeHandler("ew-resize");
       } else {
          cursorChangeHandler("");
       }
-   }, [resizing, cursorChangeHandler]);
+   }, [initialDelta, cursorChangeHandler]);
 
    const closeMenu = useCallback(() => {
       setOpen(false);
    }, [setOpen]);
 
+   const onMouseDown = useCallback((e: MouseEvent) => onDragStart(e.pageX), [onDragStart])
+
    return <>
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions,jsx-a11y/no-noninteractive-tabindex */}
       <div ref={handleRef} role="separator" aria-orientation="vertical" tabIndex={0}
-         onMouseEnter={() => {
-            setCursorOut(false);
-            setResizing(true);
-         }}
-         onMouseLeave={() => {
-            setCursorOut(true);
-            if (!initialDelta) {
-               setResizing(false);
-            }
-         }}
-         onMouseDown={e => onDragStart(e.pageX)}
+         onMouseDown={onMouseDown}
          onMouseUp={onDragEnd}
          onKeyDown={handleKey}
-         className='relative z-10 select-none transition-std transition-colors w-2 bg-slate-900 hocus:bg-msfs shadow-smd' />
+         className='relative z-10 select-none transition-std transition-colors w-2 bg-slate-900 hocus:bg-msfs shadow-smd cursor-ew-resize' />
 
       <div className={'overflow-hidden shrink-0 border-l border-gray-700 pointer-events-auto'
-         + 'flex flex-col bg-gray-800 text-center text-white'
+         + ' flex flex-col bg-gray-800 text-center text-white'
          + (width > 0 ? '' : ' hidden')}>
          <Scroll className={'overflow-hidden shrink-0 flex flex-col [&>*:not(:first-child)]:mt-[7px]'
             + (width > 0 ? ' p-3 pt-[25px]' : ' hidden')}

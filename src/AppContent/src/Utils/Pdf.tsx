@@ -165,7 +165,7 @@ const Page = ({ hidden, children, renderer }: PropsWithChildren<{
    } | undefined>();
    const [scrolling, setScrolling] = useState(false);
    const mousePosition = useMouseMove(scrolling);
-   const mouseUp = useMouseRelease();
+   const mouseUp = useMouseRelease(scrolling);
    const ref = useRef<HTMLDivElement | null>(null);
    const [zoom, setZoom] = useState(1.5);
    const [oldZoom, setOldZoom] = useState(0);

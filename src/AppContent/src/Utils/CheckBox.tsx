@@ -14,7 +14,7 @@ export const CheckBox = ({ className, active, children, value, defaultValue, onC
    const [checked, setChecked] = useState(value ?? defaultValue ?? false);
    const [last, setLast] = useState<boolean | undefined>();
    const elemRef = useRef<HTMLInputElement | null>(null);
-   const mouseLeave = useMouseRelease();
+   const mouseLeave = useMouseRelease(active ?? true);
 
    useEffect(() => {
       if (value !== last) {
@@ -30,10 +30,10 @@ export const CheckBox = ({ className, active, children, value, defaultValue, onC
    }, [reset, setChecked, defaultValue, value]);
 
    useEffect(() => {
-      if ((active ?? true) && mouseLeave !== undefined) {
+      if (mouseLeave !== undefined) {
          elemRef.current?.blur();
       }
-   }, [mouseLeave, active]);
+   }, [mouseLeave]);
 
    useEffect(() => onChange?.(checked), [onChange, checked, setChecked]);
 

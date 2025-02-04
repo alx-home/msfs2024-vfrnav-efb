@@ -8,7 +8,7 @@ const useMouseMove = (active?: boolean) => {
    useEffect(() => {
       const handleMouseMove = (e: MouseEvent) => {
          savedPosition.current = { x: e.clientX, y: e.clientY };
-         if (active) {
+         if (active ?? true) {
             setNeedsUpdate(count => count + 1);
          }
       };
@@ -18,7 +18,7 @@ const useMouseMove = (active?: boolean) => {
    }, [active]);
 
    useEffect(() => {
-      if (active) {
+      if (active ?? true) {
          setPosition(savedPosition.current);
       } else {
          setPosition(undefined);

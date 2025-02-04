@@ -8,13 +8,13 @@ export const Button = ({ children, onClick, className, active, disabled }: Props
    disabled?: boolean
 }>) => {
    const elemRef = useRef<HTMLButtonElement | null>(null);
-   const mouseLeave = useMouseRelease();
+   const mouseLeave = useMouseRelease(active);
 
    useEffect(() => {
-      if (active && mouseLeave !== undefined) {
+      if (mouseLeave !== undefined) {
          elemRef.current?.blur();
       }
-   }, [mouseLeave, active]);
+   }, [mouseLeave]);
 
 
    return <button className={"group grow bg-gray-700 p-1 shadow-md flex rounded-sm border-2 border-gray-900 overflow-hidden"

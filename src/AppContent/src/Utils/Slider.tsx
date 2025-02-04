@@ -22,13 +22,13 @@ export const Slider = ({ className, active, ref: parentRef, range, reset, defaul
 
    const refInt = useRef<HTMLInputElement | null>(null);
    const ref = useMemo(() => parentRef ?? refInt, [parentRef]);
-   const mouseRelease = useMouseRelease();
+   const mouseRelease = useMouseRelease(active ?? true);
 
    useEffect(() => {
-      if ((active ?? true) && mouseRelease !== undefined) {
+      if (mouseRelease !== undefined) {
          ref.current?.blur();
       }
-   }, [mouseRelease, active, ref]);
+   }, [mouseRelease, ref]);
 
    useEffect(() => {
       if (reset) {

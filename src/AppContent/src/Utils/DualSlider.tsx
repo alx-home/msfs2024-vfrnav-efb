@@ -15,15 +15,15 @@ type InputProps = {
 const InputImpl = ({ active, range, reset, defaultValue, onChange, value }: InputProps, inputRef: ForwardedRef<HTMLInputElement | null>) => {
    const ref = useRef<HTMLInputElement | null>(null);
    const [lastPropValue, setLastPropValue] = useState<number>();
-   const mouseRelease = useMouseRelease();
+   const mouseRelease = useMouseRelease(active ?? true);
 
    useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(inputRef, () => ref.current);
 
    useEffect(() => {
-      if ((active ?? true) && mouseRelease !== undefined) {
+      if (mouseRelease !== undefined) {
          ref.current?.blur();
       }
-   }, [mouseRelease, active, ref]);
+   }, [mouseRelease]);
 
    useEffect(() => {
       if (reset) {
