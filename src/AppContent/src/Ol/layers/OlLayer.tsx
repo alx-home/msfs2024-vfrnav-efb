@@ -1,7 +1,7 @@
 import { Feature, Map } from "ol";
 import TileLayer from "ol/layer/Tile";
 import { TileImage } from "ol/source";
-import { useContext, useEffect, useId, useMemo, useState } from "react";
+import { useContext, useEffect, useId, useMemo } from "react";
 import { MapContext } from "@pages/Map/MapContext";
 import VectorLayer from "ol/layer/Vector";
 import { Coordinate } from "ol/coordinate";
@@ -10,15 +10,24 @@ import VectorSource from 'ol/source/Vector';
 import Fill from "ol/style/Fill";
 import Style from "ol/style/Style";
 import { getVectorContext } from "ol/render";
+import Layer from "ol/layer/Layer";
+import LayerGroup from "ol/layer/Group";
 
 export class OlLayerProp {
    // eslint-disable-next-line no-unused-vars
    constructor(public order?: number, public active?: boolean, public maxZoom?: number, public minZoom?: number, public clipAera?: Coordinate[]) { }
 }
 
-const useLayer = (source: TileImage, map?: Map, clipAera?: Coordinate[]) => {
-   const [layer, setLayer] = useState<TileLayer>();
+export type Source = TileLayer | Layer | LayerGroup;
+
+const useLayer = (source: Source | TileImage, map?: Map, clipAera?: Coordinate[]) => {
    const id = useId();
+   const layer = useMemo<Source>(() => source instanceof TileImage ? new TileLayer({
+      className: id,
+      source: source,
+      visible: false,
+   }) : source, [id, source]);
+
    const clipLayer = useMemo(() => {
       if (!clipAera || !(layer instanceof TileLayer)) {
          return undefined;
@@ -55,41 +64,18 @@ const useLayer = (source: TileImage, map?: Map, clipAera?: Coordinate[]) => {
    }, [clipAera, layer]);
 
    useEffect(() => {
-      if (clipLayer) {
-         map?.addLayer(clipLayer)
-         return () => { map?.removeLayer(clipLayer) }
+      if (clipLayer && map) {
+         map.addLayer(clipLayer)
+         return () => { map.removeLayer(clipLayer) }
       }
    }, [clipLayer, map]);
 
-
    useEffect(() => {
       if (map) {
-         setLayer(oldLayer => {
-            if (oldLayer) {
-               map.removeLayer(oldLayer);
-            }
-
-            const layer = new TileLayer({
-               className: id,
-               source: source,
-               visible: false,
-            })
-
-            map.addLayer(layer);
-            return layer;
-         });
+         map.addLayer(layer);
+         return () => { map.removeLayer(layer) };
       }
-
-      return () => {
-         setLayer(oldLayer => {
-            if (oldLayer) {
-               map?.removeLayer(oldLayer);
-            }
-
-            return undefined;
-         });
-      };
-   }, [id, map, source]);
+   }, [map, layer]);
 
    return layer;
 };
@@ -97,7 +83,7 @@ const useLayer = (source: TileImage, map?: Map, clipAera?: Coordinate[]) => {
 export const OlLayer = ({ opacity, source, order, active, maxZoom, minZoom, clipAera }:
    OlLayerProp & {
       opacity?: number,
-      source: TileImage,
+      source: Source | TileImage,
       clipAera?: Coordinate[]
    }) => {
    const mapContext = useContext(MapContext)!;
@@ -127,7 +113,11 @@ export const OlLayer = ({ opacity, source, order, active, maxZoom, minZoom, clip
 
    useEffect(() => {
       if (order !== undefined) {
-         layer?.setZIndex(order);
+         if (layer instanceof LayerGroup) {
+            layer.getLayers().forEach(layer => layer.setZIndex(order))
+         } else {
+            layer?.setZIndex(order);
+         }
       }
    }, [order, layer]);
 

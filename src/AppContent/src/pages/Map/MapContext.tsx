@@ -1,10 +1,25 @@
-import { Collection, Map } from "ol";
+import { Collection, Feature, Map, MapBrowserEvent } from "ol";
 import { createContext, Dispatch, PropsWithChildren, SetStateAction, useEffect, useMemo, useState } from "react";
 import { NavData } from "./MapMenu/Menus/Nav";
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
 import TileLayer from "ol/layer/Tile";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import { Polygon } from "ol/geom";
+import Layer from "ol/layer/Layer";
+import LayerGroup from "ol/layer/Group";
+import { Coordinate } from "ol/coordinate";
+import { FeatureLike } from "ol/Feature";
 
+export type Interactive = {
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   onClick?: (_pixel: MapBrowserEvent<any>) => void
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   onHover?: (_pixel: MapBrowserEvent<any>) => void
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   onBlur?: (_pixel: MapBrowserEvent<any>) => void
+}
 
 export const MapContext = createContext<{
    map: Map,
@@ -26,6 +41,28 @@ export const MapContext = createContext<{
    reorderNav: (_orders: number[]) => void
 } | undefined>(undefined);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const forEachFeatureAtPixel = (layer: Layer, coords: Coordinate, event: MapBrowserEvent<any>, callback: (_feature: FeatureLike) => void) => {
+   if (layer instanceof LayerGroup) {
+      layer.getLayers().forEach(layer => forEachFeatureAtPixel(layer as Layer, coords, event, callback));
+   } else if (layer instanceof VectorLayer) {
+      const source = layer.getSource();
+      if (source instanceof VectorSource) {
+         source.getFeatures().forEach(feature => {
+            if (feature instanceof Feature) {
+               const geom = feature.getGeometry();
+
+               if (geom instanceof Polygon) {
+                  if (geom.containsXY(coords[0], coords[1])) {
+                     callback(feature)
+                  }
+               }
+            }
+         })
+      }
+   }
+}
+
 const MapContextProvider = ({ children }: PropsWithChildren) => {
    const map = useMemo<Map>(() => {
       const layers = new Collection<BaseLayer>();
@@ -41,18 +78,51 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
             if (layer instanceof TileLayer) {
                const tmpSource = layer.getSource()
                const zoom = map.getView().getZoom();
-             // 'duck typing' for source object, vector layers don't have a zoom level.
-             if(typeof tmpSource.getTileGrid === 'function' && zoom) {
-                 if(zoom > tmpSource.getTileGrid().maxZoom ||
-                 zoom < tmpSource.getTileGrid().minZoom) {
+               // 'duck typing' for source object, vector layers don't have a zoom level.
+               if (typeof tmpSource.getTileGrid === 'function' && zoom) {
+                  if (zoom > tmpSource.getTileGrid().maxZoom ||
+                     zoom < tmpSource.getTileGrid().minZoom) {
                      layer.setVisible(false);
-                 } else {
+                  } else {
                      layer.setVisible(true);
-                 }
+                  }
                }
             }
          });
-     });
+      });
+
+      const focused: { features: Interactive[] } = { features: [] };
+      map.on('pointermove', (event) => {
+         const newFocused: Interactive[] = [];
+         const coords = event.coordinate;
+
+         map.getAllLayers().forEach(layer => {
+            forEachFeatureAtPixel(layer, coords, event, (feature) => {
+               const iFeature = (feature as unknown as Interactive);
+               const index = focused.features.findIndex(feature => feature === iFeature);
+               if (index >= 0) {
+                  focused.features.splice(index, 1);
+               } else {
+                  iFeature.onHover?.(event)
+               }
+
+               newFocused.push(iFeature);
+            })
+         });
+
+         focused.features.forEach(feature => feature.onBlur?.(event));
+         focused.features = newFocused;
+      })
+
+      map.on('click', (event) => {
+         const coords = event.coordinate;
+
+         map.getAllLayers().forEach(layer => {
+            forEachFeatureAtPixel(layer, coords, event, (feature) => {
+               (feature as unknown as Interactive).onClick?.(event)
+            })
+         });
+      })
 
       return map;
    }, []);

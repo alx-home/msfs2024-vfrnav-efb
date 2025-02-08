@@ -1,11 +1,20 @@
 import { Type } from "./Types";
 
+export type Color = {
+   red: number
+   green: number
+   blue: number
+   alpha: number
+};
+
 export type SharedSettings = {
    speed: number,
    adjustHeading: boolean,
    adjustTime: boolean,
    SIAAuth: string,
    SIAAddr: string,
+   SIAAZBAAddr: string,
+   SIAAZBADateAddr: string,
 
    OACIEnabled: boolean,
    germanyEnabled: boolean,
@@ -22,18 +31,15 @@ export type SharedSettings = {
          maxSize: number,
          minSize: number,
          borderSize: number,
-         color: {
-            red: number,
-            green: number,
-            blue: number,
-            alpha: number,
-         },
-         borderColor: {
-            red: number,
-            green: number,
-            blue: number,
-            alpha: number,
-         },
+         color: Color,
+         borderColor: Color,
+      },
+      azba: {
+         inactiveHighColor: Color,
+         inactiveLowColor: Color,
+         activeHighColor: Color,
+         activeLowColor: Color,
+         range: number
       },
       markerSize: number
    }
@@ -45,6 +51,8 @@ export const SharedSettingsRecord: Type<SharedSettings> = {
    adjustTime: true,
    SIAAuth: true,
    SIAAddr: true,
+   SIAAZBAAddr: true,
+   SIAAZBADateAddr: true,
 
    OACIEnabled: true,
    germanyEnabled: true,

@@ -4,11 +4,14 @@ import { Scroll } from "@Utils/Scroll";
 import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState, JSX } from 'react';
 
 import { SettingsContext, SharedSettingsDefault } from "@Settings";
+import { Color } from "@shared/Settings";
 import { Slider } from "@Utils/Slider";
 
 import undoImg from '@images/undo.svg';
 import markerImg from '@images/marker-icon-blue.svg';
 import { DualSlider } from "@Utils/DualSlider";
+
+import oaciImg from '@images/oaci.jpg';
 
 const List = ({ children }: PropsWithChildren) => {
    return <Scroll className="flex flex-col">
@@ -69,7 +72,7 @@ const InputItem = ({ children, name, category, placeholder, pattern, className, 
    defaultValue?: string,
    value?: string,
    inputMode?: "email" | "search" | "tel" | "text" | "url" | "none" | "numeric" | "decimal",
-   validate?: (_value: string) => boolean,
+   validate?: (_value: string, _blur: boolean) => boolean,
    type?: HTMLInputTypeAttribute,
    onChange?: (_value: string) => void
 }>) => {
@@ -196,6 +199,72 @@ const Legend = ({ children }: PropsWithChildren) => {
    </>
 }
 
+const ColorPicker = ({ defaultColor, value, setColor, name, category, children }: PropsWithChildren<{
+   defaultColor: Color,
+   value: Color,
+   name: string,
+   category: string,
+   setColor: (_setter: (_old: Color) => Color) => void
+}>) => {
+   const setRed = useCallback((value: number) => {
+      setColor((old) => ({ ...old, red: value }))
+   }, [setColor]);
+   const setGreen = useCallback((value: number) => {
+      setColor((old) => ({ ...old, green: value }))
+   }, [setColor]);
+   const setBlue = useCallback((value: number) => {
+      setColor((old) => ({ ...old, blue: value }))
+   }, [setColor]);
+   const setAlpha = useCallback((value: number) => {
+      setColor((old) => ({ ...old, alpha: value }))
+   }, [setColor]);
+
+   return <Items name={name} category={category} Comp={Slider}>
+      <Legend>
+         {children}
+      </Legend>
+      <Slider className="max-w-3xl"
+         range={{ min: 0, max: 255 }}
+         defaultValue={defaultColor.red}
+         value={value.red}
+         onChange={setRed}
+      >
+         <div className="flex flex-row w-20">
+            Red:
+         </div>
+      </Slider>
+      <Slider className="max-w-3xl"
+         range={{ min: 0, max: 255 }}
+         defaultValue={defaultColor.green}
+         value={value.green}
+         onChange={setGreen}
+      >
+         <div className="flex flex-row w-20">
+            Green:
+         </div>
+      </Slider>
+      <Slider className="max-w-3xl"
+         range={{ min: 0, max: 255 }}
+         defaultValue={defaultColor.blue}
+         value={value.blue}
+         onChange={setBlue}
+      >
+         <div className="flex flex-row w-20">
+            Blue:
+         </div>
+      </Slider>
+      <Slider className="max-w-3xl"
+         range={{ min: 0, max: 1 }}
+         defaultValue={defaultColor.alpha}
+         value={value.alpha}
+         onChange={setAlpha}>
+         <div className="flex flex-row w-20">
+            Alpha:
+         </div>
+      </Slider>
+   </Items>
+}
+
 const isLegend = (child: unknown) => {
    if (!isValidElement(child)) {
       return false;
@@ -271,31 +340,55 @@ export const SettingsPage = ({ active }: {
       settings.map.text.setMaxSize(max);
    }, [settings.map.text]);
 
-   const setMapTextRed = useCallback((value: number) => {
-      settings.map.text.setColor((old) => ({ ...old, red: value }))
-   }, [settings.map.text]);
-   const setMapTextGreen = useCallback((value: number) => {
-      settings.map.text.setColor((old) => ({ ...old, green: value }))
-   }, [settings.map.text]);
-   const setMapTextBlue = useCallback((value: number) => {
-      settings.map.text.setColor((old) => ({ ...old, blue: value }))
-   }, [settings.map.text]);
-   const setMapTextAlpha = useCallback((value: number) => {
-      settings.map.text.setColor((old) => ({ ...old, alpha: value }))
-   }, [settings.map.text]);
 
-   const setMapTextBorderRed = useCallback((value: number) => {
-      settings.map.text.setBorderColor((old) => ({ ...old, red: value }))
-   }, [settings.map.text]);
-   const setMapTextBorderGreen = useCallback((value: number) => {
-      settings.map.text.setBorderColor((old) => ({ ...old, green: value }))
-   }, [settings.map.text]);
-   const setMapTextBorderBlue = useCallback((value: number) => {
-      settings.map.text.setBorderColor((old) => ({ ...old, blue: value }))
-   }, [settings.map.text]);
-   const setMapTextBorderAlpha = useCallback((value: number) => {
-      settings.map.text.setBorderColor((old) => ({ ...old, alpha: value }))
-   }, [settings.map.text]);
+   const getPatternReg = useCallback((value: string, blur: boolean) => {
+      return blur ? `\\{${value}\\}` : Array.from(`{${value}}`).reduce((prev, char) => prev + `(?:${/[{}]/.test(char) ? `\\${char}` : char}|$)`, '');
+   }, []);
+
+   const uriValidator = useCallback((regex: string, blur: boolean, value: string) => {
+      const port = blur ? `(:\\d{1,4})?` : `(?:\\:|$)(?:\\d|$){4}`;
+      const proto = blur ? `(https?|ftp|file)://` :
+         `(((?:h|$)(?:t|$)(?:t|$)(?:p|$)(?:s|$)?)|`
+         + `((?:f|$)(?:t|$)(?:p|$))|`
+         + `((?:f|$)(?:i|$)(?:l|$)(?:e|$))`
+         + `)(?:\\:|$)(?:/|$){2}`;
+
+      return (!value.length) || new RegExp('^' + proto + regex + port + '$', 'g').test(value)
+   }, []);
+
+   const uriChar = useMemo(() => '(\\w|\\/|-|_|\\.|\\&|\\=|\\?)', []);
+
+   const validateSIAAddr = useCallback((value: string, blur: boolean) => {
+      const regex = (() => {
+         const icao = getPatternReg('icao', blur);
+
+         return `${uriChar}*${icao}${uriChar}*`;
+      })();
+
+      return uriValidator(regex, blur, value)
+   }, [getPatternReg, uriValidator, uriChar]);
+
+   const validateSIAAZBAAddr = useCallback((value: string, blur: boolean) => {
+      const regex = (() => {
+         const date = getPatternReg('date', blur);
+
+         return `${uriChar}*${date}${uriChar}*`;
+      })();
+
+      return uriValidator(regex, blur, value)
+   }, [getPatternReg, uriValidator, uriChar]);
+
+   const validateSIAAZBADateAddr = useCallback((value: string, blur: boolean) => {
+      return uriValidator(`${uriChar}+`, blur, value)
+   }, [uriValidator, uriChar]);
+
+   const AZBARange = useMemo(() => {
+      const range = settings.map.azba.range;
+      const hours = Math.floor(range / 60);
+      const minutes = Math.floor(range - hours * 60);
+
+      return (hours ? hours + 'h' : '') + minutes + 'm';
+   }, [settings.map.azba.range]);
 
    return <div className="flex grow justify-center m-2 p-4" style={active ? {} : { display: 'none' }}>
       <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col grow"
@@ -320,6 +413,15 @@ export const SettingsPage = ({ active }: {
                      Please enter a numerical value !
                   </ErrorMessage>
                </InputItem>
+               <SliderItem category="AZBA" name="Date range"
+                  range={{ min: 1, max: 24 * 60 }}
+                  defaultValue={SharedSettingsDefault.map.azba.range}
+                  value={settings.map.azba.range}
+                  onChange={settings.map.azba.setRange}>
+                  <div className="flex flex-row">
+                     <div className="flex flex-col justify-center">Set the number of minutes to consider from now for active AZBA zones: {AZBARange}.</div>
+                  </div>
+               </SliderItem>
             </Group>
             <Group name="Navigation">
                <CheckItem category="Wind correction" name="Heading"
@@ -382,6 +484,58 @@ export const SettingsPage = ({ active }: {
                </Items>
             </Group>
             <Group name="Map Display">
+               <ColorPicker name="Active high color" category="AZBA" defaultColor={SharedSettingsDefault.map.azba.activeHighColor} value={settings.map.azba.activeHighColor} setColor={settings.map.azba.setActiveHighColor}>
+                  <div className="flex flex-row min-h-[60px]">
+                     <div className="flex min-w-[50px] justify-center">
+                        <div className={"flex flex-row justify-end rounded-md overflow-hidden mr-2 min-w-[50px]"} style={{ backgroundImage: `url(${oaciImg})`, backgroundSize: 'cover' }} >
+                           <div className="flex w-1/2 h-full"
+                              style={{
+                                 backgroundColor: `rgba(${settings.map.azba.activeHighColor.red.toFixed(0)}, ${settings.map.azba.activeHighColor.green.toFixed(0)}, ${settings.map.azba.activeHighColor.blue.toFixed(0)}, ${settings.map.azba.activeHighColor.alpha})`,
+                              }} />
+                        </div>
+                        <div className="flex flex-col justify-center">Set AZBA active high layer color.</div>
+                     </div>
+                  </div>
+               </ColorPicker>
+               <ColorPicker name="Active low color" category="AZBA" defaultColor={SharedSettingsDefault.map.azba.activeLowColor} value={settings.map.azba.activeLowColor} setColor={settings.map.azba.setActiveLowColor}>
+                  <div className="flex flex-row min-h-[60px]">
+                     <div className="flex min-w-[50px] justify-center">
+                        <div className={"flex flex-row justify-end rounded-md overflow-hidden mr-2 min-w-[50px]"} style={{ backgroundImage: `url(${oaciImg})`, backgroundSize: 'cover' }}  >
+                           <div className="flex w-1/2 h-full"
+                              style={{
+                                 backgroundColor: `rgba(${settings.map.azba.activeLowColor.red.toFixed(0)}, ${settings.map.azba.activeLowColor.green.toFixed(0)}, ${settings.map.azba.activeLowColor.blue.toFixed(0)}, ${settings.map.azba.activeLowColor.alpha})`
+                              }} />
+                        </div>
+                        <div className="flex flex-col justify-center">Set AZBA active low layer color.</div>
+                     </div>
+                  </div>
+               </ColorPicker>
+               <ColorPicker name="Inactive high color" category="AZBA" defaultColor={SharedSettingsDefault.map.azba.inactiveHighColor} value={settings.map.azba.inactiveHighColor} setColor={settings.map.azba.setInactiveHighColor}>
+                  <div className="flex flex-row min-h-[60px]">
+                     <div className="flex min-w-[50px] justify-center">
+                        <div className={"flex flex-row justify-end rounded-md overflow-hidden mr-2 min-w-[50px]"} style={{ backgroundImage: `url(${oaciImg})`, backgroundSize: 'cover' }} >
+                           <div className="flex w-1/2 h-full"
+                              style={{
+                                 backgroundColor: `rgba(${settings.map.azba.inactiveHighColor.red.toFixed(0)}, ${settings.map.azba.inactiveHighColor.green.toFixed(0)}, ${settings.map.azba.inactiveHighColor.blue.toFixed(0)}, ${settings.map.azba.inactiveHighColor.alpha})`
+                              }} />
+                        </div>
+                        <div className="flex flex-col justify-center">Set AZBA inactive high layer color.</div>
+                     </div>
+                  </div>
+               </ColorPicker>
+               <ColorPicker name="Inactive low color" category="AZBA" defaultColor={SharedSettingsDefault.map.azba.inactiveLowColor} value={settings.map.azba.inactiveLowColor} setColor={settings.map.azba.setInactiveLowColor}>
+                  <div className="flex flex-row min-h-[60px]">
+                     <div className="flex min-w-[50px] justify-center">
+                        <div className={"flex flex-row justify-end rounded-md overflow-hidden mr-2 min-w-[50px]"} style={{ backgroundImage: `url(${oaciImg})`, backgroundSize: 'cover' }}  >
+                           <div className="flex w-1/2 h-full"
+                              style={{
+                                 backgroundColor: `rgba(${settings.map.azba.inactiveLowColor.red.toFixed(0)}, ${settings.map.azba.inactiveLowColor.green.toFixed(0)}, ${settings.map.azba.inactiveLowColor.blue.toFixed(0)}, ${settings.map.azba.inactiveLowColor.alpha})`
+                              }} />
+                        </div>
+                        <div className="flex flex-col justify-center">Set AZBA inactive low layer color.</div>
+                     </div>
+                  </div>
+               </ColorPicker>
                <DualSliderItem category="Legs" name="Text size"
                   range={{ min: 5, max: 50 }}
                   defaultValue={textSize}
@@ -411,109 +565,27 @@ export const SettingsPage = ({ active }: {
                      <div className="flex flex-col justify-center">Set navigation legs text border size.</div>
                   </div>
                </SliderItem>
-               <Items name="Text Color" category="Legs" Comp={Slider}>
-                  <Legend>
-                     <div className="flex flex-row min-h-[60px]">
-                        <div className="flex min-w-[50px] justify-center">
-                           <div className={"flex flex-col justify-center bg-white rounded-md px-2 mr-2"} style={{ font: `900 50px Inter-bold, sans-serif`, color: `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})` }}>A</div>
-                           <div className="flex flex-col justify-center">Set navigation legs text color.</div>
+               <ColorPicker name="Text Color" category="Legs" defaultColor={SharedSettingsDefault.map.text.color} value={settings.map.text.color} setColor={settings.map.text.setColor}>
+                  <div className="flex flex-row min-h-[60px]">
+                     <div className="flex min-w-[50px] justify-center">
+                        <div className={"flex flex-col justify-center bg-white rounded-md px-2 mr-2"} style={{ font: `900 50px Inter-bold, sans-serif`, color: `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})` }}>A</div>
+                        <div className="flex flex-col justify-center">Set navigation legs text color.</div>
+                     </div>
+                  </div>
+               </ColorPicker>
+               <ColorPicker name="Border Color" category="Legs" defaultColor={SharedSettingsDefault.map.text.borderColor} value={settings.map.text.borderColor} setColor={settings.map.text.setBorderColor}>
+                  <div className="flex flex-row min-h-[60px]">
+                     <div className="flex min-w-[50px] justify-center mr-2">
+                        <div className={"relative flex flex-col justify-center"} style={{ font: `900 50px Inter-bold, sans-serif` }}>
+                           <div className="z-0 text-transparent" style={{
+                              WebkitTextStroke: `10px rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`
+                           }}>A</div>
+                           <div className="position absolute top-0 bottom-0 left-0 right-0 text-[var(--background)] group-hover:text-[var(--menu-bg)] z-10">A</div>
                         </div>
                      </div>
-                  </Legend>
-                  <SliderItem name="Red" className="max-w-3xl"
-                     range={{ min: 0, max: 255 }}
-                     defaultValue={SharedSettingsDefault.map.text.color.red}
-                     value={settings.map.text.color.red}
-                     onChange={setMapTextRed}
-                  >
-                     <div className="flex flex-row w-20">
-                        Red:
-                     </div>
-                  </SliderItem>
-                  <SliderItem name="Green" className="max-w-3xl"
-                     range={{ min: 0, max: 255 }}
-                     defaultValue={SharedSettingsDefault.map.text.color.green}
-                     value={settings.map.text.color.green}
-                     onChange={setMapTextGreen}
-                  >
-                     <div className="flex flex-row w-20">
-                        Green:
-                     </div>
-                  </SliderItem>
-                  <SliderItem name="Blue" className="max-w-3xl"
-                     range={{ min: 0, max: 255 }}
-                     defaultValue={SharedSettingsDefault.map.text.color.blue}
-                     value={settings.map.text.color.blue}
-                     onChange={setMapTextBlue}
-                  >
-                     <div className="flex flex-row w-20">
-                        Blue:
-                     </div>
-                  </SliderItem>
-                  <SliderItem category="Text" name="Alpha" className="max-w-3xl"
-                     range={{ min: 0, max: 1 }}
-                     defaultValue={SharedSettingsDefault.map.text.color.alpha}
-                     value={settings.map.text.color.alpha}
-                     onChange={setMapTextAlpha}>
-                     <div className="flex flex-row w-20">
-                        Alpha:
-                     </div>
-                  </SliderItem>
-               </Items>
-               <Items name="Border Color" category="Legs" Comp={Slider}>
-                  <Legend>
-                     <div className="flex flex-row min-h-[60px]">
-                        <div className="flex min-w-[50px] justify-center mr-2">
-                           <div className={"relative flex flex-col justify-center"} style={{ font: `900 50px Inter-bold, sans-serif` }}>
-                              <div className="z-0 text-transparent" style={{
-                                 WebkitTextStroke: `10px rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`
-                              }}>A</div>
-                              <div className="position absolute top-0 bottom-0 left-0 right-0 text-[var(--background)] group-hover:text-[var(--menu-bg)] z-10">A</div>
-                           </div>
-                        </div>
-                        <div className="flex flex-col justify-center">Set navigation legs text border color.</div>
-                     </div>
-                  </Legend>
-                  <SliderItem name="Red" className="max-w-3xl"
-                     range={{ min: 0, max: 255 }}
-                     defaultValue={SharedSettingsDefault.map.text.borderColor.red}
-                     value={settings.map.text.borderColor.red}
-                     onChange={setMapTextBorderRed}
-                  >
-                     <div className="flex flex-row w-20">
-                        Red:
-                     </div>
-                  </SliderItem>
-                  <SliderItem name="Green" className="max-w-3xl"
-                     range={{ min: 0, max: 255 }}
-                     defaultValue={SharedSettingsDefault.map.text.borderColor.green}
-                     value={settings.map.text.borderColor.green}
-                     onChange={setMapTextBorderGreen}
-                  >
-                     <div className="flex flex-row w-20">
-                        Green:
-                     </div>
-                  </SliderItem>
-                  <SliderItem name="Blue" className="max-w-3xl"
-                     range={{ min: 0, max: 255 }}
-                     defaultValue={SharedSettingsDefault.map.text.borderColor.blue}
-                     value={settings.map.text.borderColor.blue}
-                     onChange={setMapTextBorderBlue}
-                  >
-                     <div className="flex flex-row w-20">
-                        Blue:
-                     </div>
-                  </SliderItem>
-                  <SliderItem name="Alpha" className="max-w-3xl"
-                     range={{ min: 0, max: 1 }}
-                     defaultValue={SharedSettingsDefault.map.text.borderColor.alpha}
-                     value={settings.map.text.borderColor.alpha}
-                     onChange={setMapTextBorderAlpha}>
-                     <div className="flex flex-row w-20">
-                        Alpha:
-                     </div>
-                  </SliderItem>
-               </Items>
+                     <div className="flex flex-col justify-center">Set navigation legs text border color.</div>
+                  </div>
+               </ColorPicker>
                <SliderItem category="Marker" name="Size"
                   range={{ min: 10, max: 80 }}
                   value={settings.map.markerSize} defaultValue={SharedSettingsDefault.map.markerSize}
@@ -529,18 +601,36 @@ export const SettingsPage = ({ active }: {
             <Group name="Enroute Charts" className={advanced ? "" : 'hidden'}>
                <div className={advanced ? "" : 'hidden'}>
                   <InputItem category="SIA" name="Address" inputMode="text"
-                     validate={value =>
-                        (value.substring(0, 8) === 'https://'.substring(0, value.length))
-                        && (value.length < 9 || /^(\w|:|\/|-|_|\.)+(?:\{|$)(?:i|$)(?:c|$)(?:a|$)(?:o|$)(?:\}|$)(\w|:|\/|-|_|\.)*$/g.test(value.substring(8)))
-                     }
+                     validate={validateSIAAddr}
                      placeholder={__SIA_ADDR__}
                      value={settings.SIAAddr} defaultValue={SharedSettingsDefault.SIAAddr}
                      onChange={settings.setSIAAddr}>
-                     PDF template Address with {'{icao}'} placeholder.<br />
-                     If the default address does not works anymore, please go to the addon wiki for more information: <br />
-                     <a href="https://github.com/alx-home/msfs2024-vfrnav-efb">https://github.com/alx-home/msfs2024-vfrnav-efb</a>
+                     PDF template Address with {'{icao}'} placeholder. Use this settings in case of a broken default address.<br />
+                     For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
                      <ErrorMessage type='Error'>
-                        Invalid Address! pattern: https://***{'{icao}'}***
+                        Invalid Address! pattern: (http,https,ftp)://***{'{icao}'}***
+                     </ErrorMessage>
+                  </InputItem>
+                  <InputItem category="SIA" name="AZBA address" inputMode="text"
+                     validate={validateSIAAZBAAddr}
+                     placeholder={__SIA_AZBA_ADDR__}
+                     value={settings.SIAAZBAAddr} defaultValue={SharedSettingsDefault.SIAAZBAAddr}
+                     onChange={settings.setSIAAZBAAddr}>
+                     AZBA template Address with {'{date},{start_date} and {end_date}'} placeholders. Use this settings in case of a broken default address.<br />
+                     For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
+                     <ErrorMessage type='Error'>
+                        Invalid Address! pattern: (http,https,ftp)://***{'{date}'}***
+                     </ErrorMessage>
+                  </InputItem>
+                  <InputItem category="SIA" name="AZBA date address" inputMode="text"
+                     validate={validateSIAAZBADateAddr}
+                     placeholder={__SIA_AZBA_DATE_ADDR__}
+                     value={settings.SIAAZBADateAddr} defaultValue={SharedSettingsDefault.SIAAZBADateAddr}
+                     onChange={settings.setSIAAZBADateAddr}>
+                     AZBA date template Address. Use this settings in case of a broken default address.<br />
+                     For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
+                     <ErrorMessage type='Error'>
+                        Invalid Address! pattern: (http,https,ftp)://***
                      </ErrorMessage>
                   </InputItem>
                   <InputItem category="SIA" name="Authorization token" inputMode="text"
@@ -548,9 +638,8 @@ export const SettingsPage = ({ active }: {
                      placeholder='Please enter an authorization token'
                      value={settings.SIAAuth} defaultValue={SharedSettingsDefault.SIAAuth}
                      onChange={settings.setSIAAuth}>
-                     Authorization token for accessing SIA Enroute charts on the PDF page.<br />
-                     If the default authorization token value does not works anymore, please go to the addon wiki for more information: <br />
-                     <a href="https://github.com/alx-home/msfs2024-vfrnav-efb">https://github.com/alx-home/msfs2024-vfrnav-efb</a>
+                     Authorization token for accessing SIA Enroute charts on the PDF page. Use this settings in case of a broken default address.<br />
+                     For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
                   </InputItem>
                </div>
             </Group>

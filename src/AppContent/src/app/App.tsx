@@ -88,9 +88,11 @@ export const App = () => {
         <div className={'absolute flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center'
           + (popup === empty ? ' hidden' : '')
         }>
-          <div className='m-auto w-full max-w-4xl'>
-            <div className='flex flex-col bg-menu border-2 hover:border-msfs px-8 py-5 shadow-slate-950 shadow-md m-8'>
-              {popup}
+          <div className='flex flex-row box-border relative m-auto w-full max-w-4xl max-h-full'>
+            <div className='flex flex-row grow bg-menu border-2 hover:border-msfs px-8 py-5 shadow-slate-950 shadow-md m-8 max-h-full'>
+              <div className='flex flex-row grow overflow-hidden'>
+                {popup}
+              </div>
             </div>
           </div>
         </div>

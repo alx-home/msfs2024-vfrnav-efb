@@ -63,6 +63,8 @@ const EFBConfig: UserConfig = {
       __MSFS_EMBEDED__: msfsEmbeded,
       __SIA_AUTH__: JSON.stringify("Y9Q3Ve72nN3PnTXmEtKnS4sggmdsigRMWH9kCDGHpCHyenFKKGhDq5vgBWZ4"),
       __SIA_ADDR__: JSON.stringify("https://bo-prod-sofia-vac.sia-france.fr/api/v1/custom/file-path/{icao}/AD"),
+      __SIA_AZBA_ADDR__: JSON.stringify("https://bo-prod-sofia-vac.sia-france.fr/api/v2/r_t_b_as?itemsPerPage=800&date={date}"),
+      __SIA_AZBA_DATE_ADDR__: JSON.stringify("https://bo-prod-sofia-vac.sia-france.fr/api/v2/custom/currentDate"),
    },
    build: {
       lib: false,

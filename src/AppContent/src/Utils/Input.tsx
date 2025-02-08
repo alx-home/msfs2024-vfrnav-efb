@@ -1,4 +1,4 @@
-import { HTMLInputTypeAttribute, useState, useEffect, useRef, useMemo, RefObject, useCallback, KeyboardEvent, ChangeEvent } from 'react';
+import { HTMLInputTypeAttribute, useState, useEffect, useRef, useMemo, RefObject, useCallback, KeyboardEvent, ChangeEvent, FocusEvent } from 'react';
 
 export const Input = ({ className, active, placeholder, pattern, type, inputMode, validate, value, defaultValue, reset, onChange, onValidate, ref: parentRef }: {
    active: boolean,
@@ -6,7 +6,8 @@ export const Input = ({ className, active, placeholder, pattern, type, inputMode
    placeholder?: string,
    pattern?: string,
    inputMode?: "email" | "search" | "tel" | "text" | "url" | "none" | "numeric" | "decimal",
-   validate?: (_value: string) => boolean,
+   validate?: (_value: string, _blur: boolean) => boolean,
+   onBlur?: (_value: string) => boolean,
    type?: HTMLInputTypeAttribute,
    reset?: boolean,
    value?: string,
@@ -49,9 +50,10 @@ export const Input = ({ className, active, placeholder, pattern, type, inputMode
       }
    }, [value, focused, placeholder, ref, lastPropValue, defaultValue]);
 
-   const onBlur = useCallback(() => {
+   const onBlur = useCallback((e: FocusEvent<HTMLInputElement>) => {
       setFocused(false);
-   }, [])
+      setValid(validate?.(e.target.value, true) ?? true)
+   }, [validate])
 
    const onFocus = useCallback(() => {
       setFocused(true);
@@ -64,7 +66,7 @@ export const Input = ({ className, active, placeholder, pattern, type, inputMode
    }, [onValidate]);
 
    const onChangeC = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-      if (validate?.(e.target.value) ?? true) {
+      if (validate?.(e.target.value, false) ?? true) {
          setValid(true);
          setLastValue(e.target.value)
          onChange?.(e.target.value);

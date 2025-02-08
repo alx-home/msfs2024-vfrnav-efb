@@ -10,6 +10,7 @@ import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, 
 import flightPlanImg from '@images/flight-plan.svg';
 import layersImg from '@images/layers.svg';
 import oaciImg from '@images/oaci.jpg';
+import azbaImg from '@images/azba.jpg';
 import dsfImg from '@images/dsf.jpg';
 import map4freeImg from '@images/map4free.jpg';
 import bingImg from '@images/bing.jpg';
@@ -22,6 +23,7 @@ import osmImg from '@images/osm.jpg';
 import { OnLayerChange } from './MapMenu/Menus/Layers';
 import MapContextProvider, { MapContext } from "./MapContext";
 import { Settings } from "@Settings";
+import { AZBALayer } from "@Ol/layers/AZBALayer";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -89,6 +91,13 @@ export const MapPage = ({ active }: {
    const [open, setOpen] = useState(false);
    const [menu, setMenu] = useState<Menu>(Menu.layers);
    const [layers, setLayers] = useState([
+      {
+         olLayer: <AZBALayer key="azba" />,
+         src: azbaImg,
+         alt: 'azba layer',
+         active: true,
+         enabled: (_settings: Settings) => _settings.OACIEnabled
+      },
       {
          olLayer: <OlWMTSLayer key="wmts"
             opacity={1.0}

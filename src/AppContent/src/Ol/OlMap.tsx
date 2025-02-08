@@ -7,6 +7,7 @@ import { MapContext } from "@pages/Map/MapContext";
 
 export const OlMap = ({ children, id, className }: PropsWithChildren<{ id: string, className: string }>) => {
    const mapContext = useContext(MapContext)!;
+
    const [center,] = useState(fromLonLat([1.5911241345835847, 48.104707368204686]));
    const [zoom,] = useState(10);
    const keyUp = useKeyUp();
