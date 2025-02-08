@@ -20,7 +20,7 @@ export const OlWMTSLayer = ({
    active,
    minZoom,
    maxZoom,
-   removeWhiteBackground
+   clipAera
 }: {
    opacity?: number,
    url: string,
@@ -49,5 +49,5 @@ export const OlWMTSLayer = ({
       wrapX: wrapX ?? true,
       crossOrigin: '',
    }), [format, layer, matrixSet, projection, style, tileGrid, url, version, wrapX]);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} removeWhiteBackground={removeWhiteBackground} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />;
 };

@@ -10,12 +10,12 @@ export const OlOSMLayer = ({
    active,
    minZoom,
    maxZoom,
-   removeWhiteBackground
+   clipAera
 }: OlLayerProp & {
    url?: string,
    crossOrigin?: string | null,
    opacity?: number
 }) => {
    const source = useMemo(() => new OSM({ url: url, crossOrigin: crossOrigin ?? null }), [url, crossOrigin]);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} removeWhiteBackground={removeWhiteBackground} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />;
 };

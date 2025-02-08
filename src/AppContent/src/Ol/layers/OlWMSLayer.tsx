@@ -8,7 +8,7 @@ export const OlWMSLayer = ({
    crossOrigin,
    order,
    active,
-   removeWhiteBackground
+   clipAera
 }: OlLayerProp & {
    url: string,
    crossOrigin?: string | null,
@@ -20,5 +20,5 @@ export const OlWMSLayer = ({
          crossOrigin: crossOrigin ?? "anonymous"
       },
    }), [crossOrigin, url]);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} removeWhiteBackground={removeWhiteBackground} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} clipAera={clipAera} />;
 };

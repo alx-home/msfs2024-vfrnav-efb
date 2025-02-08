@@ -6,7 +6,7 @@ export const OlBingLayer = ({
    opacity,
    order,
    active,
-   removeWhiteBackground
+   clipAera
 }: OlLayerProp & {
    opacity?: number
 }) => {
@@ -14,5 +14,5 @@ export const OlBingLayer = ({
       key: "@TODO",
       imagerySet: 'AerialWithLabels'
    }), []);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} removeWhiteBackground={removeWhiteBackground} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} clipAera={clipAera} />;
 };

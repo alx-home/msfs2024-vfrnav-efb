@@ -1,16 +1,66 @@
-import { Map } from "ol";
+import { Feature, Map } from "ol";
 import TileLayer from "ol/layer/Tile";
 import { TileImage } from "ol/source";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useId, useMemo, useState } from "react";
 import { MapContext } from "@pages/Map/MapContext";
+import VectorLayer from "ol/layer/Vector";
+import { Coordinate } from "ol/coordinate";
+import { Polygon } from "ol/geom";
+import VectorSource from 'ol/source/Vector';
+import Fill from "ol/style/Fill";
+import Style from "ol/style/Style";
+import { getVectorContext } from "ol/render";
 
 export class OlLayerProp {
    // eslint-disable-next-line no-unused-vars
-   constructor(public order?: number, public active?: boolean, public maxZoom?: number, public minZoom?: number, public removeWhiteBackground?: boolean) { }
+   constructor(public order?: number, public active?: boolean, public maxZoom?: number, public minZoom?: number, public clipAera?: Coordinate[]) { }
 }
 
-const useLayer = (source: TileImage, map?: Map, removeWhiteBackground?: boolean) => {
+const useLayer = (source: TileImage, map?: Map, clipAera?: Coordinate[]) => {
    const [layer, setLayer] = useState<TileLayer>();
+   const id = useId();
+   const clipLayer = useMemo(() => {
+      if (!clipAera || !(layer instanceof TileLayer)) {
+         return undefined;
+      }
+
+      const result = new VectorLayer({
+         style: null,
+         source: new VectorSource({ features: [new Feature(new Polygon([clipAera]))] })
+      });
+
+      result.getSource()!.on('addfeature', function () {
+         layer.setExtent(result.getSource()!.getExtent());
+      });
+
+      const style = new Style({
+         fill: new Fill({
+            color: 'black',
+         }),
+      });
+
+      layer.on('postrender', (event) => {
+         const vectorContext = getVectorContext(event);
+         const ctx = (event.context as CanvasRenderingContext2D);
+
+         const compo = ctx.globalCompositeOperation;
+         ctx.globalCompositeOperation = 'destination-in';
+         result.getSource()!.forEachFeature(feature =>
+            vectorContext.drawFeature(feature, style)
+         );
+         ctx.globalCompositeOperation = compo;
+      });
+
+      return result;
+   }, [clipAera, layer]);
+
+   useEffect(() => {
+      if (clipLayer) {
+         map?.addLayer(clipLayer)
+         return () => { map?.removeLayer(clipLayer) }
+      }
+   }, [clipLayer, map]);
+
 
    useEffect(() => {
       if (map) {
@@ -20,53 +70,10 @@ const useLayer = (source: TileImage, map?: Map, removeWhiteBackground?: boolean)
             }
 
             const layer = new TileLayer({
+               className: id,
                source: source,
                visible: false,
             })
-
-            if (removeWhiteBackground === true) {
-               layer.on('postrender', (event) => {
-                  const context = event.context;
-                  if (context && context instanceof CanvasRenderingContext2D) {
-                     try {
-                        const canvas = context.canvas;
-                        const width = canvas.width;
-                        const height = canvas.height;
-
-                        const inputData = context.getImageData(0, 0, width, height).data;
-
-                        const output = context.createImageData(width, height);
-                        const outputData = output.data;
-
-                        for (let pixelY = 0; pixelY < height; ++pixelY) {
-                           for (let pixelX = 0; pixelX < width; ++pixelX) {
-                              const index = (pixelY * width + pixelX);
-
-                              const isWhite = (index: number) => {
-                                 const r = inputData[index * 4];
-                                 const g = inputData[index * 4 + 1];
-                                 const b = inputData[index * 4 + 2];
-
-                                 return r > 250 && g > 250 && b > 250;
-                              }
-
-                              outputData[index * 4] = inputData[index * 4];
-                              outputData[index * 4 + 1] = inputData[index * 4 + 1];
-                              outputData[index * 4 + 2] = inputData[index * 4 + 2];
-                              if (isWhite(index)) {
-                                 outputData[index * 4 + 3] = 50;
-                              } else {
-                                 outputData[index * 4 + 3] = inputData[index * 4 + 3];
-                              }
-                           }
-                        }
-                        context.putImageData(output, 0, 0);
-                     } catch (e) {
-                        console.warn(e);
-                     }
-                  }
-               });
-            }
 
             map.addLayer(layer);
             return layer;
@@ -82,19 +89,19 @@ const useLayer = (source: TileImage, map?: Map, removeWhiteBackground?: boolean)
             return undefined;
          });
       };
-   }, [map, source, removeWhiteBackground]);
+   }, [id, map, source]);
 
    return layer;
 };
 
-export const OlLayer = ({ opacity, source, order, active, maxZoom, minZoom, removeWhiteBackground }:
+export const OlLayer = ({ opacity, source, order, active, maxZoom, minZoom, clipAera }:
    OlLayerProp & {
       opacity?: number,
       source: TileImage,
-      removeWhiteBackground?: boolean
+      clipAera?: Coordinate[]
    }) => {
    const mapContext = useContext(MapContext)!;
-   const layer = useLayer(source, mapContext.map, removeWhiteBackground);
+   const layer = useLayer(source, mapContext.map, clipAera);
 
    useEffect(() => {
       layer?.setVisible(active ?? false);
