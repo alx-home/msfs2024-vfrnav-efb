@@ -39,45 +39,6 @@ export type SharedSettings = {
    }
 };
 
-export const SharedSettingsDefault = {
-   speed: 95,
-   adjustHeading: true,
-   adjustTime: true,
-   SIAAuth: __SIA_AUTH__,
-   SIAAddr: __SIA_ADDR__,
-
-   OACIEnabled: true,
-   germanyEnabled: true,
-   USSectionalEnabled: true,
-   USIFRHighEnabled: false,
-   USIFRLowEnabled: false,
-   openTopoEnabled: false,
-   mapForFreeEnabled: true,
-   googleMapEnabled: true,
-   openStreetEnabled: false,
-
-   map: {
-      text: {
-         maxSize: 22,
-         minSize: 10,
-         borderSize: 10,
-         color: {
-            red: 31,
-            green: 41,
-            blue: 55,
-            alpha: 0.8
-         },
-         borderColor: {
-            red: 255,
-            green: 255,
-            blue: 255,
-            alpha: 0.8
-         },
-      },
-      markerSize: 50
-   }
-};
-
 export const SharedSettingsRecord: Type<SharedSettings> = {
    speed: true,
    adjustHeading: true,

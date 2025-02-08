@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { UserConfig, build } from "vite";
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import eslint from 'vite-plugin-eslint';
 import path from "path";
@@ -27,7 +27,6 @@ const minifyBundles = () => {
 const copyFiles = () => {
    return {
       name: "copyFiles",
-      apply: "build",
       closeBundle: () => {
          mkdir(path.resolve(__dirname, 'dist/assets/'), { recursive: true }, err => {
             if (err) throw err;
@@ -39,11 +38,10 @@ const copyFiles = () => {
    }
 }
 
-export default defineConfig({
+
+const Config: UserConfig = {
    define: {
-      BASE_URL: JSON.stringify(`coui://html_ui/efb_ui/efb_apps/msfs2024-vfrnav`),
-      __SIA_AUTH__: JSON.stringify("Y9Q3Ve72nN3PnTXmEtKnS4sggmdsigRMWH9kCDGHpCHyenFKKGhDq5vgBWZ4"),
-      __SIA_ADDR__: JSON.stringify("https://bo-prod-sofia-vac.sia-france.fr/api/v1/custom/file-path/{icao}/AD"),
+      BASE_URL: JSON.stringify(`coui://html_ui/efb_ui/efb_apps/msfs2024-vfrnav`)
    },
    build: {
       minify: true,
@@ -80,4 +78,6 @@ export default defineConfig({
       minifyBundles(),
       copyFiles()
    ],
-});
+};
+
+build(Config);

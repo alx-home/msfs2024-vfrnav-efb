@@ -3,8 +3,7 @@ import { Input } from "@Utils/Input";
 import { Scroll } from "@Utils/Scroll";
 import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState, JSX } from 'react';
 
-import { SettingsContext } from "@Settings";
-import { SharedSettingsDefault } from "@shared/Settings";
+import { SettingsContext, SharedSettingsDefault } from "@Settings";
 import { Slider } from "@Utils/Slider";
 
 import undoImg from '@images/undo.svg';

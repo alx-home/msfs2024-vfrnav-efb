@@ -4,9 +4,9 @@
   "license": "GPL-3.0-only",
   "author": "alex-home",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "postbuild": "cd src/AppContent && npm run build",
+    "build:dev": "dotenv -e .env.development tsc -b && tsx --env-file=.env.development build.ts",
+    "build": "dotenv -e .env.production tsc -b  && tsx --env-file=.env.production build.ts",
+    "postbuild": "cd src/AppContent && dotenv -e ../../.env.production tsc -b && tsx --env-file=../../.env.production build.ts",
     "lint": "eslint './src/**/*.{js,mjs,cjs,ts,jsx,tsx}'",
     "preview": "vite preview",
     "prepublishOnly": "npm run build"
@@ -38,6 +38,7 @@
     "@eslint/js": "^9.19.0",
     "@types/node": "22.10.10",
     "cross-env": "7.0.3",
+    "dotenv-cli": "8.0.0",
     "dotenv": "16.4.7",
     "eslint": "9.19.0",
     "globals": "15.14.0",
@@ -45,12 +46,13 @@
     "sass": "1.83.4",
     "tailwindcss": "4.0.0",
     "terser": "5.37.0",
-    "typescript": "5.7.3",
+    "tsx": "4.19.2",
     "typescript-eslint": "8.22.0",
-    "vite": "6.0.11",
+    "typescript": "5.7.3",
     "vite-plugin-dts": "4.5.0",
     "vite-plugin-eslint": "1.8.1",
     "vite-plugin-lib-inject-css": "2.2.1",
-    "vite-plugin-sass": "0.1.0"
+    "vite-plugin-sass": "0.1.0",
+    "vite": "6.0.11"
   }
 }
