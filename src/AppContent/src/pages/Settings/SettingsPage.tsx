@@ -601,6 +601,14 @@ export const SettingsPage = ({ active }: {
             </Group>
             <Group name="Enroute Charts" className={advanced ? "" : 'hidden'}>
                <div className={advanced ? "" : 'hidden'}>
+                  <InputItem category="SIA" name="Authorization token" inputMode="text"
+                     validate={value => /^(\w+)?=?$/g.test(value)}
+                     placeholder='Please enter an authorization token'
+                     value={settings.SIAAuth} defaultValue={SharedSettingsDefault.SIAAuth}
+                     onChange={settings.setSIAAuth}>
+                     Authorization token for accessing SIA Enroute charts on the PDF page. Use this settings in case of a broken default address.<br />
+                     For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
+                  </InputItem>
                   <InputItem category="SIA" name="Address" inputMode="text"
                      validate={validateSIAAddr}
                      placeholder={__SIA_ADDR__}
@@ -633,14 +641,6 @@ export const SettingsPage = ({ active }: {
                      <ErrorMessage type='Error'>
                         Invalid Address! pattern: (http,https,ftp)://***
                      </ErrorMessage>
-                  </InputItem>
-                  <InputItem category="SIA" name="Authorization token" inputMode="text"
-                     validate={value => /^(\w+)?=?$/g.test(value)}
-                     placeholder='Please enter an authorization token'
-                     value={settings.SIAAuth} defaultValue={SharedSettingsDefault.SIAAuth}
-                     onChange={settings.setSIAAuth}>
-                     Authorization token for accessing SIA Enroute charts on the PDF page. Use this settings in case of a broken default address.<br />
-                     For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
                   </InputItem>
                </div>
             </Group>
