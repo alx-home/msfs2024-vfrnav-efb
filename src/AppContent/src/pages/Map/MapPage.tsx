@@ -107,7 +107,7 @@ export const MapPage = ({ active }: {
             projection={projection}
             minZoom={6}
             maxZoom={11}
-            clipAera={OACIBoundaries}
+            // clipAera={OACIBoundaries}
             tileGrid={{
                origin: getTopLeft(projectionExtent),
                resolutions: resolutions,
