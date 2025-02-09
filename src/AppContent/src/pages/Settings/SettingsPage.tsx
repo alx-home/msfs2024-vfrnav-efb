@@ -625,7 +625,7 @@ export const SettingsPage = ({ active }: {
                      placeholder={__SIA_AZBA_ADDR__}
                      value={settings.SIAAZBAAddr} defaultValue={SharedSettingsDefault.SIAAZBAAddr}
                      onChange={settings.setSIAAZBAAddr}>
-                     AZBA template Address with {'{date}'} placeholders. Use this settings in case of a broken default address.<br />
+                     AZBA template Address with {'{date}'} placeholder. Use this settings in case of a broken default address.<br />
                      For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
                      <ErrorMessage type='Error'>
                         Invalid Address! pattern: (http,https,ftp)://***{'{date}'}***
