@@ -48,16 +48,22 @@ const useLayer = (source: Source | TileImage, map?: Map, clipAera?: Coordinate[]
          }),
       });
 
-      layer.on('postrender', (event) => {
+
+      layer.on('prerender', (event) => {
          const vectorContext = getVectorContext(event);
          const ctx = (event.context as CanvasRenderingContext2D);
 
-         const compo = ctx.globalCompositeOperation;
-         ctx.globalCompositeOperation = 'destination-in';
+         ctx.save();
          result.getSource()!.forEachFeature(feature =>
             vectorContext.drawFeature(feature, style)
          );
-         ctx.globalCompositeOperation = compo;
+
+         ctx.clip();
+      });
+
+      layer.on('postrender', (event) => {
+         const ctx = (event.context as CanvasRenderingContext2D);
+         ctx.restore();
       });
 
       return result;
