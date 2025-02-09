@@ -29,5 +29,13 @@ Fixes :
 
 Fixes :
 - Scrollbar glitches</ReleaseNote>
+	<ReleaseNote Version="0.3.0" Date="0-1-1">Improvements / améliorations :
+- Remove OACI white background / Suppression du fond blanc de la carte OACI
+- Add AZBA Layer / Ajout du layer AZBA
+- Add buttons for zooming PDF / Ajout de boutons pour zoomer les PDFs
+- Add zoom level setting for layers / Ajout de paramètres pour changer le niveau de zoom des layers
+- Performance improvements / Amélioration des performances
+
+</ReleaseNote>
 </ReleaseNotes>
 
