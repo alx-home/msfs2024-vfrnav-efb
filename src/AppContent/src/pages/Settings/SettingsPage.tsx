@@ -160,12 +160,13 @@ const DualSliderItem = ({ name, category, className, onChange, defaultValue, val
    </Item>;
 }
 
-const CheckItem = ({ children, name, category, value, defaultValue, onChange }: PropsWithChildren<{
+const CheckItem = ({ children, name, category, value, defaultValue, onChange, disabled }: PropsWithChildren<{
    name: string,
    category?: string,
    defaultValue?: boolean,
    value?: boolean,
-   onChange?: (_checked: boolean) => void
+   onChange?: (_checked: boolean) => void,
+   disabled?: boolean
 }>) => {
    const [reset, setReset] = useState(false);
    const resetCallback = useMemo(() => () => setReset(true), [setReset]);
@@ -177,7 +178,7 @@ const CheckItem = ({ children, name, category, value, defaultValue, onChange }: 
    }, [reset, setReset]);
 
    return <Item name={name} category={category} onReset={resetCallback}>
-      <CheckBox reset={reset} className="flex flex-row my-auto" active={true} value={value} defaultValue={defaultValue} onChange={onChange}>
+      <CheckBox reset={reset} active={!(disabled ?? false)} className="flex flex-row my-auto" value={value} defaultValue={defaultValue} onChange={onChange}>
          <div className="flex grow my-auto">
             {children}
          </div>
@@ -424,13 +425,13 @@ export const SettingsPage = ({ active }: {
                </SliderItem>
             </Group>
             <Group name="Navigation">
-               <CheckItem category="Wind correction" name="Heading"
+               <CheckItem category="Wind correction" name="Heading" disabled={true}
                   value={settings.adjustHeading} defaultValue={SharedSettingsDefault.adjustHeading}
                   onChange={settings.setAdjustHeading}>
                   Adjust navigation heading by taking into account the given leg wind.<br />
                   (not yet implemented)
                </CheckItem>
-               <CheckItem category="Wind correction" name="Time"
+               <CheckItem category="Wind correction" name="Time" disabled={true}
                   value={settings.adjustTime} defaultValue={SharedSettingsDefault.adjustTime}
                   onChange={settings.setAdjustTime}>
                   Adjust navigation time by taking into account the given leg wind.<br />
