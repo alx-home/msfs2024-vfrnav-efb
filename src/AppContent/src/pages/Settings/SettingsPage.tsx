@@ -326,10 +326,10 @@ const ZoomItem = ({ name, setting, defaultSetting, reset }: {
    defaultSetting: LayerSetting,
    reset?: boolean
 }) => {
-   const onChange = useCallback((min: number, max: number) => { setting.setMinZoom(min); setting.setMaxZoom(max) }, [setting]);
    const range = useMemo(() => ({ min: 0, max: 30 }), []);
-   const defaultValue = useMemo(() => ({ min: defaultSetting.minZoom ?? 0, max: defaultSetting.maxZoom ?? 30 }), [defaultSetting.maxZoom, defaultSetting.minZoom])
-   const value = useMemo(() => ({ min: setting.minZoom ?? 0, max: setting.maxZoom ?? 30 }), [setting.maxZoom, setting.minZoom])
+   const onChange = useCallback((min: number, max: number) => { setting.setMaxZoom(range.max - min); setting.setMinZoom(range.max - max) }, [range.max, setting]);
+   const defaultValue = useMemo(() => ({ max: range.max - (defaultSetting.minZoom ?? 0), min: range.max - (defaultSetting.maxZoom ?? range.max) }), [defaultSetting.maxZoom, defaultSetting.minZoom, range.max])
+   const value = useMemo(() => ({ max: range.max - (setting.minZoom ?? 0), min: range.max - (setting.maxZoom ?? range.max) }), [range.max, setting.maxZoom, setting.minZoom])
 
    return <DualSlider onChange={onChange} range={range} reset={reset}
       value={value}

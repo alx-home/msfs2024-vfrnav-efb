@@ -12,13 +12,13 @@ export const SharedSettingsDefault: SharedSettings = {
    azba: {
       enabled: true,
       active: true,
-      minZoom: 1,
+      minZoom: 0,
       maxZoom: 12
    },
    OACI: {
       enabled: true,
       active: true,
-      minZoom: 1,
+      minZoom: 0,
       maxZoom: 12
    },
    germany: {
