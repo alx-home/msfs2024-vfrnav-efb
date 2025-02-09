@@ -9,6 +9,8 @@ import useMouseMove from "@Events/MouseMove";
 import useMouseRelease from "@Events/MouseRelease";
 
 import '@alx-home/pdfjs-dist/web/pdf_viewer.css';
+import zoomInImg from '@images/zoom-in.svg';
+import zoomOutImg from '@images/zoom-out.svg';
 
 type Refs = { canvas: RefObject<HTMLCanvasElement | null>, text: RefObject<HTMLDivElement | null>, container: RefObject<HTMLDivElement | null> };
 
@@ -223,7 +225,31 @@ const Page = ({ hidden, children, renderer }: PropsWithChildren<{
       }
    }, [])
 
+   const zoomIn = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+      e.currentTarget.blur();
+      setZoom(zoom => zoom + 1);
+   }, []);
+
+   const zoomOut = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+      e.currentTarget.blur();
+      setZoom(zoom => Math.max(1, zoom - 1));
+   }, []);
+
    return <div className="flex flex-row grow justify-center overflow-hidden">
+      <div className={"absolute flex flex-col transition-all right-0 top-0 mt-[40px] mr-3 z-10 p-2 opacity-40 w-12 hocus-within:w-20 hocus-within:h-auto hocus-within:opacity-100 cursor-pointer"
+         + (hidden ? ' hidden' : '')
+      }>
+         <button className="group transition-all right-0 top-0 mr-3 z-10 w-full cursor-pointer bg-transparent"
+            onClick={zoomIn}
+         >
+            <img src={zoomInImg} alt="zoom in" className="w-full opacity-20 group-hocus:opacity-100 invert transition"></img>
+         </button>
+         <button className="group transition-all right-0 top-0 mr-3 mt-1 z-10 w-full cursor-pointer bg-transparent"
+            onClick={zoomOut}
+         >
+            <img src={zoomOutImg} alt="zoom out" className="w-full invert opacity-20 group-hocus:opacity-100 transition"></img>
+         </button>
+      </div>
       <Scroll hidden={hidden} ref={ref} onWheel={onWheel} >
          <div onPointerDown={e => onClick(e)} className="flex flex-row grow justify-center overflow-visible">
             {children}
@@ -260,8 +286,8 @@ export const Pdf = ({ src, alt, className }: {
       return Math.max(0, page - 1);
    }), []);
 
-   return <div className={"flex flex-col grow justify-start max-h-full max-w-full " + className}>
-      <div className="flex flex-row min-h-[32px] justify-begin">
+   return <div className={"relative flex flex-col grow justify-start max-h-full max-w-full " + className}>
+      <div className="flex flex-row h-[32px] min-h-[32px] justify-begin">
          <Button active={true} disabled={prevDisabled} className="flex flex-row justify-begin"
             onClick={prev}>
             <img className="h-[22px]" src={prevImage} alt="prev" />
