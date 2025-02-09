@@ -10,8 +10,6 @@ import '@polyfills/pointer-events.js';
 import "@polyfills/canvas/canvas";
 import "@polyfills/Url.ts";
 
-import { MessageHandler } from '@shared/MessageHandler.tsx';
-
 import InterBlackFont from './fonts/Inter-Regular.ttf';
 import InterBlackItalicFont from './fonts/Inter-Italic.ttf';
 import InterBoldFont from './fonts/Inter-Bold.ttf';
@@ -82,8 +80,6 @@ loadFont(InterExtraLightItalicFont, "lighter", "italic");
 
 import './global.css';
 import "./ol.css";
-
-export const messageHandler = new MessageHandler();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

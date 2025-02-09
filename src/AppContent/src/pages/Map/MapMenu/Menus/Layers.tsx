@@ -1,41 +1,44 @@
-import { Settings, SettingsContext } from "@Settings";
+import { LayerSettingSetter, Settings } from "@Settings/Settings";
+import { SettingsContext } from "@Settings/SettingsProvider";
+import { LayerSetting } from "@shared/Settings";
 import { Draggable } from "@Utils/Draggable";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 export class Layer {
    // eslint-disable-next-line no-unused-vars
-   constructor(public src: string, public alt: string, public order: number, public active: boolean, public enabled: (settings: Settings) => boolean) { }
+   constructor(public src: string, public alt: string, public order: number, public getSettings: (_settings: Settings) => LayerSetting & LayerSettingSetter) { }
 };
 
-const LayerComp = ({ src, alt, onActiveChange, active, enabled }:
-   Layer & {
-      onActiveChange: (_active: boolean) => void,
-   }) => {
+const LayerComp = ({ src, alt, getSettings }:
+   Layer) => {
    const settings = useContext(SettingsContext)!;
+   const layerSettings = useMemo(() => getSettings(settings), [getSettings, settings]);
 
    const [transition, setTransition] = useState(false);
    const ref = useRef<HTMLButtonElement | null>(null);
-   const [currentActive, setCurrentActive] = useState<boolean>(active);
+   const [currentActive, setCurrentActive] = useState<boolean>(layerSettings.active);
+   const [currentEnabled, setCurrentEnabled] = useState<boolean>(layerSettings.enabled);
 
    useEffect(() => {
-      if (currentActive !== active) {
-         onActiveChange(currentActive);
+      if (currentActive !== layerSettings.active) {
+         layerSettings.setActive(currentActive);
       }
-   }, [currentActive, onActiveChange, active]);
+   }, [currentActive, layerSettings.active, layerSettings]);
    useEffect(() => {
       setTransition(false);
       setTimeout(() => setTransition(true), 10);
    }, []);
 
    useEffect(() => {
-      if (!enabled(settings)) {
-         setCurrentActive(false);
+      if (layerSettings.enabled !== currentEnabled) {
+         setCurrentEnabled(layerSettings.enabled)
+         setCurrentActive(layerSettings.enabled);
       }
-   }, [enabled, settings]);
+   }, [currentEnabled, layerSettings.enabled]);
 
    return <button className={'group transition-[filter] shadow-md transition-std border-l-4 cursor-pointer'
-      + (active ? ' border-l-msfs' : ' border-l-gray-600')
-      + (enabled(settings) ? '' : ' hidden h-0')}
+      + (layerSettings.active ? ' border-l-msfs' : ' border-l-gray-600')
+      + (layerSettings.enabled ? '' : ' hidden h-0')}
       ref={ref}
       onClick={() => setCurrentActive(active => !active)}
       onMouseUp={() => ref.current?.blur()}>
@@ -52,10 +55,9 @@ const LayerComp = ({ src, alt, onActiveChange, active, enabled }:
 export type OnLayerChange = (_layers: { index: number, order?: number, active?: boolean }[]) => void;
 
 export const Layers = ({ layers, onLayerChange }: { layers: Layer[], onLayerChange: OnLayerChange }) => {
-   const childs = useMemo(() => layers.map((layer, index) =>
-      <LayerComp order={layer.order} key={layer.alt} src={layer.src} alt={layer.alt} active={layer.active} enabled={layer.enabled}
-         onActiveChange={active => onLayerChange([{ index: index, active: active }])} />
-   ), [layers, onLayerChange]);
+   const childs = useMemo(() => layers.map((layer) =>
+      <LayerComp order={layer.order} key={layer.alt} src={layer.src} alt={layer.alt} getSettings={layer.getSettings} />
+   ), [layers]);
 
    const onOrdersChange = useCallback((orders: number[]) => {
       onLayerChange(orders.map((order, index) => ({ index: index, order: order })));

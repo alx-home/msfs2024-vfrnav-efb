@@ -4,7 +4,7 @@ import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
-import { SettingsContext } from "@Settings";
+import { SettingsContext } from "@Settings/SettingsProvider";
 import VectorSource from "ol/source/Vector";
 import { Feature } from "ol";
 import { Polygon } from "ol/geom";
@@ -17,56 +17,59 @@ export const AZBALayer = ({
    opacity,
    order,
    active,
+   minZoom,
+   maxZoom,
    clipAera
 }: OlLayerProp & {
    opacity?: number
 }) => {
-   const settings = useContext(SettingsContext)!;
+   const { getSIAAZBA, setPopup, map } = useContext(SettingsContext)!;
+   const { azba } = map;
 
    const activeHighLayer = useMemo(() => new VectorLayer({
       style: new Style({
          stroke: new Stroke({
-            color: `rgba(${settings.map.azba.activeHighColor.red.toFixed(0)}, ${settings.map.azba.activeHighColor.green.toFixed(0)}, ${settings.map.azba.activeHighColor.blue.toFixed(0)}, ${settings.map.azba.activeHighColor.alpha})`,
+            color: `rgba(${azba.activeHighColor.red.toFixed(0)}, ${azba.activeHighColor.green.toFixed(0)}, ${azba.activeHighColor.blue.toFixed(0)}, ${azba.activeHighColor.alpha})`,
             width: 3,
          }),
          fill: new Fill({
-            color: `rgba(${settings.map.azba.activeHighColor.red.toFixed(0)}, ${settings.map.azba.activeHighColor.green.toFixed(0)}, ${settings.map.azba.activeHighColor.blue.toFixed(0)}, ${settings.map.azba.activeHighColor.alpha})`,
+            color: `rgba(${azba.activeHighColor.red.toFixed(0)}, ${azba.activeHighColor.green.toFixed(0)}, ${azba.activeHighColor.blue.toFixed(0)}, ${azba.activeHighColor.alpha})`,
          })
       })
-   }), [settings.map.azba.activeHighColor.alpha, settings.map.azba.activeHighColor.blue, settings.map.azba.activeHighColor.green, settings.map.azba.activeHighColor.red]);
+   }), [azba.activeHighColor.alpha, azba.activeHighColor.blue, azba.activeHighColor.green, azba.activeHighColor.red]);
    const activeLowLayer = useMemo(() => new VectorLayer({
       style: new Style({
          stroke: new Stroke({
-            color: `rgba(${settings.map.azba.activeLowColor.red.toFixed(0)}, ${settings.map.azba.activeLowColor.green.toFixed(0)}, ${settings.map.azba.activeLowColor.blue.toFixed(0)}, ${settings.map.azba.activeLowColor.alpha})`,
+            color: `rgba(${azba.activeLowColor.red.toFixed(0)}, ${azba.activeLowColor.green.toFixed(0)}, ${azba.activeLowColor.blue.toFixed(0)}, ${azba.activeLowColor.alpha})`,
             width: 3,
          }),
          fill: new Fill({
-            color: `rgba(${settings.map.azba.activeLowColor.red.toFixed(0)}, ${settings.map.azba.activeLowColor.green.toFixed(0)}, ${settings.map.azba.activeLowColor.blue.toFixed(0)}, ${settings.map.azba.activeLowColor.alpha})`,
+            color: `rgba(${azba.activeLowColor.red.toFixed(0)}, ${azba.activeLowColor.green.toFixed(0)}, ${azba.activeLowColor.blue.toFixed(0)}, ${azba.activeLowColor.alpha})`,
          })
       })
-   }), [settings.map.azba.activeLowColor.alpha, settings.map.azba.activeLowColor.blue, settings.map.azba.activeLowColor.green, settings.map.azba.activeLowColor.red]);
+   }), [azba.activeLowColor.alpha, azba.activeLowColor.blue, azba.activeLowColor.green, azba.activeLowColor.red]);
    const inactiveHighLayer = useMemo(() => new VectorLayer({
       style: new Style({
          stroke: new Stroke({
-            color: `rgba(${settings.map.azba.inactiveHighColor.red.toFixed(0)}, ${settings.map.azba.inactiveHighColor.green.toFixed(0)}, ${settings.map.azba.inactiveHighColor.blue.toFixed(0)}, ${settings.map.azba.inactiveHighColor.alpha})`,
+            color: `rgba(${azba.inactiveHighColor.red.toFixed(0)}, ${azba.inactiveHighColor.green.toFixed(0)}, ${azba.inactiveHighColor.blue.toFixed(0)}, ${azba.inactiveHighColor.alpha})`,
             width: 3,
          }),
          fill: new Fill({
-            color: `rgba(${settings.map.azba.inactiveHighColor.red.toFixed(0)}, ${settings.map.azba.inactiveHighColor.green.toFixed(0)}, ${settings.map.azba.inactiveHighColor.blue.toFixed(0)}, ${settings.map.azba.inactiveHighColor.alpha})`,
+            color: `rgba(${azba.inactiveHighColor.red.toFixed(0)}, ${azba.inactiveHighColor.green.toFixed(0)}, ${azba.inactiveHighColor.blue.toFixed(0)}, ${azba.inactiveHighColor.alpha})`,
          })
       })
-   }), [settings.map.azba.inactiveHighColor.alpha, settings.map.azba.inactiveHighColor.blue, settings.map.azba.inactiveHighColor.green, settings.map.azba.inactiveHighColor.red]);
+   }), [azba.inactiveHighColor.alpha, azba.inactiveHighColor.blue, azba.inactiveHighColor.green, azba.inactiveHighColor.red]);
    const inactiveLowLayer = useMemo(() => new VectorLayer({
       style: new Style({
          stroke: new Stroke({
-            color: `rgba(${settings.map.azba.inactiveLowColor.red.toFixed(0)}, ${settings.map.azba.inactiveLowColor.green.toFixed(0)}, ${settings.map.azba.inactiveLowColor.blue.toFixed(0)}, ${settings.map.azba.inactiveLowColor.alpha})`,
+            color: `rgba(${azba.inactiveLowColor.red.toFixed(0)}, ${azba.inactiveLowColor.green.toFixed(0)}, ${azba.inactiveLowColor.blue.toFixed(0)}, ${azba.inactiveLowColor.alpha})`,
             width: 3,
          }),
          fill: new Fill({
-            color: `rgba(${settings.map.azba.inactiveLowColor.red.toFixed(0)}, ${settings.map.azba.inactiveLowColor.green.toFixed(0)}, ${settings.map.azba.inactiveLowColor.blue.toFixed(0)}, ${settings.map.azba.inactiveLowColor.alpha})`,
+            color: `rgba(${azba.inactiveLowColor.red.toFixed(0)}, ${azba.inactiveLowColor.green.toFixed(0)}, ${azba.inactiveLowColor.blue.toFixed(0)}, ${azba.inactiveLowColor.alpha})`,
          })
       })
-   }), [settings.map.azba.inactiveLowColor.alpha, settings.map.azba.inactiveLowColor.blue, settings.map.azba.inactiveLowColor.green, settings.map.azba.inactiveLowColor.red]);
+   }), [azba.inactiveLowColor.alpha, azba.inactiveLowColor.blue, azba.inactiveLowColor.green, azba.inactiveLowColor.red]);
 
    const groupLayer = useMemo(() => new LayerGroup({
       layers: [
@@ -82,7 +85,7 @@ export const AZBALayer = ({
 
 
    useEffect(() => {
-      settings.getSIAAZBA().then(azba => {
+      getSIAAZBA().then(data => {
 
          const activeHight = new VectorSource();
          const activeLow = new VectorSource();
@@ -92,7 +95,7 @@ export const AZBALayer = ({
          let nextRefresh: Date | undefined = undefined;
          const now = new Date();
 
-         azba.forEach(elem => {
+         data.forEach(elem => {
             const feature = new Feature(new Polygon([elem.coordinates.map(coord =>
                fromLonLat([coord.longitude, coord.latitude])
             )])) as (Feature<Polygon> & Interactive);
@@ -101,7 +104,7 @@ export const AZBALayer = ({
             if (elem.timeslots.find(slot => {
                const start = new Date(slot.startTime)
                const end = slot.endTime
-               start.setTime(start.getTime() - settings.map.azba.range * 60000);
+               start.setTime(start.getTime() - azba.range * 60000);
 
                if (start > now) {
                   if (!nextRefresh) {
@@ -152,7 +155,7 @@ export const AZBALayer = ({
             }
 
             feature.onClick = () => {
-               settings.setPopup(<AZBAPopup data={elem} />);
+               setPopup(<AZBAPopup data={elem} />);
             }
          })
 
@@ -169,9 +172,9 @@ export const AZBALayer = ({
          inactiveHighLayer.setSource(inactiveHight);
          inactiveLowLayer.setSource(inactiveLow);
       });
-   }, [activeHighLayer, activeLowLayer, inactiveHighLayer, inactiveLowLayer, settings, refresh]);
+   }, [activeHighLayer, activeLowLayer, inactiveHighLayer, inactiveLowLayer, refresh, getSIAAZBA, azba.range, setPopup]);
 
-   return <OlLayer key={"active high"} source={groupLayer} opacity={opacity} order={order} active={active} clipAera={clipAera} />
+   return <OlLayer key={"active high"} source={groupLayer} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />
 };
 
 

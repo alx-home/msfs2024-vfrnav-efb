@@ -4,6 +4,7 @@ import { OlLayer, OlLayerProp } from "./OlLayer";
 import { TileImage, WMTS } from "ol/source";
 import WMTSTileGrid from "ol/tilegrid/WMTS";
 import { useMemo } from "react";
+import { Coordinate } from "ol/coordinate";
 
 export const OlWMTSLayer = ({
    opacity,
@@ -30,7 +31,8 @@ export const OlWMTSLayer = ({
    format?: string,
    projection: Projection,
    tileGrid: {
-      origin: Extent,
+      origin: Coordinate,
+      extent: Extent,
       resolutions: Array<number>,
       matrixIds: Array<string>,
    },

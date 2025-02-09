@@ -15,7 +15,11 @@ import LayerGroup from "ol/layer/Group";
 
 export class OlLayerProp {
    // eslint-disable-next-line no-unused-vars
-   constructor(public order?: number, public active?: boolean, public maxZoom?: number, public minZoom?: number, public clipAera?: Coordinate[]) { }
+   constructor(public order?: number, public active?: boolean,
+      // eslint-disable-next-line no-unused-vars
+      public maxZoom?: number, public minZoom?: number,
+      // eslint-disable-next-line no-unused-vars
+      public clipAera?: Coordinate[]) { }
 }
 
 export type Source = TileLayer | Layer | LayerGroup;
@@ -100,14 +104,18 @@ export const OlLayer = ({ opacity, source, order, active, maxZoom, minZoom, clip
    }, [active, layer]);
 
    useEffect(() => {
-      if (minZoom) {
-         layer?.setMinZoom(minZoom);
+      if (minZoom !== undefined) {
+         layer?.setMinZoom(minZoom)
+      } else {
+         layer?.setMinZoom(0)
       }
    }, [minZoom, layer]);
 
    useEffect(() => {
-      if (maxZoom) {
-         layer?.setMaxZoom(maxZoom);
+      if (maxZoom !== undefined) {
+         layer?.setMaxZoom(maxZoom)
+      } else {
+         layer?.setMaxZoom(30)
       }
    }, [maxZoom, layer]);
 

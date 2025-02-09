@@ -1,9 +1,10 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react';
-import { Azba, SettingsContext } from "@Settings";
 
-import useKeyUp from "@Events/KeyUp";
+import { Azba } from 'src/Settings/SIAAZBA';
 import { Button } from '@Utils/Button';
 import { Scroll } from '@Utils/Scroll';
+import { SettingsContext } from "@Settings/SettingsProvider";
+import useKeyUp from "@Events/KeyUp";
 
 
 export const AZBAPopup = ({ data }: {

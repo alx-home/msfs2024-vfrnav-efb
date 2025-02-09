@@ -12,7 +12,7 @@ export const OlMap = ({ children, id, className }: PropsWithChildren<{ id: strin
    const [zoom,] = useState(10);
    const keyUp = useKeyUp();
    const [mouseInside, setMouseInside] = useState(false);
-   const mouseRelease = useMouseRelease();
+   const mouseRelease = useMouseRelease(mouseInside);
    const mapElement = useRef<HTMLDivElement | null>(null);
 
    useEffect(() => {

@@ -12,7 +12,7 @@ import autoprefixer from "autoprefixer";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const minify = true;
+const minify = false;
 
 const msfsEmbeded = process.env.MSFS_EMBEDED;
 console.assert(msfsEmbeded !== undefined)
@@ -89,7 +89,7 @@ const EFBConfig: UserConfig = {
          "@pages": path.resolve(__dirname, "./src/pages"),
          "@polyfills": path.resolve(__dirname, "./src/polyfills"),
          "@public": path.resolve(__dirname, "./public"),
-         "@Settings": path.resolve(__dirname, "./src/Settings.tsx"),
+         "@Settings": path.resolve(__dirname, "./src/Settings"),
          "@shared": path.resolve(__dirname, "./shared"),
          "@Utils": path.resolve(__dirname, "./src/Utils"),
       },

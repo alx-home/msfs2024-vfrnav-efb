@@ -1,4 +1,3 @@
-import useMouseRelease from '@Events/MouseRelease';
 import { useRef, useMemo, RefObject, useEffect, useState, useCallback, ChangeEvent, PropsWithChildren } from 'react';
 
 export const Slider = ({ className, active, ref: parentRef, range, reset, defaultValue, onChange, value, bounds, children }: PropsWithChildren<{
@@ -22,13 +21,6 @@ export const Slider = ({ className, active, ref: parentRef, range, reset, defaul
 
    const refInt = useRef<HTMLInputElement | null>(null);
    const ref = useMemo(() => parentRef ?? refInt, [parentRef]);
-   const mouseRelease = useMouseRelease(active ?? true);
-
-   useEffect(() => {
-      if (mouseRelease !== undefined) {
-         ref.current?.blur();
-      }
-   }, [mouseRelease, ref]);
 
    useEffect(() => {
       if (reset) {

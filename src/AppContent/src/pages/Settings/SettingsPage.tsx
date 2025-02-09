@@ -1,10 +1,9 @@
 import { CheckBox } from "@Utils/CheckBox";
 import { Input } from "@Utils/Input";
 import { Scroll } from "@Utils/Scroll";
-import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState, JSX } from 'react';
+import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { SettingsContext, SharedSettingsDefault } from "@Settings";
-import { Color } from "@shared/Settings";
+import { Color, LayerSetting } from "@shared/Settings";
 import { Slider } from "@Utils/Slider";
 
 import undoImg from '@images/undo.svg';
@@ -12,6 +11,9 @@ import markerImg from '@images/marker-icon-blue.svg';
 import { DualSlider } from "@Utils/DualSlider";
 
 import oaciImg from '@images/oaci.jpg';
+import { SettingsContext } from "@Settings/SettingsProvider";
+import { SharedSettingsDefault } from "@Settings/Default";
+import { LayerSettingSetter } from "@Settings/Settings";
 
 const List = ({ children }: PropsWithChildren) => {
    return <Scroll className="flex flex-col">
@@ -220,7 +222,7 @@ const ColorPicker = ({ defaultColor, value, setColor, name, category, children }
       setColor((old) => ({ ...old, alpha: value }))
    }, [setColor]);
 
-   return <Items name={name} category={category} Comp={Slider}>
+   return <Items name={name} category={category}>
       <Legend>
          {children}
       </Legend>
@@ -276,10 +278,9 @@ const isLegend = (child: unknown) => {
 
 type Props = PropsWithChildren<{
    name: string,
-   category?: string,
-   Comp: JSX.ElementType
+   category?: string
 }>;
-const Items = ({ children, name, category, Comp }: Props) => {
+const Items = ({ children, name, category }: Props) => {
    const [reset, setReset] = useState(false);
    const resetCallback = useMemo(() => () => setReset(true), [setReset]);
    const childs = useMemo(() =>
@@ -287,12 +288,12 @@ const Items = ({ children, name, category, Comp }: Props) => {
          if (isLegend(child)) {
             return child
          } else {
-            return <Comp key={child.key} reset={reset} className="flex flex-row my-auto" {...child.props}>
+            return <child.type key={child.key} reset={reset} className="flex flex-row my-auto" {...child.props}>
                {child.props.children}
-            </Comp>
+            </child.type>
          }
       }
-      ), [Comp, children, reset]);
+      ), [children, reset]);
 
    useEffect(() => {
       if (reset) {
@@ -317,6 +318,36 @@ const Group = ({ children, name, className }: PropsWithChildren<{
          {children}
       </div>
    </div>;
+}
+
+const ZoomItem = ({ name, setting, defaultSetting, reset }: {
+   name: string,
+   setting: LayerSetting & LayerSettingSetter,
+   defaultSetting: LayerSetting,
+   reset?: boolean
+}) => {
+   const onChange = useCallback((min: number, max: number) => { setting.setMinZoom(min); setting.setMaxZoom(max) }, [setting]);
+   const range = useMemo(() => ({ min: 0, max: 30 }), []);
+   const defaultValue = useMemo(() => ({ min: defaultSetting.minZoom ?? 0, max: defaultSetting.maxZoom ?? 30 }), [defaultSetting.maxZoom, defaultSetting.minZoom])
+   const value = useMemo(() => ({ min: setting.minZoom ?? 0, max: setting.maxZoom ?? 30 }), [setting.maxZoom, setting.minZoom])
+
+   return <DualSlider onChange={onChange} range={range} reset={reset}
+      value={value}
+      defaultValue={defaultValue}
+      className={"max-w-3xl"}>
+      <div className="flex flex-row w-40">{name}:</div>
+   </DualSlider>
+}
+
+const LayerActivation = ({ setting, defaultSetting, reset, children }: PropsWithChildren<{
+   setting: LayerSetting & LayerSettingSetter,
+   defaultSetting: LayerSetting,
+   reset?: boolean
+}>) => {
+   return <CheckBox onChange={setting.setEnabled} reset={reset}
+      value={setting.enabled} defaultValue={defaultSetting.enabled}>
+      {children}
+   </CheckBox>
 }
 
 export const SettingsPage = ({ active }: {
@@ -391,6 +422,7 @@ export const SettingsPage = ({ active }: {
       return (hours ? hours + 'h' : '') + minutes + 'min';
    }, [settings.map.azba.range]);
 
+
    return <div className="flex grow justify-center m-2 p-4" style={active ? {} : { display: 'none' }}>
       <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col grow"
          + " hocus:border-msfs"
@@ -439,49 +471,60 @@ export const SettingsPage = ({ active }: {
                </CheckItem>
             </Group>
             <Group name="Map">
-               <Items name="VFR" category="Layers" Comp={CheckBox}>
-                  <CheckItem name="OACI" onChange={settings.setOACIEnabled}
-                     value={settings.OACIEnabled} defaultValue={SharedSettingsDefault.OACIEnabled}>
+               <Items name="VFR" category="Layers">
+                  <LayerActivation setting={settings.azba} defaultSetting={SharedSettingsDefault.azba}>
+                     Use France AZBA Layer (sia)
+                  </LayerActivation>
+                  <LayerActivation setting={settings.OACI} defaultSetting={SharedSettingsDefault.OACI}>
                      Use France OACI Layer (geoportal)
-                  </CheckItem>
-                  <CheckItem name="Germany" onChange={settings.setGermanyEnabled}
-                     value={settings.germanyEnabled} defaultValue={SharedSettingsDefault.germanyEnabled} >
+                  </LayerActivation>
+                  <LayerActivation setting={settings.germany} defaultSetting={SharedSettingsDefault.germany}>
                      Use Germany VFR Layer (secais).
-                  </CheckItem>
-                  <CheckItem name="US" onChange={settings.setUSSectionalEnabled}
-                     value={settings.USSectionalEnabled} defaultValue={SharedSettingsDefault.USSectionalEnabled} >
+                  </LayerActivation>
+                  <LayerActivation setting={settings.USSectional} defaultSetting={SharedSettingsDefault.USSectional}>
                      Use US sectional Layers (iflightplanner).
-                  </CheckItem>
+                  </LayerActivation>
                </Items>
-               <Items name="IFR" category="Layers" Comp={CheckBox}>
-                  <CheckItem name="US" onChange={settings.setUSIFRHighEnabled}
-                     value={settings.USIFRHighEnabled} defaultValue={SharedSettingsDefault.USIFRHighEnabled} >
+               <Items name="IFR" category="Layers">
+                  <LayerActivation setting={settings.USIFR.high} defaultSetting={SharedSettingsDefault.USIFR.high}>
                      Use US High IFR Layers (iflightplanner).
-                  </CheckItem>
-                  <CheckItem name="US" onChange={settings.setUSIFRLowEnabled}
-                     value={settings.USIFRLowEnabled} defaultValue={SharedSettingsDefault.USIFRLowEnabled} >
+                  </LayerActivation>
+                  <LayerActivation setting={settings.USIFR.low} defaultSetting={SharedSettingsDefault.USIFR.low}>
                      Use US Low IFR Layers (iflightplanner).
-                  </CheckItem>
+                  </LayerActivation>
                </Items>
-               <Items name="Topographic" category="Layers" Comp={CheckBox}>
-                  <CheckItem name="Open Topo" onChange={settings.setOpenTopoEnabled}
-                     value={settings.openTopoEnabled} defaultValue={SharedSettingsDefault.openTopoEnabled} >
+               <Items name="Topographic" category="Layers">
+                  <LayerActivation setting={settings.opentopo} defaultSetting={SharedSettingsDefault.opentopo}>
                      Use Open Topo Layer.
-                  </CheckItem>
-                  <CheckItem name="Map for free" onChange={settings.setMapForFreeEnabled}
-                     value={settings.mapForFreeEnabled} defaultValue={SharedSettingsDefault.mapForFreeEnabled} >
+                  </LayerActivation>
+                  <LayerActivation setting={settings.mapforfree} defaultSetting={SharedSettingsDefault.mapforfree}>
                      Use Map for free Layer.
-                  </CheckItem>
+                  </LayerActivation>
                </Items>
-               <Items name="World" category="Layers" Comp={CheckBox}>
-                  <CheckItem name="Google Map" onChange={settings.setGoogleMapEnabled}
-                     value={settings.googleMapEnabled} defaultValue={SharedSettingsDefault.googleMapEnabled}>
+               <Items name="World" category="Layers">
+                  <LayerActivation setting={settings.googlemap} defaultSetting={SharedSettingsDefault.googlemap}>
                      Use Google map Layer.
-                  </CheckItem>
-                  <CheckItem name="Openstreet map" onChange={settings.setOpenStreetEnabled}
-                     value={settings.openStreetEnabled} defaultValue={SharedSettingsDefault.openStreetEnabled} >
+                  </LayerActivation>
+                  <LayerActivation setting={settings.openstreet} defaultSetting={SharedSettingsDefault.openstreet}>
                      Use Openstreet map Layer.
-                  </CheckItem>
+                  </LayerActivation>
+               </Items>
+               <Items name="Visibility" category="Layers">
+                  <Legend>
+                     <div className="pb-2">
+                        Set zoom levels for which the layer is to be displayed on the map. Zooming out of this range on the map will hide the layer.
+                     </div>
+                  </Legend>
+                  <ZoomItem name="France AZBA" setting={settings.azba} defaultSetting={SharedSettingsDefault.azba} />
+                  <ZoomItem name="France OACI" setting={settings.OACI} defaultSetting={SharedSettingsDefault.OACI} />
+                  <ZoomItem name="Germany VFR" setting={settings.germany} defaultSetting={SharedSettingsDefault.germany} />
+                  <ZoomItem name="US sectional" setting={settings.USSectional} defaultSetting={SharedSettingsDefault.USSectional} />
+                  <ZoomItem name="US High IFR" setting={settings.USIFR.high} defaultSetting={SharedSettingsDefault.USIFR.high} />
+                  <ZoomItem name="US Low IFR" setting={settings.USIFR.low} defaultSetting={SharedSettingsDefault.USIFR.low} />
+                  <ZoomItem name="OpenTopo" setting={settings.opentopo} defaultSetting={SharedSettingsDefault.opentopo} />
+                  <ZoomItem name="Map4Free" setting={settings.mapforfree} defaultSetting={SharedSettingsDefault.mapforfree} />
+                  <ZoomItem name="Google" setting={settings.googlemap} defaultSetting={SharedSettingsDefault.googlemap} />
+                  <ZoomItem name="OpenStreet" setting={settings.openstreet} defaultSetting={SharedSettingsDefault.openstreet} />
                </Items>
             </Group>
             <Group name="Map Display">

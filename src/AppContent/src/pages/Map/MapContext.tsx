@@ -3,7 +3,6 @@ import { createContext, Dispatch, PropsWithChildren, SetStateAction, useEffect, 
 import { NavData } from "./MapMenu/Menus/Nav";
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
-import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { Polygon } from "ol/geom";
@@ -70,25 +69,6 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       const map = new Map({
          layers: layers,
          interactions: defaults({ doubleClickZoom: false })
-      });
-
-      map.getView().on('change:resolution', () => {
-         const layers = map.getLayers();
-         layers.forEach((layer) => {
-            if (layer instanceof TileLayer) {
-               const tmpSource = layer.getSource()
-               const zoom = map.getView().getZoom();
-               // 'duck typing' for source object, vector layers don't have a zoom level.
-               if (typeof tmpSource.getTileGrid === 'function' && zoom) {
-                  if (zoom > tmpSource.getTileGrid().maxZoom ||
-                     zoom < tmpSource.getTileGrid().minZoom) {
-                     layer.setVisible(false);
-                  } else {
-                     layer.setVisible(true);
-                  }
-               }
-            }
-         });
       });
 
       const focused: { features: Interactive[] } = { features: [] };

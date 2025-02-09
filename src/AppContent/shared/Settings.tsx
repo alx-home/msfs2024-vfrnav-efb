@@ -1,5 +1,12 @@
 import { Type } from "./Types";
 
+export type LayerSetting = {
+   active: boolean,
+   enabled: boolean,
+   minZoom?: number,
+   maxZoom?: number
+}
+
 export type Color = {
    red: number
    green: number
@@ -16,15 +23,18 @@ export type SharedSettings = {
    SIAAZBAAddr: string,
    SIAAZBADateAddr: string,
 
-   OACIEnabled: boolean,
-   germanyEnabled: boolean,
-   USSectionalEnabled: boolean,
-   USIFRHighEnabled: boolean,
-   USIFRLowEnabled: boolean,
-   openTopoEnabled: boolean,
-   mapForFreeEnabled: boolean,
-   googleMapEnabled: boolean,
-   openStreetEnabled: boolean,
+   azba: LayerSetting,
+   OACI: LayerSetting,
+   germany: LayerSetting,
+   USSectional: LayerSetting,
+   USIFR: {
+      high: LayerSetting,
+      low: LayerSetting
+   },
+   opentopo: LayerSetting,
+   mapforfree: LayerSetting,
+   googlemap: LayerSetting,
+   openstreet: LayerSetting,
 
    map: {
       text: {
@@ -45,6 +55,20 @@ export type SharedSettings = {
    }
 };
 
+const LayerRecord = {
+   active: true,
+   enabled: true,
+   maxZoom: false,
+   minZoom: false,
+};
+
+const ColorRecord = {
+   red: true,
+   green: true,
+   blue: true,
+   alpha: true
+}
+
 export const SharedSettingsRecord: Type<SharedSettings> = {
    speed: true,
    adjustHeading: true,
@@ -54,17 +78,36 @@ export const SharedSettingsRecord: Type<SharedSettings> = {
    SIAAZBAAddr: true,
    SIAAZBADateAddr: true,
 
-   OACIEnabled: true,
-   germanyEnabled: true,
-   USSectionalEnabled: true,
-   USIFRHighEnabled: true,
-   USIFRLowEnabled: true,
-   openTopoEnabled: true,
-   mapForFreeEnabled: true,
-   googleMapEnabled: true,
-   openStreetEnabled: true,
+   azba: LayerRecord,
+   OACI: LayerRecord,
+   germany: LayerRecord,
+   USSectional: LayerRecord,
+   USIFR: {
+      high: LayerRecord,
+      low: LayerRecord
+   },
+   opentopo: LayerRecord,
+   mapforfree: LayerRecord,
+   googlemap: LayerRecord,
+   openstreet: LayerRecord,
 
-   map: true,
+   map: {
+      text: {
+         maxSize: true,
+         minSize: true,
+         borderSize: true,
+         color: ColorRecord,
+         borderColor: ColorRecord
+      },
+      azba: {
+         inactiveHighColor: ColorRecord,
+         inactiveLowColor: ColorRecord,
+         activeHighColor: ColorRecord,
+         activeLowColor: ColorRecord,
+         range: true
+      },
+      markerSize: true
+   },
 
    typeUUID: "SharedSettings"
 };

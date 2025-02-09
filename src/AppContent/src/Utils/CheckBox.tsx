@@ -1,7 +1,6 @@
 import { ChangeEvent, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
 
 import checkImage from '@images/check.svg';
-import useMouseRelease from "@Events/MouseRelease";
 
 export const CheckBox = ({ className, active, children, value, defaultValue, onChange, reset }: PropsWithChildren<{
    className?: string,
@@ -14,7 +13,6 @@ export const CheckBox = ({ className, active, children, value, defaultValue, onC
    const [checked, setChecked] = useState(value ?? defaultValue ?? false);
    const [last, setLast] = useState<boolean | undefined>();
    const elemRef = useRef<HTMLInputElement | null>(null);
-   const mouseLeave = useMouseRelease(active ?? true);
 
    useEffect(() => {
       if (value !== last) {
@@ -29,15 +27,11 @@ export const CheckBox = ({ className, active, children, value, defaultValue, onC
       }
    }, [reset, setChecked, defaultValue, value]);
 
-   useEffect(() => {
-      if (mouseLeave !== undefined) {
-         elemRef.current?.blur();
-      }
-   }, [mouseLeave]);
 
    useEffect(() => onChange?.(checked), [onChange, checked, setChecked]);
 
    const onChangeC = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+      elemRef.current?.blur();
       setChecked(e.currentTarget.checked)
    }, []);
 

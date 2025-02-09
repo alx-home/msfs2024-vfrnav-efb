@@ -8,6 +8,8 @@ export const OlWMSLayer = ({
    crossOrigin,
    order,
    active,
+   minZoom,
+   maxZoom,
    clipAera
 }: OlLayerProp & {
    url: string,
@@ -20,5 +22,5 @@ export const OlWMSLayer = ({
          crossOrigin: crossOrigin ?? "anonymous"
       },
    }), [crossOrigin, url]);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} clipAera={clipAera} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />;
 };

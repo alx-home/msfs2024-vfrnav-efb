@@ -55,8 +55,8 @@
       "@Events/*": [
         "./src/Events/*"
       ],
-      "@Settings": [
-        "./src/Settings.tsx"
+      "@Settings/*": [
+        "src/Settings/*"
       ],
       "@Utils/*": [
         "./src/Utils/*"

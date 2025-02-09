@@ -1,4 +1,3 @@
-import useMouseRelease from '@Events/MouseRelease';
 import { useRef, useMemo, useEffect, useState, useCallback, ChangeEvent, PropsWithChildren, forwardRef, ForwardedRef, useImperativeHandle } from 'react';
 
 type InputProps = {
@@ -15,15 +14,8 @@ type InputProps = {
 const InputImpl = ({ active, range, reset, defaultValue, onChange, value }: InputProps, inputRef: ForwardedRef<HTMLInputElement | null>) => {
    const ref = useRef<HTMLInputElement | null>(null);
    const [lastPropValue, setLastPropValue] = useState<number>();
-   const mouseRelease = useMouseRelease(active ?? true);
 
    useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(inputRef, () => ref.current);
-
-   useEffect(() => {
-      if (mouseRelease !== undefined) {
-         ref.current?.blur();
-      }
-   }, [mouseRelease]);
 
    useEffect(() => {
       if (reset) {

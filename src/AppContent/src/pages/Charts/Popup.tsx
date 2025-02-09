@@ -1,4 +1,4 @@
-import { SettingsContext } from "@Settings";
+import { SettingsContext } from "@Settings/SettingsProvider";
 import { Button } from "@Utils/Button";
 import { Input } from "@Utils/Input";
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";

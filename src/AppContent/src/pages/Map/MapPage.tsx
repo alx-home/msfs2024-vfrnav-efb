@@ -4,7 +4,7 @@ import { OlRouteLayer } from "@Ol/layers/OlRoute";
 import { OlWMTSLayer } from "@Ol/layers/OlWMTSLayer";
 import { OlMap } from "@Ol/OlMap";
 import { getTopLeft, getWidth } from 'ol/extent';
-import { get as getProjection } from 'ol/proj';
+import { fromLonLat, get as getProjection } from 'ol/proj';
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import flightPlanImg from '@images/flight-plan.svg';
@@ -22,8 +22,9 @@ import osmImg from '@images/osm.jpg';
 
 import { OnLayerChange } from './MapMenu/Menus/Layers';
 import MapContextProvider, { MapContext } from "./MapContext";
-import { Settings } from "@Settings";
+import { Settings } from "@Settings/Settings";
 import { AZBALayer } from "@Ol/layers/AZBALayer";
+import { SettingsContext } from "@Settings/SettingsProvider";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -33,8 +34,8 @@ const matrixIds = new Array(19);
 
 for (let z = 0; z < 19; ++z) {
    // generate resolutions and matrixIds arrays for this WMTS
-   resolutions[z] = size / Math.pow(2, z);
-   matrixIds[z] = z;
+   resolutions[z] = size / Math.pow(2, Math.min(11, z + 6)) + (11 - z) * 0.0000000000001;
+   matrixIds[z] = Math.min(11, z + 6);
 }
 
 const OverlayItem = ({ menu, setMenu, setOpen, image, alt, currentMenu }: {
@@ -87,6 +88,7 @@ const OACIBoundaries = [[-430238.11752151186, 6642123.685482322], [-389883.69648
 export const MapPage = ({ active }: {
    active: boolean
 }) => {
+   const settings = useContext(SettingsContext)!;
    const [opacity, setOpacity] = useState(' opacity-0');
    const [open, setOpen] = useState(false);
    const [menu, setMenu] = useState<Menu>(Menu.layers);
@@ -95,8 +97,7 @@ export const MapPage = ({ active }: {
          olLayer: <AZBALayer key="azba" />,
          src: azbaImg,
          alt: 'azba layer',
-         active: true,
-         enabled: (_settings: Settings) => _settings.OACIEnabled
+         getSettings: (_settings: Settings) => _settings.azba,
       },
       {
          olLayer: <OlWMTSLayer key="wmts"
@@ -105,67 +106,65 @@ export const MapPage = ({ active }: {
             layer={'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-OACI'}
             version={'1.0.0'}
             projection={projection}
-            minZoom={6}
-            maxZoom={11}
             clipAera={OACIBoundaries}
             tileGrid={{
                origin: getTopLeft(projectionExtent),
                resolutions: resolutions,
                matrixIds: matrixIds,
+               extent: [...fromLonLat([-5.99644, 40.3893]), ...fromLonLat([11.146, 51.4441])]
             }}
          />,
          src: oaciImg,
          alt: 'oaci layer',
-         active: true,
-         enabled: (_settings: Settings) => _settings.OACIEnabled
+         getSettings: (_settings: Settings) => _settings.OACI,
       },
       {
          olLayer: <OlOSMLayer key="dsf" url="https://secais.dfs.de/static-maps/icao500/tiles/{z}/{x}/{y}.png" crossOrigin={null} />,
          src: dsfImg,
          alt: 'dsf layer',
-         enabled: (_settings: Settings) => _settings.germanyEnabled
+         getSettings: (_settings: Settings) => _settings.germany
       },
       {
          olLayer: <OlOSMLayer key="sectional" url="https://maps.iflightplanner.com/Maps/Tiles/Sectional/Z{z}/{y}/{x}.png" crossOrigin={null} />,
          src: sectionalImg,
          alt: 'sectional layer',
-         enabled: (_settings: Settings) => _settings.USSectionalEnabled
+         getSettings: (_settings: Settings) => _settings.USSectional
       },
       {
          olLayer: <OlOSMLayer key="map-for-free" url="https://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg" crossOrigin={null} />,
          src: map4freeImg,
          alt: 'map for free layer',
-         enabled: (_settings: Settings) => _settings.mapForFreeEnabled
+         getSettings: (_settings: Settings) => _settings.mapforfree
       },
       {
          olLayer: <OlOSMLayer key="google" url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}" crossOrigin={null} />,
          src: bingImg,
          alt: 'google layer',
-         enabled: (_settings: Settings) => _settings.googleMapEnabled
+         getSettings: (_settings: Settings) => _settings.googlemap
       },
       {
          olLayer: <OlOSMLayer key="open-topo" url="https://tile.opentopomap.org/{z}/{x}/{y}.png" crossOrigin={null} />,
          src: opentopoImg,
          alt: 'open topo layer',
-         enabled: (_settings: Settings) => _settings.openTopoEnabled
+         getSettings: (_settings: Settings) => _settings.opentopo
       },
       {
          olLayer: <OlOSMLayer key="ifr low" url="https://maps.iflightplanner.com/Maps/Tiles/IFRLow/Z{z}/{y}/{x}.png" crossOrigin={null} />,
          src: ifrLowImg,
          alt: 'ifr low layer',
-         enabled: (_settings: Settings) => _settings.USIFRLowEnabled
+         getSettings: (_settings: Settings) => _settings.USIFR.low,
       },
       {
          olLayer: <OlOSMLayer key="ifr high" url="https://maps.iflightplanner.com/Maps/Tiles/IFRHigh/Z{z}/{y}/{x}.png" crossOrigin={null} />,
          src: ifrHighImg,
          alt: 'ifr high layer',
-         enabled: (_settings: Settings) => _settings.USIFRHighEnabled
+         getSettings: (_settings: Settings) => _settings.USIFR.high,
       },
       {
          olLayer: <OlOSMLayer key="osm" />,
          src: osmImg,
          alt: 'osm layer',
-         enabled: (_settings: Settings) => _settings.openStreetEnabled
+         getSettings: (_settings: Settings) => _settings.openstreet,
       },
       // {
       //    olLayer: <OlBingLayer key="bing" />,
@@ -174,8 +173,7 @@ export const MapPage = ({ active }: {
       // }
    ].map((elem, index) => ({
       ...elem,
-      order: index,
-      active: elem.active ?? false
+      order: index
    })));
 
    const onLayerChange = useCallback<OnLayerChange>((values) =>
@@ -186,13 +184,10 @@ export const MapPage = ({ active }: {
             if (elem.order !== undefined) {
                newLayers[elem.index].order = elem.order;
             }
-            if (elem.active !== undefined) {
-               newLayers[elem.index].active = elem.active;
-            }
          });
 
          return newLayers;
-      }), [setLayers]);
+      }), []);
 
    useEffect(() => {
       if (active) {
@@ -203,8 +198,11 @@ export const MapPage = ({ active }: {
    }, [active]);
 
    const olLayers = useMemo(() =>
-      layers.map(layer => ({ ...layer.olLayer, props: { ...layer.olLayer.props, order: layers.length - 1 - layer.order, active: layer.active } })),
-      [layers]);
+      layers.map(layer => {
+         const layerSettings = layer.getSettings(settings);
+         return { ...layer.olLayer, props: { ...layer.olLayer.props, order: layers.length - 1 - layer.order, active: layerSettings.active, enabled: layerSettings.enabled, minZoom: layerSettings.minZoom, maxZoom: layerSettings.maxZoom } }
+      }),
+      [layers, settings]);
 
    return <MapContextProvider>
       <div className={'transition transition-std relative grow h-full' + opacity} style={active ? {} : { display: 'none' }}>

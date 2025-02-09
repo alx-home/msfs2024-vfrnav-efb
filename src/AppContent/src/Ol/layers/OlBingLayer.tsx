@@ -6,6 +6,8 @@ export const OlBingLayer = ({
    opacity,
    order,
    active,
+   minZoom,
+   maxZoom,
    clipAera
 }: OlLayerProp & {
    opacity?: number
@@ -14,5 +16,5 @@ export const OlBingLayer = ({
       key: "@TODO",
       imagerySet: 'AerialWithLabels'
    }), []);
-   return <OlLayer source={source} opacity={opacity} order={order} active={active} clipAera={clipAera} />;
+   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />;
 };

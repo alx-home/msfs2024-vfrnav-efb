@@ -4,7 +4,7 @@ import { Button } from "@Utils/Button";
 import { Pdf } from "@Utils/Pdf";
 import { Popup } from "./Popup";
 import { Scroll } from "@Utils/Scroll";
-import { SettingsContext } from "@Settings";
+import { SettingsContext } from "@Settings/SettingsProvider";
 
 import deleteImg from '@images/delete.svg';
 

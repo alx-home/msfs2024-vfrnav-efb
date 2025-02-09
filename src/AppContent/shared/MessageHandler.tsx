@@ -1,4 +1,4 @@
-import { isType, Type } from '@shared/Types';
+import { isType, reduce, Type } from '@shared/Types';
 import { SharedSettingsRecord, SharedSettings } from './Settings';
 
 const MessageIdValues = ["SharedSettings", "GetSettings"] as const;
@@ -37,7 +37,7 @@ export class MessageHandler {
    send<T extends MessageType>(data: T) {
       const messageId = MessageIdValues.find(value => MessageChecker[value]?.(data));
       if (messageId) {
-         this.sendImpl(data, MessageRecord[messageId]);
+         this.sendImpl(data, MessageRecord[messageId] as Type<T>);
       }
    }
 
@@ -53,14 +53,8 @@ export class MessageHandler {
       }
    }
 
-   private filter<T>(data: T, record: Record<keyof T, boolean>) {
-      const result = Object.create(null);
-      Object.keys(data as object).filter(key => record[key as keyof T]).forEach(key => result[key] = data[key as keyof T]);
-      return result;
-   }
-
    private sendImpl<T>(data: T, record?: Type<T>) {
-      const sanitizedData = JSON.stringify(record ? this.filter(data, record) : data);
+      const sanitizedData = JSON.stringify(record ? reduce(data, record) : data);
 
       const elem = this.iframe ? this.iframe.contentWindow : window.top;
       elem?.postMessage({ source: 'vfrNav', value: sanitizedData }, '*');

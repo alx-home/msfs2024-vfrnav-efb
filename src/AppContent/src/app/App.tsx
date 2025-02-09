@@ -8,7 +8,7 @@ import { CreditsPage } from '@pages/Credits/CreditsPage';
 import { MapPage } from '@pages/Map/MapPage';
 import { SettingsPage } from '@pages/Settings/SettingsPage';
 
-import SettingsContextProvider from '@Settings';
+import SettingsContextProvider from '@Settings/SettingsProvider';
 
 import mapImg from '@images/map.svg';
 import navlogImg from '@images/navlog.svg';

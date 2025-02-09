@@ -1,7 +1,12 @@
 export type TypeUUID = {
    typeUUID: string
 };
-export type Type<T> = Record<keyof T, boolean> & TypeUUID;
+
+export type SubType<T> = {
+   [K in keyof T]: T[K] extends object ? SubType<T[K]> : (T[K] extends typeof Function ? never : boolean);
+};
+
+export type Type<T> = SubType<T> & TypeUUID;
 
 declare global {
    interface String {
@@ -9,13 +14,55 @@ declare global {
    }
 }
 
-export function isType<T>(elem: unknown | T, record: object): elem is T {
-   return Object.keys(record).filter(key => key !== 'typeUUID').reduce((result, key) =>
-      result && (elem as T)[key as keyof T] !== undefined, true);
+export function isType<T>(elem: T | unknown, record: Type<T>): elem is T {
+   for (const key in record) {
+      if (key !== 'typeUUID') {
+         const value = record[key as keyof Type<T>];
+         const subElem = elem === undefined ? undefined : (elem as T)[key as keyof T];
+
+         if (typeof value === 'boolean') {
+            if (value && subElem === undefined) {
+               return false;
+            }
+
+            continue;
+         }
+
+         if (typeof value === 'object') {
+            if (!isType(subElem, value as Type<unknown>)) {
+               return false;
+            }
+         }
+      }
+   }
+
+   return true;
 }
 
-export function reduce<T>(elem: unknown | T, record: object): T {
-   return JSON.parse(`{${Object.keys(record).filter(key => key !== 'typeUUID').map(key => `"${key}":${(JSON.stringify((elem as T)[key as keyof T]))}`).join()}}`);
+export function reduce<T>(elem: T, record: Type<T>): T {
+   const result: object = {};
+
+   for (const key in record) {
+      if (key !== 'typeUUID') {
+         const value = record[key as keyof Type<T>];
+         const subElem = (elem as T)[key as keyof T];
+
+         if (typeof value === 'boolean') {
+            if (subElem !== undefined) {
+               (result[key as keyof object] as T[keyof T]) = subElem;
+            }
+
+            continue;
+         } else if (typeof value === 'object') {
+            const res = reduce(subElem, value as Type<unknown>);
+            if (res !== undefined) {
+               (result[key as keyof object] as unknown) = res;
+            }
+         }
+      }
+   }
+
+   return result as T;
 }
 
 export const deepEquals = (object1: object, object2: object) => {
