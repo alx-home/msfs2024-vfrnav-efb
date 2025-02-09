@@ -399,6 +399,12 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
          setSIAAZBAAddr(settings.SIAAZBAAddr);
          setSIAAZBADateAddr(settings.SIAAZBADateAddr);
 
+         setMapAZBARange(settings.map.azba.range);
+         setMapAZBAActiveHighColor(settings.map.azba.activeHighColor);
+         setMapAZBAActiveLowColor(settings.map.azba.activeLowColor);
+         setMapAZBAInactiveHighColor(settings.map.azba.inactiveHighColor);
+         setMapAZBAInactiveLowColor(settings.map.azba.inactiveLowColor);
+
          setMapMarkerSize(settings.map.markerSize);
 
          setMapTextBorderColor(settings.map.text.borderColor);

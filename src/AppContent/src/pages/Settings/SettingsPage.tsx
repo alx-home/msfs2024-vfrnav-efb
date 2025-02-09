@@ -388,7 +388,7 @@ export const SettingsPage = ({ active }: {
       const hours = Math.floor(range / 60);
       const minutes = Math.floor(range - hours * 60);
 
-      return (hours ? hours + 'h' : '') + minutes + 'm';
+      return (hours ? hours + 'h' : '') + minutes + 'min';
    }, [settings.map.azba.range]);
 
    return <div className="flex grow justify-center m-2 p-4" style={active ? {} : { display: 'none' }}>
@@ -414,13 +414,13 @@ export const SettingsPage = ({ active }: {
                      Please enter a numerical value !
                   </ErrorMessage>
                </InputItem>
-               <SliderItem category="AZBA" name="Date range"
-                  range={{ min: 1, max: 24 * 60 }}
+               <SliderItem category="AZBA" name="Margin"
+                  range={{ min: 0, max: 24 * 60 }}
                   defaultValue={SharedSettingsDefault.map.azba.range}
                   value={settings.map.azba.range}
                   onChange={settings.map.azba.setRange}>
                   <div className="flex flex-row">
-                     <div className="flex flex-col justify-center">Set the number of minutes to consider from now for active AZBA zones: {AZBARange}.</div>
+                     <div className="flex flex-col justify-center">Consider an AZBA zone to be active {AZBARange} before its real beginning time.</div>
                   </div>
                </SliderItem>
             </Group>

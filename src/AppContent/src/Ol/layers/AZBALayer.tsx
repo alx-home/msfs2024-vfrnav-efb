@@ -26,44 +26,44 @@ export const AZBALayer = ({
    const activeHighLayer = useMemo(() => new VectorLayer({
       style: new Style({
          stroke: new Stroke({
-            color: `rgba(${settings.map.azba.activeHighColor.red}, ${settings.map.azba.activeHighColor.green}, ${settings.map.azba.activeHighColor.blue}, ${settings.map.azba.activeHighColor.alpha})`,
+            color: `rgba(${settings.map.azba.activeHighColor.red.toFixed(0)}, ${settings.map.azba.activeHighColor.green.toFixed(0)}, ${settings.map.azba.activeHighColor.blue.toFixed(0)}, ${settings.map.azba.activeHighColor.alpha})`,
             width: 3,
          }),
          fill: new Fill({
-            color: `rgba(${settings.map.azba.activeHighColor.red}, ${settings.map.azba.activeHighColor.green}, ${settings.map.azba.activeHighColor.blue}, ${settings.map.azba.activeHighColor.alpha})`,
+            color: `rgba(${settings.map.azba.activeHighColor.red.toFixed(0)}, ${settings.map.azba.activeHighColor.green.toFixed(0)}, ${settings.map.azba.activeHighColor.blue.toFixed(0)}, ${settings.map.azba.activeHighColor.alpha})`,
          })
       })
    }), [settings.map.azba.activeHighColor.alpha, settings.map.azba.activeHighColor.blue, settings.map.azba.activeHighColor.green, settings.map.azba.activeHighColor.red]);
    const activeLowLayer = useMemo(() => new VectorLayer({
       style: new Style({
          stroke: new Stroke({
-            color: `rgba(${settings.map.azba.activeLowColor.red}, ${settings.map.azba.activeLowColor.green}, ${settings.map.azba.activeLowColor.blue}, ${settings.map.azba.activeLowColor.alpha})`,
+            color: `rgba(${settings.map.azba.activeLowColor.red.toFixed(0)}, ${settings.map.azba.activeLowColor.green.toFixed(0)}, ${settings.map.azba.activeLowColor.blue.toFixed(0)}, ${settings.map.azba.activeLowColor.alpha})`,
             width: 3,
          }),
          fill: new Fill({
-            color: `rgba(${settings.map.azba.activeLowColor.red}, ${settings.map.azba.activeLowColor.green}, ${settings.map.azba.activeLowColor.blue}, ${settings.map.azba.activeLowColor.alpha})`,
+            color: `rgba(${settings.map.azba.activeLowColor.red.toFixed(0)}, ${settings.map.azba.activeLowColor.green.toFixed(0)}, ${settings.map.azba.activeLowColor.blue.toFixed(0)}, ${settings.map.azba.activeLowColor.alpha})`,
          })
       })
    }), [settings.map.azba.activeLowColor.alpha, settings.map.azba.activeLowColor.blue, settings.map.azba.activeLowColor.green, settings.map.azba.activeLowColor.red]);
    const inactiveHighLayer = useMemo(() => new VectorLayer({
       style: new Style({
          stroke: new Stroke({
-            color: `rgba(${settings.map.azba.inactiveHighColor.red}, ${settings.map.azba.inactiveHighColor.green}, ${settings.map.azba.inactiveHighColor.blue}, ${settings.map.azba.inactiveHighColor.alpha})`,
+            color: `rgba(${settings.map.azba.inactiveHighColor.red.toFixed(0)}, ${settings.map.azba.inactiveHighColor.green.toFixed(0)}, ${settings.map.azba.inactiveHighColor.blue.toFixed(0)}, ${settings.map.azba.inactiveHighColor.alpha})`,
             width: 3,
          }),
          fill: new Fill({
-            color: `rgba(${settings.map.azba.inactiveHighColor.red}, ${settings.map.azba.inactiveHighColor.green}, ${settings.map.azba.inactiveHighColor.blue}, ${settings.map.azba.inactiveHighColor.alpha})`,
+            color: `rgba(${settings.map.azba.inactiveHighColor.red.toFixed(0)}, ${settings.map.azba.inactiveHighColor.green.toFixed(0)}, ${settings.map.azba.inactiveHighColor.blue.toFixed(0)}, ${settings.map.azba.inactiveHighColor.alpha})`,
          })
       })
    }), [settings.map.azba.inactiveHighColor.alpha, settings.map.azba.inactiveHighColor.blue, settings.map.azba.inactiveHighColor.green, settings.map.azba.inactiveHighColor.red]);
    const inactiveLowLayer = useMemo(() => new VectorLayer({
       style: new Style({
          stroke: new Stroke({
-            color: `rgba(${settings.map.azba.inactiveLowColor.red}, ${settings.map.azba.inactiveLowColor.green}, ${settings.map.azba.inactiveLowColor.blue}, ${settings.map.azba.inactiveLowColor.alpha})`,
+            color: `rgba(${settings.map.azba.inactiveLowColor.red.toFixed(0)}, ${settings.map.azba.inactiveLowColor.green.toFixed(0)}, ${settings.map.azba.inactiveLowColor.blue.toFixed(0)}, ${settings.map.azba.inactiveLowColor.alpha})`,
             width: 3,
          }),
          fill: new Fill({
-            color: `rgba(${settings.map.azba.inactiveLowColor.red}, ${settings.map.azba.inactiveLowColor.green}, ${settings.map.azba.inactiveLowColor.blue}, ${settings.map.azba.inactiveLowColor.alpha})`,
+            color: `rgba(${settings.map.azba.inactiveLowColor.red.toFixed(0)}, ${settings.map.azba.inactiveLowColor.green.toFixed(0)}, ${settings.map.azba.inactiveLowColor.blue.toFixed(0)}, ${settings.map.azba.inactiveLowColor.alpha})`,
          })
       })
    }), [settings.map.azba.inactiveLowColor.alpha, settings.map.azba.inactiveLowColor.blue, settings.map.azba.inactiveLowColor.green, settings.map.azba.inactiveLowColor.red]);

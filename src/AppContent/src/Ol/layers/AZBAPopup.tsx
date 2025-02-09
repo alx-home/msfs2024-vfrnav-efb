@@ -89,15 +89,7 @@ export const AZBAPopup = ({ data }: {
       </div>
       <Scroll className='flex flex-row justify-center'>
          <div className="flex flex-col [&>:not(:first-child)]:mt-8">
-            <div className='flex flex-col'>
-               <div className='text-2xl font-semibold mb-3'>
-                  Info
-               </div>
-               <div className='flex flex-col ml-8 shadow-sm'>
-                  <div className='flex flex-row justify-start' dangerouslySetInnerHTML={{ __html: data.remark.replaceAll('#', '<br />') }}>
-                  </div>
-               </div>
-            </div>
+            {Activation}
             <div className='flex flex-col'>
                <div className='text-2xl font-semibold mb-3'>
                   Altitude
@@ -113,7 +105,15 @@ export const AZBAPopup = ({ data }: {
                   </div>
                </div>
             </div>
-            {Activation}
+            <div className='flex flex-col'>
+               <div className='text-2xl font-semibold mb-3'>
+                  Info
+               </div>
+               <div className='flex flex-col ml-8 shadow-sm'>
+                  <div className='flex flex-row justify-start' dangerouslySetInnerHTML={{ __html: data.remark.replaceAll('#', '<br />') }}>
+                  </div>
+               </div>
+            </div>
          </div>
       </Scroll>
       <div className='flex flex-row grow w-full [&>:not(:first-child)]:ml-2 pt-10 justify-end' >
