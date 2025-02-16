@@ -37,5 +37,8 @@ Fixes :
 - Performance improvements / Amélioration des performances
 
 </ReleaseNote>
+	<ReleaseNote Version="0.3.1" Date="0-1-1">Fixes :
+- Navigation Legs Heading (0deg for north) / Cap magnetic des branches de navigation (0deg au Nord)
+- Navigation Legs Hours / Heures des branches de navigation</ReleaseNote>
 </ReleaseNotes>
 
