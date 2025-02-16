@@ -269,15 +269,22 @@ export const OlRouteLayer = ({
 
                         const geoDistance = getLength((new LineString([geoCoords[0][index], geoCoords[0][index + 1]]))) * 0.0005399568;
                         const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
-                        const hours = geoDistance / (settings.speed);
-                        const minutes = (hours - Math.floor(hours)) * 60;
-                        const seconds = (minutes - Math.floor(minutes)) * 60;
 
-                        const text = (mag).toFixed(0) + "\u00b0 "
-                           + geoDistance.toFixed(0) + " nm  "
-                           + (Math.floor(hours) ? hours.toFixed(0) + "h" : "")
-                           + (Math.floor(minutes) ? minutes.toFixed(0) + "m" : "")
-                           + seconds.toFixed(0);
+                        const fdays = geoDistance / (24 * settings.speed);
+                        const days = Math.floor(fdays);
+                        const fhours = (fdays - days) * 24;
+                        const hours = Math.floor(fhours);
+                        const fminutes = (fhours - hours) * 60;
+                        const minutes = Math.floor(fminutes);
+                        const fseconds = (fminutes - minutes) * 60;
+                        const seconds = Math.floor(fseconds);
+
+                        const text = Math.floor(mag).toString() + "\u00b0 "
+                           + Math.floor(geoDistance).toString() + " nm  "
+                           + (days ? days.toString() + 'd ' : '')
+                           + ((days || hours) ? ((days && (hours < 10) ? '0' : '') + hours.toString() + ":") : "")
+                           + ((days || hours || minutes) ? ((minutes < 10 ? "0" : '') + minutes.toString() + ":") : "")
+                           + (seconds < 10 ? '0' : '') + seconds.toString();
 
                         const maxSize = settings.map.text.maxSize;
 
