@@ -257,7 +257,7 @@ export const OlRouteLayer = ({
 
                         const vector = [nextCoord[0] - coord[0], nextCoord[1] - coord[1]];
                         let angle = Math.atan2(vector[1], vector[0]) * 180 / Math.PI;
-                        let mag = -angle;
+                        let mag = 90 + angle;
 
                         if (mag < 0) {
                            mag += 360;
@@ -273,7 +273,7 @@ export const OlRouteLayer = ({
                         const minutes = (hours - Math.floor(hours)) * 60;
                         const seconds = (minutes - Math.floor(minutes)) * 60;
 
-                        const text = mag.toFixed(0) + "\u00b0 "
+                        const text = (mag).toFixed(0) + "\u00b0 "
                            + geoDistance.toFixed(0) + " nm  "
                            + (Math.floor(hours) ? hours.toFixed(0) + "h" : "")
                            + (Math.floor(minutes) ? minutes.toFixed(0) + "m" : "")
@@ -295,7 +295,7 @@ export const OlRouteLayer = ({
                            context.textAlign = "center";
                            context.translate(center[0], center[1]);
                            context.rotate(angle * Math.PI / 180);
-                           context.translate(((mag > 90 && mag < 180) || (mag >= 270)) ? -settings.map.markerSize * 0.25 : settings.map.markerSize * 0.25, -settings.map.text.borderSize * 0.25 - 5);
+                           context.translate(((mag > 90 && mag <= 180) || (mag >= 270)) ? -settings.map.markerSize * 0.25 : settings.map.markerSize * 0.25, -settings.map.text.borderSize * 0.25 - 5);
 
                            context.strokeText(text, 0, 0);
 
