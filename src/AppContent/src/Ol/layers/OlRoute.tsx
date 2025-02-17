@@ -1,7 +1,7 @@
 import { OlLayerProp } from "./OlLayer";
 import VectorSource from "ol/source/Vector";
 import { Feature } from "ol";
-import { Geometry, LineString, MultiLineString, SimpleGeometry } from "ol/geom";
+import { Geometry, LineString, SimpleGeometry } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import Draw from "ol/interaction/Draw";
 import Modify from "ol/interaction/Modify";
@@ -204,8 +204,6 @@ export const OlRouteLayer = ({
       const geom = feature.getGeometry();
 
       if (geom?.getType() === 'MultiLineString') {
-         const geoCoords = (geom as MultiLineString).getCoordinates();
-
          return [new Style({
             renderer: (coords, state) => {
                const context = state.context;
@@ -267,7 +265,7 @@ export const OlRouteLayer = ({
                            angle = angle - 180;
                         }
 
-                        const geoDistance = getLength((new LineString([geoCoords[0][index], geoCoords[0][index + 1]]))) * 0.0005399568;
+                        const geoDistance = getLength((new LineString([map.getCoordinateFromPixelInternal(coord), map.getCoordinateFromPixelInternal(nextCoord)]))) * 0.0005399568;
                         const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
 
                         const fdays = geoDistance / (24 * settings.speed);
