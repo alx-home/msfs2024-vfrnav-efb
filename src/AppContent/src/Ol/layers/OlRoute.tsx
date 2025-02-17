@@ -316,7 +316,7 @@ export const OlRouteLayer = ({
       }
 
       return [];
-   }, [settings.map.markerSize, settings.map.text.borderColor, settings.map.text.borderSize, settings.map.text.color, settings.map.text.maxSize, settings.map.text.minSize, settings.speed]);
+   }, [map, settings.map.markerSize, settings.map.text.borderColor.alpha, settings.map.text.borderColor.blue, settings.map.text.borderColor.green, settings.map.text.borderColor.red, settings.map.text.borderSize, settings.map.text.color.alpha, settings.map.text.color.blue, settings.map.text.color.green, settings.map.text.color.red, settings.map.text.maxSize, settings.map.text.minSize, settings.speed]);
 
    useEffect(() => {
       layer?.setZIndex(zIndex);
