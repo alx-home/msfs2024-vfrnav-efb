@@ -105,13 +105,13 @@ const SliderItem = ({ name, category, className, onChange, defaultValue, value, 
    category?: string,
    className?: string,
    defaultValue?: number,
-   value?: number,
+   value: number,
    bounds?: {
       min: number,
       max: number
    },
    range: { min: number, max: number },
-   onChange?: (_value: number) => void
+   onChange: (_value: number) => void
 }>) => {
    const [reset, setReset] = useState(false);
    const resetCallback = useMemo(() => () => setReset(true), [setReset]);
@@ -138,12 +138,12 @@ const DualSliderItem = ({ name, category, className, onChange, defaultValue, val
       min: number,
       max: number
    },
-   value?: {
+   value: {
       min: number,
       max: number
    },
    range: { min: number, max: number },
-   onChange?: (_min: number, _max: number) => void
+   onChange: (_min: number, _max: number) => void
 }>) => {
    const [reset, setReset] = useState(false);
    const resetCallback = useMemo(() => () => setReset(true), [setReset]);
@@ -366,7 +366,8 @@ export const SettingsPage = ({ active }: {
       }
    }, [active]);
 
-   const textSize = useMemo(() => ({ min: SharedSettingsDefault.map.text.minSize, max: SharedSettingsDefault.map.text.maxSize }), []);
+   const textSize = useMemo(() => ({ min: settings.map.text.minSize, max: settings.map.text.maxSize }), [settings.map.text.maxSize, settings.map.text.minSize]);
+   const defaultTextSize = useMemo(() => ({ min: SharedSettingsDefault.map.text.minSize, max: SharedSettingsDefault.map.text.maxSize }), []);
    const setTextSize = useCallback((min: number, max: number) => {
       settings.map.text.setMinSize(min);
       settings.map.text.setMaxSize(max);
@@ -582,13 +583,13 @@ export const SettingsPage = ({ active }: {
                </ColorPicker>
                <DualSliderItem category="Legs" name="Text size"
                   range={{ min: 5, max: 50 }}
-                  defaultValue={textSize}
+                  defaultValue={defaultTextSize}
                   value={textSize}
                   onChange={setTextSize}>
                   <div className="flex flex-row min-h-[60px]">
                      <div className="flex flex-row min-w-[80px] justify-center">
-                        <div className={"flex flex-col justify-center mr-1"} style={{ font: `900 ${settings.map.text.minSize.toFixed(0)}px Inter-bold, sans-serif` }}>a</div>
-                        <div className={"flex flex-col justify-center"} style={{ font: `900 ${settings.map.text.maxSize.toFixed(0)}px Inter-bold, sans-serif` }}>A</div>
+                        <div className={"flex flex-col justify-center mr-1"} style={{ font: `900 ${textSize.min.toFixed(0)}px Inter-bold, sans-serif` }}>a</div>
+                        <div className={"flex flex-col justify-center"} style={{ font: `900 ${textSize.max.toFixed(0)}px Inter-bold, sans-serif` }}>A</div>
                      </div>
                      <div className="flex flex-col justify-center">Set bounds of navigation legs text size.</div>
                   </div>

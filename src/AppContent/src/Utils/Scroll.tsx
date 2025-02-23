@@ -19,10 +19,10 @@ const ScrollImpl = ({ children, className, style, hidden, onWheel }: ScrollProps
    const mousePosition = useMouseMove(scrolling !== undefined);
    const [offset, setOffset] = useState(0);
    const mouseUp = useMouseRelease(scrolling !== undefined);
-   const ref = useRef<HTMLDivElement | null>(null);
+   const ref = useRef<ScrollRef>(null);
    const [dimensions, setResizeRef] = useResize();
 
-   useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(inputRef, () => ref.current);
+   useImperativeHandle<ScrollRef, ScrollRef>(inputRef, () => ref.current);
 
    useEffect(() => {
       if (mouseUp !== undefined) {

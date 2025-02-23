@@ -142,10 +142,6 @@ body>div {
       border-color: var(--border-color);
    }
 
-   .bg-msfs {
-      background-color: var(--border-msfs);
-   }
-
    .filter-msfs {
       filter: invert(53%) sepia(49%) saturate(3264%) hue-rotate(166deg) brightness(103%) contrast(104%);
    }
