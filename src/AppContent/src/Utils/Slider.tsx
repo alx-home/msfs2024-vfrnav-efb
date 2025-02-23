@@ -133,7 +133,7 @@ const SliderImpl = ({ className, active, range, reset, defaultValue, onChange, v
          >
          </button>
          <div className='absolute z-0 left-0 top-0 right-0 bottom-0 flex flex-row grow'>
-            <button className={'flex flex-row grow bg-transparent border-transparent h-[8px] m-auto'
+            <button className={'flex flex-row grow bg-transparent border-transparent h-full'
                + ((active ?? true)
                   ? ' group-hover/slider:[&>*]:border-msfs group-hover/slider:drop-shadow-xl'
                   + ' group-focus-within/slider:[&>*]:border-msfs group-focus-within/slider:drop-shadow-xl'
@@ -146,7 +146,7 @@ const SliderImpl = ({ className, active, range, reset, defaultValue, onChange, v
                ref={trackRef}
                onMouseDown={onClick}
             >
-               <div className={'flex flex-row grow transition-all duration-100 bg-gray-700 shadow-md h-[8px]'
+               <div className={'flex flex-row grow transition-all duration-100 bg-gray-700 shadow-md h-[8px] m-auto'
                   + ' rounded-sm border-2 border-gray-900'
                   + (hideTrack ? ' opacity-0' : '')
                }

@@ -420,7 +420,7 @@ export const SettingsPage = ({ active }: {
       const hours = Math.floor(range / 60);
       const minutes = Math.floor(range - hours * 60);
 
-      return (hours ? hours + 'h' : '') + minutes + 'min';
+      return (hours ? hours + 'h' : '') + (minutes < 10 ? '0' : '') + minutes + 'min';
    }, [settings.map.azba.range]);
 
 
