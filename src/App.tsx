@@ -128,6 +128,7 @@ class VfrNavApp extends App {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async install(_props: AppInstallProps): Promise<void> {
+    this.efbSettingsManager.addAppToFavorites(this);
     return Promise.resolve();
   }
 
