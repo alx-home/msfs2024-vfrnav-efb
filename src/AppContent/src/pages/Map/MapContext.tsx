@@ -1,23 +1,26 @@
-import { Collection, Feature, Map, MapBrowserEvent } from "ol";
-import { createContext, Dispatch, PropsWithChildren, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Collection, Map, MapBrowserEvent, getUid } from 'ol';
+import { createContext, Dispatch, PropsWithChildren, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import { NavData } from "./MapMenu/Menus/Nav";
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
 import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import { Polygon } from "ol/geom";
 import Layer from "ol/layer/Layer";
 import LayerGroup from "ol/layer/Group";
 import { Coordinate } from "ol/coordinate";
-import { FeatureLike } from "ol/Feature";
+import Feature, { FeatureLike } from "ol/Feature";
+import { SimpleGeometry } from "ol/geom";
+import VectorSource from "ol/source/Vector";
+import { Cluster } from "ol/source";
 
 export type Interactive = {
    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-   onClick?: (_pixel: MapBrowserEvent<any>) => void
+   onClick?: (_pixel: MapBrowserEvent<any>, _features: FeatureLike[]) => boolean
    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-   onHover?: (_pixel: MapBrowserEvent<any>) => void
+   onHover?: (_pixel: MapBrowserEvent<any>, _features: FeatureLike[]) => boolean
    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-   onBlur?: (_pixel: MapBrowserEvent<any>) => void
+   onBlur?: (_pixel: MapBrowserEvent<any>, _features: FeatureLike[]) => boolean
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   onMoveEnd?: (_pixel: MapBrowserEvent<any>, _features: FeatureLike[]) => boolean
 }
 
 export const MapContext = createContext<{
@@ -29,6 +32,8 @@ export const MapContext = createContext<{
    setNavData: Dispatch<SetStateAction<NavData[]>>,
    setCounter: Dispatch<SetStateAction<number>>,
    setFlash: Dispatch<SetStateAction<boolean>>,
+   registerMouseEnd: (_callback: (_coords: Coordinate) => void) => void
+   unregisterMouseEnd: (_callback: (_coords: Coordinate) => void) => void
    addNav?: () => void,
    cancel?: () => void,
    setAddNav: Dispatch<SetStateAction<(() => void) | undefined>>,
@@ -41,67 +46,131 @@ export const MapContext = createContext<{
 } | undefined>(undefined);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const forEachFeatureAtPixel = (layer: Layer, coords: Coordinate, event: MapBrowserEvent<any>, callback: (_feature: FeatureLike) => void) => {
+const getFeaturesAtPixel = (map: Map, layer: Layer, coords: Coordinate, event: MapBrowserEvent<any>): FeatureLike[] => {
+   if (!layer.isVisible?.()) {
+      return [];
+   }
+
    if (layer instanceof LayerGroup) {
-      layer.getLayers().forEach(layer => forEachFeatureAtPixel(layer as Layer, coords, event, callback));
+      let result: FeatureLike[] = [];
+
+      layer.getLayers().forEach(layer => result = [...result, ...getFeaturesAtPixel(map, layer as Layer, coords, event)]);
+
+      return result;
    } else if (layer instanceof VectorLayer) {
       const source = layer.getSource();
-      if (source instanceof VectorSource) {
-         source.getFeatures().forEach(feature => {
+      if (source instanceof VectorSource || source instanceof Cluster) {
+         return source.getFeatures().filter(feature => {
             if (feature instanceof Feature) {
                const geom = feature.getGeometry();
 
-               if (geom instanceof Polygon) {
-                  if (geom.containsXY(coords[0], coords[1])) {
-                     callback(feature)
-                  }
+               if (geom instanceof SimpleGeometry) {
+                  return geom.containsXY(coords[0], coords[1]);
                }
             }
          })
       }
    }
+
+   return [];
 }
 
 const MapContextProvider = ({ children }: PropsWithChildren) => {
+   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
    const map = useMemo<Map>(() => {
       const layers = new Collection<BaseLayer>();
+      const focused: {
+         feature: Interactive | undefined,
+         args: FeatureLike[]
+      } = {
+         feature: undefined,
+         args: []
+      };
 
       const map = new Map({
          layers: layers,
          interactions: defaults({ doubleClickZoom: false })
       });
 
-      const focused: { features: Interactive[] } = { features: [] };
+      map.on('moveend', (event) => {
+         const coord = event.map.getView().getCenter()!;
+         mouseEndCallbacks.current.forEach(callback => callback(coord));
+      });
+
       map.on('pointermove', (event) => {
-         const newFocused: Interactive[] = [];
          const coords = event.coordinate;
 
-         map.getAllLayers().forEach(layer => {
-            forEachFeatureAtPixel(layer, coords, event, (feature) => {
-               const iFeature = (feature as unknown as Interactive);
-               const index = focused.features.findIndex(feature => feature === iFeature);
-               if (index >= 0) {
-                  focused.features.splice(index, 1);
-               } else {
-                  iFeature.onHover?.(event)
+         map.getTargetElement().style.cursor = '';
+
+         const setFocused = (iElem: Interactive | undefined, features: FeatureLike[]) => {
+            focused.feature?.onBlur?.(event, focused.args);
+
+            focused.feature = iElem;
+            focused.args = features
+         }
+
+         const focuseElem = (iElem: Interactive, features: FeatureLike[]) => {
+            if (iElem.onHover) {
+               map.getTargetElement().style.cursor = 'pointer';
+
+               if (focused.feature === iElem) {
+                  return true;
+               } else if (iElem.onHover?.(event, features)) {
+                  setFocused(iElem, features);
+                  return true;
+               }
+            }
+            return false;
+         };
+
+         if (!map.getAllLayers()
+            .toSorted((left, right) => (right.getZIndex() ?? 0) - (left.getZIndex() ?? 0))
+            .find(layer => {
+               const iLayer = (layer as unknown as Interactive);
+
+               const features = getFeaturesAtPixel(map, layer, coords, event);
+               if (features.length) {
+                  if (iLayer.onHover || iLayer.onClick || iLayer.onBlur) {
+                     return focuseElem(iLayer, features)
+                  } else {
+                     for (const feature of features.toSorted((left, right) => +getUid(right) - +getUid(left))) {
+                        const iFeature = (feature as unknown as Interactive);
+                        if (focuseElem(iFeature, features)) {
+                           return true
+                        }
+                     }
+                  }
                }
 
-               newFocused.push(iFeature);
-            })
-         });
-
-         focused.features.forEach(feature => feature.onBlur?.(event));
-         focused.features = newFocused;
+               return false;
+            })) {
+            setFocused(undefined, []);
+         }
       })
 
       map.on('click', (event) => {
          const coords = event.coordinate;
+         map.getAllLayers()
+            .toSorted((left, right) => (right.getZIndex() ?? 0) - (left.getZIndex() ?? 0))
+            .find(layer => {
+               const iLayer = (layer as unknown as Interactive);
 
-         map.getAllLayers().forEach(layer => {
-            forEachFeatureAtPixel(layer, coords, event, (feature) => {
-               (feature as unknown as Interactive).onClick?.(event)
+               const features = getFeaturesAtPixel(map, layer, coords, event);
+               if (features.length) {
+                  if (iLayer.onClick) {
+                     return iLayer.onClick?.(event, features);
+                  } else {
+                     for (const feature of features.toSorted((left, right) => +getUid(right) - +getUid(left))) {
+                        const iFeature = (feature as unknown as Interactive);
+                        if (iFeature.onClick?.(event, features)) {
+                           return true;
+                        }
+                     }
+                  }
+               }
+
+               return false;
             })
-         });
       })
 
       return map;
@@ -135,6 +204,12 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       addNav: (): void => setAddNavRequest(true),
       setAddNav: setAddNav,
       cancel: (): void => setCancelRequest(true),
+      registerMouseEnd: (callback: (_coords: Coordinate) => void) => {
+         mouseEndCallbacks.current.push(callback)
+      },
+      unregisterMouseEnd: (callback: (_coords: Coordinate) => void) => {
+         mouseEndCallbacks.current.splice(mouseEndCallbacks.current.findIndex(value => value === callback), 1)
+      },
       setCancel: setCancel,
       navData: navData,
       setNavData: setNavData,

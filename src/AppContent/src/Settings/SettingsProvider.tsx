@@ -1,91 +1,155 @@
-import { Color, LayerSetting, SharedSettings, SharedSettingsRecord } from "@shared/Settings";
+import { AirportLayerOptions, Color, LayerSetting, SharedSettings, SharedSettingsRecord } from "@shared/Settings";
 import { deepEquals, reduce } from "@shared/Types";
 import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
-import { LayerSettingSetter, Settings } from "./Settings";
+import { GlobalSettings, Settings } from "./Settings";
 import { SharedSettingsDefault } from "./Default";
 import { useSIAZBA } from "./SIAAZBA";
 import { useSIAPDF } from "./SiaPDF";
 import { MessageHandler } from "@shared/MessageHandler";
 
 export const messageHandler = new MessageHandler();
-export const SettingsContext = createContext<Settings | undefined>(undefined);
+export const SettingsContext = createContext<GlobalSettings | undefined>(undefined);
 
-const useLayerSetting = (defaultValue: LayerSetting): [(LayerSetting & LayerSettingSetter), (_value: LayerSetting) => void] => {
-   const [enabled, setEnabled] = useState<boolean>(defaultValue.enabled);
-   const [active, setActive] = useState<boolean>(defaultValue.active);
-   const [minZoom, setMinZoom] = useState<number | undefined>(defaultValue.minZoom);
-   const [maxZoom, setMaxZoom] = useState<number | undefined>(defaultValue.maxZoom);
+const useLayer = (layer: keyof SharedSettings, sharedSettings: SharedSettings, setSharedSettings: Dispatch<SetStateAction<SharedSettings>>) => {
+   const setActive = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, [layer]: { ...(settings[layer] as object), active: value } })), [layer, setSharedSettings]);
+   const setEnabled = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, [layer]: { ...(settings[layer] as object), enabled: value } })), [layer, setSharedSettings]);
+   const setMaxZoom = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, [layer]: { ...(settings[layer] as object), maxZoom: value } })), [layer, setSharedSettings]);
+   const setMinZoom = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, [layer]: { ...(settings[layer] as object), minZoom: value } })), [layer, setSharedSettings]);
 
-   const setAll = useCallback((value: LayerSetting) => {
-      setEnabled(value.enabled)
-      setActive(value.active)
-      setMinZoom(value.minZoom)
-      setMaxZoom(value.maxZoom)
-   }, [])
+   const layerSetting = useMemo(() => ({
+      ...(sharedSettings[layer] as LayerSetting),
+      setActive: setActive,
+      setEnabled: setEnabled,
+      setMaxZoom: setMaxZoom,
+      setMinZoom: setMinZoom,
+   }), [layer, setActive, setEnabled, setMaxZoom, setMinZoom, sharedSettings]);
 
-   return [{ active: active, enabled: enabled, minZoom: minZoom, maxZoom: maxZoom, setActive: setActive, setEnabled: setEnabled, setMaxZoom: setMaxZoom, setMinZoom: setMinZoom }, setAll]
-}
+   return layerSetting;
+};
 
+const useAirportLayer = (sharedSettings: SharedSettings, setSharedSettings: Dispatch<SetStateAction<SharedSettings>>) => {
+   const layer = useLayer('airports', sharedSettings, setSharedSettings);
+
+   const enableHardRunway = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, airports: { ...settings['airports'], hardRunway: value } })), [setSharedSettings]);
+   const enableSoftRunway = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, airports: { ...settings['airports'], softRunway: value } })), [setSharedSettings]);
+   const enableWaterRunway = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, airports: { ...settings['airports'], waterRunway: value } })), [setSharedSettings]);
+   const enablePrivate = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, airports: { ...settings['airports'], private: value } })), [setSharedSettings]);
+   const enableHelipads = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, airports: { ...settings['airports'], helipads: value } })), [setSharedSettings]);
+
+   const layerSetting = useMemo(() => ({
+      ...(sharedSettings['airports'] as AirportLayerOptions),
+      ...layer,
+
+      enableHardRunway: enableHardRunway,
+      enableSoftRunway: enableSoftRunway,
+      enableWaterRunway: enableWaterRunway,
+      enablePrivate: enablePrivate,
+      enableHelipads: enableHelipads,
+   }), [enableHardRunway, enableHelipads, enablePrivate, enableSoftRunway, enableWaterRunway, layer, sharedSettings]);
+
+   return layerSetting;
+};
 
 const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithChildren<{
    setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>,
    emptyPopup: ReactElement
 }>) => {
-   const [speed, setSpeed] = useState(SharedSettingsDefault.speed);
-   const [SIAAuth, setSIAAuth] = useState(SharedSettingsDefault.SIAAuth);
-   const [SIAAddr, setSIAAddr] = useState(SharedSettingsDefault.SIAAddr);
-   const [SIAAZBAAddr, setSIAAZBAAddr] = useState(SharedSettingsDefault.SIAAZBAAddr);
-   const [SIAAZBADateAddr, setSIAAZBADateAddr] = useState(SharedSettingsDefault.SIAAZBADateAddr);
+   const [sharedSettings, setSharedSettings] = useState(SharedSettingsDefault);
 
-   const [adjustHeading, setAdjustHeading] = useState(SharedSettingsDefault.adjustHeading);
-   const [adjustTime, setAdjustTime] = useState(SharedSettingsDefault.adjustTime);
-   const getSIAPDF = useSIAPDF(SIAAddr, SIAAuth)
-   const getSIAAZBA = useSIAZBA(SIAAZBAAddr, SIAAZBADateAddr, SIAAuth);
+   const getSIAPDF = useSIAPDF(sharedSettings.SIAAddr, sharedSettings.SIAAuth)
+   const getSIAAZBA = useSIAZBA(sharedSettings.SIAAZBAAddr, sharedSettings.SIAAZBADateAddr, sharedSettings.SIAAuth);
 
-   const [AZBASettings, setAZBASettings] = useLayerSetting(SharedSettingsDefault.azba);
-   const [OACISettings, setOACISettings] = useLayerSetting(SharedSettingsDefault.OACI);
-   const [germanySettings, setGermanySettings] = useLayerSetting(SharedSettingsDefault.germany);
-   const [USSectionalSettings, setUSSectionalSettings] = useLayerSetting(SharedSettingsDefault.USSectional);
-   const [mapForFreeSettings, setMapForFreeSettings] = useLayerSetting(SharedSettingsDefault.mapforfree);
-   const [googleMapSettings, setGoogleMapSettings] = useLayerSetting(SharedSettingsDefault.googlemap);
-   const [USIFRHighSettings, setUSIFRHighSettings] = useLayerSetting(SharedSettingsDefault.USIFR.high);
-   const [USIFRLowSettings, setUSIFRLowSettings] = useLayerSetting(SharedSettingsDefault.USIFR.low);
-   const [openTopoSettings, setOpenTopoSettings] = useLayerSetting(SharedSettingsDefault.opentopo);
-   const [openStreetSettings, setOpenStreetSettings] = useLayerSetting(SharedSettingsDefault.openstreet);
+   const globalSettings = useMemo((): Settings => ({
+      emptyPopup: emptyPopup
+   }), [emptyPopup]);
 
-   const [mapTextMaxSize, setMapTextMaxSize] = useState(SharedSettingsDefault.map.text.maxSize);
-   const [mapTextMinSize, setMapTextMinSize] = useState(SharedSettingsDefault.map.text.minSize);
-   const [mapTextBorderSize, setMapTextBorderSize] = useState(SharedSettingsDefault.map.text.borderSize);
-   const [mapTextColor, setMapTextColor] = useState<Color>(SharedSettingsDefault.map.text.color);
-   const [mapAZBAActiveHighColor, setMapAZBAActiveHighColor] = useState<Color>(SharedSettingsDefault.map.azba.activeHighColor);
-   const [mapAZBAActiveLowColor, setMapAZBAActiveLowColor] = useState<Color>(SharedSettingsDefault.map.azba.activeLowColor);
-   const [mapAZBAInactiveHighColor, setMapAZBAInactiveHighColor] = useState<Color>(SharedSettingsDefault.map.azba.inactiveHighColor);
-   const [mapAZBAInactiveLowColor, setMapAZBAInactiveLowColor] = useState<Color>(SharedSettingsDefault.map.azba.inactiveLowColor);
-   const [mapAZBARange, setMapAZBARange] = useState(SharedSettingsDefault.map.azba.range);
-   const [mapTextBorderColor, setMapTextBorderColor] = useState<Color>(SharedSettingsDefault.map.text.borderColor);
+   const setSpeed = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, speed: value })), []);
+   const setAdjustHeading = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, adjustHeading: value })), []);
+   const setAdjustTime = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, adjustTime: value })), []);
+   const setSIAAuth = useCallback((value: string) => setSharedSettings(settings => ({ ...settings, SIAAuth: value })), []);
+   const setSIAAddr = useCallback((value: string) => setSharedSettings(settings => ({ ...settings, SIAAddr: value })), []);
+   const setSIAAZBAAddr = useCallback((value: string) => setSharedSettings(settings => ({ ...settings, SIAAZBAAddr: value })), []);
+   const setSIAAZBADateAddr = useCallback((value: string) => setSharedSettings(settings => ({ ...settings, SIAAZBADateAddr: value })), []);
+   const setMarkerSize = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, map: { ...settings.map, markerSize: value } })), []);
 
+   const setTextMaxSize = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, map: { ...settings.map, text: { ...settings.map.text, maxSize: value } } })), []);
+   const setTextMinSize = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, map: { ...settings.map, text: { ...settings.map.text, minSize: value } } })), []);
+   const setTextBorderSize = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, map: { ...settings.map, text: { ...settings.map.text, borderSize: value } } })), []);
+   const setTextColor = useCallback((value: SetStateAction<Color>) => {
+      if (typeof value === 'function') {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, text: { ...settings.map.text, color: value(settings.map.text.color) } } }))
+      } else {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, text: { ...settings.map.text, color: value } } }))
+      }
+   }, []);
+   const setTextBorderColor = useCallback((value: SetStateAction<Color>) => {
+      if (typeof value === 'function') {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, text: { ...settings.map.text, borderColor: value(settings.map.text.borderColor) } } }))
+      } else {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, text: { ...settings.map.text, borderColor: value } } }))
+      }
+   }, []);
+   const setAZBAActiveHighColor = useCallback((value: SetStateAction<Color>) => {
+      if (typeof value === 'function') {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, azba: { ...settings.map.azba, activeHighColor: value(settings.map.azba.activeHighColor) } } }))
+      } else {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, azba: { ...settings.map.azba, activeHighColor: value } } }))
+      }
+   }, []);
+   const setAZBAActiveLowColor = useCallback((value: SetStateAction<Color>) => {
+      if (typeof value === 'function') {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, azba: { ...settings.map.azba, activeLowColor: value(settings.map.azba.activeLowColor) } } }))
+      } else {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, azba: { ...settings.map.azba, activeLowColor: value } } }))
+      }
+   }, []);
+   const setAZBAInactiveHighColor = useCallback((value: SetStateAction<Color>) => {
+      if (typeof value === 'function') {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, azba: { ...settings.map.azba, inactiveHighColor: value(settings.map.azba.inactiveHighColor) } } }))
+      } else {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, azba: { ...settings.map.azba, inactiveHighColor: value } } }))
+      }
+   }, []);
+   const setAZBAInactiveLowColor = useCallback((value: SetStateAction<Color>) => {
+      if (typeof value === 'function') {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, azba: { ...settings.map.azba, inactiveLowColor: value(settings.map.azba.inactiveLowColor) } } }))
+      } else {
+         setSharedSettings(settings => ({ ...settings, map: { ...settings.map, azba: { ...settings.map.azba, inactiveLowColor: value } } }))
+      }
+   }, []);
 
-   const [mapMarkerSize, setMapMarkerSize] = useState(SharedSettingsDefault.map.markerSize);
+   const setAZBARange = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, map: { ...settings.map, azba: { ...settings.map.azba, range: value } } })), []);
 
-   const provider = useMemo((): Settings => ({
-      emptyPopup: emptyPopup,
-      speed: speed,
-      SIAAuth: SIAAuth,
-      SIAAddr: SIAAddr,
-      SIAAZBAAddr: SIAAZBAAddr,
-      SIAAZBADateAddr: SIAAZBADateAddr,
-      adjustHeading: adjustHeading,
-      adjustTime: adjustTime,
+   const airportsSetting = useAirportLayer(sharedSettings, setSharedSettings);
+   const azbaSetting = useLayer('azba', sharedSettings, setSharedSettings);
+   const OACISetting = useLayer('OACI', sharedSettings, setSharedSettings);
+   const germanySetting = useLayer('germany', sharedSettings, setSharedSettings);
+   const USSectionalSetting = useLayer('USSectional', sharedSettings, setSharedSettings);
+   const USIFRHighSetting = useLayer('USIFRHigh', sharedSettings, setSharedSettings);
+   const USIFRLowSetting = useLayer('USIFRLow', sharedSettings, setSharedSettings);
+   const opentopoSetting = useLayer('opentopo', sharedSettings, setSharedSettings);
+   const mapforfreeSetting = useLayer('mapforfree', sharedSettings, setSharedSettings);
+   const googlemapSetting = useLayer('googlemap', sharedSettings, setSharedSettings);
+   const openstreetSetting = useLayer('openstreet', sharedSettings, setSharedSettings);
 
-      azba: AZBASettings,
-      OACI: OACISettings,
-      germany: germanySettings,
-      USSectional: USSectionalSettings,
-      USIFR: { high: USIFRHighSettings, low: USIFRLowSettings },
-      opentopo: openTopoSettings,
-      mapforfree: mapForFreeSettings,
-      googlemap: googleMapSettings,
-      openstreet: openStreetSettings,
+   const provider = useMemo((): GlobalSettings => ({
+      ...globalSettings,
+      ...sharedSettings,
+
+      airports: { ...airportsSetting },
+      azba: { ...azbaSetting },
+      OACI: { ...OACISetting },
+      germany: { ...germanySetting },
+      USSectional: { ...USSectionalSetting },
+      USIFRHigh: { ...USIFRHighSetting },
+      USIFRLow: { ...USIFRLowSetting },
+      opentopo: { ...opentopoSetting },
+      mapforfree: { ...mapforfreeSetting },
+      googlemap: { ...googlemapSetting },
+      openstreet: { ...openstreetSetting },
+
+      getSIAPDF: getSIAPDF,
+      getSIAAZBA: getSIAAZBA,
 
       setSpeed: setSpeed,
       setAdjustHeading: setAdjustHeading,
@@ -95,40 +159,39 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
       setSIAAZBAAddr: setSIAAZBAAddr,
       setSIAAZBADateAddr: setSIAAZBADateAddr,
       setPopup: setPopup,
-      getSIAPDF: getSIAPDF,
-      getSIAAZBA: getSIAAZBA,
 
       map: {
+         ...sharedSettings.map,
+
          text: {
-            minSize: mapTextMinSize,
-            maxSize: mapTextMaxSize,
-            borderSize: mapTextBorderSize,
-            color: mapTextColor,
-            borderColor: mapTextBorderColor,
+            ...sharedSettings.map.text,
 
-            setMinSize: setMapTextMinSize,
-            setMaxSize: setMapTextMaxSize,
-            setBorderSize: setMapTextBorderSize,
-            setColor: setMapTextColor,
-            setBorderColor: setMapTextBorderColor,
+            setMaxSize: setTextMaxSize,
+            setMinSize: setTextMinSize,
+            setBorderSize: setTextBorderSize,
+            setColor: setTextColor,
+            setBorderColor: setTextBorderColor
          },
+
          azba: {
-            activeHighColor: mapAZBAActiveHighColor,
-            activeLowColor: mapAZBAActiveLowColor,
-            inactiveHighColor: mapAZBAInactiveHighColor,
-            inactiveLowColor: mapAZBAInactiveLowColor,
-            range: mapAZBARange,
+            ...sharedSettings.map.azba,
 
-            setActiveHighColor: setMapAZBAActiveHighColor,
-            setActiveLowColor: setMapAZBAActiveLowColor,
-            setInactiveHighColor: setMapAZBAInactiveHighColor,
-            setInactiveLowColor: setMapAZBAInactiveLowColor,
-            setRange: setMapAZBARange
+            setActiveHighColor: setAZBAActiveHighColor,
+            setActiveLowColor: setAZBAActiveLowColor,
+            setInactiveHighColor: setAZBAInactiveHighColor,
+            setInactiveLowColor: setAZBAInactiveLowColor,
+            setRange: setAZBARange
+
          },
-         markerSize: mapMarkerSize,
-         setMarkerSize: setMapMarkerSize
+
+         setMarkerSize: setMarkerSize
       }
-   }), [emptyPopup, speed, SIAAuth, SIAAddr, SIAAZBAAddr, SIAAZBADateAddr, adjustHeading, adjustTime, AZBASettings, OACISettings, germanySettings, USSectionalSettings, USIFRHighSettings, USIFRLowSettings, openTopoSettings, mapForFreeSettings, googleMapSettings, openStreetSettings, setPopup, getSIAPDF, getSIAAZBA, mapTextMinSize, mapTextMaxSize, mapTextBorderSize, mapTextColor, mapTextBorderColor, mapAZBAActiveHighColor, mapAZBAActiveLowColor, mapAZBAInactiveHighColor, mapAZBAInactiveLowColor, mapAZBARange, mapMarkerSize]);
+   }), [airportsSetting, googlemapSetting, mapforfreeSetting, openstreetSetting, opentopoSetting, OACISetting, USIFRHighSetting, USIFRLowSetting, USSectionalSetting, azbaSetting, germanySetting,
+      getSIAAZBA, getSIAPDF,
+      setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor, setAZBARange, setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setSpeed, setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize, setTextMinSize,
+      globalSettings,
+      sharedSettings
+   ]);
 
    const [lastSent, setLastSent] = useState(reduce(provider, SharedSettingsRecord));
 
@@ -142,45 +205,16 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
    }, [lastSent, provider]);
 
    useEffect(() => {
-      const callback = (settings: SharedSettings) => {
-         setAZBASettings(settings.azba);
-         setOACISettings(settings.OACI);
-         setGermanySettings(settings.germany);
-         setUSSectionalSettings(settings.USSectional);
-         setUSIFRHighSettings(settings.USIFR.high);
-         setUSIFRLowSettings(settings.USIFR.low);
-         setOpenTopoSettings(settings.opentopo);
-         setMapForFreeSettings(settings.mapforfree);
-         setGoogleMapSettings(settings.googlemap);
-         setOpenStreetSettings(settings.openstreet);
-
-         setSpeed(settings.speed);
-         setAdjustHeading(settings.adjustHeading);
-         setAdjustTime(settings.adjustTime);
-         setSIAAuth(settings.SIAAuth);
-         setSIAAddr(settings.SIAAddr);
-         setSIAAZBAAddr(settings.SIAAZBAAddr);
-         setSIAAZBADateAddr(settings.SIAAZBADateAddr);
-
-         setMapAZBARange(settings.map.azba.range);
-         setMapAZBAActiveHighColor(settings.map.azba.activeHighColor);
-         setMapAZBAActiveLowColor(settings.map.azba.activeLowColor);
-         setMapAZBAInactiveHighColor(settings.map.azba.inactiveHighColor);
-         setMapAZBAInactiveLowColor(settings.map.azba.inactiveLowColor);
-
-         setMapMarkerSize(settings.map.markerSize);
-
-         setMapTextBorderColor(settings.map.text.borderColor);
-         setMapTextBorderSize(settings.map.text.borderSize);
-         setMapTextMaxSize(settings.map.text.maxSize);
-         setMapTextMinSize(settings.map.text.minSize);
-         setMapTextColor(settings.map.text.color);
+      const onGetSettings = (settings: SharedSettings) => {
+         setSharedSettings(settings);
       };
 
-      messageHandler.subscribe("SharedSettings", callback)
+      messageHandler.subscribe("SharedSettings", onGetSettings)
       messageHandler.send("GetSettings");
-      return () => messageHandler.unsubscribe("SharedSettings", callback);
-   }, [setAZBASettings, setGermanySettings, setGoogleMapSettings, setMapForFreeSettings, setOACISettings, setOpenStreetSettings, setOpenTopoSettings, setUSIFRHighSettings, setUSIFRLowSettings, setUSSectionalSettings]);
+      return () => {
+         messageHandler.unsubscribe("SharedSettings", onGetSettings);
+      }
+   }, []);
 
    return (
       <SettingsContext.Provider

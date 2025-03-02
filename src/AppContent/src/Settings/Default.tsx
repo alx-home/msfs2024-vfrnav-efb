@@ -9,6 +9,16 @@ export const SharedSettingsDefault: SharedSettings = {
    SIAAZBAAddr: __SIA_AZBA_ADDR__,
    SIAAZBADateAddr: __SIA_AZBA_DATE_ADDR__,
 
+   airports: {
+      helipads: false,
+      waterRunway: true,
+      hardRunway: true,
+      softRunway: true,
+      private: false,
+      enabled: true,
+      active: true,
+      minZoom: 8
+   },
    azba: {
       enabled: true,
       active: true,
@@ -29,15 +39,13 @@ export const SharedSettingsDefault: SharedSettings = {
       enabled: true,
       active: false
    },
-   USIFR: {
-      high: {
-         enabled: false,
-         active: false
-      },
-      low: {
-         enabled: false,
-         active: false
-      }
+   USIFRHigh: {
+      enabled: false,
+      active: false
+   },
+   USIFRLow: {
+      enabled: false,
+      active: false
    },
    opentopo: {
       enabled: false,

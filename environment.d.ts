@@ -5,6 +5,7 @@ declare global {
          NODE_ENV: 'development' | 'production';
          BUILD_TYPE: 'development' | 'production';
          MSFS_EMBEDED: boolean;
+         EMPTY_OUT_DIR: boolean;
       }
    }
 }

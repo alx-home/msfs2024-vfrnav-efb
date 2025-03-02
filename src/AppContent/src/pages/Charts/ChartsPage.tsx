@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 
 import { Button } from "@Utils/Button";
 import { Pdf } from "@Utils/Pdf";
-import { Popup } from "./Popup";
+import { ChartsPopup } from "./Popup";
 import { Scroll } from "@Utils/Scroll";
 import { SettingsContext } from "@Settings/SettingsProvider";
 
@@ -62,7 +62,7 @@ export const ChartsPage = ({ active }: {
       })
    }, [activeDocument, srcs]);
 
-   const loadDocument = useCallback(() => setPopup(<Popup setSrcs={setSrcs} />), [setPopup]);
+   const loadDocument = useCallback(() => setPopup(<ChartsPopup setSrcs={setSrcs} />), [setPopup]);
 
    return <div className="flex grow justify-center overflow-hidden max-w-full" style={active ? {} : { display: 'none' }}>
       <div className="flex flex-row grow justify-center max-w-full">

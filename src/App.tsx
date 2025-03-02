@@ -13,8 +13,7 @@ import {
 import { FSComponent, VNode } from "@microsoft/msfs-sdk";
 import { MainPage } from "./Components/MainPage";
 
-class VfrNavAppView extends AppView<RequiredProps<AppViewProps & {
-}, "bus">> {
+class VfrNavAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
   /**
    * Optional property
    * Default view key to show if using AppViewService

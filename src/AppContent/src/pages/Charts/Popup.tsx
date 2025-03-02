@@ -6,11 +6,12 @@ import { Src } from "./ChartsPage";
 
 import loadingImg from '@images/loading.svg';
 import useKeyUp from "@Events/KeyUp";
+import { Tabs } from "@Utils/Tabs";
 
 const sources = ['SIA', 'TEMSI', 'Weather Fronts', 'Local'] as const;
 type Source = typeof sources[number];
 
-export const Popup = ({ setSrcs }: {
+export const ChartsPopup = ({ setSrcs }: {
    setSrcs: Dispatch<SetStateAction<Map<string, Src>>>
 }) => {
    const { getSIAPDF } = useContext(SettingsContext)!;
@@ -134,16 +135,7 @@ export const Popup = ({ setSrcs }: {
             Source
          </div>
          <div className='flex flex-col [&>:not(:first-child)]:ml-2 shadow-sm'>
-            <div className='flex flex-row justify-start'>
-               <div className='flex flex-row shrink!important [&>:not(:first-child)]:ml-1'>
-                  {sources.map(source =>
-                     <Button active={!loading} key={source} disabled={sourceType === source || loading} className='px-2'
-                        onClick={() => switchSource(source)}>
-                        {source}
-                     </Button>)}
-               </div>
-            </div>
-            <div className='flex flex-col p-4'>
+            <Tabs disabled={loading} tabs={Array.from(sources)} activeTab={sourceType} switchTab={switchSource}>
                <Input active={!loading && sourceType === 'SIA'} ref={inputRef} placeholder={sourceMessage} inputMode="text"
                   validate={validator} onChange={setResult} onValidate={download} className="peer" />
                <div className="hidden peer-[.invalid]:flex h-0">
@@ -151,7 +143,7 @@ export const Popup = ({ setSrcs }: {
                      {errorMessage}
                   </p>
                </div>
-            </div>
+            </Tabs>
          </div>
       </div>
       <div className="flex flex-col [&>:not(:first-child)]:mt-3">

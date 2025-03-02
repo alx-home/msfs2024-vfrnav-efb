@@ -1,12 +1,24 @@
-export type TypeUUID = {
-   typeUUID: string
+type ObjectMapper<T> = {
+   [K in keyof T as T[K] extends Required<T>[K] ? K : never]: TypeRecord<T[K]>;
+} & {
+   [K in keyof T as T[K] extends Required<T>[K] ? never : K]: { optional: true, record: TypeRecord<T[K]> };
 };
 
-export type SubType<T> = {
-   [K in keyof T]: T[K] extends object ? SubType<T[K]> : (T[K] extends typeof Function ? never : boolean);
-};
+export type TypeRecord<T> =
+   T extends (unknown[]) ? TypeRecord<T[number]>[]
+   : T extends typeof Function ? never
+   : T extends object ? (object extends ObjectMapper<T> ? never : ObjectMapper<T>)
+   : T extends boolean ? 'boolean'
+   : T extends number ? 'number'
+   : T extends bigint ? 'bigint'
+   : T extends string ? 'string'
+   : T;
 
-export type Type<T> = SubType<T> & TypeUUID;
+export type ReducedType<T> =
+   T extends (unknown[]) ? ReducedType<T[number]>[]
+   : T extends typeof Function ? never
+   : T extends object ? (object extends ObjectMapper<T> ? never : ObjectMapper<T>)
+   : T;
 
 declare global {
    interface String {
@@ -14,55 +26,84 @@ declare global {
    }
 }
 
-export function isType<T>(elem: T | unknown, record: Type<T>): elem is T {
-   for (const key in record) {
-      if (key !== 'typeUUID') {
-         const value = record[key as keyof Type<T>];
-         const subElem = elem === undefined ? undefined : (elem as T)[key as keyof T];
+export const isType = <T,>(elem: unknown, type: TypeRecord<T>): elem is T => {
+   if (['boolean', 'number', 'bigint', 'string'].find(e => e === typeof type)) {
+      return typeof elem === type;
+   }
 
-         if (typeof value === 'boolean') {
-            if (value && subElem === undefined) {
-               return false;
-            }
+   if (Array.isArray(type)) {
+      if (!Array.isArray(elem)) {
+         return false;
+      }
 
-            continue;
-         }
+      return elem.reduce((last, current) => last && isType(current, type[0] as TypeRecord<unknown>), true);
+   }
 
-         if (typeof value === 'object') {
-            if (!isType(subElem, value as Type<unknown>)) {
-               return false;
-            }
-         }
+   console.assert(typeof type === 'object')
+
+   if (Object.keys(type as object).find(key => key === 'optional')) {
+      if (elem === undefined) {
+         return true;
+      } else {
+         return isType(elem, (type as { optional: true, record: TypeRecord<unknown> }).record)
+      }
+   } else if (typeof elem !== 'object') {
+      return false;
+   }
+
+   for (const key in type) {
+      const value = type[key as keyof TypeRecord<T>];
+      const subElem = (elem as T)[key as keyof T];
+
+      if (!isType(subElem, value as TypeRecord<unknown>)) {
+         return false;
       }
    }
 
    return true;
 }
 
-export function reduce<T>(elem: T, record: Type<T>): T {
-   const result: object = {};
+const reduceImpl = <T,>(elem: T, type: unknown): T => {
+   console.assert(type !== undefined)
 
-   for (const key in record) {
-      if (key !== 'typeUUID') {
-         const value = record[key as keyof Type<T>];
-         const subElem = (elem as T)[key as keyof T];
+   if (['boolean', 'number', 'bigint', 'string'].find(e => e === typeof type)) {
+      return elem;
+   }
 
-         if (typeof value === 'boolean') {
-            if (subElem !== undefined) {
-               (result[key as keyof object] as T[keyof T]) = subElem;
-            }
+   if (Array.isArray(type)) {
+      console.assert(Array.isArray(elem));
+      return (elem as []).map(value => reduceImpl(value, (type as Array<unknown>)[0])).filter(value => value !== undefined) as T;
+   }
 
-            continue;
-         } else if (typeof value === 'object') {
-            const res = reduce(subElem, value as Type<unknown>);
-            if (res !== undefined) {
-               (result[key as keyof object] as unknown) = res;
-            }
-         }
+   console.assert(typeof type === 'object')
+
+   if (Object.keys(type as object).find(key => key === 'optional')) {
+      if (elem !== undefined) {
+         return reduceImpl(elem, (type as { optional: true, record: TypeRecord<unknown> }).record);
+      } else {
+         return undefined as T;
       }
    }
 
+   console.assert(typeof elem === 'object')
+
+   const result: object = {};
+   for (const key in (type as object)) {
+      const value = (type as object)[key as keyof object];
+      const subElem = (elem as T)[key as keyof T];
+
+      const res = reduceImpl(subElem, value);
+      if (res !== undefined) {
+         (result[key as keyof object] as unknown) = res;
+      }
+
+   }
+
    return result as T;
+}
+
+export const reduce = <T,>(elem: T, type: TypeRecord<T>): T => {
+   return reduceImpl(elem, type);
 }
 
 export const deepEquals = (object1: object, object2: object) => {

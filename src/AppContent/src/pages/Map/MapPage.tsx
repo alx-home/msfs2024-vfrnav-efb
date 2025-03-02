@@ -11,6 +11,7 @@ import flightPlanImg from '@images/flight-plan.svg';
 import layersImg from '@images/layers.svg';
 import oaciImg from '@images/oaci.jpg';
 import azbaImg from '@images/azba.jpg';
+import airportsImg from '@images/airports.jpg';
 import dsfImg from '@images/dsf.jpg';
 import map4freeImg from '@images/map4free.jpg';
 import bingImg from '@images/bing.jpg';
@@ -22,9 +23,10 @@ import osmImg from '@images/osm.jpg';
 
 import { OnLayerChange } from './MapMenu/Menus/Layers';
 import MapContextProvider, { MapContext } from "./MapContext";
-import { Settings } from "@Settings/Settings";
+import { GlobalSettings } from "@Settings/Settings";
 import { AZBALayer } from "@Ol/layers/AZBALayer";
 import { SettingsContext } from "@Settings/SettingsProvider";
+import { AirportsLayer } from "@Ol/layers/AirportsLayer";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -46,7 +48,7 @@ const OverlayItem = ({ menu, setMenu, setOpen, image, alt, currentMenu }: {
    alt: string,
    currentMenu: Menu
 }) => {
-   return <button className='p-2 h-9 w-full bg-overlay hocus:bg-highlight'
+   return <button className='p-2 h-9 group-hover:h-20 w-full bg-overlay hocus:bg-highlight'
       onClick={() => {
          setOpen(open => menu !== currentMenu ? true : !open);
          setMenu(currentMenu);
@@ -61,9 +63,11 @@ const Overlay = ({ menu, setMenu, setOpen }: {
    setMenu: Dispatch<SetStateAction<Menu>>,
    setOpen: Dispatch<SetStateAction<boolean>>
 }) => {
-   return <div className='flex flex-col justify-end m-2 w-9 pointer-events-auto'>
-      <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.layers} alt='layers' image={layersImg} />
-      <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.nav} alt='flight plan' image={flightPlanImg} />
+   return <div className='flex flex-col justify-end m-2 pointer-events-auto'>
+      <div className="group flex flex-col shrink w-9 hover:w-20">
+         <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.nav} alt='flight plan' image={flightPlanImg} />
+         <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.layers} alt='layers' image={layersImg} />
+      </div>
    </div>;
 };
 
@@ -94,10 +98,16 @@ export const MapPage = ({ active }: {
    const [menu, setMenu] = useState<Menu>(Menu.layers);
    const [layers, setLayers] = useState([
       {
+         olLayer: <AirportsLayer key="airports" />,
+         src: airportsImg,
+         alt: 'airports layer',
+         getSettings: (_settings: GlobalSettings) => _settings.airports,
+      },
+      {
          olLayer: <AZBALayer key="azba" />,
          src: azbaImg,
          alt: 'azba layer',
-         getSettings: (_settings: Settings) => _settings.azba,
+         getSettings: (_settings: GlobalSettings) => _settings.azba,
       },
       {
          olLayer: <OlWMTSLayer key="wmts"
@@ -116,55 +126,55 @@ export const MapPage = ({ active }: {
          />,
          src: oaciImg,
          alt: 'oaci layer',
-         getSettings: (_settings: Settings) => _settings.OACI,
+         getSettings: (_settings: GlobalSettings) => _settings.OACI,
       },
       {
          olLayer: <OlOSMLayer key="dsf" url="https://secais.dfs.de/static-maps/icao500/tiles/{z}/{x}/{y}.png" crossOrigin={null} />,
          src: dsfImg,
          alt: 'dsf layer',
-         getSettings: (_settings: Settings) => _settings.germany
+         getSettings: (_settings: GlobalSettings) => _settings.germany
       },
       {
          olLayer: <OlOSMLayer key="sectional" url="https://maps.iflightplanner.com/Maps/Tiles/Sectional/Z{z}/{y}/{x}.png" crossOrigin={null} />,
          src: sectionalImg,
          alt: 'sectional layer',
-         getSettings: (_settings: Settings) => _settings.USSectional
+         getSettings: (_settings: GlobalSettings) => _settings.USSectional
       },
       {
          olLayer: <OlOSMLayer key="map-for-free" url="https://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg" crossOrigin={null} />,
          src: map4freeImg,
          alt: 'map for free layer',
-         getSettings: (_settings: Settings) => _settings.mapforfree
+         getSettings: (_settings: GlobalSettings) => _settings.mapforfree
       },
       {
          olLayer: <OlOSMLayer key="google" url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}" crossOrigin={null} />,
          src: bingImg,
          alt: 'google layer',
-         getSettings: (_settings: Settings) => _settings.googlemap
+         getSettings: (_settings: GlobalSettings) => _settings.googlemap
       },
       {
          olLayer: <OlOSMLayer key="open-topo" url="https://tile.opentopomap.org/{z}/{x}/{y}.png" crossOrigin={null} />,
          src: opentopoImg,
          alt: 'open topo layer',
-         getSettings: (_settings: Settings) => _settings.opentopo
+         getSettings: (_settings: GlobalSettings) => _settings.opentopo
       },
       {
          olLayer: <OlOSMLayer key="ifr low" url="https://maps.iflightplanner.com/Maps/Tiles/IFRLow/Z{z}/{y}/{x}.png" crossOrigin={null} />,
          src: ifrLowImg,
          alt: 'ifr low layer',
-         getSettings: (_settings: Settings) => _settings.USIFR.low,
+         getSettings: (_settings: GlobalSettings) => _settings.USIFRLow,
       },
       {
          olLayer: <OlOSMLayer key="ifr high" url="https://maps.iflightplanner.com/Maps/Tiles/IFRHigh/Z{z}/{y}/{x}.png" crossOrigin={null} />,
          src: ifrHighImg,
          alt: 'ifr high layer',
-         getSettings: (_settings: Settings) => _settings.USIFR.high,
+         getSettings: (_settings: GlobalSettings) => _settings.USIFRHigh,
       },
       {
          olLayer: <OlOSMLayer key="osm" />,
          src: osmImg,
          alt: 'osm layer',
-         getSettings: (_settings: Settings) => _settings.openstreet,
+         getSettings: (_settings: GlobalSettings) => _settings.openstreet,
       },
       // {
       //    olLayer: <OlBingLayer key="bing" />,

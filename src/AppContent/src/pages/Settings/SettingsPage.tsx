@@ -3,7 +3,7 @@ import { Input } from "@Utils/Input";
 import { Scroll } from "@Utils/Scroll";
 import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { Color, LayerSetting } from "@shared/Settings";
+import { AirportLayerOptions, Color, LayerSetting } from "@shared/Settings";
 import { Slider } from "@Utils/Slider";
 
 import undoImg from '@images/undo.svg';
@@ -13,7 +13,7 @@ import { DualSlider } from "@Utils/DualSlider";
 import oaciImg from '@images/oaci.jpg';
 import { SettingsContext } from "@Settings/SettingsProvider";
 import { SharedSettingsDefault } from "@Settings/Default";
-import { LayerSettingSetter } from "@Settings/Settings";
+import { AirportLayerSettingSetter, LayerSettingSetter } from "@Settings/Settings";
 
 const List = ({ children }: PropsWithChildren) => {
    return <Scroll className="flex flex-col">
@@ -301,11 +301,9 @@ const Items = ({ children, name, category }: Props) => {
       }
    }, [reset, setReset]);
 
-   return <>
-      <Item name={name} category={category} onReset={resetCallback}>
-         {childs}
-      </Item>
-   </>;
+   return <Item name={name} category={category} onReset={resetCallback}>
+      {childs}
+   </Item>;
 }
 
 const Group = ({ children, name, className }: PropsWithChildren<{
@@ -346,6 +344,20 @@ const LayerActivation = ({ setting, defaultSetting, reset, children }: PropsWith
 }>) => {
    return <CheckBox onChange={setting.setEnabled} reset={reset}
       value={setting.enabled} defaultValue={defaultSetting.enabled}>
+      {children}
+   </CheckBox>
+}
+
+const AirortLayerOption = ({ setting, defaultSetting, reset, children, settingKey }: PropsWithChildren<{
+   setting: AirportLayerOptions & LayerSetting & AirportLayerSettingSetter,
+   defaultSetting: AirportLayerOptions,
+   reset?: boolean,
+   settingKey: keyof AirportLayerOptions
+}>) => {
+   const keySetter = useMemo(() => ('enable' + settingKey.charAt(0).toUpperCase() + settingKey.substring(1)) as keyof AirportLayerSettingSetter, [settingKey]);
+
+   return <CheckBox onChange={setting[keySetter]} reset={reset}
+      value={setting[settingKey]} defaultValue={defaultSetting[settingKey]} active={setting.active}>
       {children}
    </CheckBox>
 }
@@ -472,6 +484,26 @@ export const SettingsPage = ({ active }: {
                </CheckItem>
             </Group>
             <Group name="Map">
+               <Items name="Airports" category="Layers">
+                  <LayerActivation setting={settings.airports} defaultSetting={SharedSettingsDefault.airports}>
+                     Use Airports Layer
+                  </LayerActivation>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='hardRunway'>
+                     - Hard runway airports
+                  </AirortLayerOption>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='softRunway'>
+                     - Soft runway airports
+                  </AirortLayerOption>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='private'>
+                     - Private / Military airports
+                  </AirortLayerOption>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='helipads'>
+                     - Helipads
+                  </AirortLayerOption>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='waterRunway'>
+                     - Hippodromes
+                  </AirortLayerOption>
+               </Items>
                <Items name="VFR" category="Layers">
                   <LayerActivation setting={settings.azba} defaultSetting={SharedSettingsDefault.azba}>
                      Use France AZBA Layer (sia)
@@ -487,10 +519,10 @@ export const SettingsPage = ({ active }: {
                   </LayerActivation>
                </Items>
                <Items name="IFR" category="Layers">
-                  <LayerActivation setting={settings.USIFR.high} defaultSetting={SharedSettingsDefault.USIFR.high}>
+                  <LayerActivation setting={settings.USIFRHigh} defaultSetting={SharedSettingsDefault.USIFRHigh}>
                      Use US High IFR Layers (iflightplanner).
                   </LayerActivation>
-                  <LayerActivation setting={settings.USIFR.low} defaultSetting={SharedSettingsDefault.USIFR.low}>
+                  <LayerActivation setting={settings.USIFRLow} defaultSetting={SharedSettingsDefault.USIFRLow}>
                      Use US Low IFR Layers (iflightplanner).
                   </LayerActivation>
                </Items>
@@ -516,12 +548,13 @@ export const SettingsPage = ({ active }: {
                         Set zoom levels for which the layer is to be displayed on the map. Zooming out of this range on the map will hide the layer.
                      </div>
                   </Legend>
+                  <ZoomItem name="Airports" setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} />
                   <ZoomItem name="France AZBA" setting={settings.azba} defaultSetting={SharedSettingsDefault.azba} />
                   <ZoomItem name="France OACI" setting={settings.OACI} defaultSetting={SharedSettingsDefault.OACI} />
                   <ZoomItem name="Germany VFR" setting={settings.germany} defaultSetting={SharedSettingsDefault.germany} />
                   <ZoomItem name="US sectional" setting={settings.USSectional} defaultSetting={SharedSettingsDefault.USSectional} />
-                  <ZoomItem name="US High IFR" setting={settings.USIFR.high} defaultSetting={SharedSettingsDefault.USIFR.high} />
-                  <ZoomItem name="US Low IFR" setting={settings.USIFR.low} defaultSetting={SharedSettingsDefault.USIFR.low} />
+                  <ZoomItem name="US High IFR" setting={settings.USIFRHigh} defaultSetting={SharedSettingsDefault.USIFRHigh} />
+                  <ZoomItem name="US Low IFR" setting={settings.USIFRLow} defaultSetting={SharedSettingsDefault.USIFRLow} />
                   <ZoomItem name="OpenTopo" setting={settings.opentopo} defaultSetting={SharedSettingsDefault.opentopo} />
                   <ZoomItem name="Map4Free" setting={settings.mapforfree} defaultSetting={SharedSettingsDefault.mapforfree} />
                   <ZoomItem name="Google" setting={settings.googlemap} defaultSetting={SharedSettingsDefault.googlemap} />

@@ -59,7 +59,7 @@ const Config: UserConfig = {
       },
       ssr: false,
       sourcemap: true,
-      emptyOutDir: true,
+      emptyOutDir: false,
       target: 'es2017',
    },
    resolve: {

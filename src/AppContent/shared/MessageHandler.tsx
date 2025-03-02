@@ -1,17 +1,26 @@
-import { isType, reduce, Type } from '@shared/Types';
+import { isType, reduce, TypeRecord } from './Types';
+import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetMetar, GetMetarRecord, Metar, MetarRecord } from './Facilities';
 import { SharedSettingsRecord, SharedSettings } from './Settings';
 
-const MessageIdValues = ["SharedSettings", "GetSettings"] as const;
-type MessageType = SharedSettings | "GetSettings";
+const MessageIdValues = ["SharedSettings", "GetSettings", "GetFacilities", "Facilities", "GetMetar", "Metar"] as const;
+type MessageType = SharedSettings | Facilities | "GetSettings" | GetFacilities | GetMetar | Metar;
 type MessageId = (typeof MessageIdValues)[number];
 
-const MessageChecker: Record<MessageId, (_object: unknown) => boolean> = {
-   "SharedSettings": (e) => isType<SharedSettings>(e, SharedSettingsRecord),
-   "GetSettings": (_object) => _object === "GetSettings"
-}
-const MessageRecord: Record<MessageId, Type<MessageType> | undefined> = {
+const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "SharedSettings": SharedSettingsRecord,
-   "GetSettings": undefined
+   "GetSettings": undefined,
+   "GetFacilities": GetFacilitiesRecord,
+   "Facilities": FacilitiesRecord,
+   "GetMetar": GetMetarRecord,
+   "Metar": MetarRecord
+}
+
+const checkMessage = (type: MessageId, _object: unknown) => {
+   if (MessageRecord[type] === undefined) {
+      return typeof _object === 'string' && type === _object;
+   } else {
+      return isType(_object, MessageRecord[type])
+   }
 }
 
 export class MessageHandler {
@@ -24,7 +33,7 @@ export class MessageHandler {
          if (e.data.source === 'vfrNav') {
             const obj = JSON.parse(e.data.value)
 
-            const messageId = MessageIdValues.find(value => MessageChecker[value]?.(obj));
+            const messageId = MessageIdValues.find(value => checkMessage(value, obj));
             if (messageId) {
                this.callbacks[messageId].forEach(callback => callback(obj));
             }
@@ -35,9 +44,9 @@ export class MessageHandler {
    }
 
    send<T extends MessageType>(data: T) {
-      const messageId = MessageIdValues.find(value => MessageChecker[value]?.(data));
+      const messageId = MessageIdValues.find(value => checkMessage(value, data));
       if (messageId) {
-         this.sendImpl(data, MessageRecord[messageId] as Type<T>);
+         this.sendImpl(data, MessageRecord[messageId] as TypeRecord<T>);
       }
    }
 
@@ -53,7 +62,7 @@ export class MessageHandler {
       }
    }
 
-   private sendImpl<T>(data: T, record?: Type<T>) {
+   private sendImpl<T>(data: T, record?: TypeRecord<T>) {
       const sanitizedData = JSON.stringify(record ? reduce(data, record) : data);
 
       const elem = this.iframe ? this.iframe.contentWindow : window.top;

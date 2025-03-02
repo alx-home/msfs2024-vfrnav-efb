@@ -12,6 +12,7 @@ import { fromLonLat } from "ol/proj";
 import LayerGroup from "ol/layer/Group";
 import { Interactive } from "@pages/Map/MapContext";
 import { AZBAPopup } from "./AZBAPopup";
+import { Color } from "ol/color";
 
 export const AZBALayer = ({
    opacity,
@@ -129,17 +130,15 @@ export const AZBALayer = ({
                   layer = activeHighLayer;
                   activeHight.addFeature(feature);
                }
+            } else if (elem.lower === 0) {
+               layer = inactiveLowLayer;
+               inactiveLow.addFeature(feature);
             } else {
-               if (elem.lower === 0) {
-                  layer = inactiveLowLayer;
-                  inactiveLow.addFeature(feature);
-               } else {
-                  layer = inactiveHighLayer;
-                  inactiveHight.addFeature(feature);
-               }
+               layer = inactiveHighLayer;
+               inactiveHight.addFeature(feature);
             }
 
-            const color = (layer.getStyle()! as Style).getFill()!.getColor()!.toString();
+            const color = ((layer.getStyle()! as Style).getFill()!.getColor()! as Color).toString();
             feature.onHover = () => {
                feature.setStyle(new Style({
                   stroke: (layer.getStyle()! as Style).getStroke() ?? undefined,
@@ -149,13 +148,17 @@ export const AZBALayer = ({
                      )
                   })
                }))
+
+               return true;
             }
             feature.onBlur = () => {
-               feature.setStyle(undefined);
+               feature.setStyle();
+               return false;
             }
 
             feature.onClick = () => {
                setPopup(<AZBAPopup data={elem} />);
+               return true;
             }
          })
 

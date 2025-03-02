@@ -38,10 +38,12 @@ export const DualSlider = ({ className, active, range, reset, defaultValue, onCh
    }, []);
 
    useEffect(() => {
-      if ((next.max !== value.max) || (next.min !== value.min)) {
+      const epsilon = (range.max - range.min) / 10000;
+
+      if (Math.abs(next.max - value.max) > epsilon || Math.abs((next.min - value.min)) > epsilon) {
          onChange(next.min, next.max);
       }
-   }, [next.max, next.min, onChange, value.max, value.min])
+   }, [next.max, next.min, onChange, range.max, range.min, value.max, value.min])
 
    const sliderMinRef = useRef<SliderRef | null>(null);
    const sliderMaxRef = useRef<SliderRef | null>(null);

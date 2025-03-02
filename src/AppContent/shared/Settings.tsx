@@ -1,10 +1,18 @@
-import { Type } from "./Types";
+import { TypeRecord } from "./Types";
 
 export type LayerSetting = {
    active: boolean,
    enabled: boolean,
    minZoom?: number,
    maxZoom?: number
+}
+
+export type AirportLayerOptions = {
+   hardRunway: boolean
+   softRunway: boolean
+   waterRunway: boolean
+   private: boolean
+   helipads: boolean
 }
 
 export type Color = {
@@ -24,13 +32,12 @@ export type SharedSettings = {
    SIAAZBADateAddr: string,
 
    azba: LayerSetting,
+   airports: LayerSetting & AirportLayerOptions,
    OACI: LayerSetting,
    germany: LayerSetting,
    USSectional: LayerSetting,
-   USIFR: {
-      high: LayerSetting,
-      low: LayerSetting
-   },
+   USIFRHigh: LayerSetting,
+   USIFRLow: LayerSetting,
    opentopo: LayerSetting,
    mapforfree: LayerSetting,
    googlemap: LayerSetting,
@@ -55,37 +62,44 @@ export type SharedSettings = {
    }
 };
 
-const LayerRecord = {
-   active: true,
-   enabled: true,
-   maxZoom: false,
-   minZoom: false,
+const LayerRecord: TypeRecord<LayerSetting> = {
+   active: 'boolean',
+   enabled: 'boolean',
+   maxZoom: { optional: true, record: 'number' },
+   minZoom: { optional: true, record: 'number' },
 };
 
-const ColorRecord = {
-   red: true,
-   green: true,
-   blue: true,
-   alpha: true
+const ColorRecord: TypeRecord<Color> = {
+   red: 'number',
+   green: 'number',
+   blue: 'number',
+   alpha: 'number'
 }
 
-export const SharedSettingsRecord: Type<SharedSettings> = {
-   speed: true,
-   adjustHeading: true,
-   adjustTime: true,
-   SIAAuth: true,
-   SIAAddr: true,
-   SIAAZBAAddr: true,
-   SIAAZBADateAddr: true,
+export const SharedSettingsRecord: TypeRecord<SharedSettings> = {
+   speed: 'number',
+   adjustHeading: 'boolean',
+   adjustTime: 'boolean',
+   SIAAuth: 'string',
+   SIAAddr: 'string',
+   SIAAZBAAddr: 'string',
+   SIAAZBADateAddr: 'string',
 
    azba: LayerRecord,
+   airports: {
+      ...LayerRecord, ...{
+         hardRunway: 'boolean',
+         softRunway: 'boolean',
+         waterRunway: 'boolean',
+         private: 'boolean',
+         helipads: 'boolean'
+      }
+   },
    OACI: LayerRecord,
    germany: LayerRecord,
    USSectional: LayerRecord,
-   USIFR: {
-      high: LayerRecord,
-      low: LayerRecord
-   },
+   USIFRHigh: LayerRecord,
+   USIFRLow: LayerRecord,
    opentopo: LayerRecord,
    mapforfree: LayerRecord,
    googlemap: LayerRecord,
@@ -93,9 +107,9 @@ export const SharedSettingsRecord: Type<SharedSettings> = {
 
    map: {
       text: {
-         maxSize: true,
-         minSize: true,
-         borderSize: true,
+         maxSize: 'number',
+         minSize: 'number',
+         borderSize: 'number',
          color: ColorRecord,
          borderColor: ColorRecord
       },
@@ -104,10 +118,8 @@ export const SharedSettingsRecord: Type<SharedSettings> = {
          inactiveLowColor: ColorRecord,
          activeHighColor: ColorRecord,
          activeLowColor: ColorRecord,
-         range: true
+         range: 'number'
       },
-      markerSize: true
-   },
-
-   typeUUID: "SharedSettings"
+      markerSize: 'number'
+   }
 };

@@ -71,7 +71,12 @@
         "./public/*"
       ]
     },
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    // "plugins": [
+    //   {
+    //     "transform": "Transformer.ts"
+    //   }
+    // ]
   },
   "include": [
     "src/**/*.ts",

@@ -1,4 +1,4 @@
-import { LayerSettingSetter, Settings } from "@Settings/Settings";
+import { GlobalSettings, LayerSettingSetter } from "@Settings/Settings";
 import { SettingsContext } from "@Settings/SettingsProvider";
 import { LayerSetting } from "@shared/Settings";
 import { Draggable } from "@Utils/Draggable";
@@ -6,7 +6,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 
 export class Layer {
    // eslint-disable-next-line no-unused-vars
-   constructor(public src: string, public alt: string, public order: number, public getSettings: (_settings: Settings) => LayerSetting & LayerSettingSetter) { }
+   constructor(public src: string, public alt: string, public order: number, public getSettings: (_settings: GlobalSettings) => LayerSetting & LayerSettingSetter) { }
 };
 
 const LayerComp = ({ src, alt, getSettings }:

@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    /* Projects */
     "target": "es2017",
     "lib": [
       "dom",
@@ -25,15 +24,15 @@
     "baseUrl": ".",
     "skipLibCheck": true,
     /* Linting */
-    "strict": false,
-    "alwaysStrict": false,
+    "strict": true,
+    "alwaysStrict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "ES2015",
+    "module": "es6",
     "resolveJsonModule": true,
     "isolatedModules": true,
     // "jsx": "preserve",
