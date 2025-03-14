@@ -13,6 +13,8 @@ import oaciImg from '@images/oaci.jpg';
 import azbaImg from '@images/azba.jpg';
 import airportsImg from '@images/airports.jpg';
 import dsfImg from '@images/dsf.jpg';
+import openflightmapsImg from '@images/openflightmaps.jpg';
+import openflightmapsBaseImg from '@images/openflightmaps_base.jpg';
 import map4freeImg from '@images/map4free.jpg';
 import bingImg from '@images/bing.jpg';
 import opentopoImg from '@images/opentopo.jpg';
@@ -133,6 +135,18 @@ export const MapPage = ({ active }: {
          src: dsfImg,
          alt: 'dsf layer',
          getSettings: (_settings: GlobalSettings) => _settings.germany
+      },
+      {
+         olLayer: <OlOSMLayer key="openflightmaps" url="https://nwy-tiles-api.prod.newaydata.com/tiles/{z}/{x}/{y}.png?path=2502/aero/latest" crossOrigin={null} />,
+         src: openflightmapsImg,
+         alt: 'openflightmaps layer',
+         getSettings: (_settings: GlobalSettings) => _settings.openflightmaps
+      },
+      {
+         olLayer: <OlOSMLayer key="openflightmapsBase" url="https://nwy-tiles-api.prod.newaydata.com/tiles/{z}/{x}/{y}.jpg?path=2502/base/latest" crossOrigin={null} />,
+         src: openflightmapsBaseImg,
+         alt: 'openflightmaps base layer',
+         getSettings: (_settings: GlobalSettings) => _settings.openflightmapsBase
       },
       {
          olLayer: <OlOSMLayer key="sectional" url="https://maps.iflightplanner.com/Maps/Tiles/Sectional/Z{z}/{y}/{x}.png" crossOrigin={null} />,

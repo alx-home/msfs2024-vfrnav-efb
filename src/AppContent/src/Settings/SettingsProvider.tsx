@@ -124,6 +124,8 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
    const azbaSetting = useLayer('azba', sharedSettings, setSharedSettings);
    const OACISetting = useLayer('OACI', sharedSettings, setSharedSettings);
    const germanySetting = useLayer('germany', sharedSettings, setSharedSettings);
+   const openflightmapsSettings = useLayer('openflightmaps', sharedSettings, setSharedSettings);
+   const openflightmapsBaseSettings = useLayer('openflightmapsBase', sharedSettings, setSharedSettings);
    const USSectionalSetting = useLayer('USSectional', sharedSettings, setSharedSettings);
    const USIFRHighSetting = useLayer('USIFRHigh', sharedSettings, setSharedSettings);
    const USIFRLowSetting = useLayer('USIFRLow', sharedSettings, setSharedSettings);
@@ -140,6 +142,8 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
       azba: { ...azbaSetting },
       OACI: { ...OACISetting },
       germany: { ...germanySetting },
+      openflightmaps: { ...openflightmapsSettings },
+      openflightmapsBase: { ...openflightmapsBaseSettings },
       USSectional: { ...USSectionalSetting },
       USIFRHigh: { ...USIFRHighSetting },
       USIFRLow: { ...USIFRLowSetting },
@@ -186,9 +190,13 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
 
          setMarkerSize: setMarkerSize
       }
-   }), [airportsSetting, googlemapSetting, mapforfreeSetting, openstreetSetting, opentopoSetting, OACISetting, USIFRHighSetting, USIFRLowSetting, USSectionalSetting, azbaSetting, germanySetting,
+   }), [
+      airportsSetting, googlemapSetting, mapforfreeSetting, openstreetSetting, opentopoSetting, OACISetting,
+      USIFRHighSetting, USIFRLowSetting, USSectionalSetting, azbaSetting, germanySetting, openflightmapsSettings, openflightmapsBaseSettings,
       getSIAAZBA, getSIAPDF,
-      setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor, setAZBARange, setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setSpeed, setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize, setTextMinSize,
+      setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor, setAZBARange,
+      setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setSpeed,
+      setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize, setTextMinSize,
       globalSettings,
       sharedSettings
    ]);

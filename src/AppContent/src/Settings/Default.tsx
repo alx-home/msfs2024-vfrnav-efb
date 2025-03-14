@@ -35,6 +35,14 @@ export const SharedSettingsDefault: SharedSettings = {
       enabled: true,
       active: false,
    },
+   openflightmaps: {
+      enabled: true,
+      active: true,
+   },
+   openflightmapsBase: {
+      enabled: true,
+      active: true,
+   },
    USSectional: {
       enabled: true,
       active: false

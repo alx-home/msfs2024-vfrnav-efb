@@ -512,7 +512,13 @@ export const SettingsPage = ({ active }: {
                      Use France OACI Layer (geoportal)
                   </LayerActivation>
                   <LayerActivation setting={settings.germany} defaultSetting={SharedSettingsDefault.germany}>
-                     Use Germany VFR Layer (secais).
+                     Use Germany DFS Layer (secais).
+                  </LayerActivation>
+                  <LayerActivation setting={settings.openflightmaps} defaultSetting={SharedSettingsDefault.openflightmaps}>
+                     Use Open Flight Layer.
+                  </LayerActivation>
+                  <LayerActivation setting={settings.openflightmapsBase} defaultSetting={SharedSettingsDefault.openflightmapsBase}>
+                     Use Open Flight Base Layer (Background).
                   </LayerActivation>
                   <LayerActivation setting={settings.USSectional} defaultSetting={SharedSettingsDefault.USSectional}>
                      Use US sectional Layers (iflightplanner).
@@ -539,7 +545,7 @@ export const SettingsPage = ({ active }: {
                      Use Google map Layer.
                   </LayerActivation>
                   <LayerActivation setting={settings.openstreet} defaultSetting={SharedSettingsDefault.openstreet}>
-                     Use Openstreet map Layer.
+                     Use Open Street map Layer.
                   </LayerActivation>
                </Items>
                <Items name="Visibility" category="Layers">
@@ -551,14 +557,16 @@ export const SettingsPage = ({ active }: {
                   <ZoomItem name="Airports" setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} />
                   <ZoomItem name="France AZBA" setting={settings.azba} defaultSetting={SharedSettingsDefault.azba} />
                   <ZoomItem name="France OACI" setting={settings.OACI} defaultSetting={SharedSettingsDefault.OACI} />
-                  <ZoomItem name="Germany VFR" setting={settings.germany} defaultSetting={SharedSettingsDefault.germany} />
+                  <ZoomItem name="Germany DFS" setting={settings.germany} defaultSetting={SharedSettingsDefault.germany} />
                   <ZoomItem name="US sectional" setting={settings.USSectional} defaultSetting={SharedSettingsDefault.USSectional} />
                   <ZoomItem name="US High IFR" setting={settings.USIFRHigh} defaultSetting={SharedSettingsDefault.USIFRHigh} />
                   <ZoomItem name="US Low IFR" setting={settings.USIFRLow} defaultSetting={SharedSettingsDefault.USIFRLow} />
-                  <ZoomItem name="OpenTopo" setting={settings.opentopo} defaultSetting={SharedSettingsDefault.opentopo} />
+                  <ZoomItem name="Open Flight" setting={settings.openflightmaps} defaultSetting={SharedSettingsDefault.openflightmaps} />
+                  <ZoomItem name="Open Flight Base" setting={settings.openflightmapsBase} defaultSetting={SharedSettingsDefault.openflightmapsBase} />
+                  <ZoomItem name="Open Topo" setting={settings.opentopo} defaultSetting={SharedSettingsDefault.opentopo} />
+                  <ZoomItem name="Open Street" setting={settings.openstreet} defaultSetting={SharedSettingsDefault.openstreet} />
                   <ZoomItem name="Map4Free" setting={settings.mapforfree} defaultSetting={SharedSettingsDefault.mapforfree} />
                   <ZoomItem name="Google" setting={settings.googlemap} defaultSetting={SharedSettingsDefault.googlemap} />
-                  <ZoomItem name="OpenStreet" setting={settings.openstreet} defaultSetting={SharedSettingsDefault.openstreet} />
                </Items>
             </Group>
             <Group name="Map Display">
