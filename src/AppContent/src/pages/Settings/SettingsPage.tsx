@@ -166,8 +166,8 @@ const CheckItem = ({ children, name, category, value, defaultValue, onChange, di
    name: string,
    category?: string,
    defaultValue?: boolean,
-   value?: boolean,
-   onChange?: (_checked: boolean) => void,
+   value: boolean,
+   onChange: (_checked: boolean) => void,
    disabled?: boolean
 }>) => {
    const [reset, setReset] = useState(false);
@@ -722,7 +722,7 @@ export const SettingsPage = ({ active }: {
                </div>
             </Group>
             <Group name="Expert">
-               <CheckItem category="Settings" name="Advanced" onChange={setAdvanced} defaultValue={false} >
+               <CheckItem category="Settings" name="Advanced" value={advanced} onChange={setAdvanced} defaultValue={false} >
                   Display advanced settings.
                </CheckItem>
             </Group>

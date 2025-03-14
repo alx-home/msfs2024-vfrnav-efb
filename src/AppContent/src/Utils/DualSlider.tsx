@@ -1,4 +1,4 @@
-import { useCallback, PropsWithChildren, useRef, useState, useEffect } from 'react';
+import { useCallback, PropsWithChildren, useRef, useMemo } from 'react';
 import { Slider, SliderRef } from './Slider';
 
 export const DualSlider = ({ className, active, range, reset, defaultValue, onChange, value, children }: PropsWithChildren<{
@@ -19,31 +19,18 @@ export const DualSlider = ({ className, active, range, reset, defaultValue, onCh
       max: number
    }
 }>) => {
-   const [next, setNext] = useState({
-      min: value.min,
-      max: value.max
-   })
+   const epsilon = useMemo(() => (range.max - range.min) / 10000, [range.max, range.min]);
    const onChangeMin = useCallback((min: number) => {
-      setNext(next => ({
-         min: min,
-         max: Math.max(min, next.max)
-      }))
-   }, []);
+      if (Math.abs(min - value.min) > epsilon) {
+         onChange(min, Math.max(min, value.max));
+      }
+   }, [epsilon, onChange, value.max, value.min]);
 
    const onChangeMax = useCallback((max: number) => {
-      setNext(next => ({
-         min: Math.min(next.min, max),
-         max: max
-      }))
-   }, []);
-
-   useEffect(() => {
-      const epsilon = (range.max - range.min) / 10000;
-
-      if (Math.abs(next.max - value.max) > epsilon || Math.abs((next.min - value.min)) > epsilon) {
-         onChange(next.min, next.max);
+      if (Math.abs(max - value.max) > epsilon) {
+         onChange(Math.min(value.min, max), max);
       }
-   }, [next.max, next.min, onChange, range.max, range.min, value.max, value.min])
+   }, [epsilon, onChange, value.max, value.min]);
 
    const sliderMinRef = useRef<SliderRef | null>(null);
    const sliderMaxRef = useRef<SliderRef | null>(null);

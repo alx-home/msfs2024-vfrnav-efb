@@ -1,4 +1,4 @@
-import { ChangeEvent, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, PropsWithChildren, useCallback, useEffect, useRef } from "react";
 
 import checkImage from '@images/check.svg';
 
@@ -6,42 +6,30 @@ export const CheckBox = ({ className, active, children, value, defaultValue, onC
    className?: string,
    active?: boolean,
    defaultValue?: boolean,
-   value?: boolean,
-   onChange?: (_checked: boolean) => void,
+   value: boolean,
+   onChange: (_checked: boolean) => void,
    reset?: boolean
 }>) => {
-   const [checked, setChecked] = useState(value ?? defaultValue ?? false);
-   const [last, setLast] = useState<boolean | undefined>();
    const elemRef = useRef<HTMLInputElement | null>(null);
 
    useEffect(() => {
-      if (value !== last) {
-         setChecked(value ?? defaultValue ?? false);
-         setLast(value)
-      }
-   }, [checked, defaultValue, last, value]);
-
-   useEffect(() => {
       if (reset) {
-         setChecked(defaultValue ?? value ?? false);
+         onChange(defaultValue ?? false);
       }
-   }, [reset, setChecked, defaultValue, value]);
-
-
-   useEffect(() => onChange?.(checked), [onChange, checked, setChecked]);
+   }, [reset, defaultValue, value, onChange]);
 
    const onChangeC = useCallback((e: ChangeEvent<HTMLInputElement>) => {
       elemRef.current?.blur();
-      setChecked(e.currentTarget.checked)
-   }, []);
+      onChange(e.currentTarget.checked)
+   }, [onChange]);
 
    return <div className={"relative flex flex-row "
       + (className ?? "")}>
       <div className={"relative flex my-auto"
          + ((active ?? true) ? '' : ' opacity-15 pointer-events-none')}>
          <img className={'absolute transition transition-std p-0 m-0 left-[-7px] top-[-6px] w-14 h-12 invert pointer-events-none'
-            + (checked ? '' : ' opacity-0')} src={checkImage} alt='checked' />
-         <input type='checkbox' className={'peer absolute opacity-0 h-8 w-8 p-0 m-0 cursor-pointer'} checked={checked}
+            + (value ? '' : ' opacity-0')} src={checkImage} alt='checked' />
+         <input type='checkbox' className={'peer absolute opacity-0 h-8 w-8 p-0 m-0 cursor-pointer'} checked={value}
             onChange={onChangeC}
             ref={elemRef}
             disabled={!(active ?? true)} />

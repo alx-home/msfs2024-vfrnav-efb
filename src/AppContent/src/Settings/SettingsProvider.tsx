@@ -1,5 +1,5 @@
-import { AirportLayerOptions, Color, LayerSetting, SharedSettings, SharedSettingsRecord } from "@shared/Settings";
-import { deepEquals, reduce } from "@shared/Types";
+import { AirportLayerOptions, Color, LayerSetting, SharedSettings } from "@shared/Settings";
+import { deepEquals } from "@shared/Types";
 import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { GlobalSettings, Settings } from "./Settings";
 import { SharedSettingsDefault } from "./Default";
@@ -193,19 +193,18 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
       sharedSettings
    ]);
 
-   const [lastSent, setLastSent] = useState(reduce(provider, SharedSettingsRecord));
+   const [lastSent, setLastSent] = useState(sharedSettings);
 
    useEffect(() => {
-      const rprovider = reduce(provider, SharedSettingsRecord);
-
-      if (!deepEquals(rprovider, lastSent)) {
-         messageHandler.send(rprovider);
-         setLastSent(rprovider);
+      if (!deepEquals(sharedSettings, lastSent)) {
+         messageHandler.send(sharedSettings);
+         setLastSent(sharedSettings);
       }
-   }, [lastSent, provider]);
+   }, [lastSent, sharedSettings]);
 
    useEffect(() => {
       const onGetSettings = (settings: SharedSettings) => {
+         setLastSent(settings);
          setSharedSettings(settings);
       };
 
