@@ -15,6 +15,11 @@ const __dirname = path.dirname(__filename);
 const minify = false;
 
 const msfsEmbeded = process.env.MSFS_EMBEDED;
+const __SIA_AUTH__ = process.env.__SIA_AUTH__;
+const __SIA_ADDR__ = process.env.__SIA_ADDR__;
+const __SIA_AZBA_ADDR__ = process.env.__SIA_AZBA_ADDR__;
+const __SIA_AZBA_DATE_ADDR__ = process.env.__SIA_AZBA_DATE_ADDR__;
+
 console.assert(msfsEmbeded !== undefined)
 
 const efbPlugin = (): Plugin => {
@@ -61,10 +66,10 @@ const EFBConfig: UserConfig = {
    mode: process.env.BUILD_TYPE,
    define: {
       __MSFS_EMBEDED__: msfsEmbeded,
-      __SIA_AUTH__: JSON.stringify("Y9Q3Ve72nN3PnTXmEtKnS4sggmdsigRMWH9kCDGHpCHyenFKKGhDq5vgBWZ4"),
-      __SIA_ADDR__: JSON.stringify("https://bo-prod-sofia-vac.sia-france.fr/api/v1/custom/file-path/{icao}/AD"),
-      __SIA_AZBA_ADDR__: JSON.stringify("https://bo-prod-sofia-vac.sia-france.fr/api/v2/r_t_b_as?itemsPerPage=800&date={date}"),
-      __SIA_AZBA_DATE_ADDR__: JSON.stringify("https://bo-prod-sofia-vac.sia-france.fr/api/v2/custom/currentDate"),
+      __SIA_AUTH__: JSON.stringify(__SIA_AUTH__),
+      __SIA_ADDR__: JSON.stringify(__SIA_ADDR__),
+      __SIA_AZBA_ADDR__: JSON.stringify(__SIA_AZBA_ADDR__),
+      __SIA_AZBA_DATE_ADDR__: JSON.stringify(__SIA_AZBA_DATE_ADDR__),
    },
    build: {
       lib: false,

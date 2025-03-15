@@ -2,7 +2,8 @@ import { GlobalSettings, LayerSettingSetter } from "@Settings/Settings";
 import { SettingsContext } from "@Settings/SettingsProvider";
 import { LayerSetting } from "@shared/Settings";
 import { Draggable } from "@Utils/Draggable";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Scroll } from "@Utils/Scroll";
 
 export class Layer {
    // eslint-disable-next-line no-unused-vars
@@ -54,7 +55,12 @@ const LayerComp = ({ src, alt, getSettings }:
 
 export type OnLayerChange = (_layers: { index: number, order?: number, active?: boolean }[]) => void;
 
-export const Layers = ({ layers, onLayerChange }: { layers: Layer[], onLayerChange: OnLayerChange }) => {
+export const Layers = ({ layers, onLayerChange, className, style }: {
+   layers: Layer[],
+   onLayerChange: OnLayerChange,
+   className: string,
+   style: CSSProperties
+}) => {
    const childs = useMemo(() => layers.map((layer) =>
       <LayerComp order={layer.order} key={layer.alt} src={layer.src} alt={layer.alt} getSettings={layer.getSettings} />
    ), [layers]);
@@ -63,7 +69,7 @@ export const Layers = ({ layers, onLayerChange }: { layers: Layer[], onLayerChan
       onLayerChange(orders.map((order, index) => ({ index: index, order: order })));
    }, [onLayerChange]);
 
-   return <>
+   return <Scroll className={className} style={style}>
       <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
          Layers
       </div>
@@ -72,5 +78,5 @@ export const Layers = ({ layers, onLayerChange }: { layers: Layer[], onLayerChan
          onOrdersChange={onOrdersChange}>
          {childs}
       </Draggable>
-   </>;
+   </Scroll>;
 };

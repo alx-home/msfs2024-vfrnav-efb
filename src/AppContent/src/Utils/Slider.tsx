@@ -112,7 +112,7 @@ const SliderImpl = ({ className, active, range, reset, defaultValue, onChange, v
 
    return <div className={"flex flex-row grow " + (className ?? "")}>
       {children}
-      <div className={'group/slider relative flex flex-row grow max-w-full pr-[18px]'}>
+      <div className={'group/slider relative flex flex-row grow max-w-full pr-[18px] m-auto'}>
          <button className={'peer flex flex-row h-7 z-10'
             + (!(active ?? true) ? ' opacity-20' : '')
 

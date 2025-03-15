@@ -1,5 +1,5 @@
 
-import { ChangeEvent, Children, Dispatch, FocusEvent, isValidElement, KeyboardEvent, MouseEventHandler, PropsWithChildren, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, Children, CSSProperties, Dispatch, FocusEvent, isValidElement, KeyboardEvent, MouseEventHandler, PropsWithChildren, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Feature } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
@@ -13,6 +13,7 @@ import importImg from '@images/import.svg';
 import exportImg from '@images/export.svg';
 import editImg from "@images/edit.svg";
 import deleteImg from "@images/delete.svg";
+import { Scroll } from '@Utils/Scroll';
 
 export class NavData {
    // eslint-disable-next-line no-unused-vars
@@ -49,12 +50,13 @@ const Edit = ({ onClick, image, alt, background }: {
    </button>;
 };
 
-const Input = ({ editMode, setEditMode, name }: {
+const Input = ({ editMode, setEditMode, name, id }: {
    editMode: boolean,
    setEditMode: Dispatch<SetStateAction<boolean>>,
-   name: string
+   name: string,
+   id: number
 }) => {
-   const mapContext = useContext(MapContext)!;
+   const { editNav } = useContext(MapContext)!;
    const textArea = useRef<HTMLInputElement | null>(null);
    const [value, setValue] = useState(name);
    const [focused, setFocused] = useState(false);
@@ -73,9 +75,9 @@ const Input = ({ editMode, setEditMode, name }: {
 
    const onBlur = useCallback((e: FocusEvent<HTMLInputElement>) => {
       setFocused(false);
-      mapContext.editNav(name, e.currentTarget.value)
+      editNav(id, e.currentTarget.value)
       setEditMode(false);
-   }, [mapContext, name, setEditMode])
+   }, [editNav, id, setEditMode])
 
    const onFocus = useCallback(() => {
       setFocused(true);
@@ -87,10 +89,10 @@ const Input = ({ editMode, setEditMode, name }: {
 
    const onKeyUp = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Escape' || e.key === 'Enter') {
-         mapContext.editNav(name, e.currentTarget.value);
+         editNav(id, e.currentTarget.value);
          setEditMode(false);
       }
-   }, [mapContext, name, setEditMode])
+   }, [editNav, id, setEditMode])
 
    return <input className={'bg-transparent h-8 pt-[2px] pointer-events-auto'} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
       onBlur={onBlur}
@@ -100,8 +102,9 @@ const Input = ({ editMode, setEditMode, name }: {
    />;
 };
 
-export const NavItem = ({ name, shortName, active, setDraggable }: {
+const NavItem = ({ name, shortName, active, id, setDraggable }: {
    active: boolean,
+   id: number,
    name: string,
    shortName: string,
    setDraggable?: Dispatch<SetStateAction<boolean>>
@@ -123,21 +126,21 @@ export const NavItem = ({ name, shortName, active, setDraggable }: {
 
    const onClick = useCallback(() => setNavData(navData => {
       const newData = [...navData];
-      const elem = newData.find(e => e.name === name);
+      const elem = newData.find(e => e.id === id);
       if (elem) {
          elem.active = !active;
       }
       return newData;
-   }), [active, name, setNavData]);
+   }), [active, id, setNavData]);
    const onEdit = useCallback(() => setEditMode(true), [setEditMode]);
-   const onRemove = useCallback(() => removeNav(name), [removeNav, name]);
+   const onRemove = useCallback(() => removeNav(id), [removeNav, id]);
 
    return <div className={'group flex flex-row max-w-full grow [&>*:not(:first-child)]:hover:ml-[5px]' + (active ? ' border-l-2 border-msfs' : '')}>
       <Button className={'flex flex-row grow max-w-full mx-[5px] @container/label'}
          active={!editMode}
          onClick={onClick}>
          <Label name={name} shortName={shortName} editMode={editMode} />
-         <Input editMode={editMode} setEditMode={setEditMode} name={name} />
+         <Input editMode={editMode} setEditMode={setEditMode} id={id} name={name} />
       </Button>
       <div className={'transition duration-std flex flex-row [&>*:not(:first-child)]:ml-[5px] overflow-hidden max-w-24 h-11 mt-auto mb-auto w-0 group-hocus:w-full'}
          style={{ display: (editMode ? 'none' : ''), transitionProperty: 'width' }}
@@ -186,18 +189,21 @@ const Item = ({ children, className, setDraggable }: PropsWithChildren<{
    return <div className={className}>{child}</div>;
 };
 
-export const Nav = ({ children, closeMenu }: PropsWithChildren<{
-   closeMenu: () => void
-}>) => {
+export const Nav = ({ closeMenu, className, style }: {
+   closeMenu: () => void,
+   className: string,
+   style: CSSProperties
+}) => {
+
    const { addNav, navData, reorderNav } = useContext(MapContext)!;
-   const key = navData.reduce((prev, elem) => { return prev + ";" + elem.name; }, "");
+   const key = useMemo(() => navData.reduce((prev, elem) => { return prev + ";" + elem.name; }, ""), [navData]);
    const [draggable, setDraggable] = useState(true);
-   const childs = useMemo(() => Children.toArray(children).filter(child => isValidElement(child)).map((child, index) => {
+   const childs = useMemo(() => navData.map((item, index) => {
       return <Item key={navData[index].id} order={navData[index].order} className='flex' setDraggable={setDraggable}>
-         {child}
+         <NavItem key={item.id} active={item.active} id={item.id} name={item.name} shortName={item.shortName} />
       </Item>
    })
-      , [children, navData]);
+      , [navData]);
 
    const onAdd = useCallback(() => {
       addNav?.()
@@ -209,7 +215,7 @@ export const Nav = ({ children, closeMenu }: PropsWithChildren<{
       reorderNav(orders);
    }, [reorderNav]);
 
-   return <>
+   return <Scroll className={className} style={style}>
       <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
          Nav&apos;s
       </div>
@@ -227,5 +233,5 @@ export const Nav = ({ children, closeMenu }: PropsWithChildren<{
          </div>
          <Add name='Export' image={exportImg} disabled={true} onClick={noop} />
       </menu>
-   </>
+   </Scroll>
 };

@@ -6,6 +6,10 @@ declare global {
          BUILD_TYPE: 'development' | 'production';
          MSFS_EMBEDED: boolean;
          EMPTY_OUT_DIR: boolean;
+         __SIA_AUTH__: string;
+         __SIA_ADDR__: string;
+         __SIA_AZBA_ADDR__: string;
+         __SIA_AZBA_DATE_ADDR__: string;
       }
    }
 }

@@ -1,8 +1,7 @@
-import { AirportLayerOptions, Color, LayerSetting, SharedSettings } from "@shared/Settings";
+import { AirportLayerOptions, Color, LayerSetting, SharedSettings, SharedSettingsDefault } from "@shared/Settings";
 import { deepEquals } from "@shared/Types";
 import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { GlobalSettings, Settings } from "./Settings";
-import { SharedSettingsDefault } from "./Default";
 import { useSIAZBA } from "./SIAAZBA";
 import { useSIAPDF } from "./SiaPDF";
 import { MessageHandler } from "@shared/MessageHandler";

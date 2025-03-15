@@ -9,6 +9,11 @@ import { minify } from "terser";
 import { peerDependencies } from "./package.json";
 import { copyFile, mkdir } from 'fs';
 
+const __SIA_AUTH__ = process.env.__SIA_AUTH__;
+const __SIA_ADDR__ = process.env.__SIA_ADDR__;
+const __SIA_AZBA_ADDR__ = process.env.__SIA_AZBA_ADDR__;
+const __SIA_AZBA_DATE_ADDR__ = process.env.__SIA_AZBA_DATE_ADDR__;
+
 const minifyBundles = () => {
    return {
       name: "minifyBundles",
@@ -41,7 +46,11 @@ const copyFiles = () => {
 
 const Config: UserConfig = {
    define: {
-      BASE_URL: JSON.stringify(`coui://html_ui/efb_ui/efb_apps/msfs2024-vfrnav`)
+      BASE_URL: JSON.stringify(`coui://html_ui/efb_ui/efb_apps/msfs2024-vfrnav`),
+      __SIA_AUTH__: JSON.stringify(__SIA_AUTH__),
+      __SIA_ADDR__: JSON.stringify(__SIA_ADDR__),
+      __SIA_AZBA_ADDR__: JSON.stringify(__SIA_AZBA_ADDR__),
+      __SIA_AZBA_DATE_ADDR__: JSON.stringify(__SIA_AZBA_DATE_ADDR__),
    },
    build: {
       minify: true,

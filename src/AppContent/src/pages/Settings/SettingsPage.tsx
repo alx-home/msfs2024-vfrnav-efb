@@ -3,7 +3,7 @@ import { Input } from "@Utils/Input";
 import { Scroll } from "@Utils/Scroll";
 import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { AirportLayerOptions, Color, LayerSetting } from "@shared/Settings";
+import { AirportLayerOptions, Color, LayerSetting, SharedSettingsDefault } from "@shared/Settings";
 import { Slider } from "@Utils/Slider";
 
 import undoImg from '@images/undo.svg';
@@ -12,7 +12,6 @@ import { DualSlider } from "@Utils/DualSlider";
 
 import oaciImg from '@images/oaci.jpg';
 import { SettingsContext } from "@Settings/SettingsProvider";
-import { SharedSettingsDefault } from "@Settings/Default";
 import { AirportLayerSettingSetter, LayerSettingSetter } from "@Settings/Settings";
 
 const List = ({ children }: PropsWithChildren) => {

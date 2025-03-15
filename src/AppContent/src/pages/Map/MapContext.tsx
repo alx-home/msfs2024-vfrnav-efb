@@ -11,6 +11,8 @@ import Feature, { FeatureLike } from "ol/Feature";
 import { SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
+import { PlaneRecords } from '@shared/PlanPos';
+import { messageHandler } from '@Settings/SettingsProvider';
 
 export type Interactive = {
    // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,7 +27,12 @@ export type Interactive = {
 
 export const MapContext = createContext<{
    map: Map,
-   navData: NavData[]
+   navData: NavData[],
+   records: PlaneRecords,
+   profileScale: number,
+   setProfileScale: (_value: number) => void,
+   withTouchdown: boolean,
+   enableTouchdown: (_value: boolean) => void,
    counter: number
    flash: boolean,
    flashKey: number,
@@ -39,9 +46,12 @@ export const MapContext = createContext<{
    setAddNav: Dispatch<SetStateAction<(() => void) | undefined>>,
    setCancel: Dispatch<SetStateAction<(() => void) | undefined>>,
    triggerFlash: (_value?: boolean) => void,
-   removeNav: (_name: string) => void,
-   activeNav: (_name: string, _active: boolean) => void,
-   editNav: (_name: string, _newName: string) => void,
+   removeNav: (_id: number) => void,
+   activeNav: (_id: number, _active: boolean) => void,
+   editNav: (_id: number, _newName: string) => void,
+   removeRecord: (_id: number) => void,
+   activeRecord: (_id: number, _active: boolean) => void,
+   editRecord: (_id: number, _newName: string) => void,
    reorderNav: (_orders: number[]) => void
 } | undefined>(undefined);
 
@@ -175,6 +185,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
       return map;
    }, []);
+   const [records, setRecords] = useState<PlaneRecords>([]);
    const [addNav, setAddNav] = useState<() => void>();
    const [cancel, setCancel] = useState<() => void>();
    const [navData, setNavData] = useState<NavData[]>([]);
@@ -184,6 +195,9 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
    const [cancelRequest, setCancelRequest] = useState(false);
    const [addNavRequest, setAddNavRequest] = useState(false);
+
+   const [profileScale, setProfileScale] = useState(1);
+   const [touchdown, setTouchdown] = useState(false);
 
    useEffect(() => {
       if (cancelRequest) {
@@ -199,6 +213,16 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       }
    }, [addNavRequest, addNav]);
 
+   useEffect(() => {
+      const onPlaneRecords = (records: PlaneRecords) => {
+         setRecords(records);
+      };
+
+      messageHandler.subscribe("PlaneRecords", onPlaneRecords)
+      messageHandler.send("GetPlaneRecords");
+      return () => messageHandler.unsubscribe("PlaneRecords", onPlaneRecords);
+   }, [])
+
    const provider = useMemo(() => ({
       map: map,
       addNav: (): void => setAddNavRequest(true),
@@ -213,6 +237,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       setCancel: setCancel,
       navData: navData,
       setNavData: setNavData,
+      records: records,
       counter: counter,
       setCounter: setCounter,
       flash: flash,
@@ -224,10 +249,10 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
          }
          setFlash(value ?? true);
       },
-      removeNav: (name: string) => {
+      removeNav: (id: number) => {
          setNavData(items => {
             const newItems = [...items];
-            const deleteIndex = newItems.findIndex((item) => item.name === name);
+            const deleteIndex = newItems.findIndex((item) => item.id === id);
             const deleteOrder = newItems[deleteIndex].order;
             newItems.splice(deleteIndex, 1);
             return newItems.map(elem => {
@@ -238,29 +263,53 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
             });
          });
       },
-      activeNav: (name: string, active: boolean) => {
+      activeNav: (id: number, active: boolean) => {
          setNavData(items => {
             const newItems = [...items];
-            newItems.find((item) => item.name === name)!.active = active;
+            newItems.find((item) => item.id === id)!.active = active;
             return newItems;
          });
       },
-      editNav: (name: string, newName: string) => {
+      editNav: (id: number, newName: string) => {
          setNavData(items => {
             const newItems = [...items];
-            const item = newItems.find((item) => item.name === name);
+            const item = newItems.find((item) => item.id === id);
             if (item) {
                item.name = newName;
             }
             return newItems;
          })
       },
+      removeRecord: (id: number) => {
+         messageHandler.send({
+            __remove_record__: true,
+            id: id
+         })
+      },
+      activeRecord: (id: number, active: boolean) => {
+         messageHandler.send({
+            __active_record__: true,
+            id: id,
+            active: active
+         })
+      },
+      editRecord: (id: number, newName: string) => {
+         messageHandler.send({
+            __edit_record__: true,
+            id: id,
+            name: newName
+         })
+      },
+      setProfileScale: setProfileScale,
+      profileScale: profileScale,
+      enableTouchdown: setTouchdown,
+      withTouchdown: touchdown,
       reorderNav: (orders: number[]) => {
          setNavData(data => {
             return orders.map((order, index) => ({ ...data[index], order: order }))
          });
       }
-   }), [map, navData, setNavData, counter, setCounter, flash, setFlash, flashKey, setFlashKey, setAddNavRequest, setCancelRequest]);
+   }), [map, navData, records, counter, flash, flashKey, profileScale, touchdown]);
 
    return (
       <MapContext.Provider

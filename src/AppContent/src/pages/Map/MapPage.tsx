@@ -8,6 +8,7 @@ import { fromLonLat, get as getProjection } from 'ol/proj';
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import flightPlanImg from '@images/flight-plan.svg';
+import recordImg from '@images/record.svg';
 import layersImg from '@images/layers.svg';
 import oaciImg from '@images/oaci.jpg';
 import azbaImg from '@images/azba.jpg';
@@ -31,6 +32,7 @@ import { AZBALayer } from "@Ol/layers/AZBALayer";
 import { SettingsContext } from "@Settings/SettingsProvider";
 import { AirportsLayer } from "@Ol/layers/AirportsLayer";
 import { PlaneLayer } from "@Ol/layers/PlaneLayer";
+import { RecordsLayer } from "@Ol/layers/RecordsLayer";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -69,6 +71,7 @@ const Overlay = ({ menu, setMenu, setOpen }: {
 }) => {
    return <div className='flex flex-col justify-end m-2 pointer-events-auto'>
       <div className="group flex flex-col shrink w-9 hover:w-20">
+         <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.records} alt='records' image={recordImg} />
          <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.nav} alt='flight plan' image={flightPlanImg} />
          <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.layers} alt='layers' image={layersImg} />
       </div>
@@ -243,6 +246,7 @@ export const MapPage = ({ active }: {
             <OlRouteLayer
                zIndex={layers.length}
                order={layers.length} />
+            <RecordsLayer key="records" order={layers.length + 1} active={true} />
          </OlMap>
          <div className="absolute z-10 pointer-events-none flex grow justify-end w-full h-full top-0 left-0">
             <div className={"relative flex grow justify-end h-full overflow-hidden"} >

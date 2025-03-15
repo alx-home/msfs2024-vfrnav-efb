@@ -2,14 +2,13 @@ import { Dispatch, KeyboardEvent, MouseEvent, SetStateAction, useCallback, useCo
 import useMouseRelease from '@Events/MouseRelease';
 import { MouseContext } from '@Events/MouseContext';
 import { Layer, Layers, OnLayerChange } from './Menus/Layers';
-import { Nav, NavItem } from './Menus/Nav';
+import { Nav } from './Menus/Nav';
 
-import { Scroll } from '@Utils/Scroll';
-import { MapContext } from '../MapContext';
 import useMouseMove from '@Events/MouseMove';
+import { Records } from './Menus/Records';
 
 // eslint-disable-next-line no-unused-vars
-export enum Menu { layers, nav };
+export enum Menu { layers, nav, records };
 
 export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
    open: boolean,
@@ -22,7 +21,6 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
    const minWidth = useMemo(() => 120, []);
    const maxWidth = useMemo(() => 250, []);
 
-   const { navData } = useContext(MapContext)!;
    const [initialDelta, setInitialDelta] = useState<number | undefined>();
    const [width, setWidth] = useState(0);
    const [defaultWidth, setDefaultWidth] = useState(minWidth);
@@ -33,11 +31,6 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
    const mouseUp = useMouseRelease(initialDelta !== undefined);
    const { cursorChangeHandler } = useContext(MouseContext);
 
-   const childs = useMemo(() =>
-      navData.map((item) =>
-         <NavItem key={item.id} active={item.active} name={item.name} shortName={item.shortName} />
-      )
-      , [navData]);
 
    const onDragStart = useCallback((mouseX: number) => {
       setInitialDelta(width + mouseX);
@@ -115,10 +108,23 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
    }, [setOpen]);
 
    const onMouseDown = useCallback((e: MouseEvent) => onDragStart(e.pageX), [onDragStart])
+   const className = useMemo(() => ('overflow-hidden shrink-0 flex flex-col [&>*:not(:first-child)]:mt-[7px]'
+      + (width > 0 ? ' p-3 pt-[25px]' : ' hidden')), [width]);
+
+   const layer = useMemo(() => {
+      switch (menu) {
+         case Menu.layers:
+            return <Layers layers={layers} onLayerChange={onLayerChange} className={className} style={{ width: width }} />
+         case Menu.nav:
+            return <Nav closeMenu={closeMenu} className={className} style={{ width: width }} />
+         case Menu.records:
+            return <Records className={className} style={{ width: width }} />
+      }
+   }, [className, closeMenu, layers, menu, onLayerChange, width]);
 
    return <>
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions,jsx-a11y/no-noninteractive-tabindex */}
-      <div ref={handleRef} role="separator" aria-orientation="vertical" tabIndex={0}
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-static-element-interactions */}
+      <div ref={handleRef} aria-orientation="vertical" tabIndex={0}
          onMouseDown={onMouseDown}
          onMouseUp={onDragEnd}
          onKeyDown={handleKey}
@@ -127,13 +133,7 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
       <div className={'overflow-hidden shrink-0 border-l border-gray-700 pointer-events-auto'
          + ' flex flex-col bg-gray-800 text-center text-white'
          + (width > 0 ? '' : ' hidden')}>
-         <Scroll className={'overflow-hidden shrink-0 flex flex-col [&>*:not(:first-child)]:mt-[7px]'
-            + (width > 0 ? ' p-3 pt-[25px]' : ' hidden')}
-            style={{ width: width }}>
-            {menu === Menu.layers ?
-               <Layers layers={layers} onLayerChange={onLayerChange} /> :
-               <Nav closeMenu={closeMenu}>{childs}</Nav>}
-         </Scroll>
+         {layer}
       </div>
    </>
 };

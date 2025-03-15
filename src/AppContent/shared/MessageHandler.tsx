@@ -1,20 +1,28 @@
 import { isType, reduce, TypeRecord } from './Types';
 import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetMetar, GetMetarRecord, Metar, MetarRecord } from './Facilities';
 import { SharedSettingsRecord, SharedSettings } from './Settings';
-import { PlanePos, PlanePosRecord } from './PlanPos';
+import { ActiveRecord, ActiveRecordRecord, EditRecord, EditRecordRecord, PlanePos, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
 
-const MessageIdValues = ["SharedSettings", "GetSettings", "GetFacilities", "Facilities", "GetMetar", "Metar", "PlanePos"] as const;
-type MessageType = SharedSettings | Facilities | "GetSettings" | GetFacilities | GetMetar | Metar | PlanePos;
+const MessageIdValues = ["SharedSettings", "GetSettings", "GetPlaneRecords", "GetFacilities",
+   "Facilities", "GetMetar", "Metar", "PlanePos", "PlaneRecords",
+   "RemoveRecord", "EditRecord", "ActiveRecord"] as const;
+type MessageType = SharedSettings | Facilities | "GetSettings" | "GetPlaneRecords" | GetFacilities | GetMetar | Metar | PlanePos | PlaneRecords
+   | ActiveRecord | EditRecord | RemoveRecord;
 type MessageId = (typeof MessageIdValues)[number];
 
 const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "SharedSettings": SharedSettingsRecord,
    "GetSettings": undefined,
+   "GetPlaneRecords": undefined,
    "GetFacilities": GetFacilitiesRecord,
    "Facilities": FacilitiesRecord,
    "GetMetar": GetMetarRecord,
    "Metar": MetarRecord,
-   "PlanePos": PlanePosRecord
+   "PlanePos": PlanePosRecord,
+   "PlaneRecords": PlaneRecordsRecord,
+   "RemoveRecord": RemoveRecordRecord,
+   "EditRecord": EditRecordRecord,
+   "ActiveRecord": ActiveRecordRecord
 }
 
 const checkMessage = (type: MessageId, _object: unknown) => {

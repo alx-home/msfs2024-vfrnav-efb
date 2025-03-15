@@ -106,6 +106,47 @@ export const reduce = <T,>(elem: T, type: TypeRecord<T>): T => {
    return reduceImpl(elem, type);
 }
 
+const fillImpl = <T,>(elem: T, defaultValue: T): T => {
+   if (defaultValue === undefined) {
+      return elem;
+   }
+
+   {
+      const type = ['boolean', 'number', 'bigint', 'string'].find(e => e === typeof defaultValue)
+      if (type) {
+         if (elem && typeof elem === type) {
+            return elem
+         }
+         return defaultValue;
+      }
+   }
+
+   if (Array.isArray(defaultValue)) {
+      if (!Array.isArray(elem)) {
+         return defaultValue;
+      }
+      return (elem as []).map(value => fillImpl(value, (defaultValue as Array<unknown>)[0])) as T;
+   }
+
+   console.assert(typeof defaultValue === 'object')
+   if (typeof elem !== 'object') {
+      return defaultValue;
+   }
+
+   for (const key in (defaultValue as object)) {
+      const value = (defaultValue as object)[key as keyof object];
+      const subElem = (elem as T)[key as keyof T];
+
+      (elem as T)[key as keyof T] = fillImpl(subElem, value);
+   }
+
+   return elem;
+}
+
+export const fill = <T,>(elem: T, defaultValue: T): T => {
+   return fillImpl(elem, defaultValue);
+}
+
 export const deepEquals = (object1: object, object2: object) => {
    const keys1 = Object.keys(object1);
    const keys2 = Object.keys(object2);

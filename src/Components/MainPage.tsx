@@ -1,9 +1,10 @@
 import { GamepadUiView, RequiredProps, TVNode, UiViewProps } from "@alx-home/efb-api";
 import { AirportRunway, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, FSComponent, UnitType } from '@microsoft/msfs-sdk';
 import { MessageHandler } from "@shared/MessageHandler";
-import { SharedSettings } from "@shared/Settings";
+import { SharedSettings, SharedSettingsDefault } from "@shared/Settings";
 import { AirportFacility, FrequencyType, GetFacilities, GetMetar, Metar } from "@shared/Facilities";
-import { PlanePos } from "@shared/PlanPos";
+import { ActiveRecord, EditRecord, PlanePos, PlaneRecords, PlaneRecordsDefault, RemoveRecord } from "@shared/PlanPos";
+import { fill } from "@shared/Types";
 
 interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
   /** The page title */
@@ -26,18 +27,60 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private readonly _facilitiesList = new Map<string, AirportFacility>();
   private lat: number | undefined;
   private lon: number | undefined;
-  private plane: PlanePos | undefined;
+  private plane: PlanePos[] = [];
+  private flying: boolean = false;
+  private flights: PlaneRecords = (() => {
+    const flightsStr = GetStoredData("flights") as string
+    return fill(flightsStr === "" ? [] : (JSON.parse(flightsStr) as PlaneRecords), PlaneRecordsDefault);
+  })();
 
-  private readonly positionFetcher = setInterval(async () => {
-    this.plane = {
+  private fetchPosition() {
+    const info = {
+      date: Date.now(),
       lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degrees'),
       lon: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degrees'),
       altitude: SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet'),
-      heading: SimVar.GetSimVarValue('PLANE HEADING', 'degrees')
+      ground: SimVar.GetSimVarValue('GROUND ALTITUDE', 'feet'),
+      heading: SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees'),
+      verticalSpeed: SimVar.GetSimVarValue('VELOCITY BODY Y', 'feet per seconds') * 60,
+      windVelocity: SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'knots'),
+      windDirection: SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'degrees'),
+    } as PlanePos;
+
+    this.flying = !SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
+
+    if (this.flying) {
+      if (!this.plane.length || ((info.date - this.plane[this.plane.length - 1].date) >= 500)) {
+        this.plane.push(info)
+      }
+    } else if (this.plane.length) {
+      if (info.date - this.plane[0].date > 10000) {
+        const touchDownSpeed = SimVar.GetSimVarValue('PLANE TOUCHDOWN NORMAL VELOCITY', 'feet per seconds') * 60;
+
+        if (this.flights.length === 15) {
+          this.flights = this.flights.slice(1);
+        }
+
+        this.flights.push({
+          name: new Date(this.plane[0].date).toLocaleString(),
+          id: this.flights.length ? (+this.flights[this.flights.length - 1].id + 1) : 0,
+          active: false,
+          record: this.plane,
+          touchdown: touchDownSpeed
+        })
+
+        SetStoredData("flights", JSON.stringify(this.flights))
+        messageHandler?.send(this.flights);
+        console.log(JSON.stringify(this.flights))
+      }
+
+      this.plane = []
     }
 
-    messageHandler?.send(this.plane);
-  }, 1000);
+    messageHandler?.send(info);
+  };
+
+  private positionFetcher: NodeJS.Timeout | undefined;
 
   async getMetar(ident: string, lat: number, lon: number) {
     const result: Metar = {
@@ -158,7 +201,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   onGetSettings() {
     const storedSettings = GetStoredData("settings");
     if (storedSettings) {
-      this.settings = JSON.parse(storedSettings as string) as SharedSettings;
+      this.settings = fill(JSON.parse(storedSettings as string) as SharedSettings, SharedSettingsDefault);
     }
 
     if (this.settings) {
@@ -166,9 +209,17 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     }
   }
 
+  onGetPlaneRecords() {
+    const flightsStr = GetStoredData("flights") as string;
+    const flights = fill(flightsStr === "" ? [] : (JSON.parse(flightsStr) as PlaneRecords), PlaneRecordsDefault)
+    messageHandler?.send(flights);
+  }
+
   async onGetFacilities(message: GetFacilities) {
     const list = await this.getFacilitiesList(message.lat, message.lon);
     messageHandler?.send({ facilities: [...list.values()] });
+
+    this.positionFetcher = setInterval(this.fetchPosition.bind(this), 100);
   }
 
   async onGetMetar(message: GetMetar) {
@@ -186,6 +237,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     if (messageHandler !== undefined) {
       messageHandler.unsubscribe("SharedSettings", this.onSharedSettings)
       messageHandler.unsubscribe("GetSettings", this.onGetSettings)
+      messageHandler.unsubscribe("GetPlaneRecords", this.onGetPlaneRecords)
       messageHandler.unsubscribe("GetFacilities", this.onGetFacilities)
       messageHandler.unsubscribe("GetMetar", this.onGetMetar)
     }
@@ -202,14 +254,34 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     );
   }
 
+  private onEditRecord({ id, name }: EditRecord) {
+    this.flights.find(elem => elem.id === id)!.name = name
+    SetStoredData("flights", JSON.stringify(this.flights))
+    messageHandler?.send(this.flights);
+  }
+  private onActiveRecord({ id, active }: ActiveRecord) {
+    this.flights.find(elem => elem.id === id)!.active = active
+    SetStoredData("flights", JSON.stringify(this.flights))
+    messageHandler?.send(this.flights);
+  }
+  private onRemoveRecord({ id }: RemoveRecord) {
+    this.flights.splice(this.flights.findIndex(elem => elem.id === id), 1)
+    SetStoredData("flights", JSON.stringify(this.flights))
+    messageHandler?.send(this.flights);
+  }
+
   public onAfterRender(): void {
     if (messageHandler === undefined) {
       messageHandler = new MessageHandler(this.elementRef.instance);
 
       messageHandler.subscribe("SharedSettings", this.onSharedSettings.bind(this));
       messageHandler.subscribe("GetSettings", this.onGetSettings.bind(this));
+      messageHandler.subscribe("GetPlaneRecords", this.onGetPlaneRecords.bind(this))
       messageHandler.subscribe("GetFacilities", this.onGetFacilities.bind(this));
       messageHandler.subscribe("GetMetar", this.onGetMetar.bind(this))
+      messageHandler.subscribe("EditRecord", this.onEditRecord.bind(this))
+      messageHandler.subscribe("ActiveRecord", this.onActiveRecord.bind(this))
+      messageHandler.subscribe("RemoveRecord", this.onRemoveRecord.bind(this))
     }
   }
 
