@@ -32,6 +32,7 @@ export type SharedSettings = {
    SIAAZBADateAddr: string,
 
    azba: LayerSetting,
+   plane: LayerSetting,
    airports: LayerSetting & AirportLayerOptions,
    OACI: LayerSetting,
    germany: LayerSetting,
@@ -88,6 +89,7 @@ export const SharedSettingsRecord: TypeRecord<SharedSettings> = {
    SIAAZBADateAddr: 'string',
 
    azba: LayerRecord,
+   plane: LayerRecord,
    airports: {
       ...LayerRecord, ...{
          hardRunway: 'boolean',

@@ -25,6 +25,10 @@ export const SharedSettingsDefault: SharedSettings = {
       minZoom: 0,
       maxZoom: 12
    },
+   plane: {
+      enabled: false,
+      active: false,
+   },
    OACI: {
       enabled: true,
       active: true,

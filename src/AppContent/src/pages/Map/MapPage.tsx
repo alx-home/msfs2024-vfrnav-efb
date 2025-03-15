@@ -12,6 +12,7 @@ import layersImg from '@images/layers.svg';
 import oaciImg from '@images/oaci.jpg';
 import azbaImg from '@images/azba.jpg';
 import airportsImg from '@images/airports.jpg';
+import planeImg from '@images/plane.jpg';
 import dsfImg from '@images/dsf.jpg';
 import openflightmapsImg from '@images/openflightmaps.jpg';
 import openflightmapsBaseImg from '@images/openflightmaps_base.jpg';
@@ -29,6 +30,7 @@ import { GlobalSettings } from "@Settings/Settings";
 import { AZBALayer } from "@Ol/layers/AZBALayer";
 import { SettingsContext } from "@Settings/SettingsProvider";
 import { AirportsLayer } from "@Ol/layers/AirportsLayer";
+import { PlaneLayer } from "@Ol/layers/PlaneLayer";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -99,6 +101,12 @@ export const MapPage = ({ active }: {
    const [open, setOpen] = useState(false);
    const [menu, setMenu] = useState<Menu>(Menu.layers);
    const [layers, setLayers] = useState([
+      {
+         olLayer: <PlaneLayer key="plane" />,
+         src: planeImg,
+         alt: 'plane layer',
+         getSettings: (_settings: GlobalSettings) => _settings.plane,
+      },
       {
          olLayer: <AirportsLayer key="airports" />,
          src: airportsImg,

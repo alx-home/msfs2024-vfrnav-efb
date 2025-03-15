@@ -36,6 +36,7 @@ export type GlobalSettings = Settings & SharedSettings & {
 
    azba: LayerSettingSetter & SharedSettings['azba'],
    airports: AirportLayerSettingSetter & LayerSettingSetter & SharedSettings['airports'],
+   plane: LayerSettingSetter & SharedSettings['plane'],
    OACI: LayerSettingSetter & SharedSettings['OACI'],
    germany: LayerSettingSetter & SharedSettings['germany'],
    openflightmaps: LayerSettingSetter & SharedSettings['openflightmaps'],

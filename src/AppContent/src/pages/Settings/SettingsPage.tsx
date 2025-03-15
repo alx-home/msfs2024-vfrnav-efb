@@ -548,6 +548,11 @@ export const SettingsPage = ({ active }: {
                      Use Open Street map Layer.
                   </LayerActivation>
                </Items>
+               <Items name="Cheat" category="Layers">
+                  <LayerActivation setting={settings.plane} defaultSetting={SharedSettingsDefault.plane}>
+                     Use plane Layer (Displays aircraft position on the map).
+                  </LayerActivation>
+               </Items>
                <Items name="Visibility" category="Layers">
                   <Legend>
                      <div className="pb-2">
@@ -567,6 +572,7 @@ export const SettingsPage = ({ active }: {
                   <ZoomItem name="Open Street" setting={settings.openstreet} defaultSetting={SharedSettingsDefault.openstreet} />
                   <ZoomItem name="Map4Free" setting={settings.mapforfree} defaultSetting={SharedSettingsDefault.mapforfree} />
                   <ZoomItem name="Google" setting={settings.googlemap} defaultSetting={SharedSettingsDefault.googlemap} />
+                  <ZoomItem name="Plane" setting={settings.plane} defaultSetting={SharedSettingsDefault.plane} />
                </Items>
             </Group>
             <Group name="Map Display">

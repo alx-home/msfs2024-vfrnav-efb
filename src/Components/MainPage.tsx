@@ -3,6 +3,7 @@ import { AirportRunway, FacilityLoader, FacilityRepository, FacilitySearchType, 
 import { MessageHandler } from "@shared/MessageHandler";
 import { SharedSettings } from "@shared/Settings";
 import { AirportFacility, FrequencyType, GetFacilities, GetMetar, Metar } from "@shared/Facilities";
+import { PlanePos } from "@shared/PlanPos";
 
 interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
   /** The page title */
@@ -25,6 +26,18 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private readonly _facilitiesList = new Map<string, AirportFacility>();
   private lat: number | undefined;
   private lon: number | undefined;
+  private plane: PlanePos | undefined;
+
+  private readonly positionFetcher = setInterval(async () => {
+    this.plane = {
+      lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degrees'),
+      lon: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degrees'),
+      altitude: SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet'),
+      heading: SimVar.GetSimVarValue('PLANE HEADING', 'degrees')
+    }
+
+    messageHandler?.send(this.plane);
+  }, 1000);
 
   async getMetar(ident: string, lat: number, lon: number) {
     const result: Metar = {
@@ -168,12 +181,15 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   destroy(): void {
+    clearInterval(this.positionFetcher);
+
     if (messageHandler !== undefined) {
       messageHandler.unsubscribe("SharedSettings", this.onSharedSettings)
       messageHandler.unsubscribe("GetSettings", this.onGetSettings)
       messageHandler.unsubscribe("GetFacilities", this.onGetFacilities)
       messageHandler.unsubscribe("GetMetar", this.onGetMetar)
     }
+
     super.destroy();
   }
 

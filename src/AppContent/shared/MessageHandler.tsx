@@ -1,9 +1,10 @@
 import { isType, reduce, TypeRecord } from './Types';
 import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetMetar, GetMetarRecord, Metar, MetarRecord } from './Facilities';
 import { SharedSettingsRecord, SharedSettings } from './Settings';
+import { PlanePos, PlanePosRecord } from './PlanPos';
 
-const MessageIdValues = ["SharedSettings", "GetSettings", "GetFacilities", "Facilities", "GetMetar", "Metar"] as const;
-type MessageType = SharedSettings | Facilities | "GetSettings" | GetFacilities | GetMetar | Metar;
+const MessageIdValues = ["SharedSettings", "GetSettings", "GetFacilities", "Facilities", "GetMetar", "Metar", "PlanePos"] as const;
+type MessageType = SharedSettings | Facilities | "GetSettings" | GetFacilities | GetMetar | Metar | PlanePos;
 type MessageId = (typeof MessageIdValues)[number];
 
 const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
@@ -12,7 +13,8 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "GetFacilities": GetFacilitiesRecord,
    "Facilities": FacilitiesRecord,
    "GetMetar": GetMetarRecord,
-   "Metar": MetarRecord
+   "Metar": MetarRecord,
+   "PlanePos": PlanePosRecord
 }
 
 const checkMessage = (type: MessageId, _object: unknown) => {
