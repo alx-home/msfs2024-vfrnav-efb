@@ -16,14 +16,16 @@ Fixes :
 - App crash when more than one document is to be loaded / Crash de l&apos;App lorsque plus d&apos;un document est chargé
 - PDF font loading detection / Détection du chargement des fonts pour les PDF
 </ReleaseNote>
-	<ReleaseNote Version="0.4.0" Date="0-1-1">Fixes :
-- Do not reset settings over updates / Ne pas resetter les settings entre les différentes mise à jours
+	<ReleaseNote Version="0.4.0" Date="0-1-1">
+Fixes :
+- Do not reset settings over updates / Ne pas réinitialiser les settings entre les différentes mise à jours
 
 Improvements / améliorations :
-- Add Airports layer with metar/Frequencies/... information / Ajout d&apos;un layer affichant les aéroport avec des informations sur les metar/Frequences/...
+- Add Airports layer with metar/Frequencies/... information / Ajout d&apos;un layer affichant les aéroport avec des informations sur les metars/Frequences/...
 - Add OpenFlightMap layer / Ajout d&apos;un layer OpenFlightMap
-- Add possibilitiy to show aircraft on the map (must be enable in settings page) / Ajout de la possibilité de voir la position de l&apos;avion (doit être activé dans la page de settings)
-- Add a page for displaying flights/touchdown records / Ajout d&apos;une page afin d&apos;afficher les enregistrements de vols/atterissages</ReleaseNote>
+- Add the possibilitiy to show aircraft on the map (must be enabled in the settings page) / Ajout de la possibilité de voir la position de l&apos;avion (doit être activé dans la page de settings)
+- Add a page for displaying flights/touchdown records / Ajout d&apos;une page afin d&apos;afficher les enregistrements de vols/attérissages
+</ReleaseNote>
 	<ReleaseNote Version="0.1.1" Date="2025-1-5">Improvements / améliorations :
 - Improve text overlay on the map / Amélioration de l&apos;affichage du texte sur la map
 - Hide layers when their corresponding min/max zoom is reached / Les layers sont maintenant cachés lorsque leurs zoom max/min est atteint
