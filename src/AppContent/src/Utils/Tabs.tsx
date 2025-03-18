@@ -1,9 +1,10 @@
 import { PropsWithChildren } from "react";
 import { Button } from "./Button";
 
-export const Tabs = <Tab,>({ children, tabs, disabled, switchTab, activeTab }: PropsWithChildren<{
+export const Tabs = <Tab extends string,>({ children, tabs, disabled, switchTab, activeTab, names }: PropsWithChildren<{
    activeTab: string,
    tabs: Tab[],
+   names?: Record<Tab, string>,
    switchTab: (_tab: Tab) => void,
    disabled?: boolean
 }>) => {
@@ -11,9 +12,9 @@ export const Tabs = <Tab,>({ children, tabs, disabled, switchTab, activeTab }: P
       <div className='flex flex-row justify-start h-[29px] min-h-[29px]'>
          <div className='flex flex-row shrink!important [&>:not(:first-child)]:ml-1'>
             {tabs.map(tab =>
-               <Button active={!disabled} key={tab as string} disabled={(activeTab === tab) || disabled} className='px-2'
+               <Button active={!disabled} key={tab} disabled={(activeTab === tab) || disabled} className='px-2'
                   onClick={() => switchTab(tab)}>
-                  {tab as string}
+                  {names !== undefined ? names[tab] : tab}
                </Button>)}
          </div>
       </div>

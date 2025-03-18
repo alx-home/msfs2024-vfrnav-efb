@@ -176,7 +176,7 @@ const Transitions = ({ data }: {
    </div>
 };
 
-const Metar_Taf = ({ data }: {
+const Metar = ({ data }: {
    data: AirportFacility
 }) => {
    const [metar, setMetar] = useState<MetarT | undefined>(undefined);
@@ -264,7 +264,16 @@ const Metar_Taf = ({ data }: {
 };
 
 
-type Tab = 'Frequencies' | 'Transitions' | 'Runways' | 'Fuels' | 'Metar / Taf';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const tabs = ['Frequencies', 'Transitions', 'Runways', 'Fuels', 'Metar'] as const;
+type Tab = typeof tabs[number];
+const TabStr: Record<Tab, string> = {
+   'Frequencies': 'Frequencies',
+   'Transitions': 'Transitions',
+   'Runways': 'Runways',
+   'Fuels': 'Fuels',
+   'Metar': 'Metar / Taf',
+}
 
 const TabElem = ({ tab, currentTab, children }: PropsWithChildren<{
    currentTab: Tab,
@@ -300,35 +309,35 @@ export const AirportPopup = ({ data }: {
       }
    }, [emptyPopup, key, setPopup])
 
-   const [tab, setTab] = useState<Tab>('Metar / Taf');
+   const [tab, setTab] = useState<Tab>('Metar');
 
    const [tabs, tabElems] = useMemo(() => {
       const elems: ReactElement[] = [];
       const tabs: Tab[] = [];
 
-      const addTab = (Elem: React.JSXElementConstructor<{ data: AirportFacility }>) => {
-         elems.push(<TabElem key={Elem.name} tab={Elem.name.replaceAll('_', ' / ') as Tab} currentTab={tab}>
+      const addTab = (Elem: React.JSXElementConstructor<{ data: AirportFacility }>, name: Tab) => {
+         elems.push(<TabElem key={name} tab={name} currentTab={tab}>
             <Elem data={data} />
          </TabElem>)
-         tabs.push(Elem.name.replaceAll('_', ' / ') as Tab)
+         tabs.push(name)
       }
 
-      addTab(Metar_Taf)
+      addTab(Metar, 'Metar')
 
       if (data.frequencies.length) {
-         addTab(Frequencies)
+         addTab(Frequencies, 'Frequencies')
       }
 
       if (data.runways.length) {
-         addTab(Runways)
+         addTab(Runways, 'Runways')
       }
 
       if ((data.transitionAlt !== 0 || data.transitionLevel !== 0)) {
-         addTab(Transitions)
+         addTab(Transitions, 'Transitions')
       }
 
       if (data.fuel1 !== '' || data.fuel2 !== '') {
-         addTab(Fuels)
+         addTab(Fuels, 'Fuels')
       }
 
       return [tabs, elems]
@@ -346,7 +355,7 @@ export const AirportPopup = ({ data }: {
          <div className='ml-2'>{data.icao}{airportClass}</div>
       </div>
       <div className='flex flex-col overflow-hidden'>
-         <Tabs tabs={Array.from(tabs)} activeTab={tab} switchTab={setTab} />
+         <Tabs tabs={Array.from(tabs)} names={TabStr} activeTab={tab} switchTab={setTab} />
          <div className='grid shrink p-4 overflow-hidden h-[60vh]'>
             {tabElems}
          </div>

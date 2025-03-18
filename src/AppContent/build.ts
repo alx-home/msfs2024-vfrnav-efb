@@ -77,7 +77,7 @@ const EFBConfig: UserConfig = {
       rollupOptions: {
          output: {
             manualChunks: undefined
-         }
+         },
       },
       outDir: "../../dist/efb/",
       ssr: false,
