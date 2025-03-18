@@ -15,6 +15,7 @@ import { Coordinate } from "ol/coordinate";
 import { toContext } from "ol/render";
 import { messageHandler } from "@Settings/SettingsProvider";
 import { PlanePoses } from "@shared/PlanPos";
+import LayerGroup from "ol/layer/Group";
 
 const getNorm = (a: Coordinate, b: Coordinate) => {
    const ab = [b[0] - a[0], b[1] - a[1]];
@@ -126,8 +127,11 @@ export const RecordsLayer = ({
       features: [
          ...await Promise.all(navPath),
          ...(await Promise.all(profile)).reduce((result, elem) => [...result, ...elem], []),
-         ...await Promise.all(touchDowns)],
-   }), [navPath, profile, touchDowns]);
+      ],
+   }), [navPath, profile]);
+   const touchDownSource = useMemo(async () => new VectorSource<Feature<Geometry>>({
+      features: [...await Promise.all(touchDowns)],
+   }), [touchDowns]);
 
    const vectorLayer = useMemo(() => new VectorLayer({
       style: new Style({
@@ -147,25 +151,6 @@ export const RecordsLayer = ({
                   color: 'transparent',
                }));
                renderContext.drawGeometry(geometry);
-            } else if (geometry instanceof Point) {
-               if (withTouchdown) {
-                  const x = (coords_ as Coordinate)[0];
-                  const y = (coords_ as Coordinate)[1];
-
-                  ctx.beginPath();
-                  ctx.fillStyle = "rgba(0, 153, 255, 0.4)"
-                  ctx.strokeStyle = "#FFFFFF"
-                  ctx.lineWidth = 2
-                  ctx.arc(x, y, 50, 0, 2 * Math.PI);
-                  ctx.fill();
-                  ctx.stroke();
-
-                  const speed = state.feature.get("speed") as number;
-                  ctx.font = "15px Inter-bold, sans-serif";
-                  ctx.textAlign = "center";
-                  ctx.fillStyle = "#FFFFFF"
-                  ctx.fillText(speed.toFixed(0) + "ft/min", x, y + 4)// @todo parameters
-               }
             } else {
                renderContext.setFillStrokeStyle(new Fill(), new Stroke({
                   color: '#FFFFFF',
@@ -180,7 +165,41 @@ export const RecordsLayer = ({
             }
          }
       }),
-   }), [withTouchdown]);
+   }), []);
+
+   const touchdownLayer = useMemo(() => new VectorLayer({
+      style: new Style({
+         renderer(coords_, state) {
+            const ctx = state.context;
+            const geometry = state.geometry.clone() as SimpleGeometry;
+            geometry.setCoordinates(coords_);
+
+            const x = (coords_ as Coordinate)[0];
+            const y = (coords_ as Coordinate)[1];
+
+            ctx.beginPath();
+            ctx.fillStyle = "rgba(0, 153, 255, 0.4)"
+            ctx.strokeStyle = "#FFFFFF"
+            ctx.lineWidth = 2
+            ctx.arc(x, y, 50, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+
+            const speed = state.feature.get("speed") as number;
+            ctx.font = "15px Inter-bold, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#FFFFFF"
+            ctx.fillText(speed.toFixed(0) + "ft/min", x, y + 4)// @todo parameters
+         }
+      }),
+   }), []);
+
+   const group = useMemo(() => new LayerGroup({
+      layers: [
+         vectorLayer,
+         touchdownLayer
+      ]
+   }), [touchdownLayer, vectorLayer])
 
    useEffect(() => {
       (async () => {
@@ -188,7 +207,17 @@ export const RecordsLayer = ({
       })()
    }, [vectorLayer, vectorSource])
 
-   return <OlLayer key={"airports"} source={vectorLayer} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />
+   useEffect(() => {
+      (async () => {
+         if (withTouchdown) {
+            touchdownLayer.setSource(await touchDownSource)
+         } else {
+            touchdownLayer.setSource(new VectorSource());
+         }
+      })()
+   }, [touchDownSource, touchdownLayer, vectorLayer, vectorSource, withTouchdown])
+
+   return <OlLayer key={"airports"} source={group} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />
 };
 
 
