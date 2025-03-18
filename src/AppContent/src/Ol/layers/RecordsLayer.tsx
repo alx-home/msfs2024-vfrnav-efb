@@ -1,5 +1,5 @@
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { Geometry, LineString, Point, Polygon, SimpleGeometry } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import VectorSource from "ol/source/Vector";
@@ -13,6 +13,8 @@ import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
 import { Coordinate } from "ol/coordinate";
 import { toContext } from "ol/render";
+import { messageHandler } from "@Settings/SettingsProvider";
+import { PlanePoses } from "@shared/PlanPos";
 
 const getNorm = (a: Coordinate, b: Coordinate) => {
    const ab = [b[0] - a[0], b[1] - a[1]];
@@ -22,6 +24,19 @@ const getNorm = (a: Coordinate, b: Coordinate) => {
 
    return norm;
 }
+
+const fetchRecord = async (id: number) => new Promise<PlanePoses>(resolve => {
+   const callback = (poses: PlanePoses) => {
+      messageHandler.unsubscribe('PlanePoses', callback)
+      resolve(poses)
+   }
+
+   messageHandler.subscribe('PlanePoses', callback)
+   messageHandler.send({
+      mType: 'GetRecord',
+      id: id
+   })
+})
 
 export const RecordsLayer = ({
    opacity,
@@ -37,70 +52,80 @@ export const RecordsLayer = ({
    const { profileScale, records: records_, withTouchdown } = useContext(MapContext)!;
    const records = useMemo(() => records_.filter(record => record.active), [records_]);
 
-   const navPath = useMemo(() => records
-      .map(record => new Feature(new LineString(record.record.map(pos => fromLonLat([pos.lon, pos.lat]))))), [records]);
+   const navData = useMemo(() => records.map(record => fetchRecord(record.id)), [records]);
 
-   const profile = useMemo(() => records
-      .reduce((result, record) => {
-         const res = 0.30480 / profileScale;
+   const navPath = useMemo(() => navData
+      .map(async data => new Feature(new LineString((await data).value.map(pos => fromLonLat([pos.lon, pos.lat]))))), [navData]);
 
-         const coords = record.record.map(elem => [...fromLonLat([elem.lon, elem.lat]), elem.altitude, elem.ground]);
-         const elems: Coordinate[][][] = [[], []];
-         for (let j = 0; j < 2; ++j) {
-            let start: Coordinate | undefined;
+   const profile = useMemo(() => navData
+      .reduce((result, data) => {
+         const elems = (async () => {
+            const res = 0.30480 / profileScale;
 
-            for (let i = 1; i < coords.length; ++i) {
-               const a = coords[i - 1] as Coordinate
-               const b = coords[i] as Coordinate
+            const coords = (await data).value.map(elem => [...fromLonLat([elem.lon, elem.lat]), elem.altitude, elem.ground]);
+            const elems: Coordinate[][][] = [[], []];
+            for (let j = 0; j < 2; ++j) {
+               let start: Coordinate | undefined;
 
-               const segment: Coordinate[] = [];
+               for (let i = 1; i < coords.length; ++i) {
+                  const a = coords[i - 1] as Coordinate
+                  const b = coords[i] as Coordinate
 
-               segment.push(a.toSpliced(2))
+                  const segment: Coordinate[] = [];
 
-               let norm = getNorm(a, b);
+                  segment.push(a.toSpliced(2))
 
-               if (!start) {
+                  let norm = getNorm(a, b);
+
+                  if (!start) {
+                     start = norm;
+                  }
+
+                  segment.push([a[0] + start[0] * a[2 + j] * res, a[1] + start[1] * a[2 + j] * res])
+
+                  if (i < coords.length - 1) {
+                     const c = coords[i + 1] as Coordinate
+                     const norm2 = getNorm(b, c);
+
+                     norm = [norm2[0] + norm[0], norm2[1] + norm[1]];
+                     const d = Math.sqrt(norm[0] * norm[0] + norm[1] * norm[1]);
+                     norm = [norm[0] / d, norm[1] / d];
+                  }
+
                   start = norm;
+                  segment.push([b[0] + start[0] * b[2 + j] * res, b[1] + start[1] * b[2 + j] * res])
+                  segment.push(b.toSpliced(2))
+                  segment.push(a.toSpliced(2))
+
+                  elems[j].push(segment)
                }
-
-               segment.push([a[0] + start[0] * a[2 + j] * res, a[1] + start[1] * a[2 + j] * res])
-
-               if (i < coords.length - 1) {
-                  const c = coords[i + 1] as Coordinate
-                  const norm2 = getNorm(b, c);
-
-                  norm = [norm2[0] + norm[0], norm2[1] + norm[1]];
-                  const d = Math.sqrt(norm[0] * norm[0] + norm[1] * norm[1]);
-                  norm = [norm[0] / d, norm[1] / d];
-               }
-
-               start = norm;
-               segment.push([b[0] + start[0] * b[2 + j] * res, b[1] + start[1] * b[2 + j] * res])
-               segment.push(b.toSpliced(2))
-               segment.push(a.toSpliced(2))
-
-               elems[j].push(segment)
             }
-         }
 
-         return [...result, ...elems.reduce((result, profile) => [...result, ...profile.map(elem => new Feature(new Polygon([elem])))], [] as Feature[])] as Feature[];
-      }, [] as Feature[]), [profileScale, records]);
+            return elems.reduce((result, profile) => [...result, ...profile.map(elem => new Feature(new Polygon([elem])))], [] as Feature[]);
+         })();
+
+         return [...result, elems] as Promise<Feature[]>[];
+      }, [] as Promise<Feature[]>[]), [navData, profileScale]);
 
    const touchDowns = useMemo(() => records
-      .map(record => {
-         const pos = record.record[record.record.length - 1];
+      .map(async (record, index) => {
+         const data = (await navData[index]).value;
+         const pos = data[data.length - 1];
          const coords = fromLonLat([pos.lon, pos.lat])
 
          const feature = new Feature(new Point(coords));
          feature.set("speed", record.touchdown);
          return feature;
-      }), [records]);
-   const vectorSource = useMemo(() => new VectorSource<Feature<Geometry>>({
-      features: [...navPath, ...profile, ...touchDowns],
+      }), [navData, records]);
+
+   const vectorSource = useMemo(async () => new VectorSource<Feature<Geometry>>({
+      features: [
+         ...await Promise.all(navPath),
+         ...(await Promise.all(profile)).reduce((result, elem) => [...result, ...elem], []),
+         ...await Promise.all(touchDowns)],
    }), [navPath, profile, touchDowns]);
 
    const vectorLayer = useMemo(() => new VectorLayer({
-      source: vectorSource,
       style: new Style({
          renderer(coords_, state) {
             const ctx = state.context;
@@ -151,7 +176,13 @@ export const RecordsLayer = ({
             }
          }
       }),
-   }), [vectorSource, withTouchdown]);
+   }), [withTouchdown]);
+
+   useEffect(() => {
+      (async () => {
+         vectorLayer.setSource(await vectorSource)
+      })()
+   }, [vectorLayer, vectorSource])
 
    return <OlLayer key={"airports"} source={vectorLayer} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />
 };

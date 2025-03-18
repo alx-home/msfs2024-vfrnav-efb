@@ -95,12 +95,13 @@ export const AirportsLayer = ({
             const pos = toLonLat(coords)
 
             messageHandler.send({
-               __getfacilities__: true,
+               mType: "GetFacilities",
+
                lat: pos[1],
                lon: pos[0]
             });
          } else {
-            messageHandler.send(facilitiesJson)
+            messageHandler.send({ mType: 'Facilities', ...facilitiesJson })
          }
       };
 

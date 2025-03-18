@@ -207,7 +207,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
 
    useEffect(() => {
       if (!deepEquals(sharedSettings, lastSent)) {
-         messageHandler.send(sharedSettings);
+         messageHandler.send({ mType: 'SharedSettings', ...sharedSettings });
          setLastSent(sharedSettings);
       }
    }, [lastSent, sharedSettings]);
@@ -219,7 +219,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
       };
 
       messageHandler.subscribe("SharedSettings", onGetSettings)
-      messageHandler.send("GetSettings");
+      messageHandler.send({ mType: "GetSettings" });
       return () => {
          messageHandler.unsubscribe("SharedSettings", onGetSettings);
       }

@@ -114,7 +114,7 @@ const fillImpl = <T,>(elem: T, defaultValue: T): T => {
    {
       const type = ['boolean', 'number', 'bigint', 'string'].find(e => e === typeof defaultValue)
       if (type) {
-         if (elem && typeof elem === type) {
+         if (elem !== undefined && typeof elem === type) {
             return elem
          }
          return defaultValue;

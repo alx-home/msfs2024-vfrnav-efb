@@ -220,27 +220,23 @@ export const MetarRecord: TypeRecord<Metar> = {
 }
 
 export type GetFacilities = {
-   __getfacilities__: true
    lat: number
    lon: number
 };
 
 export const GetFacilitiesRecord: TypeRecord<GetFacilities> = {
-   __getfacilities__: 'boolean',
    lat: 'number',
    lon: 'number',
 }
 
 
 export type GetMetar = {
-   __getmetar__: true
    icao: string,
    lat: number,
    lon: number
 };
 
 export const GetMetarRecord: TypeRecord<GetMetar> = {
-   __getmetar__: 'boolean',
    icao: 'string',
    lat: 'number',
    lon: 'number'

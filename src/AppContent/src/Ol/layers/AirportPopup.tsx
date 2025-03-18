@@ -191,13 +191,16 @@ const Metar = ({ data }: {
 
       if (__MSFS_EMBEDED__) {
          messageHandler.send({
-            __getmetar__: true,
+            mType: "GetMetar",
+
             icao: data.icao,
             lat: data.lat,
             lon: data.lon
          })
       } else {
          messageHandler.send({
+            mType: "Metar",
+
             metar: `metar value of ${data.icao}`,
             taf: `taf value of ${data.icao}`,
             localMetar: `metar value of ${data.lat}/${data.lon}`,

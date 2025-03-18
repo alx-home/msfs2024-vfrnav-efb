@@ -1,16 +1,57 @@
-import { isType, reduce, TypeRecord } from './Types';
+import { reduce, TypeRecord } from './Types';
 import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetMetar, GetMetarRecord, Metar, MetarRecord } from './Facilities';
 import { SharedSettingsRecord, SharedSettings } from './Settings';
-import { ActiveRecord, ActiveRecordRecord, EditRecord, EditRecordRecord, PlanePos, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
+import { ActiveRecord, ActiveRecordRecord, EditRecord, EditRecordRecord, GetRecord, GetRecordRecord, PlanePos, PlanePoses, PlanePosesRecord, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
 
 const MessageIdValues = ["SharedSettings", "GetSettings", "GetPlaneRecords", "GetFacilities",
-   "Facilities", "GetMetar", "Metar", "PlanePos", "PlaneRecords",
-   "RemoveRecord", "EditRecord", "ActiveRecord"] as const;
-type MessageType = SharedSettings | Facilities | "GetSettings" | "GetPlaneRecords" | GetFacilities | GetMetar | Metar | PlanePos | PlaneRecords
-   | ActiveRecord | EditRecord | RemoveRecord;
+   "Facilities", "GetMetar", "Metar", "PlanePos", "PlanePoses", "PlaneRecords",
+   "RemoveRecord", "EditRecord", "ActiveRecord", 'GetRecord'] as const;
 type MessageId = (typeof MessageIdValues)[number];
+type HandledType = SharedSettings | Facilities | "GetSettings" | "GetPlaneRecords"
+   | GetFacilities | GetMetar | Metar | PlanePos | PlanePoses | PlaneRecords
+   | RemoveRecord | EditRecord | ActiveRecord | GetRecord;
 
-const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
+// todo generic ?
+type MessageType = (SharedSettings & {
+   mType: 'SharedSettings'
+})
+   | (Facilities & {
+      mType: 'Facilities'
+   })
+   | ({ mType: "GetSettings" })
+   | { mType: "GetPlaneRecords" }
+   | (GetFacilities & {
+      mType: 'GetFacilities'
+   })
+   | (GetMetar & {
+      mType: 'GetMetar'
+   })
+   | (Metar & {
+      mType: 'Metar'
+   })
+   | (PlanePos & {
+      mType: 'PlanePos'
+   })
+   | (PlanePoses & {
+      mType: 'PlanePoses'
+   })
+   | (PlaneRecords & {
+      mType: 'PlaneRecords'
+   })
+   | (ActiveRecord & {
+      mType: 'ActiveRecord'
+   })
+   | (EditRecord & {
+      mType: 'EditRecord'
+   })
+   | (RemoveRecord & {
+      mType: 'RemoveRecord'
+   })
+   | (GetRecord & {
+      mType: 'GetRecord'
+   });
+
+const MessageRecord: Record<MessageId, TypeRecord<HandledType> | undefined> = {
    "SharedSettings": SharedSettingsRecord,
    "GetSettings": undefined,
    "GetPlaneRecords": undefined,
@@ -19,18 +60,12 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "GetMetar": GetMetarRecord,
    "Metar": MetarRecord,
    "PlanePos": PlanePosRecord,
+   "PlanePoses": PlanePosesRecord,
    "PlaneRecords": PlaneRecordsRecord,
    "RemoveRecord": RemoveRecordRecord,
+   "GetRecord": GetRecordRecord,
    "EditRecord": EditRecordRecord,
    "ActiveRecord": ActiveRecordRecord
-}
-
-const checkMessage = (type: MessageId, _object: unknown) => {
-   if (MessageRecord[type] === undefined) {
-      return typeof _object === 'string' && type === _object;
-   } else {
-      return isType(_object, MessageRecord[type])
-   }
 }
 
 export class MessageHandler {
@@ -41,12 +76,8 @@ export class MessageHandler {
       const onmessage = window.onmessage;
       window.onmessage = (e) => {
          if (e.data.source === 'vfrNav') {
-            const obj = JSON.parse(e.data.value)
-
-            const messageId = MessageIdValues.find(value => checkMessage(value, obj));
-            if (messageId) {
-               this.callbacks[messageId].forEach(callback => callback(obj));
-            }
+            const obj = JSON.parse(e.data.value) as { id: MessageId, value: unknown };
+            this.callbacks[obj.id].forEach(callback => callback(obj.value));
          } else {
             onmessage?.call(window, e);
          }
@@ -54,17 +85,14 @@ export class MessageHandler {
    }
 
    send<T extends MessageType>(data: T) {
-      const messageId = MessageIdValues.find(value => checkMessage(value, data));
-      if (messageId) {
-         this.sendImpl(data, MessageRecord[messageId] as TypeRecord<T>);
-      }
+      this.sendImpl(data, MessageRecord[data.mType] as TypeRecord<T>);
    }
 
-   subscribe<T extends MessageType>(uuid: MessageId, callback: (_message: T) => void) {
+   subscribe<T extends HandledType>(uuid: MessageId, callback: (_message: T) => void) {
       this.callbacks[uuid].push(callback as (_: unknown) => void);
    }
 
-   unsubscribe<T extends MessageType>(uuid: MessageId, callback: (_message: T) => void) {
+   unsubscribe<T extends HandledType>(uuid: MessageId, callback: (_message: T) => void) {
       const index = this.callbacks[uuid].findIndex(value => value === callback as (_: unknown) => void);
 
       if (index !== -1) {
@@ -72,8 +100,8 @@ export class MessageHandler {
       }
    }
 
-   private sendImpl<T>(data: T, record?: TypeRecord<T>) {
-      const sanitizedData = JSON.stringify(record ? reduce(data, record) : data);
+   private sendImpl<T extends MessageType>(data: T, record?: TypeRecord<T>) {
+      const sanitizedData = JSON.stringify({ id: data.mType, value: record ? reduce(data, record) : data });
 
       const elem = this.iframe ? this.iframe.contentWindow : window.top;
       elem?.postMessage({ source: 'vfrNav', value: sanitizedData }, '*');

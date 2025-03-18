@@ -3,8 +3,8 @@ import { AirportRunway, FacilityLoader, FacilityRepository, FacilitySearchType, 
 import { MessageHandler } from "@shared/MessageHandler";
 import { SharedSettings, SharedSettingsDefault } from "@shared/Settings";
 import { AirportFacility, FrequencyType, GetFacilities, GetMetar, Metar } from "@shared/Facilities";
-import { ActiveRecord, EditRecord, PlanePos, PlaneRecords, PlaneRecordsDefault, RemoveRecord } from "@shared/PlanPos";
-import { fill } from "@shared/Types";
+import { ActiveRecord, EditRecord, GetRecord, OldPlaneRecords, OldPlaneRecordsRecord, PlanePos, PlaneRecord, PlaneRecords, PlaneRecordsDefault, RemoveRecord } from "@shared/PlanPos";
+import { fill, isType } from "@shared/Types";
 
 interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
   /** The page title */
@@ -29,10 +29,37 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private lon: number | undefined;
   private plane: PlanePos[] = [];
   private flying: boolean = false;
-  private flights: PlaneRecords = (() => {
-    const flightsStr = GetStoredData("flights") as string
-    return fill(flightsStr === "" ? [] : (JSON.parse(flightsStr) as PlaneRecords), PlaneRecordsDefault);
+  private flights: PlaneRecord[] = (() => {
+    const flightsStr = GetStoredData("flights");
+    if (flightsStr === '') {
+      return []
+    }
+
+    let flights = JSON.parse(flightsStr as string);
+
+    if (!Array.isArray(flights)) {
+      return []
+    }
+
+    if (isType<OldPlaneRecords>(flights, OldPlaneRecordsRecord)) {
+      //Convert flights (maj alpha-0.4.0 -> alpha-0.4.1)
+
+      flights = flights.map(elem => {
+        SetStoredData(`record-${elem.id}`, JSON.stringify(elem.record))
+        delete (elem as object)['record' as keyof object];
+        return elem
+      })
+
+      SetStoredData('flights', JSON.stringify(flights));
+    }
+
+    return flights;
   })();
+
+  // PlaneRecords = (() => {
+  //   const flightsStr = GetStoredData("flights") as string
+  //   return fill(flightsStr === "" ? [] : (JSON.parse(flightsStr) as PlaneRecords), PlaneRecordsDefault);
+  // })();
 
   private fetchPosition() {
     const info = {
@@ -61,23 +88,24 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
           this.flights = this.flights.slice(1);
         }
 
-        this.flights.push({
+        const record: PlaneRecord = {
           name: new Date(this.plane[0].date).toLocaleString(),
           id: this.flights.length ? (+this.flights[this.flights.length - 1].id + 1) : 0,
-          active: false,
-          record: this.plane,
-          touchdown: touchDownSpeed
-        })
+          touchdown: touchDownSpeed,
+          active: false
+        };
+        this.flights.push(record);
 
+        SetStoredData(`record-${record.id}`, JSON.stringify(this.plane))
         SetStoredData("flights", JSON.stringify(this.flights))
-        messageHandler?.send(this.flights);
-        console.log(JSON.stringify(this.flights))
+
+        messageHandler?.send({ mType: "PlaneRecords", value: this.flights });
       }
 
       this.plane = []
     }
 
-    messageHandler?.send(info);
+    messageHandler?.send({ mType: "PlanePos", ...info });
   };
 
   private positionFetcher: NodeJS.Timeout | undefined;
@@ -205,25 +233,25 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     }
 
     if (this.settings) {
-      messageHandler?.send(this.settings);
+      messageHandler?.send({ mType: "SharedSettings", ...this.settings });
     }
   }
 
   onGetPlaneRecords() {
     const flightsStr = GetStoredData("flights") as string;
-    const flights = fill(flightsStr === "" ? [] : (JSON.parse(flightsStr) as PlaneRecords), PlaneRecordsDefault)
-    messageHandler?.send(flights);
+    const flights = fill({ value: flightsStr === "" ? [] : (JSON.parse(flightsStr) as PlaneRecord[]) }, PlaneRecordsDefault) as PlaneRecords;
+    messageHandler?.send({ mType: "PlaneRecords", ...flights });
   }
 
   async onGetFacilities(message: GetFacilities) {
     const list = await this.getFacilitiesList(message.lat, message.lon);
-    messageHandler?.send({ facilities: [...list.values()] });
+    messageHandler?.send({ mType: "Facilities", facilities: [...list.values()] });
 
     this.positionFetcher = setInterval(this.fetchPosition.bind(this), 100);
   }
 
   async onGetMetar(message: GetMetar) {
-    messageHandler?.send(await this.getMetar(message.icao, message.lat, message.lon));
+    messageHandler?.send({ mType: "Metar", ...await this.getMetar(message.icao, message.lat, message.lon) });
   }
 
   onSharedSettings(message: SharedSettings) {
@@ -240,6 +268,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("GetPlaneRecords", this.onGetPlaneRecords)
       messageHandler.unsubscribe("GetFacilities", this.onGetFacilities)
       messageHandler.unsubscribe("GetMetar", this.onGetMetar)
+      messageHandler.unsubscribe("EditRecord", this.onEditRecord)
+      messageHandler.unsubscribe("ActiveRecord", this.onActiveRecord)
+      messageHandler.unsubscribe("RemoveRecord", this.onRemoveRecord)
+      messageHandler.unsubscribe("GetRecord", this.onGetRecord)
     }
 
     super.destroy();
@@ -257,17 +289,22 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private onEditRecord({ id, name }: EditRecord) {
     this.flights.find(elem => elem.id === id)!.name = name
     SetStoredData("flights", JSON.stringify(this.flights))
-    messageHandler?.send(this.flights);
+    messageHandler?.send({ mType: "PlaneRecords", value: this.flights });
   }
   private onActiveRecord({ id, active }: ActiveRecord) {
     this.flights.find(elem => elem.id === id)!.active = active
     SetStoredData("flights", JSON.stringify(this.flights))
-    messageHandler?.send(this.flights);
+    messageHandler?.send({ mType: "PlaneRecords", value: this.flights });
   }
   private onRemoveRecord({ id }: RemoveRecord) {
     this.flights.splice(this.flights.findIndex(elem => elem.id === id), 1)
     SetStoredData("flights", JSON.stringify(this.flights))
-    messageHandler?.send(this.flights);
+    DeleteStoredData(`record-${id}`)
+
+    messageHandler?.send({ mType: "PlaneRecords", value: this.flights });
+  }
+  private onGetRecord({ id }: GetRecord) {
+    messageHandler?.send({ mType: 'PlanePoses', value: JSON.parse(GetStoredData(`record-${id}`) as string) as PlanePos[] });
   }
 
   public onAfterRender(): void {
@@ -282,6 +319,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("EditRecord", this.onEditRecord.bind(this))
       messageHandler.subscribe("ActiveRecord", this.onActiveRecord.bind(this))
       messageHandler.subscribe("RemoveRecord", this.onRemoveRecord.bind(this))
+      messageHandler.subscribe("GetRecord", this.onGetRecord.bind(this))
     }
   }
 

@@ -11,7 +11,7 @@ import Feature, { FeatureLike } from "ol/Feature";
 import { SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
-import { PlaneRecords } from '@shared/PlanPos';
+import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
 import { messageHandler } from '@Settings/SettingsProvider';
 
 export type Interactive = {
@@ -28,7 +28,7 @@ export type Interactive = {
 export const MapContext = createContext<{
    map: Map,
    navData: NavData[],
-   records: PlaneRecords,
+   records: PlaneRecord[],
    profileScale: number,
    setProfileScale: (_value: number) => void,
    withTouchdown: boolean,
@@ -185,7 +185,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
       return map;
    }, []);
-   const [records, setRecords] = useState<PlaneRecords>([]);
+   const [records, setRecords] = useState<PlaneRecord[]>([]);
    const [addNav, setAddNav] = useState<() => void>();
    const [cancel, setCancel] = useState<() => void>();
    const [navData, setNavData] = useState<NavData[]>([]);
@@ -215,11 +215,11 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
    useEffect(() => {
       const onPlaneRecords = (records: PlaneRecords) => {
-         setRecords(records);
+         setRecords(records.value);
       };
 
       messageHandler.subscribe("PlaneRecords", onPlaneRecords)
-      messageHandler.send("GetPlaneRecords");
+      messageHandler.send({ mType: "GetPlaneRecords" });
       return () => messageHandler.unsubscribe("PlaneRecords", onPlaneRecords);
    }, [])
 
@@ -282,20 +282,20 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       },
       removeRecord: (id: number) => {
          messageHandler.send({
-            __remove_record__: true,
+            mType: "RemoveRecord",
             id: id
          })
       },
       activeRecord: (id: number, active: boolean) => {
          messageHandler.send({
-            __active_record__: true,
+            mType: "ActiveRecord",
             id: id,
             active: active
          })
       },
       editRecord: (id: number, newName: string) => {
          messageHandler.send({
-            __edit_record__: true,
+            mType: "EditRecord",
             id: id,
             name: newName
          })
