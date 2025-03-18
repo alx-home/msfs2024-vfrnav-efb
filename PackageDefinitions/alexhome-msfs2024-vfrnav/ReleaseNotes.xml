@@ -26,6 +26,15 @@ Improvements / améliorations :
 - Add the possibilitiy to show aircraft on the map (must be enabled in the settings page) / Ajout de la possibilité de voir la position de l&apos;avion (doit être activé dans la page de settings)
 - Add a page for displaying flights/touchdown records / Ajout d&apos;une page afin d&apos;afficher les enregistrements de vols/attérissages
 </ReleaseNote>
+	<ReleaseNote Version="0.4.1" Date="0-1-1">
+Fixes :
+- Always display touchdown label over records paths / Affichage forcé des labels de touchdown au dessus des path d&apos;enregistrement de vol
+- Improve memory usage of fligth recording / Amélioration de l&apos;utilisation mémoire des enregistrements de vol
+- Fix &quot;encoded&quot; tab labels on airport info popup / Fix l&apos;&quot;encodage&quot; des labels des tabs de la popup d&apos;info des aéroports
+
+Improvements / améliorations :
+- Add the possibility to hide ground on the record layer / Ajout de la possibilité de cacher le niveau du sol sur le layer d&apos;enregistrement de vols
+</ReleaseNote>
 	<ReleaseNote Version="0.1.1" Date="2025-1-5">Improvements / améliorations :
 - Improve text overlay on the map / Amélioration de l&apos;affichage du texte sur la map
 - Hide layers when their corresponding min/max zoom is reached / Les layers sont maintenant cachés lorsque leurs zoom max/min est atteint
