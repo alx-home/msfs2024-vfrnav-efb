@@ -48,11 +48,11 @@ if (!__MSFS_EMBEDED__) {
    }
    window.onEditRecord = ({ id, name }: EditRecord) => {
       records.find(elem => elem.id === id)!.name = name
-      messageHandler?.send({ mType: "PlaneRecords", value: records });
+      messageHandler?.send({ mType: "PlaneRecords", value: records.toSpliced(index.value) });
    }
    window.onActiveRecord = ({ id, active }: ActiveRecord) => {
       records.find(elem => elem.id === id)!.active = active
-      messageHandler?.send({ mType: "PlaneRecords", value: records });
+      messageHandler?.send({ mType: "PlaneRecords", value: records.toSpliced(index.value) });
    }
    window.onRemoveRecord = ({ id }: RemoveRecord) => {
       records.splice(records.findIndex(elem => elem.id === id), 1)
