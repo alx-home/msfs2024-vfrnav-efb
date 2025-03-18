@@ -33,6 +33,8 @@ export const MapContext = createContext<{
    setProfileScale: (_value: number) => void,
    withTouchdown: boolean,
    enableTouchdown: (_value: boolean) => void,
+   withGround: boolean,
+   enableGround: (_value: boolean) => void,
    counter: number
    flash: boolean,
    flashKey: number,
@@ -198,6 +200,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
    const [profileScale, setProfileScale] = useState(1);
    const [touchdown, setTouchdown] = useState(false);
+   const [ground, setGround] = useState(true);
 
    useEffect(() => {
       if (cancelRequest) {
@@ -304,12 +307,14 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       profileScale: profileScale,
       enableTouchdown: setTouchdown,
       withTouchdown: touchdown,
+      enableGround: setGround,
+      withGround: ground,
       reorderNav: (orders: number[]) => {
          setNavData(data => {
             return orders.map((order, index) => ({ ...data[index], order: order }))
          });
       }
-   }), [map, navData, records, counter, flash, flashKey, profileScale, touchdown]);
+   }), [map, navData, records, counter, flash, flashKey, profileScale, touchdown, ground]);
 
    return (
       <MapContext.Provider

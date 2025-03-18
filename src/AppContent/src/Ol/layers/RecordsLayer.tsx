@@ -51,7 +51,7 @@ export const RecordsLayer = ({
    opacity?: number
 }) => {
    // const { setPopup } = useContext(SettingsContext)!;
-   const { profileScale, records: records_, withTouchdown } = useContext(MapContext)!;
+   const { profileScale, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
    const records = useMemo(() => records_.filter(record => record.active), [records_]);
 
    const navData = useMemo(() => records.map(record => fetchRecord(record.id)), [records]);
@@ -66,7 +66,7 @@ export const RecordsLayer = ({
 
             const coords = (await data).value.map(elem => [...fromLonLat([elem.lon, elem.lat]), elem.altitude, elem.ground]);
             const elems: Coordinate[][][] = [[], []];
-            for (let j = 0; j < 2; ++j) {
+            for (let j = 0; j < (withGround ? 2 : 1); ++j) {
                let start: Coordinate | undefined;
 
                for (let i = 1; i < coords.length; ++i) {
@@ -83,7 +83,8 @@ export const RecordsLayer = ({
                      start = norm;
                   }
 
-                  segment.push([a[0] + start[0] * a[2 + j] * res, a[1] + start[1] * a[2 + j] * res])
+                  const na = a[j + 2] - (withGround ? 0 : a[j + 3]);
+                  segment.push([a[0] + start[0] * na * res, a[1] + start[1] * na * res])
 
                   if (i < coords.length - 1) {
                      const c = coords[i + 1] as Coordinate
@@ -95,7 +96,8 @@ export const RecordsLayer = ({
                   }
 
                   start = norm;
-                  segment.push([b[0] + start[0] * b[2 + j] * res, b[1] + start[1] * b[2 + j] * res])
+                  const nb = b[j + 2] - (withGround ? 0 : b[j + 3]);
+                  segment.push([b[0] + start[0] * nb * res, b[1] + start[1] * nb * res])
                   segment.push(b.toSpliced(2))
                   segment.push(a.toSpliced(2))
 
@@ -107,7 +109,7 @@ export const RecordsLayer = ({
          })();
 
          return [...result, elems] as Promise<Feature[]>[];
-      }, [] as Promise<Feature[]>[]), [navData, profileScale]);
+      }, [] as Promise<Feature[]>[]), [navData, profileScale, withGround]);
 
    const touchDowns = useMemo(() => records
       .map(async (record, index) => {

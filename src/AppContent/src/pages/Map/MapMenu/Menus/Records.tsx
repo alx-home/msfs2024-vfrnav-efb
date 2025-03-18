@@ -130,7 +130,7 @@ export const Records = ({ className, style }: {
    className: string,
    style: CSSProperties
 }) => {
-   const { records, profileScale, setProfileScale, enableTouchdown, withTouchdown } = useContext(MapContext)!;
+   const { records, profileScale, setProfileScale, enableTouchdown, withTouchdown, enableGround, withGround } = useContext(MapContext)!;
    const childs = useMemo(() => records.map((record) => {
       return <div key={record.id} className='flex'>
          <RecordItem key={record.id} active={record.active} name={record.name} shortName={record.id.toFixed(0)} id={record.id} />
@@ -156,6 +156,12 @@ export const Records = ({ className, style }: {
                <div className='text-left text-xl grow'>Touchdown</div>
                <div className='flex flex-row justify-end'>
                   <CheckBox className="w-8" value={withTouchdown} onChange={enableTouchdown} />
+               </div>
+            </div>
+            <div className='flex flex-row grow mt-4'>
+               <div className='text-left text-xl grow'>Ground Layer</div>
+               <div className='flex flex-row justify-end'>
+                  <CheckBox className="w-8" value={withGround} onChange={enableGround} />
                </div>
             </div>
             <div className='flex flex-col grow mb-4 mt-2'>
