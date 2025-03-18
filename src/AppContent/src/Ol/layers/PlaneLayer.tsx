@@ -61,7 +61,7 @@ if (!__MSFS_EMBEDED__) {
    }
    window.onGetRecord = ({ id }: GetRecord) => {
       console.assert(id < 3);
-      messageHandler?.send({ mType: "PlanePoses", value: id === 0 ? records0 : id === 1 ? records1 : records2 });
+      messageHandler?.send({ mType: "PlanePoses", id: id, value: id === 0 ? records0 : id === 1 ? records1 : records2 });
    }
 
    messageHandler.subscribe("EditRecord", window.onEditRecord)

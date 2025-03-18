@@ -27,8 +27,10 @@ const getNorm = (a: Coordinate, b: Coordinate) => {
 
 const fetchRecord = async (id: number) => new Promise<PlanePoses>(resolve => {
    const callback = (poses: PlanePoses) => {
-      messageHandler.unsubscribe('PlanePoses', callback)
-      resolve(poses)
+      if (poses.id === id) {
+         messageHandler.unsubscribe('PlanePoses', callback)
+         resolve(poses)
+      }
    }
 
    messageHandler.subscribe('PlanePoses', callback)

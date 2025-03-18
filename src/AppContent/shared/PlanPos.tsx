@@ -13,7 +13,7 @@ export type PlanePos = {
    windDirection: number
 }
 
-export type PlanePoses = { value: PlanePos[] };
+export type PlanePoses = { id: number, value: PlanePos[] };
 
 export const PlanePosRecord: TypeRecord<PlanePos> = {
    date: 'number',
@@ -28,6 +28,7 @@ export const PlanePosRecord: TypeRecord<PlanePos> = {
 }
 
 export const PlanePosesRecord: TypeRecord<PlanePoses> = {
+   id: 'number',
    value: [
       PlanePosRecord
    ]

@@ -304,7 +304,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     messageHandler?.send({ mType: "PlaneRecords", value: this.flights });
   }
   private onGetRecord({ id }: GetRecord) {
-    messageHandler?.send({ mType: 'PlanePoses', value: JSON.parse(GetStoredData(`record-${id}`) as string) as PlanePos[] });
+    messageHandler?.send({ mType: 'PlanePoses', id: id, value: JSON.parse(GetStoredData(`record-${id}`) as string) as PlanePos[] });
   }
 
   public onAfterRender(): void {
