@@ -1,5 +1,6 @@
 [<img src="https://liberapay.com/assets/widgets/donate.svg">](https://liberapay.com/alex-home/donate) \
-[<img src="https://img.shields.io/liberapay/goal/alex-home.svg?logo=liberapay">](https://liberapay.com/alex-home/donate) 
+[<img src="https://img.shields.io/liberapay/goal/alex-home.svg?logo=liberapay">](https://liberapay.com/alex-home/donate) \
+[<img src="https://github.com/user-attachments/assets/2e494c0c-6085-4e2f-a728-77a1d3bafc71">](https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=UFLZE3KQB78Z4) 
 # <p align="center">VFR tools for Flight Simulator 2024 EFB / Outils de VFR pour Microsoft Flight Simulator 2024</p>
 <br>
 <br> 
@@ -25,7 +26,8 @@ Pour me payer un petit caffé afin de me redonner de l'énergie : \
 For buying me a coffee in order to fullfill my energie gauge :
 
 [<img src="https://liberapay.com/assets/widgets/donate.svg">](https://liberapay.com/alex-home/donate) \
-[<img src="https://img.shields.io/liberapay/goal/alex-home.svg?logo=liberapay">](https://liberapay.com/alex-home/donate) 
+[<img src="https://img.shields.io/liberapay/goal/alex-home.svg?logo=liberapay">](https://liberapay.com/alex-home/donate) \
+[<img src="https://github.com/user-attachments/assets/2e494c0c-6085-4e2f-a728-77a1d3bafc71">](https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=UFLZE3KQB78Z4) 
 
 
 ## Wiki
