@@ -1,1 +1,0 @@
-ts_app(TARGET_NAME vfrnav_efb)

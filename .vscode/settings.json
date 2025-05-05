@@ -1,5 +1,8 @@
 {
-   "cSpell.words": [
-      "vfrnav"
-   ]
+   "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\compile_commands.json",
+   "cSpell.words": ["FILEOPENDIALOGOPTIONS"],
+   "sonarlint.connectedMode.project": {
+      "connectionId": "https-sonarqube-alex-home-fr-",
+      "projectKey": "alx-home_msfs2024-vfrnav-efb-installer_19eb5f24-cbe2-4964-a5ee-1f83d66479da"
+   }
 }

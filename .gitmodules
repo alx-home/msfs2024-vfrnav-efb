@@ -1,0 +1,21 @@
+[submodule "packages/webview"]
+path = packages/webview
+url = git@github.com:alx-home/webview.git
+[submodule "packages/json"]
+path = packages/json
+url = git@github.com:alx-home/json.git
+[submodule "packages/promise"]
+path = packages/promise
+url = git@github.com:alx-home/promise.git
+[submodule "packages/windows"]
+path = packages/windows
+url = git@github.com:alx-home/windows.git
+[submodule "packages/build_tools"]
+path = packages/build_tools
+url = git@github.com:alx-home/build_tools.git
+[submodule "packages/cpp_utils"]
+path = packages/cpp_utils
+url = git@github.com:alx-home/cpp_utils.git
+[submodule "packages/ts-utils"]
+path = packages/ts-utils
+url = git@github.com:alx-home/ts-utils.git

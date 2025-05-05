@@ -1,0 +1,61 @@
+add_subdirectory(ts)
+
+set(COMPILE_OPTIONS)
+if(WATCH_MODE)
+    list(APPEND COMPILE_OPTIONS
+        "$<$<CONFIG:Debug>:-DWATCH_MODE>"
+    )
+endif()
+
+win32_executable(TARGET_NAME server 
+    FILES 
+        main.cpp main.rc 
+
+        Window/template/Window.cpp
+        
+        Main/Main.cpp
+        Main/Resolvers.cpp
+        Main/Server.cpp
+
+    COMPILE_OPTIONS
+        ${COMPILE_OPTIONS}
+)
+
+target_link_libraries(server 
+    PRIVATE 
+        alx-home::webview 
+        alx-home::json 
+        alx-home::promise
+        vfrnav::common
+        vfrnav::window
+        Dwmapi
+)
+
+if (NOT WATCH_MODE)
+    target_link_libraries(server 
+        PRIVATE 
+            server_resources 
+    )
+endif()
+
+set(MAJOR_VERSION 1)
+set(MINOR_VERSION 0)
+set(REVISION 0)
+
+set(VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${REVISION})
+
+set_target_properties(server PROPERTIES VERSION ${MAJOR_VERSION})
+set_target_properties(server PROPERTIES SOVERSION ${MAJOR_VERSION}.${MINOR_VERSION})
+set_target_properties(server PROPERTIES OUTPUT_NAME "vfrnav-server")
+
+
+# PACKAGER
+if (NOT WATCH_MODE)
+    package(TARGET_NAME server_resources 
+        APP_RESOURCES
+            EFB_RESOURCES vfrnav_efb
+            MAIN_WINDOW_RESOURCES server_app
+            TASKBAR_WINDOW_RESOURCES server_taskbar
+            TASKBAR_TOOLTIP_WINDOW_RESOURCES server_taskbar_tooltip
+    )
+endif()

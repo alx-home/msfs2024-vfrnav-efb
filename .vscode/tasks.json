@@ -1,0 +1,77 @@
+{
+   "version": "2.0.0",
+   "tasks": [
+      {
+         "type": "cmake",
+         "label": "CMake: configure",
+         "command": "configure",
+         "problemMatcher": [],
+         "detail": "CMake template configure task"
+      },
+      {
+         "type": "npm",
+         "script": "build",
+         "group": "build",
+         "problemMatcher": [],
+         "label": "npm: build installer",
+         "path": "installer/app",
+         "detail": "dotenv -e .env.production tsc -b  && tsx --env-file=.env.production build.ts"
+      },
+      {
+         "type": "npm",
+         "script": "watch",
+         "group": "build",
+         "problemMatcher": [],
+         "label": "npm: watch installer",
+         "path": "installer/ts",
+         "detail": "watch"
+      },
+      {
+         "type": "npm",
+         "script": "watch",
+         "problemMatcher": [],
+         "label": "npm: watch server efb",
+         "path": "vfrnav_efb",
+         "detail": "watch efb",
+         "hide": true
+      },
+      {
+         "type": "npm",
+         "script": "watch-app",
+         "problemMatcher": [],
+         "label": "npm: watch server main",
+         "path": "server/ts",
+         "detail": "watch main",
+         "hide": true
+      },
+      {
+         "type": "npm",
+         "script": "watch-taskbar",
+         "problemMatcher": [],
+         "label": "npm: watch server taskbar",
+         "path": "server/ts",
+         "detail": "watch taskbar",
+         "hide": true
+      },
+      {
+         "type": "npm",
+         "script": "watch-taskbar-tooltip",
+         "problemMatcher": [],
+         "label": "npm: watch server taskbar-tooltip",
+         "path": "server/ts",
+         "detail": "watch taskbar-tooltip",
+         "hide": true
+      },
+      {
+         "group": "build",
+         "problemMatcher": [],
+         "label": "npm: watch server",
+         "dependsOn": [
+            "npm: watch server taskbar",
+            "npm: watch server taskbar-tooltip",
+            "npm: watch server efb",
+            "npm: watch server main"
+         ]
+      }
+   ]
+}
