@@ -1,0 +1,55 @@
+{
+   "version": "0.2.0",
+   "configurations": [
+      {
+         "name": "(Windows) Launch Installer",
+         "type": "cppvsdbg",
+         "request": "launch",
+         "program": "${workspaceFolder}/build/installer/msfs2024-vfrnav_installer-int.exe",
+         "args": [],
+         "stopAtEntry": false,
+         "cwd": "${workspaceFolder}",
+         "environment": [],
+         "console": "integratedTerminal"
+      },
+      {
+         "name": "(Windows) Launch Server",
+         "type": "cppvsdbg",
+         "request": "launch",
+         "program": "${workspaceFolder}/build/server/msfs2024-vfrnav_server.exe",
+         "args": ["--configure"],
+         "stopAtEntry": false,
+         "cwd": "${workspaceFolder}",
+         "environment": [],
+         "console": "integratedTerminal"
+      },
+      {
+         "name": "(Windows) Launch promise_test",
+         "type": "cppvsdbg",
+         "request": "launch",
+         "program": "${workspaceFolder}/build/_deps/promise-build/promise_test.exe",
+         "args": [],
+         "stopAtEntry": false,
+         "cwd": "${workspaceFolder}",
+         "environment": [],
+         "console": "integratedTerminal"
+      },
+      {
+         "name": "(Windows) Launch Packager",
+         "type": "cppvsdbg",
+         "request": "attach",
+         "processId": "${command:pickProcess}"
+         // "program": "${workspaceFolder}/build/packager/packager.exe",
+         // "args": [
+         //    "C:/Users/alexg/Documents/workspace/msfs2024-vfrnav-efb-installer/build/server",
+         //    "--app",
+         //    "resources",
+         //    "C:/Users/alexg/Documents/workspace/msfs2024-vfrnav-efb-installer/build/server/app/dist"
+         // ],
+         // "stopAtEntry": false,
+         // "cwd": "${fileDirname}",
+         // "environment": [],
+         // "console": "integratedTerminal"
+      }
+   ]
+}

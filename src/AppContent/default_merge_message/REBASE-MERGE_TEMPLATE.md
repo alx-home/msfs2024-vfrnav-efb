@@ -1,1 +1,0 @@
-Merge pull request '${PullRequestTitle}' (#${PullRequestIndex})

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AssetPackage ReleaseNotes="PackageDefinitions\alexhome-msfs2024-vfrnav\ReleaseNotes.xml"
+	Version="0.4.1">
+	<ItemSettings>
+		<ContentType>MISC</ContentType>
+		<Title>EFB MSFS2024 VfrNav</Title>
+		<Manufacturer />
+		<Creator>alex-home</Creator>
+	</ItemSettings>
+	<Flags>
+		<VisibleInStore>true</VisibleInStore>
+		<CanBeReferenced>true</CanBeReferenced>
+	</Flags>
+	<PackageOrderHint>UI_PATCH</PackageOrderHint>
+	<AssetGroups>
+		<AssetGroup Name="ContentInfo">
+			<Type Version="0">ContentInfo</Type>
+			<Flags>
+				<FSXCompatibility>false</FSXCompatibility>
+			</Flags>
+			<AssetDir>PackageDefinitions\alexhome-msfs2024-vfrnav\ContentInfo\</AssetDir>
+			<OutputDir>ContentInfo\alexhome-msfs2024-vfrnav\</OutputDir>
+		</AssetGroup>
+		<AssetGroup Name="efbApp">
+			<Type Version="0">Copy</Type>
+			<Flags>
+				<FSXCompatibility>false</FSXCompatibility>
+			</Flags>
+			<AssetDir>dist\</AssetDir>
+			<OutputDir>html_ui\efb_ui\efb_apps\msfs2024-vfrnav\</OutputDir>
+		</AssetGroup>
+	</AssetGroups>
+</AssetPackage>

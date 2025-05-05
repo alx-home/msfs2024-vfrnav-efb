@@ -1,70 +1,32 @@
+/*
+ * SPDX-License-Identifier: (GNU General Public License v3.0 only)
+ * Copyright © 2024 Alexandre GARCIN
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+ */
 {
-  "compilerOptions": {
-    "target": "es2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    // "declarationDir": "types",
-    "declaration": false,
-    "sourceMap": false,
-    "declarationMap": false /* Create sourcemaps for d.ts files. */,
-    "removeComments": true,
-    "allowSyntheticDefaultImports": true,
-    /* Bundler mode */
-    "moduleResolution": "node", // Specifies how modules are resolved when bundling.
-    "allowImportingTsExtensions": true, // Allows importing TypeScript files with extensions.
-    "jsx": "react", // Configures JSX support for React.
-    "jsxFactory": "FSComponent.buildComponent",
-    "jsxFragmentFactory": "FSComponent.Fragment",
-    /* --- Bundler mode */
-    "allowJs": false,
-    "rootDir": ".",
-    "baseUrl": ".",
-    "skipLibCheck": true,
-    /* Linting */
-    "strict": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "es6",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    // "jsx": "preserve",
-    "incremental": true,
-    "experimentalDecorators": true /* Enable experimental support for TC39 stage 2 draft decorators. */,
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@public/*": [
-        "./public/*"
-      ],
-      "@shared/*": [
-        "./src/AppContent/shared/*"
-      ]
-    },
-    "forceConsistentCasingInFileNames": true,
-  },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-  ],
-  "exclude": [
-    "node_modules",
-    "src/AppContent",
-    "dist",
-    "tsconfig.json"
-  ],
-  "ts-node": {
-    // "transpileOnly": true,
-    "compilerOptions": {
-      "module": "CommonJS"
-    }
-  }
+   "extends": "./packages/ts-utils/tsconfig.base.json",
+   "references": [
+      { "path": "./packages/ts-utils/tsconfig.json" },
+      { "path": "./server/ts/tsconfig.json" },
+      { "path": "./installer/ts/tsconfig.json" },
+      { "path": "./common/ts/tsconfig.json" },
+      { "path": "./vfrnav_efb/tsconfig.json" }
+   ],
+   "compilerOptions": {
+      "baseUrl": ".",
+      "composite": true,
+      "resolveJsonModule": true,
+      "outDir": "./build/ts-dist/",
+      "rootDir": "."
+   },
+   "include": ["eslint.config.ts"]
 }

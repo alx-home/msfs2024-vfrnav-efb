@@ -1,0 +1,7 @@
+@font-face {
+   font-family: Arial;
+   src: url(fonts/Inter-Bold.ttf);
+}
+*, :before, :after, :root {
+   background: color-mix(in lab, var(--background) 0%, transparent);
+}
