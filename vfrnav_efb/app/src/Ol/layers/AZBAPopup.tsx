@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { useCallback, useContext, useEffect, useMemo } from 'react';
+import { PropsWithChildren, useCallback, useContext, useEffect, useMemo } from 'react';
 
 import { Azba } from '@Settings/SIAAZBA';
 import { Button, Scroll } from '@alx-home/Utils';
@@ -21,6 +21,27 @@ import { useKeyUp } from "@alx-home/Events";
 
 import { SettingsContext } from "@Settings/SettingsProvider";
 
+
+
+const Category = ({ title, children }: PropsWithChildren<{
+  title: string
+}>) => {
+  return <div className='[&>:not(:first-child)]:ml-5 shadow-xl border-slate-700 border-1 p-6 grow'>
+    <div className='text-3xl font-semibold mb-3'>{title}</div>
+    {children}
+  </div>
+};
+
+const SubCategory = ({ children, title }: PropsWithChildren<{
+  title: string
+}>) => {
+  return <div className='mb-3 [&>:not(:first-child)]:ml-8'>
+    <div className='text-2xl font-semibold mb-3 capitalize'>{title}</div>
+    <div>
+      {children}
+    </div>
+  </div>
+}
 
 export const AZBAPopup = ({ data }: {
   data: Azba
@@ -65,36 +86,27 @@ export const AZBAPopup = ({ data }: {
   }, [data.timeslots]);
 
   const Activation = useMemo(() => slots.size ?
-    <div className='flex flex-col'>
-      <div className='text-2xl font-semibold mb-3'>
-        Activity
-      </div>
-      <div className='flex flex-col grow ml-8'>
-        {[...slots.keys().map(date => <div key={date}>
-          <div className="flex flex-col justify-start grow text-lg font-semibold">
-            {date}
+
+    <Category title='Activity'>
+      {[...slots.keys().map(date =>
+        <SubCategory key={date} title={date} >
+          <div className="grid [grid-template-columns:repeat(3,minmax(max-content,1fr))]">
+            {slots.get(date)!.map(time =>
+              <>
+                <div className='px-3'>
+                  {time[0]}
+                </div>
+                <div className='flex flex-row shrink-0 justify-center'>-</div>
+                <div className='px-3'>
+                  {time[1]}
+                </div>
+              </>
+            )}
           </div>
-          <div className='flex flex-row grow ml-4'>
-            <div className="flex flex-col mr-3 shrink">
-              <div className="grid [grid-template-columns:repeat(3,minmax(max-content,1fr))]">
-                {slots.get(date)!.map(time =>
-                  <>
-                    <div className='px-3'>
-                      {time[0]}
-                    </div>
-                    <div className='flex flex-row shrink-0 justify-center'>-</div>
-                    <div className='px-3'>
-                      {time[1]}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>)]
-        }
-      </div>
-    </div> :
+        </SubCategory>
+      )]}
+    </Category>
+    :
     <></>, [slots]);
 
   const parseAlt = useCallback((value: number) => Math.floor(value / 100) * 100 === value ? (value >= 10000 ? 'FL' + value / 1000 : value) : 'FL' + value, []);
@@ -104,31 +116,21 @@ export const AZBAPopup = ({ data }: {
       {data.name}
     </div>
     <Scroll className='flex flex-row justify-center'>
-      <div className="flex flex-col [&>:not(:first-child)]:mt-8">
-        {Activation}
-        <div className='flex flex-col'>
-          <div className='text-2xl font-semibold mb-3'>
-            Altitude
-          </div>
-          <div className='flex flex-col ml-8 shadow-sm'>
-            <div className='flex flex-col'>
-              <div>
-                Upper: {parseAlt(data.upper)}
-              </div>
-              <div>
-                Lower: {parseAlt(data.lower)}
+      <div className='flex flex-col mx-5 shadow-sm w-full'>
+        <div className='flex flex-col gap-y-7 pb-8'>
+          {Activation}
+          <Category title='Altitude'>
+            <SubCategory title={"Upper: " + parseAlt(data.upper)}>
+            </SubCategory>
+            <SubCategory title={"Lower: " + parseAlt(data.lower)}>
+            </SubCategory>
+          </Category>
+          <Category title='Info'>
+            <div className='!ml-6'>
+              <div className='flex flex-row justify-start' dangerouslySetInnerHTML={{ __html: data.remark.replaceAll('#', '<br />') }}>
               </div>
             </div>
-          </div>
-        </div>
-        <div className='flex flex-col'>
-          <div className='text-2xl font-semibold mb-3'>
-            Info
-          </div>
-          <div className='flex flex-col ml-8 shadow-sm'>
-            <div className='flex flex-row justify-start' dangerouslySetInnerHTML={{ __html: data.remark.replaceAll('#', '<br />') }}>
-            </div>
-          </div>
+          </Category>
         </div>
       </div>
     </Scroll>

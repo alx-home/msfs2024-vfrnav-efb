@@ -24,15 +24,36 @@ import { AirportFacility, Frequency, FrequencyTypeStr, Metar as MetarT, Runway, 
 import toweredImg from '@images/towered.svg';
 import notToweredImg from '@images/nottowered.svg';
 
+
+const Category = ({ title, children }: PropsWithChildren<{
+   title: string
+}>) => {
+   return <div className='[&>:not(:first-child)]:ml-5 shadow-xl border-slate-700 border-1 p-6 grow'>
+      <div className='text-3xl font-semibold mb-3'>{title}</div>
+      {children}
+   </div>
+};
+
+const SubCategory = ({ children, title }: PropsWithChildren<{
+   title: string
+}>) => {
+   return <div className='mb-3 [&>:not(:first-child)]:ml-8'>
+      <div className='text-2xl font-semibold mb-3 capitalize'>{title}</div>
+      <div>
+         {children}
+      </div>
+   </div>
+}
+
 const FrequencyField = ({ name, frequencies }: {
    name: string,
    frequencies: Frequency[]
 }) => {
    const values = useMemo(() => frequencies.reduce((last, value) => last === "" ? value.value.toFixed(3) : last + ", " + value.value.toFixed(3), ""), [frequencies]);
 
-   return <div className='ml-5'>
-      {`${name}: ${values}`}
-   </div>
+   return <SubCategory title={name.length !== 4 ? name.toLowerCase() : name}>
+      <div>{values}</div>
+   </SubCategory>
 }
 
 const FrequencyType = ({ type, groups }: {
@@ -43,12 +64,9 @@ const FrequencyType = ({ type, groups }: {
       <FrequencyField key={name} name={name} frequencies={frequencies} />
    ), [groups]);
 
-   return <div className='mb-3'>
-      <div className='text-xl font-semibold mb-3'>{type}</div>
-      <div>
-         {child}
-      </div>
-   </div>
+   return <Category title={type}>
+      {child}
+   </Category>
 }
 
 const Frequencies = ({ data }: {
@@ -97,8 +115,7 @@ const RunwayField = ({ runway }: {
    const latitude = useMemo(() => toDms(runway.latitude), [runway.latitude]);
    const longitude = useMemo(() => toDms(runway.longitude), [runway.longitude]);
 
-   return <div key={JSON.stringify(runway)} className='mb-3 [&>:not(:first-child)]:ml-5'>
-      <div className='text-xl font-semibold mb-3'>{runway.designation}</div>
+   return <SubCategory title={runway.designation} key={JSON.stringify(runway)}>
       <div>
          {`Size: ${runway.width.toFixed(0)} x ${runway.length.toFixed(0)}`}
       </div>
@@ -114,7 +131,7 @@ const RunwayField = ({ runway }: {
       <div>
          {`Longitude: ${longitude[3].toString()}`}
       </div>
-   </div>
+   </SubCategory>
 }
 
 const Runways = ({ data }: {
@@ -132,32 +149,36 @@ const Runways = ({ data }: {
       return result
    }, [data.runways])
    const child = useMemo(() => Array.from(groups).map(([type, runways]) => {
-      return <div key={type} className='[&>:not(:first-child)]:ml-5'>
-         <div className='text-xl font-semibold mb-3'>{type}</div>
+      return <Category key={type} title={type}>
          {runways.map(runway => <RunwayField key={JSON.stringify(runway)} runway={runway} />)}
-      </div>
+      </Category>
    }), [groups]);
 
-   return child
+   return <div className='flex flex-col gap-y-8'>{child}</div>
 }
 
 const Fuels = ({ data }: {
    data: AirportFacility
 }) => {
-   const body = useMemo(() => <div>
+   const body = useMemo(() => <Category title="">
       {data.fuel1 ?
-         <div>
-            {data.fuel1}
-         </div> :
+         <Category title='Fuel1'>
+            <div className='!ml-5 text-2xl'>
+               {data.fuel1}
+            </div>
+         </Category> :
          <></>
       }
       {data.fuel2 ?
-         <div>
-            {data.fuel2}
-         </div> :
+         <Category title='Fuel2'>
+            <div className='!ml-5 text-2xl'>
+               {data.fuel2}
+            </div>
+         </Category>
+         :
          <></>
       }
-   </div>, [data.fuel1, data.fuel2]);
+   </Category>, [data.fuel1, data.fuel2]);
 
    return body
 }
@@ -165,28 +186,26 @@ const Fuels = ({ data }: {
 const Transitions = ({ data }: {
    data: AirportFacility
 }) => {
-   return <div>
+   return <>
       {
          data.transitionAlt !== 0 ?
-            <div>
-               <div className='text-xl font-semibold mb-3'>Altitude</div>
-               <div className='mb-3 ml-5'>
+            <Category title="Altitude">
+               <div className='!ml-5 text-2xl'>
                   {data.transitionAlt.toFixed(0)}
                </div>
-            </div>
+            </Category>
             : <></>
       }
       {
          data.transitionLevel !== 0 ?
-            <div>
-               <div className='text-xl font-semibold mb-3'>Level</div>
-               <div className='mb-3 ml-5'>
+            <Category title="Level">
+               <div className='!ml-5 text-2xl'>
                   {data.transitionLevel.toFixed(0)}
                </div>
-            </div>
+            </Category>
             : <></>
       }
-   </div>
+   </>
 };
 
 const Metar = ({ data }: {
@@ -227,55 +246,36 @@ const Metar = ({ data }: {
    }, [data.icao, data.lat, data.lon])
 
    return <>{
-      (metar ? <div className='[&>:not(:first-child)]:mt-8'>
+      (metar ? <>
          {(metar.metar || metar.taf) ?
-            <div className='[&>:not(:first-child)]:pl-5'>
-               <div className='text-xl font-semibold mb-3'>Airport</div>
-               {metar.metar ?
-                  <div>
-                     <div className='text-xl font-semibold mb-3'>Metar</div>
-                     <div className='mb-3 ml-5'>
-                        {metar.metar}
-                     </div>
-                  </div>
-                  : <></>
-               }
-               {metar.taf ?
-                  <div>
-                     <div className='text-xl font-semibold mb-3'>Taf</div>
-                     <div className='mb-3 ml-5'>
-                        {metar.taf}
-                     </div>
-                  </div>
-                  : <></>}
-            </div>
+            <Category title="Airport">
+               <SubCategory title="Metar">
+                  {metar.metar ?? ""}
+               </SubCategory>
+               <SubCategory title="Taf">
+                  {metar.taf ?? ""}
+               </SubCategory>
+            </Category>
             : <></>
          }
          {(!metar.metar || !metar.taf) ?
-            <div className='[&>:not(:first-child)]:pl-5'>
-               <div className='text-xl font-semibold mb-3'>Nearest Airport</div>
-               {!metar.metar ?
-                  <div>
-                     <div className='text-xl font-semibold mb-3'>Metar</div>
-                     <div className='mb-3 ml-5'>
-                        {metar.localMetar ?? "Not found"}
-                     </div>
-                  </div>
-                  : <></>
-               }
+            <Category title='Nearest Airport'>
+               <SubCategory title="Metar">
+                  {
+                     metar.metar ? ""
+                        : (metar.localMetar ?? "Not found")
+                  }
+               </SubCategory>
                {!metar.taf ?
-                  <div>
-                     <div className='text-xl font-semibold mb-3'>Taf</div>
-                     <div className='mb-3 ml-5'>
-                        {metar.localTaf ?? "Not found"}
-                     </div>
-                  </div>
+                  <SubCategory title="Taf">
+                     {metar.localTaf ?? "Not found"}
+                  </SubCategory>
                   : <></>}
-            </div>
+            </Category>
             : <></>
          }
-      </div >
-         : <h2 className='text-2xl'>Loading...</h2>)
+      </ >
+         : <h2 className='text-3xl'>Loading...</h2>)
    }</>
 };
 
@@ -299,10 +299,10 @@ const TabElem = ({ tab, currentTab, children }: PropsWithChildren<{
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none')
    }>
       <Scroll className={
-         'block justify-left [&>:not(:first-child)]:mt-8'
+         'block ml-5 [&>:not(:first-child)]:mt-8'
       }>
-         <div className='flex flex-col ml-8 shadow-sm'>
-            <div className='flex flex-col'>
+         <div className='flex flex-col mx-5 shadow-sm w-full'>
+            <div className='flex flex-col gap-y-7 pb-8'>
                {children}
             </div>
          </div>
@@ -372,7 +372,7 @@ export const AirportPopup = ({ data }: {
       </div>
       <div className='flex flex-col overflow-hidden'>
          <Tabs tabs={Array.from(tabs)} names={TabStr} activeTab={tab} switchTab={setTab} />
-         <div className='grid shrink p-4 overflow-hidden h-[60vh]'>
+         <div className='grid shrink overflow-hidden h-[60vh]'>
             {tabElems}
          </div>
       </div>

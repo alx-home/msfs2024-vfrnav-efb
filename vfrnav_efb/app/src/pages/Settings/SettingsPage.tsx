@@ -448,7 +448,7 @@ export const SettingsPage = ({ active }: {
 
 
    return <div className="flex grow justify-center m-2 p-4" style={active ? {} : { display: 'none' }}>
-      <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col grow"
+      <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col "
          + " hocus:border-msfs"
          + opacity
       }>

@@ -101,7 +101,7 @@ export const App = () => {
   return (
     <MouseContextProvider>
       <SettingsContextProvider setPopup={setPopup} emptyPopup={empty}>
-        <div className={'fixed flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center'
+        <div className={'fixed flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center text-xl'
           + (popup === empty ? ' hidden' : '')
         }>
           <div className='flex flex-row box-border relative m-auto w-full max-w-4xl max-h-full'>

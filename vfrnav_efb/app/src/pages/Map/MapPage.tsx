@@ -69,7 +69,7 @@ const OverlayItem = ({ menu, setMenu, setOpen, image, alt, currentMenu }: {
   alt: string,
   currentMenu: Menu
 }) => {
-  return <button className='p-2 h-9 group-hover:h-20 w-full bg-overlay hocus:bg-highlight'
+  return <button className='p-2 w-full bg-overlay hocus:bg-highlight'
     onClick={() => {
       setOpen(open => menu !== currentMenu ? true : !open);
       setMenu(currentMenu);
@@ -85,7 +85,7 @@ const Overlay = ({ menu, setMenu, setOpen }: {
   setOpen: Dispatch<SetStateAction<boolean>>
 }) => {
   return <div className='flex flex-col justify-end m-2 pointer-events-auto'>
-    <div className="group flex flex-col shrink w-9 hover:w-20">
+    <div className="group flex flex-col shrink w-9 transition-all hover:w-20 [&_*]:transition-all">
       <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.records} alt='records' image={recordImg} />
       <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.nav} alt='flight plan' image={flightPlanImg} />
       <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.layers} alt='layers' image={layersImg} />

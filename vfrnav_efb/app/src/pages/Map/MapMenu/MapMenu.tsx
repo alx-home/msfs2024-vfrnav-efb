@@ -143,7 +143,7 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
       onMouseDown={onMouseDown}
       onMouseUp={onDragEnd}
       onKeyDown={handleKey}
-      className='relative z-10 select-none transition-std transition-colors w-2 bg-slate-900 hocus:bg-msfs shadow-smd cursor-ew-resize' />
+      className='relative z-10 select-none transition-all w-2 bg-slate-900 hocus:bg-msfs shadow-smd cursor-ew-resize' />
 
     <div className={'overflow-hidden shrink-0 border-l border-gray-700 pointer-events-auto'
       + ' flex flex-col bg-gray-800 text-center text-white'
