@@ -29,7 +29,7 @@ public:
 
    Run() = default;
 
-   Value<std::string, Run, "MSFS VFRNav Server"> value_{};
+   Value<std::string, Run, "MSFS2024 VFRNav' Server"> value_{};
 
    static constexpr Values VALUES{
      &Run::value_,

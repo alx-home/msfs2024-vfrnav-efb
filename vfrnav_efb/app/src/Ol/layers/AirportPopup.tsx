@@ -14,15 +14,15 @@
  */
 
 import { PropsWithChildren, useContext, useEffect, useMemo, useState, ReactElement } from 'react';
-import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
+import { messageHandler, SettingsContext } from "@Settings/SettingsProvider.jsx";
 
 import { Tabs, Button, Scroll } from '@alx-home/Utils';
 import { useKeyUp } from "@alx-home/Events";
 
 import { AirportFacility, Frequency, FrequencyTypeStr, Metar as MetarT, Runway, RunwaySurfaceTypeStr } from '@shared/Facilities';
 
-import toweredImg from '@images/towered.svg';
-import notToweredImg from '@images/nottowered.svg';
+import toweredImg from '@efb-images/towered.svg';
+import notToweredImg from '@efb-images/nottowered.svg';
 
 
 const Category = ({ title, children }: PropsWithChildren<{
@@ -72,7 +72,7 @@ const FrequencyType = ({ type, groups }: {
 const Frequencies = ({ data }: {
    data: AirportFacility
 }) => {
-   const frequencies = useMemo(() => FrequencyTypeStr.toSorted((left) => left === "Other" ? 1 : -1).map(type => {
+   const frequencies = useMemo(() => FrequencyTypeStr.filter((elem) => elem !== "Other").concat(...["Other"]).map(type => {
       const frequencies = data.frequencies.filter(frequency => FrequencyTypeStr[frequency.type] === type);
       const groups = new Map<string, Frequency[]>;
 
@@ -154,7 +154,7 @@ const Runways = ({ data }: {
       </Category>
    }), [groups]);
 
-   return <div className='flex flex-col gap-y-8'>{child}</div>
+   return <div className='flex flex-col [&>:not(:first-child)]:my-8'>{child}</div>
 }
 
 const Fuels = ({ data }: {
@@ -219,56 +219,48 @@ const Metar = ({ data }: {
             setMetar(message)
       };
 
-      messageHandler.subscribe("Metar", callback)
+      messageHandler.subscribe("__METAR__", callback)
 
-      if (__MSFS_EMBEDED__) {
-         messageHandler.send({
-            mType: "GetMetar",
+      messageHandler.send({
+         __GET_METAR__: true,
 
-            icao: data.icao,
-            lat: data.lat,
-            lon: data.lon
-         })
-      } else {
-         messageHandler.send({
-            mType: "Metar",
+         icao: data.icao,
+         lat: data.lat,
+         lon: data.lon
+      })
 
-            metar: `metar value of ${data.icao}`,
-            taf: `taf value of ${data.icao}`,
-            localMetar: `metar value of ${data.lat}/${data.lon}`,
-            localTaf: `taf value of ${data.lat}/${data.lon}`,
-            cavok: true,
-            icao: data.icao
-         })
-      }
-
-      return () => messageHandler.unsubscribe("Metar", callback)
+      return () => messageHandler.unsubscribe("__METAR__", callback)
    }, [data.icao, data.lat, data.lon])
 
    return <>{
       (metar ? <>
          {(metar.metar || metar.taf) ?
             <Category title="Airport">
-               <SubCategory title="Metar">
-                  {metar.metar ?? ""}
-               </SubCategory>
-               <SubCategory title="Taf">
-                  {metar.taf ?? ""}
-               </SubCategory>
+               {metar.metar ?
+                  <SubCategory title="Metar">
+                     {metar.metar}
+                  </SubCategory>
+                  : <></>
+               }
+               {metar.taf ?
+                  <SubCategory title="Taf">
+                     {metar.taf}
+                  </SubCategory>
+                  : <></>}
             </Category>
             : <></>
          }
-         {(!metar.metar || !metar.taf) ?
+         {((!metar.metar && metar.localMetar) || (!metar.taf && metar.localTaf)) ?
             <Category title='Nearest Airport'>
-               <SubCategory title="Metar">
-                  {
-                     metar.metar ? ""
-                        : (metar.localMetar ?? "Not found")
-                  }
-               </SubCategory>
-               {!metar.taf ?
+               {(!metar.metar && metar.localMetar) ?
+                  <SubCategory title="Metar">
+                     {metar.localMetar}
+                  </SubCategory>
+                  : <></>
+               }
+               {(!metar.taf && metar.localTaf) ?
                   <SubCategory title="Taf">
-                     {metar.localTaf ?? "Not found"}
+                     {metar.localTaf}
                   </SubCategory>
                   : <></>}
             </Category>
@@ -302,7 +294,7 @@ const TabElem = ({ tab, currentTab, children }: PropsWithChildren<{
          'block ml-5 [&>:not(:first-child)]:mt-8'
       }>
          <div className='flex flex-col mx-5 shadow-sm w-full'>
-            <div className='flex flex-col gap-y-7 pb-8'>
+            <div className='flex flex-col [&>:not(:first-child)]:my-7 pb-8'>
                {children}
             </div>
          </div>
@@ -376,7 +368,7 @@ export const AirportPopup = ({ data }: {
             {tabElems}
          </div>
       </div>
-      <div className='flex flex-row w-full h-[56px] min-h-[56px] [&>:not(:first-child)]:ml-2 pt-10 justify-end' >
+      <div className='flex flex-row w-full min-h-0 shrink-0 [&>:not(:first-child)]:ml-2 pt-10 justify-end' >
          <Button active={true} className='px-2'
             onClick={() => {
                setPopup(emptyPopup);

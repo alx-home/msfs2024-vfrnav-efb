@@ -16,8 +16,7 @@
    "extends": "../../packages/ts-utils/tsconfig.base.json",
    "compilerOptions": {
       "outDir": "../../build/server/ts-dist",
-      "rootDir": ".",
-      "rootDirs": [".", "../../"],
+      "rootDir": "../../",
       "baseUrl": ".",
       "paths": {
          "@alx-home/global.css": ["../../packages/ts-utils/src/global.css"],
@@ -31,8 +30,9 @@
 
          "@vfrnav/images/*": ["../../images/*"],
 
-         "@common/Hooks": ["./common/Hooks/index.d.ts"],
-         "@common/env": ["./common/env.d.ts"]
+         "@common/*": ["../../common/ts/*"],
+         "@server-common/Hooks": ["./common/Hooks/index.d.ts"],
+         "@server-common/env": ["./common/env.d.ts"]
       }
    }
 }

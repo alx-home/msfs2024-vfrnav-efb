@@ -14,7 +14,7 @@
  */
 
 /* eslint-disable no-unused-vars */
-import { TypeRecord } from "./Types"
+import { GenRecord } from "./Types"
 
 export const enum FrequencyType {
   None = 0,
@@ -140,6 +140,13 @@ export type Frequency = {
   type: FrequencyType
 };
 
+export const FrequencyRecord = GenRecord<Frequency>({
+  name: "undef",
+  icao: "undef",
+  value: -1,
+  type: FrequencyType.ASOS
+}, {});
+
 export type Runway = {
   designation: string
 
@@ -152,6 +159,19 @@ export type Runway = {
   latitude: number
   longitude: number
 };
+
+export const RunwayRecord = GenRecord<Runway>({
+  designation: "undef",
+
+  length: -1,
+  width: -1,
+  direction: -1,
+  elevation: -1,
+  surface: 0,
+
+  latitude: -1,
+  longitude: -1,
+}, {});
 
 export type AirportFacility = {
   icao: string
@@ -177,46 +197,51 @@ export type AirportFacility = {
   transitionLevel: number
 };
 
+export const AirportFacilityRecord = GenRecord<AirportFacility>({
+  icao: "undef",
+  lat: -1,
+  lon: -1,
+  towered: false,
+
+  airportClass: -1,
+  airspaceType: -1,
+
+  bestApproach: "undef",
+
+  fuel1: "undef",
+  fuel2: "undef",
+
+  airportPrivateType: 0,
+
+  frequencies: [],
+
+  runways: [],
+
+  transitionAlt: -1,
+  transitionLevel: -1
+}, {
+  // todo shall be mandatory...
+  frequencies: { array: true, record: FrequencyRecord },
+  runways: { array: true, record: RunwayRecord }
+});
+
 export type Facilities = {
+  __FACILITIES__: true,
+
   facilities: AirportFacility[]
 }
 
-export const FacilitiesRecord: TypeRecord<Facilities> = {
-  facilities: [{
-    icao: 'string',
-    lat: 'number',
-    lon: 'number',
-    towered: 'boolean',
-    airportClass: 'number',
-    airspaceType: 'number',
-    bestApproach: 'string',
-    fuel1: 'string',
-    fuel2: 'string',
-    airportPrivateType: 'number',
-    frequencies: [
-      {
-        name: 'string',
-        icao: 'string',
-        value: 'number',
-        type: 'number',
-      }
-    ],
-    runways: [{
-      designation: 'string',
-      length: 'number',
-      width: 'number',
-      direction: 'number',
-      elevation: 'number',
-      surface: 'number',
-      latitude: 'number',
-      longitude: 'number',
-    }],
-    transitionAlt: 'number',
-    transitionLevel: 'number',
-  }]
-}
+export const FacilitiesRecord = GenRecord<Facilities>({
+  __FACILITIES__: true,
+
+  facilities: []
+}, {
+  facilities: { array: true, record: AirportFacilityRecord }
+})
 
 export type Metar = {
+  __METAR__: true,
+
   metar?: string,
   taf?: string,
   localMetar?: string,
@@ -225,34 +250,45 @@ export type Metar = {
   icao: string
 }
 
-export const MetarRecord: TypeRecord<Metar> = {
+export const MetarRecord = GenRecord<Metar>({
+  __METAR__: true,
+
+  icao: "undef"
+}, {
   metar: { optional: true, record: 'string' },
   taf: { optional: true, record: 'string' },
   localMetar: { optional: true, record: 'string' },
   localTaf: { optional: true, record: 'string' },
   cavok: { optional: true, record: 'boolean' },
-  icao: 'string'
-}
+})
 
 export type GetFacilities = {
+  __GET_FACILITIES__: true,
+
   lat: number
   lon: number
 };
 
-export const GetFacilitiesRecord: TypeRecord<GetFacilities> = {
-  lat: 'number',
-  lon: 'number',
-}
+export const GetFacilitiesRecord = GenRecord<GetFacilities>({
+  __GET_FACILITIES__: true,
+
+  lat: -1,
+  lon: -1
+}, {})
 
 
 export type GetMetar = {
+  __GET_METAR__: true,
+
   icao: string,
   lat: number,
   lon: number
 };
 
-export const GetMetarRecord: TypeRecord<GetMetar> = {
-  icao: 'string',
-  lat: 'number',
-  lon: 'number'
-}
+export const GetMetarRecord = GenRecord<GetMetar>({
+  __GET_METAR__: true,
+
+  icao: "undef",
+  lat: -1,
+  lon: -1
+}, {})

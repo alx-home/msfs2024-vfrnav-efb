@@ -11,8 +11,8 @@ namespace {
 std::string
 RemoveFromExeXml(std::string_view data) {
    // error_stack....
-   // std::regex reg{R"(( |\t|\r?\n)*<Launch\.Addon>((.|\r?\n)(?!<Name>))*.?<Name>MSFS VFR Nav'
-   // Server((.|\r?\n)(?!</Launch\.Addon>))*.?</Launch\.Addon>([ \t]*(\r?\n)?))"};
+   // std::regex reg{R"(( |\t|\r?\n)*<Launch\.Addon>((.|\r?\n)(?!<Name>))*.?<Name>MSFS2024 VFRNav'
+   // Server Server((.|\r?\n)(?!</Launch\.Addon>))*.?</Launch\.Addon>([ \t]*(\r?\n)?))"};
 
    auto it = data.begin();
 
@@ -102,7 +102,8 @@ RemoveFromExeXml(std::string_view data) {
 
                         if (auto const name_end = find_end("Name"); name_end != data.end()) {
                            if (std::distance(it, launch_end) > 0) {
-                              if (std::string_view{name_beg, name_end} == "MSFS VFR Nav' Server") {
+                              if (std::string_view{name_beg, name_end}
+                                  == "MSFS2024 VFRNav' Server") {
                                  // FOUND :)
                                  it = end;
                                  skip_space();
@@ -136,13 +137,13 @@ std::string
 AddToExeXml(std::string_view data, std::string_view path) {
    std::regex  reg{"(\r?\n)?</SimBase.Document>"};
    std::string replace_string{std::string_view{
-      R"_(
+     R"_(
        <Launch.Addon>
            <Disabled>False</Disabled>
            <ManualLoad>False</ManualLoad>
-           <Name>MSFS VFR Nav' Server</Name>
+           <Name>MSFS2024 VFRNav' Server</Name>
            <Path>)_"
-      + std::string{path} + R"_(/vfrnav.exe</Path>
+     + std::string{path} + R"_(\msfs2024-vfrnav_server.exe</Path>
            <CommandLine></CommandLine>
            <NewConsole>False</NewConsole>
        </Launch.Addon>
@@ -167,7 +168,7 @@ StartupImpl(bool clean) {
    auto& settings = registry.alx_home_->settings_;
 
    auto const fsPath =
-      std::filesystem::path(*settings->community_).parent_path().parent_path().parent_path();
+     std::filesystem::path(*settings->community_).parent_path().parent_path().parent_path();
    std::filesystem::path const exePath = fsPath.string() + "\\exe.xml";
 
    if (auto const Exists = std::filesystem::exists(exePath); !Exists && clean) {
@@ -213,14 +214,14 @@ LoginImpl(bool clean) {
    if (clean) {
       if (auto const result = run->value_.DeleteValue(); result != S_OK) {
          return std::format(
-            "couldn't clean registry {}:{} ({})",
-            run->FullPath(),
-            run->value_.VALUE_NAME.value_,
-            result
+           "couldn't clean registry {}:{} ({})",
+           run->FullPath(),
+           run->value_.VALUE_NAME.value_,
+           result
          );
       }
    } else {
-      run->value_ = "\"" + *settings->destination_ + R"(\vfrnav-server.exe" --minimized)";
+      run->value_ = "\"" + *settings->destination_ + R"(\msfs2024-vfrnav_server.exe" --minimized)";
       settings->launch_mode_ = "Login";
    }
 

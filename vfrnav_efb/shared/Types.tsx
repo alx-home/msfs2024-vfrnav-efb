@@ -13,27 +13,53 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-type ObjectMapper<T> = {
-  [K in keyof T as T[K] extends Required<T>[K] ? K : never]: TypeRecord<T[K]>;
-} & {
-  [K in keyof T as T[K] extends Required<T>[K] ? never : K]: { optional: true, record: TypeRecord<T[K]> };
+type PartialObjectMapper<T> = {
+  [K in keyof T as T[K] extends Required<T>[K] ? K : never]: PartialTypeRecord<T[K]>;
 };
 
-export type TypeRecord<T> =
-  T extends (unknown[]) ? TypeRecord<T[number]>[]
+export type PartialTypeRecord<T> =
+  T extends (unknown[]) ? { array: true, record: PartialTypeRecord<T[number]> }
   : T extends typeof Function ? never
-  : T extends object ? (object extends ObjectMapper<T> ? never : ObjectMapper<T>)
+  : T extends object ? PartialObjectMapper<T>
   : T extends boolean ? 'boolean'
   : T extends number ? 'number'
   : T extends bigint ? 'bigint'
   : T extends string ? 'string'
   : T;
 
-export type ReducedType<T> =
-  T extends (unknown[]) ? ReducedType<T[number]>[]
+type ExtendIf<T, U = T> = T extends never ? never : {} extends T ? never : U;
+
+type ExtendObjectMapper<T> = {
+  [K in keyof T as T[K] extends Required<T>[K] ? never : K]-?: { optional: true, record: TypeRecord2<T[K]> };
+} & {
+  [K in keyof T as (ExtendTypeRecord<T[K]> extends infer R ? ExtendIf<R, K> : never)]: ExtendTypeRecord<T[K]>;
+};
+
+
+export type ExtendTypeRecord<T> =
+  T extends (unknown[]) ? ExtendIf<ExtendTypeRecord<T[number]>, { array: true, record: TypeRecord2<T[number]> }>
+  : T extends object ? ExtendIf<ExtendObjectMapper<T>>
+  : never;
+
+type ObjectMapper<T> = {
+  [K in keyof T as T[K] extends Required<T>[K] ? K : never]: TypeRecord2<T[K]>;
+} & {
+  [K in keyof T as T[K] extends Required<T>[K] ? never : K]-?: { optional: true, record: TypeRecord2<T[K]> };
+};
+
+export type TypeRecord2<T> =
+  T extends (unknown[]) ? { array: true, record: TypeRecord2<T[number]> }
   : T extends typeof Function ? never
-  : T extends object ? (object extends ObjectMapper<T> ? never : ObjectMapper<T>)
+  : T extends object ? ObjectMapper<T>
+  : T extends boolean ? 'boolean'
+  : T extends number ? 'number'
+  : T extends bigint ? 'bigint'
+  : T extends string ? 'string'
   : T;
+
+export type TypeRecord<T> = TypeRecord2<T> & {
+  defaultValues: T
+};
 
 declare global {
   interface String {
@@ -46,21 +72,22 @@ export const isType = <T,>(elem: unknown, type: TypeRecord<T>): elem is T => {
     return typeof elem === type;
   }
 
-  if (Array.isArray(type)) {
+
+  console.assert(typeof type === 'object')
+
+  if (Object.keys(type as any).length === 2 && (type as any)['array'] && (type as any)['record']) {
     if (!Array.isArray(elem)) {
       return false;
     }
 
-    return elem.reduce((last, current) => last && isType(current, type[0] as TypeRecord<unknown>), true);
+    return elem.reduce((last, current) => last && isType(current, (type as any).record), true);
   }
 
-  console.assert(typeof type === 'object')
-
-  if (Object.keys(type as object).find(key => key === 'optional')) {
+  if (Object.keys(type as any).length === 2 && (type as any)['optional'] && (type as any)['record']) {
     if (elem === undefined) {
       return true;
     } else {
-      return isType(elem, (type as { optional: true, record: TypeRecord<unknown> }).record)
+      return isType(elem, (type as any).record)
     }
   } else if (typeof elem !== 'object') {
     return false;
@@ -85,16 +112,16 @@ const reduceImpl = <T,>(elem: T, type: unknown): T => {
     return elem;
   }
 
-  if (Array.isArray(type)) {
+  if (Object.keys(type as any).length === 2 && (type as any)['array'] && (type as any)['record']) {
     console.assert(Array.isArray(elem));
-    return (elem as []).map(value => reduceImpl(value, (type as Array<unknown>)[0])).filter(value => value !== undefined) as T;
+    return (elem as []).map(value => reduceImpl(value, (type as any).record)).filter(value => value !== undefined) as T;
   }
 
   console.assert(typeof type === 'object')
 
-  if (Object.keys(type as object).find(key => key === 'optional')) {
+  if (Object.keys(type as any).length === 2 && (type as any)['optional'] && (type as any)['record']) {
     if (elem !== undefined) {
-      return reduceImpl(elem, (type as { optional: true, record: TypeRecord<unknown> }).record);
+      return reduceImpl(elem, (type as any).record);
     } else {
       return undefined as T;
     }
@@ -104,8 +131,12 @@ const reduceImpl = <T,>(elem: T, type: unknown): T => {
 
   const result: object = {};
   for (const key in (type as object)) {
+    if (key === "defaultValues") {
+      continue;
+    }
+
     const value = (type as object)[key as keyof object];
-    const subElem = (elem as T)[key as keyof T];
+    const subElem = elem[key as keyof T];
 
     const res = reduceImpl(subElem, value);
     if (res !== undefined) {
@@ -184,6 +215,71 @@ export const deepEquals = (object1: object, object2: object) => {
 
 export const isObject = (object: object) => {
   return object != null && typeof object === 'object';
+}
+
+const GenRecord2 = <T,>(defaultValue: T): PartialTypeRecord<T> => {
+  if (['boolean', 'number', 'bigint', 'string'].find(e => e === typeof defaultValue)) {
+    return typeof defaultValue as PartialTypeRecord<T>;
+  }
+
+  if (Array.isArray(defaultValue)) {
+    return undefined as PartialTypeRecord<T>;
+  }
+
+  console.assert(typeof defaultValue === 'object')
+
+  const result = {};
+  for (const key in defaultValue) {
+    const value = defaultValue[key];
+
+    (result as any)[key] = GenRecord2(value);
+  }
+
+  return result as PartialTypeRecord<T>;
+}
+
+const AppendExt = (extensions: any, record?: any): any => {
+  if (['boolean', 'number', 'bigint', 'string'].find(e => e === typeof extensions)) {
+    return extensions;
+  }
+
+  if (Object.keys(extensions).length === 2 && extensions['array'] && extensions['record']) {
+    if (record) {
+      console.assert(Object.keys(record).length === 2 && record['array'] && record['record'])
+      return { array: true, record: AppendExt(extensions.record, record!.record) };
+    }
+
+    return extensions;
+  }
+
+  console.assert(typeof extensions === 'object')
+
+  if (record) {
+    const result = (Object.keys(extensions).length === 2 && extensions['optional'] && extensions['record'])
+      ? { optional: true, record: record }
+      : record;
+
+    for (const key in extensions) {
+      if (key === "defaultValues") {
+        continue;
+      }
+
+      if (!result[key]) {
+        result[key] = extensions[key];
+      } else {
+        result[key] = AppendExt(extensions[key], record[key]);
+      }
+    }
+
+    return result;
+  } else {
+    return extensions;
+  }
+}
+
+export const GenRecord = <T, R = ExtendTypeRecord<T> extends never ? {} | undefined : ExtendTypeRecord<T>>(defaultValues: T, extensions: R): TypeRecord<T> => {
+  const record = AppendExt(extensions as any, GenRecord2(defaultValues) as any);
+  return { ...record, defaultValues: defaultValues };
 }
 
 // String.prototype.hashCode = function (seed: number = 0) {

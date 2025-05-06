@@ -13,11 +13,19 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <chrono>
 #include <span>
 #include <string>
 #include <unordered_map>
 
 #ifndef WATCH_MODE
 extern std::unordered_map<std::string, std::span<std::byte const>> const EMBEDED_RESOURCES;
+extern std::unordered_map<std::string, std::span<std::byte const>> const EFB_RESOURCES;
+
+extern std::span<std::byte const> const EFB_THUMBNAIL;
+extern std::span<std::byte const> const EFB_RELEASE_NOTE;
 #endif
+
 extern std::span<std::byte const> const SERVER_BIN;
+
+extern const std::chrono::file_clock::time_point TIMESTAMP;

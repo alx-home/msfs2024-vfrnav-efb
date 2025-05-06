@@ -14,6 +14,7 @@
  */
 
 #include "Resources.h"
+#include "utils/Scoped.h"
 #include "windows/Process.h"
 
 #include <windows/Lock.h>
@@ -48,25 +49,21 @@ main() {
 #endif  // DEBUG
 
    auto const lock = win32::CreateLock("MSFS_VFR_NAV_INSTALLER");
-   if (lock.result_ == ERROR_ALREADY_EXISTS) {
-      MessageBox(nullptr, "VFRNav Installer is already runnning !", "Error", MB_OK | MB_ICONERROR);
+   if (!lock) {
+      MessageBox(
+        nullptr, "Installer is already runnning !", "MSFS2024 VFRNav' Server", MB_OK | MB_ICONERROR
+      );
       return EXIT_FAILURE;
    }
 
-   auto const    temp = std::filesystem::temp_directory_path() / "vfrnav-installer.exe";
+   auto const    temp = std::filesystem::temp_directory_path() / "msfs2024-vfrnav_installer.exe";
    std::ofstream file(temp, std::ios::ate | std::ios::binary);
-
-   struct Remove {
-      std::filesystem::path const& key_path_;
-
-      explicit Remove(std::filesystem::path const& path)
-         : key_path_{path} {}
-
-      ~Remove() { std::filesystem::remove(key_path_); }
-   } _{temp};
+   ScopeExit     _{[&]() constexpr { std::filesystem::remove(temp); }};
 
    if (!file.is_open()) {
-      MessageBox(nullptr, "VFRNav Installer is already runnning !", "Error", MB_OK | MB_ICONERROR);
+      MessageBox(
+        nullptr, "Installer is already runnning !", "MSFS2024 VFRNav' Server", MB_OK | MB_ICONERROR
+      );
       return EXIT_FAILURE;
    }
 

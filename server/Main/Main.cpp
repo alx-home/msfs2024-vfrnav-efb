@@ -16,8 +16,8 @@
 #include "main.h"
 
 #include "Resources.h"
+#include "Server/WebSockets/Messages/Messages.h"
 #include "Window/template/Window.h"
-#include "webview/detail/backends/win32_edge.h"
 #include "windows/Process.h"
 
 #include <windows/Lock.h>
@@ -55,7 +55,7 @@ AppStopping::AppStopping()
 
 static uint32_t const MF_MOUSE_EVENT = ::RegisterWindowMessage("MainFrameMouseEvent");
 Main::Main()
-   : win32::SystemTray("MSFS VFRNav server", "MSFS VFRNav server")
+   : win32::SystemTray("MSFS2024 VFRNav' Server", "MSFS2024 VFRNav' Server")
    , mouse_watcher_([this]() constexpr {
       bool was_l_down{false};
       bool was_r_down{false};
@@ -84,7 +84,7 @@ Main::Main()
 
 Main::~Main() {
    s__running = false;
-   server_->cv_.notify_all();
+   server_->Stop();
 }
 
 LRESULT
@@ -127,6 +127,8 @@ Main::OnMessageImpl(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam) {
       OpenSettings();
    } else if (msg == WM_OPEN_EFB) {
       OpenEFB();
+   } else if (msg == WM_OPEN_WEB) {
+      OpenWebEFB();
    }
 
    return win32::SystemTray::OnMessageImpl(handle, msg, wParam, lParam);
@@ -155,6 +157,24 @@ Main::OpenSettings() {
          settings_->Restore();
       }
    });
+}
+
+void
+Main::Subscribe(std::size_t id, std::function<void(ws::Message)> message_handler) {
+   assert(server_);
+   server_->Subscribe(id, std::move(message_handler));
+}
+
+void
+Main::Unsubscribe(std::size_t id) {
+   assert(server_);
+   server_->Unsubscribe(id);
+}
+
+void
+Main::VDispatchMessage(std::size_t id, ws::Message message) {
+   assert(server_);
+   server_->VDispatchMessage(id, std::move(message));
 }
 
 void
@@ -209,17 +229,32 @@ Main::OpenEFB() {
 }
 
 void
+Main::OpenWebEFB() {
+   assert(server_);
+   server_->Start();
+   ShellExecute(
+     nullptr,
+     nullptr,
+     ("http://localhost:" + std::to_string(server_->GetPort())).data(),
+     nullptr,
+     nullptr,
+     SW_SHOW
+   );
+}
+
+void
 Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
    {
       std::string exe_path = win32::GetExecutablePath();
 
       win32::JumpList jump_list{};
-      jump_list.AddTask("Open In App", exe_path, "vfrnav-server.exe --open-efb");
-      // jump_list.AddTask("Open In WebBrowser", exe_path, "vfrnav-server.exe --open-web"); @todo
-      jump_list.AddTask("Open Settings", exe_path, "vfrnav-server.exe --configure");
+      jump_list.AddTask("Open In App", exe_path, "msfs2024-vfrnav_server.exe --open-efb");
+      jump_list.AddTask("Open In WebBrowser", exe_path, "msfs2024-vfrnav_server.exe --open-web");
+      jump_list.AddTask("Open Settings", exe_path, "msfs2024-vfrnav_server.exe --configure");
    }
 
    server_ = std::make_unique<Server>();
+   // sim_connect_ = std::make_unique<SimConnect>();
 
    taskbar_ =
      std::make_unique<Window<WIN::TASKBAR>>([this]() { this->OnTerminate<WIN::TASKBAR>(); });
@@ -327,5 +362,5 @@ Main::GetServerState() const {
 void
 Main::SwitchServer() {
    assert(server_);
-   server_->cv_.notify_all();
+   server_->Switch();
 }

@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<AssetPackage ReleaseNotes="PackageDefinitions\alexhome-msfs2024-vfrnav\ReleaseNotes.xml" Version="0.4.1">
+<AssetPackage ReleaseNotes="PackageDefinitions\alexhome-msfs2024-vfrnav\ReleaseNotes.xml"
+	Version="0.4.1">
 	<ItemSettings>
 		<ContentType>MISC</ContentType>
 		<Title>EFB MSFS2024 VfrNav</Title>
-		<Manufacturer/>
+		<Manufacturer />
 		<Creator>alex-home</Creator>
 	</ItemSettings>
 	<Flags>
 		<VisibleInStore>true</VisibleInStore>
 		<CanBeReferenced>true</CanBeReferenced>
 	</Flags>
+	<PackageOrderHint>UI_PATCH</PackageOrderHint>
 	<AssetGroups>
 		<AssetGroup Name="ContentInfo">
 			<Type Version="0">ContentInfo</Type>
@@ -29,4 +31,3 @@
 		</AssetGroup>
 	</AssetGroups>
 </AssetPackage>
-

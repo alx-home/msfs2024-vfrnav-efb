@@ -31,7 +31,7 @@
          "script": "watch",
          "problemMatcher": [],
          "label": "npm: watch server efb",
-         "path": "vfrnav_efb",
+         "path": "vfrnav_efb/app",
          "detail": "watch efb",
          "hide": true
       },

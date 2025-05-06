@@ -14,7 +14,7 @@
  */
 
 import { Input, Scroll, Select, CheckBox, SelectOption } from "@alx-home/Utils";
-import { StartupOption } from "@common/env";
+import { StartupOption } from "@server-common/env";
 import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 
 const Elem = ({ children }: PropsWithChildren) => {
@@ -76,7 +76,7 @@ export const Body = () => {
    }, []);
 
    const validatePort = useCallback((value: string) => {
-      const result = /^\d+$/.test(value) && +value > 0 && +value < 65536;
+      const result = /^\d+$/.test(value) && +value > 999 && +value < 65536;
       if (!result) {
          _setPort("0");
       }
@@ -95,7 +95,7 @@ export const Body = () => {
          <div className='flex flex-col grow mx-auto min-w-[80%] justify-center p-5 gap-3 py-10'>
             <h2 className='mt-6 text-3xl'>Startup</h2>
             <Elem>
-               <div className='m-auto mr-5 grow min-w-0'>Auto start MSFS VFRNav&apos; server :</div>
+               <div className='m-auto mr-5 grow min-w-0'>Auto start MSFS2024 VFRNav&apos; Server :</div>
                <div className='shrink'>
                   <Select value={startupOption} active={true} onChange={_setStartupOption} className='min-w-60'>
                      <SelectOption<StartupOption> id={'Login'}>Windows login</SelectOption>
@@ -114,10 +114,15 @@ export const Body = () => {
                </div>
             </Elem>
             <h2 className='mt-6 text-3xl'>Embed server</h2>
-            <blockquote className="p-4 my-4 border-s-4 border-gray-500 bg-gray-800">
+            <blockquote className="p-4  border-s-4 border-gray-500 bg-gray-800">
                <p className="text-xl italic font-medium leading-relaxed text-white">
-                  The embed server is mandatory only for opening the EFB through an external device or a web browser.<br />
-                  Accessing the EFB directly within the app does not require it to be launched.
+                  The embed server is required when opening the EFB via an external device or web browser.<br />
+                  Additionally, even when accessing the EFB directly within the app, it must be launched to ensure synchronization with the simulator.
+               </p>
+            </blockquote>
+            <blockquote className="p-4 mb-6 border-s-4 border-gray-500 bg-gray-800">
+               <p className="text-xl font-medium leading-relaxed text-white">
+                  <span className="drop-shadow-md text-sky-400">The server port must also be configured</span> in the settings page of the <span className="drop-shadow-md text-sky-400">integrated EFB</span>.
                </p>
             </blockquote>
             <Elem>
@@ -126,17 +131,19 @@ export const Body = () => {
             </Elem>
             <Elem>
                <div className="peer flex flex-row grow">
-                  <div className='flex flex-row m-auto mr-5 grow'>Port :</div>
+                  <div className='flex flex-row m-auto mr-5 grow drop-shadow-md text-sky-400'>Port :</div>
                   {/* peer-[.invalid]:flex peer-[.invalid]:opacity-100 */}
                   <div className="flex flex-col grow [&:has(.invalid)_:last-child]:opacity-100">
                      <div className="flex flex-row transition-all [&>.invalid]:mt-[-10px] justify-end">
                         <Input className='peer transition-all max-w-60 px-2' inputClass='text-right' value={port?.toString()}
-                           active={true} placeholder={"Server listening port"} inputMode={'decimal'}
+                           active={true} placeholder={
+                              "Server listening port"
+                           } inputMode={'decimal'}
                            validate={validatePort} onChange={_setPort} />
                      </div>
                      <div className="flex flex-row grow opacity-0 transition-all justify-end">
                         <p className="pt-1 text-red-500 text-base h-0">
-                           Invalid port (0 {'<'} value {'<'} 65&apos;536) !
+                           Invalid port (999 {'<'} value {'<'} 65&apos;536) !
                         </p>
                      </div>
                   </div>

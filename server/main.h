@@ -15,19 +15,15 @@
 
 #pragma once
 
+#include "Server/Server.h"
+#include "Server/WebSockets/Messages/Messages.h"
 #include "promise/promise.h"
 #include "Window/template/Window.h"
 
-#include <condition_variable>
-#include <functional>
 #include <memory>
 #include <memory>
-#include <mutex>
-#include <shared_mutex>
 #include <stdexcept>
-#include <string_view>
 #include <unordered_map>
-#include <unordered_set>
 #include <webview/webview.h>
 #include <windows/Env.h>
 #include <windows/SystemTray.h>
@@ -52,6 +48,10 @@ public:
 
    void OpenSettings();
 
+   void Subscribe(std::size_t id, std::function<void(ws::Message)>);
+   void Unsubscribe(std::size_t id);
+   void VDispatchMessage(std::size_t id, ws::Message);
+
    void OpenTaskbar() const;
    void CloseTaskbar() const;
 
@@ -59,6 +59,7 @@ public:
    void CloseToolTip() const;
 
    void OpenEFB();
+   void OpenWebEFB();
 
    void Run(bool minimized, bool configure, bool open_efb, bool open_web);
    void SetServerPort(uint16_t port);
@@ -67,46 +68,6 @@ public:
    static bool Running();
 
 private:
-   class Resolvers
-      : public std::vector<std::pair<
-          std::reference_wrapper<promise::Resolve<ServerState> const>,
-          std::reference_wrapper<promise::Reject const>>> {
-   public:
-      using Vector = std::vector<std::pair<
-        std::reference_wrapper<promise::Resolve<ServerState> const>,
-        std::reference_wrapper<promise::Reject const>>>;
-      using Vector::value_type;
-
-      Resolvers() = default;
-      ~Resolvers();
-
-      void RejectAll();
-   };
-
-   struct Server {
-      Server();
-
-      using Lock = std::variant<
-        std::reference_wrapper<std::unique_lock<std::shared_mutex> const>,
-        std::reference_wrapper<std::shared_lock<std::shared_mutex> const>>;
-
-      uint16_t    GetPort() const;
-      ServerState GetState(Lock) const;
-      void        SetServerPort(uint16_t);
-      void        FlushState();
-      void        RejectAll();
-      void        Notify(std::string_view state, Lock);
-
-      bool                        runing_    = false;
-      bool                        switching_ = false;
-      std::shared_mutex           mutex_{};
-      std::condition_variable_any cv_{};
-      Resolvers                   resolvers_{};
-
-      // Must stays at the end
-      std::jthread thread_{};
-   };
-
    std::jthread mouse_watcher_;
    LRESULT      OnTrayNotification(WPARAM wParam, LPARAM lParam) override;
    LRESULT      OnMessageImpl(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) override;

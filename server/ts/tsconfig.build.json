@@ -19,8 +19,6 @@
       "outDir": "../../build/server/ts-dist",
       "baseUrl": ".",
       "composite": true,
-      "moduleResolution": "nodenext",
-      "module": "NodeNext",
       "paths": {
          "@alx-home/build": ["../../packages/ts-utils/build_template.ts"]
       }

@@ -14,13 +14,14 @@
  */
 
 import "@alx-home/types"
+import "@common/env"
 
 export type StartupOption = 'Login' | 'Startup' | 'Never';
 export type ServerState = 'switching' | 'running' | 'stopped' | 'invalid_port';
 
 declare global {
    interface Window {
-      openFile: ({ }: {
+      openFile: ({ _ }: {
          value: string,
          filters?: {
             name: string,
@@ -37,12 +38,11 @@ declare global {
       parentExists: (_val: string) => Promise<boolean>;
       abort: () => void;
 
-      log: (_val: string) => void;
-
       hideTaskbar: () => void;
       showTaskbar: () => void;
 
       openEFB: () => void;
+      openWebEFB: () => void;
 
       hideTaskbarToolTip: () => void;
       showTaskbarToolTip: () => void;
@@ -50,11 +50,6 @@ declare global {
       showSettings: () => void;
 
       display_appstopping: () => void;
-
-      display_fatal: (_message: string) => void;
-      display_error: (_message: string) => void;
-      display_warning: (_message: string) => void;
-      display_info: (_message: string) => void;
 
       startupOption: (_value?: StartupOption) => Promise<StartupOption>;
 

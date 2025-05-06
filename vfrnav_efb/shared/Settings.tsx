@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { TypeRecord } from "./Types";
+import { GenRecord } from "./Types";
 
 export type LayerSetting = {
   active: boolean,
@@ -38,6 +38,10 @@ export type Color = {
 };
 
 export type SharedSettings = {
+  __SETTINGS__: true
+
+  serverPort: number,
+
   speed: number,
   adjustHeading: boolean,
   adjustTime: boolean,
@@ -80,72 +84,19 @@ export type SharedSettings = {
   }
 };
 
-const LayerRecord: TypeRecord<LayerSetting> = {
-  active: 'boolean',
-  enabled: 'boolean',
+const LayerRecord = GenRecord<LayerSetting>({
+  active: true,
+  enabled: true
+}, {
   maxZoom: { optional: true, record: 'number' },
   minZoom: { optional: true, record: 'number' },
-};
+})
 
-const ColorRecord: TypeRecord<Color> = {
-  red: 'number',
-  green: 'number',
-  blue: 'number',
-  alpha: 'number'
-}
+export const SharedSettingsRecord = GenRecord<SharedSettings>({
+  __SETTINGS__: true,
 
-export const SharedSettingsRecord: TypeRecord<SharedSettings> = {
-  speed: 'number',
-  adjustHeading: 'boolean',
-  adjustTime: 'boolean',
-  SIAAuth: 'string',
-  SIAAddr: 'string',
-  SIAAZBAAddr: 'string',
-  SIAAZBADateAddr: 'string',
+  serverPort: 48578,
 
-  azba: LayerRecord,
-  plane: LayerRecord,
-  airports: {
-    ...LayerRecord, ...{
-      hardRunway: 'boolean',
-      softRunway: 'boolean',
-      waterRunway: 'boolean',
-      private: 'boolean',
-      helipads: 'boolean'
-    }
-  },
-  OACI: LayerRecord,
-  germany: LayerRecord,
-  openflightmaps: LayerRecord,
-  openflightmapsBase: LayerRecord,
-  USSectional: LayerRecord,
-  USIFRHigh: LayerRecord,
-  USIFRLow: LayerRecord,
-  opentopo: LayerRecord,
-  mapforfree: LayerRecord,
-  googlemap: LayerRecord,
-  openstreet: LayerRecord,
-
-  map: {
-    text: {
-      maxSize: 'number',
-      minSize: 'number',
-      borderSize: 'number',
-      color: ColorRecord,
-      borderColor: ColorRecord
-    },
-    azba: {
-      inactiveHighColor: ColorRecord,
-      inactiveLowColor: ColorRecord,
-      activeHighColor: ColorRecord,
-      activeLowColor: ColorRecord,
-      range: 'number'
-    },
-    markerSize: 'number'
-  }
-};
-
-export const SharedSettingsDefault: SharedSettings = {
   speed: 95,
   adjustHeading: true,
   adjustTime: true,
@@ -268,4 +219,19 @@ export const SharedSettingsDefault: SharedSettings = {
     },
     markerSize: 50
   }
-};
+}, {
+  azba: LayerRecord,
+  plane: LayerRecord,
+  airports: LayerRecord,
+  OACI: LayerRecord,
+  germany: LayerRecord,
+  openflightmaps: LayerRecord,
+  openflightmapsBase: LayerRecord,
+  USSectional: LayerRecord,
+  USIFRHigh: LayerRecord,
+  USIFRLow: LayerRecord,
+  opentopo: LayerRecord,
+  mapforfree: LayerRecord,
+  googlemap: LayerRecord,
+  openstreet: LayerRecord,
+})

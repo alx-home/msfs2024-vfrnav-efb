@@ -14,8 +14,8 @@
  */
 
 import { Button, EndSlot, Input, Scroll, SelectOption, Select } from "@alx-home/Utils";
-import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { addPopup, LoadingPopup } from "./Popup";
+import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useRef, useState, useContext } from 'react';
+import { addPopup, LoadingPopup, PopupContext } from "@common/Popup";
 
 const Elem = ({ children }: PropsWithChildren) => {
    return <div className='flex flex-row bg-slate-800 p-5 text-left h-20'>
@@ -100,16 +100,14 @@ const useFolder = ({ placeholder, initPath, autoSub }: {
    };
 }
 
-const closeValidate: {
-   current?: () => void
-} = {};
-
 export const Body = ({ setCanContinue, validate }: {
    setCanContinue: (_setter: SetStateAction<boolean>) => void,
    validate: RefObject<(() => void) | null>
 }) => {
+   const { setInstalling } = useContext(PopupContext)!;
+
    const { path: communityPath, valid: communityValid, set: setCommunityPath, elem: communityElem } = useFolder({ placeholder: 'Location of MSFS 2024 community folder', autoSub: 'alexhome-msfs2024-vfrnav' });
-   const { path: installPath, valid: installPathValid, set: setInstallPath, elem: installPathElem } = useFolder({ placeholder: 'VFRNav\' Server installation path', autoSub: 'MSFS VFRNav Server' });
+   const { path: installPath, valid: installPathValid, set: setInstallPath, elem: installPathElem } = useFolder({ placeholder: 'MSFS2024 VFRNav\' Server installation path', autoSub: 'MSFS2024 VFRNav\' Server' });
 
    const [startupOption, setStartupOption] = useState<StartupOption>('Login');
 
@@ -137,11 +135,14 @@ export const Body = ({ setCanContinue, validate }: {
 
    useEffect(() => {
       validate.current = () => {
-         addPopup(<LoadingPopup title="Installing" message="Installing MSFS VFRNav server..." closeRef={closeValidate} />)
+         setInstalling(true);
+         addPopup(<LoadingPopup title="Installing" message="Installing MSFS2024 VFRNav' Server..." />, 0)
 
-         window.validate(startupOption, communityPath, installPath);
+         window.validate(startupOption, communityPath, installPath).then(() => {
+            setInstalling(false);
+         }).catch(() => { setInstalling(false); });
       }
-   }, [communityPath, installPath, startupOption, validate])
+   }, [communityPath, installPath, startupOption, validate, setInstalling])
 
    return <div className='flex flex-row grow min-h-0 overflow-hidden'>
       <Scroll className='flex-col grow'>
@@ -153,14 +154,14 @@ export const Body = ({ setCanContinue, validate }: {
                      This program is designed to proxy file browsing requests to the operating system and serve the app through a web server.
                   </p>
                   <p className="text-xl italic font-medium leading-relaxed text-white">
-                     Please note that MSFS VFRNav&apos; can function without this program by simply dragging the plugin into the community folder.<br />
+                     Please note that MSFS2024 VFRNav&apos; can function without this program by simply dragging the plugin into the community folder.<br />
                      However, doing so does not allow you to open PDF files from the computer or access the UI via a web browser or an external device.
                   </p>
                </div>
             </blockquote>
             <h2 className='mt-6 text-3xl'>Startup</h2>
             <Elem>
-               <div className='m-auto mr-5 grow min-w-0'>Auto start MSFS VFRNav&apos; server :</div>
+               <div className='m-auto mr-5 grow min-w-0'>Auto start MSFS2024 VFRNav&apos; Server :</div>
                <div className='shrink'>
                   <Select value={startupOption} active={true} onChange={setStartupOption} className='pl-3'>
                      <SelectOption<StartupOption> id={'Login'}>Windows login</SelectOption>
@@ -188,17 +189,17 @@ const RunClosePopup = ({ resolve }: {
 }) => {
    const abort = useCallback(() => {
       resolve(false);
-   }, []);
+   }, [resolve]);
    const startServer = useCallback(() => {
       resolve(true);
-   }, []);
+   }, [resolve]);
 
    return <div className='flex flex-col gap-y-6 grow'>
       <div className='text-3xl text-blue-400'>Info</div>
       <div className='text-xl gap-y-2 overflow-hidden'>
          <Scroll>
             <div className="mb-4">
-               MSFS VFRNav Successfully installed !
+               MSFS2024 VFRNav&apos; Server Successfully installed !
             </div>
          </Scroll>
       </div>
@@ -217,9 +218,7 @@ window.start_program = async (): Promise<boolean> => {
       resolve = resolve_;
    });
 
-
-   closeValidate.current!();
-   addPopup(<RunClosePopup resolve={resolve!} />)
+   addPopup(<RunClosePopup resolve={resolve!} />, 1)
 
    return promise;
 };

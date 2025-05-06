@@ -1,0 +1,153 @@
+{
+   "dependencies": [],
+   "content_type": "MISC",
+   "title": "EFB MSFS2024 VfrNav",
+   "manufacturer": "",
+   "creator": "alex-home",
+   "minimum_game_version": "1.3.23",
+   "minimum_compatibility_version": "3.19.0.47",
+   "builder": "Microsoft Flight Simulator 2024",
+   "package_order_hint": "UI_PATCH",
+   "release_notes": [
+      {
+         "version": "0.1.1",
+         "date": "JANUARY 5, 2025",
+         "notes": [
+            "Improvements / améliorations:",
+            "  - Enhanced text overlay readability on the map / Amélioration de la lisibilité du texte affiché sur la carte.",
+            "  - Automatically hide layers when their min/max zoom levels are reached / Les layers sont maintenant masqués lorsque leurs niveaux de zoom minimum ou maximum sont atteints.",
+            "",
+            "Fixes:",
+            "  - Drag & Drop no longer triggers on mouse clicks / Le Drag & Drop n'est plus déclenché lors des clics.",
+            "  - Font loading issue resolved, improving text display quality / Correction du chargement des polices, améliorant l'affichage du texte.",
+            "  - Fixed glitches occurring when hovering over navigation item labels / Correction des glitches lors du survol des labels des éléments de navigation."
+         ]
+      },
+      {
+         "version": "0.1.2",
+         "date": "JANUARY 21, 2025",
+         "notes": [
+            "Improvements / améliorations:",
+            "  - General performance enhancements / Amélioration globale des performances.",
+            "",
+            "Fixes:",
+            "  - Resolved scrollbar glitches / Correction des anomalies liées à la barre de défilement."
+         ]
+      },
+      {
+         "version": "0.2.0",
+         "date": "JANUARY 26, 2025",
+         "notes": [
+            "Improvements / améliorations:",
+            "  - Optimized overall performance / Optimisation des performances générales.",
+            "  - Added preliminary support for PDF files (preview version) / Ajout du support des fichiers PDF (version préliminaire).",
+            "  - Introduced new settings for enabling or disabling layers / Ajout de paramètres permettant l'activation ou la désactivation des layers."
+         ]
+      },
+      {
+         "version": "0.2.1",
+         "date": "FEBRUARY 1, 2025",
+         "notes": [
+            "Improvements / améliorations:",
+            "  - Added settings for display customization / Ajout de paramètres permettant la personnalisation de l'affichage.",
+            "  - Made settings persistent across simulator loads / Paramètres désormais conservés entre les chargements du simulateur.",
+            "  - Automatically close navigation menu when drawing navigation legs / Fermeture automatique du menu de navigation lors du tracé des branches.",
+            "  - General performance enhancements / Amélioration globale des performances."
+         ]
+      },
+      {
+         "version": "0.2.2",
+         "date": "FEBRUARY 5, 2025",
+         "notes": [
+            "Improvements / améliorations:",
+            "  - General performance enhancements / Amélioration globale des performances.",
+            "",
+            "Fixes:",
+            "  - Resolved app crash issue when loading multiple documents / Correction du crash de l'application lors du chargement de plusieurs documents.",
+            "  - Improved detection and loading of PDF fonts / Optimisation de la détection et du chargement des polices pour les fichiers PDF."
+         ]
+      },
+      {
+         "version": "0.3.0",
+         "date": "FEBRUARY 9, 2025",
+         "notes": [
+            "Improvements / améliorations:",
+            "  - Removed OACI map's white background for a clearer display / Suppression du fond blanc de la carte OACI pour un affichage plus net.",
+            "  - Added AZBA layer support / Ajout du layer AZBA.",
+            "  - Introduced buttons for zooming in and out of PDFs / Ajout de boutons permettant de zoomer sur les fichiers PDF.",
+            "  - Added zoom level customization settings for layers / Ajout de paramètres pour régler le niveau de zoom des layers.",
+            "  - General performance enhancements / Amélioration globale des performances."
+         ]
+      },
+      {
+         "version": "0.3.1",
+         "date": "FEBRUARY 16, 2025",
+         "notes": [
+            "Fixes :",
+            "  - Corrected navigation leg headings (0° for north) / Correction de l'orientation des branches de navigation (0° au nord).",
+            "  - Fixed navigation leg time display / Correction de l'affichage des heures des branches de navigation."
+         ]
+      },
+      {
+         "version": "0.3.2",
+         "date": "FEBRUARY 17, 2025",
+         "notes": [
+            "Fixes :",
+            "  - Corrected navigation leg distance calculations / Correction des calculs de distances des branches de navigation."
+         ]
+      },
+      {
+         "version": "0.3.3",
+         "date": "FEBRUARY 24, 2025",
+         "notes": [
+            "Fixes:",
+            "  - Resolved MSFS native slider bug / Correction du bug des sliders natifs MSFS.",
+            "",
+            "Improvements / améliorations:",
+            "  - Set the app as a favorite by default / Forçage de l'application à être marquée comme favorite."
+         ]
+      },
+      {
+         "version": "0.4.0",
+         "date": "MARCH 17, 2025",
+         "notes": [
+            "Fixes:",
+            "  - Prevented settings from resetting across updates / Empêche la réinitialisation des paramètres entre les mises à jour.",
+            "",
+            "Improvements / améliorations:",
+            "  - Added an Airports layer displaying METAR, frequency, and additional information / Ajout d'un layer affichant les aéroports avec des informations sur les METARs, fréquences, etc.",
+            "  - Integrated OpenFlightMap layer support / Ajout du layer OpenFlightMap.",
+            "  - Introduced an option to display aircraft on the map (must be enabled in the settings page) / Ajout de la possibilité de voir la position de l'avion (doit être activé dans la page des paramètres).",
+            "  - Added a new page for viewing flight and touchdown records / Ajout d'une page permettant d'afficher les enregistrements de vols et d'atterrissages."
+         ]
+      },
+      {
+         "version": "0.4.1",
+         "date": "MARCH 19, 2025",
+         "notes": [
+            "Fixes:",
+            "  - Ensured touchdown labels are always displayed above recorded flight paths / Affichage forcé des labels de touchdown au-dessus des chemins d'enregistrement de vol.",
+            "  - Optimized memory usage for flight recording / Optimisation de l'utilisation de la mémoire pour l'enregistrement des vols.",
+            "  - Fixed encoding issues in tab labels on the airport info popup / Correction des problèmes d'encodage des labels des onglets de la popup d'information des aéroports.",
+            "",
+            "Improvements / améliorations:",
+            "  - Added an option to hide ground level on the flight record layer / Ajout de la possibilité de masquer le niveau du sol sur le layer d'enregistrement des vols."
+         ]
+      },
+      {
+         "version": "0.5.0",
+         "date": "MAY 25, 2025",
+         "notes": [
+            "**Installer/Server (new)**",
+            "  Improvements / améliorations:",
+            "     - Added the ability to load PDF files from the computer / Ajout de la possibilité de charger des fichiers PDF depuis le PC.",
+            "     - Added functionality to open the EFB directly from the app, enhancing preflight and postflight navigation / Ajout de la fonctionnalité permettant d'ouvrir l'EFB directement depuis l'application, améliorant la navigation pré et post vol.",
+            "",
+            "**EFB**",
+            "  Improvements / améliorations:",
+            "     - Increased text size in AZBA and airport information popups / Augmentation de la taille du texte des popups AZBA et des informations sur les aéroports.",
+            "     - Enhanced the visual presentation of AZBA and airport information popups / Amélioration de la présentation des popups AZBA et des informations sur les aéroports."
+         ]
+      }
+   ]
+}

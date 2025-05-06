@@ -17,6 +17,9 @@
 
 #include "Resources.h"
 
+#include "Server/WebSockets/Messages/Messages.h"
+#include "promise/promise.h"
+
 #include <json/json.h>
 #include <windows/Env.h>
 
@@ -72,12 +75,15 @@ private:
    Promise<> ShowToolTip();
    Promise<> HideToolTip();
 
+   Promise<> OpenWebEFB();
    Promise<> OpenEFB();
 
    Promise<> HideTaskbar();
    Promise<> ShowTaskbar();
 
    Promise<> ShowSettings();
+
+   Promise<> VDispatchMessage(ws::Message message);
 
    Promise<bool>                                  AutostartServer(std::optional<bool> value);
    Promise<uint16_t>                              ServerPort(std::optional<uint16_t> port);
@@ -96,7 +102,7 @@ private:
    void Info(std::string_view message);
 
    std::string const APP_DATA      = GetAppData();
-   std::string const USER_DATA_DIR = APP_DATA + "\\MSFS VFRNav Server";
+   std::string const USER_DATA_DIR = APP_DATA + "\\MSFS2024 VFRNav' Server";
 
    std::mutex              mutex_;
    std::condition_variable cv_;

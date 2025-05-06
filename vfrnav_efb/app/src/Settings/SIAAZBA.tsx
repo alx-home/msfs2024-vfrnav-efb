@@ -108,8 +108,8 @@ export const useSIAZBA = (SIAAZBAAddr: string, SIAAZBADateAddr: string, SIAAuth:
                       }
                     }),
                     timeslots: elem.timeSlots.map(slot => ({
-                      startTime: __MSFS_EMBEDED__ ? new Date(new Date(slot.startTime.substring(0, slot.startTime.length - 6)).getTime() - 3600000) : new Date(slot.startTime.substring(0, slot.startTime.length - 6)),
-                      endTime: __MSFS_EMBEDED__ ? new Date(new Date(slot.endTime.substring(0, slot.endTime.length - 6)).getTime() - 3600000) : new Date(slot.endTime.substring(0, slot.endTime.length - 6)),
+                      startTime: new Date(new Date(slot.startTime.substring(0, slot.startTime.length - 6)).getTime() - 3600000),
+                      endTime: new Date(new Date(slot.endTime.substring(0, slot.endTime.length - 6)).getTime() - 3600000),
                     }))
                   });
                 });

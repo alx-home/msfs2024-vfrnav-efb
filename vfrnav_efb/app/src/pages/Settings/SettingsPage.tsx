@@ -17,14 +17,14 @@ import { CheckBox, Slider, Input, Scroll, DualSlider } from "@alx-home/Utils";
 
 import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { AirportLayerOptions, Color, LayerSetting, SharedSettingsDefault } from "../../../../shared/Settings";
+import { AirportLayerOptions, Color, LayerSetting, SharedSettingsRecord } from "@shared/Settings";
 
 import { SettingsContext } from "@Settings/SettingsProvider";
 import { AirportLayerSettingSetter, LayerSettingSetter } from "@Settings/Settings";
 
 import undoImg from '@alx-home/images/undo.svg';
-import markerImg from '@images/marker-icon-blue.svg';
-import oaciImg from '@images/oaci.jpg';
+import markerImg from '@efb-images/marker-icon-blue.svg';
+import oaciImg from '@efb-images/oaci.jpg';
 
 const List = ({ children }: PropsWithChildren) => {
    return <Scroll className="flex flex-col">
@@ -390,7 +390,7 @@ export const SettingsPage = ({ active }: {
    }, [active]);
 
    const textSize = useMemo(() => ({ min: settings.map.text.minSize, max: settings.map.text.maxSize }), [settings.map.text.maxSize, settings.map.text.minSize]);
-   const defaultTextSize = useMemo(() => ({ min: SharedSettingsDefault.map.text.minSize, max: SharedSettingsDefault.map.text.maxSize }), []);
+   const defaultTextSize = useMemo(() => ({ min: SharedSettingsRecord.defaultValues.map.text.minSize, max: SharedSettingsRecord.defaultValues.map.text.maxSize }), []);
    const setTextSize = useCallback((min: number, max: number) => {
       settings.map.text.setMinSize(min);
       settings.map.text.setMaxSize(max);
@@ -446,6 +446,13 @@ export const SettingsPage = ({ active }: {
       return (hours ? hours + 'h' : '') + (minutes < 10 ? '0' : '') + minutes + 'min';
    }, [settings.map.azba.range]);
 
+   const validateServerPort = useCallback((value: string) => {
+      const result = /^\d+$/.test(value) && +value > 999 && +value < 65536;
+      return Promise.resolve(result);
+   }, [])
+
+   const setServerPort = useCallback((value: string) => settings.setServerPort(+value), [settings]);
+
 
    return <div className="flex grow justify-center m-2 p-4" style={active ? {} : { display: 'none' }}>
       <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col "
@@ -459,8 +466,8 @@ export const SettingsPage = ({ active }: {
          </div>
          <List>
             <Group name="Flight">
-               <InputItem name="Speed" type="text" placeholder={SharedSettingsDefault.speed.toString()} inputMode="decimal"
-                  value={settings.speed.toString()} defaultValue={SharedSettingsDefault.speed.toString()}
+               <InputItem name="Speed" type="text" placeholder={SharedSettingsRecord.defaultValues.speed.toString()} inputMode="decimal"
+                  value={settings.speed.toString()} defaultValue={SharedSettingsRecord.defaultValues.speed.toString()}
                   validate={value => Promise.resolve(/^\d*$/g.test(value))}
                   onChange={setSpeed}>
                   <div>
@@ -472,7 +479,7 @@ export const SettingsPage = ({ active }: {
                </InputItem>
                <SliderItem category="AZBA" name="Margin"
                   range={{ min: 0, max: 24 * 60 }}
-                  defaultValue={SharedSettingsDefault.map.azba.range}
+                  defaultValue={SharedSettingsRecord.defaultValues.map.azba.range}
                   value={settings.map.azba.range}
                   onChange={settings.map.azba.setRange}>
                   <div className="flex flex-row">
@@ -482,13 +489,13 @@ export const SettingsPage = ({ active }: {
             </Group>
             <Group name="Navigation">
                <CheckItem category="Wind correction" name="Heading" disabled={true}
-                  value={settings.adjustHeading} defaultValue={SharedSettingsDefault.adjustHeading}
+                  value={settings.adjustHeading} defaultValue={SharedSettingsRecord.defaultValues.adjustHeading}
                   onChange={settings.setAdjustHeading}>
                   Adjust navigation heading by taking into account the given leg wind.<br />
                   (not yet implemented)
                </CheckItem>
                <CheckItem category="Wind correction" name="Time" disabled={true}
-                  value={settings.adjustTime} defaultValue={SharedSettingsDefault.adjustTime}
+                  value={settings.adjustTime} defaultValue={SharedSettingsRecord.defaultValues.adjustTime}
                   onChange={settings.setAdjustTime}>
                   Adjust navigation time by taking into account the given leg wind.<br />
                   (not yet implemented)
@@ -496,71 +503,71 @@ export const SettingsPage = ({ active }: {
             </Group>
             <Group name="Map">
                <Items name="Airports" category="Layers">
-                  <LayerActivation setting={settings.airports} defaultSetting={SharedSettingsDefault.airports}>
+                  <LayerActivation setting={settings.airports} defaultSetting={SharedSettingsRecord.defaultValues.airports}>
                      Use Airports Layer
                   </LayerActivation>
-                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='hardRunway'>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsRecord.defaultValues.airports} settingKey='hardRunway'>
                      - Hard runway airports
                   </AirortLayerOption>
-                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='softRunway'>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsRecord.defaultValues.airports} settingKey='softRunway'>
                      - Soft runway airports
                   </AirortLayerOption>
-                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='private'>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsRecord.defaultValues.airports} settingKey='private'>
                      - Private / Military airports
                   </AirortLayerOption>
-                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='helipads'>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsRecord.defaultValues.airports} settingKey='helipads'>
                      - Helipads
                   </AirortLayerOption>
-                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} settingKey='waterRunway'>
+                  <AirortLayerOption setting={settings.airports} defaultSetting={SharedSettingsRecord.defaultValues.airports} settingKey='waterRunway'>
                      - Hippodromes
                   </AirortLayerOption>
                </Items>
                <Items name="VFR" category="Layers">
-                  <LayerActivation setting={settings.azba} defaultSetting={SharedSettingsDefault.azba}>
+                  <LayerActivation setting={settings.azba} defaultSetting={SharedSettingsRecord.defaultValues.azba}>
                      Use France AZBA Layer (sia)
                   </LayerActivation>
-                  <LayerActivation setting={settings.OACI} defaultSetting={SharedSettingsDefault.OACI}>
+                  <LayerActivation setting={settings.OACI} defaultSetting={SharedSettingsRecord.defaultValues.OACI}>
                      Use France OACI Layer (geoportal)
                   </LayerActivation>
-                  <LayerActivation setting={settings.germany} defaultSetting={SharedSettingsDefault.germany}>
+                  <LayerActivation setting={settings.germany} defaultSetting={SharedSettingsRecord.defaultValues.germany}>
                      Use Germany DFS Layer (secais).
                   </LayerActivation>
-                  <LayerActivation setting={settings.openflightmaps} defaultSetting={SharedSettingsDefault.openflightmaps}>
+                  <LayerActivation setting={settings.openflightmaps} defaultSetting={SharedSettingsRecord.defaultValues.openflightmaps}>
                      Use Open Flight Layer.
                   </LayerActivation>
-                  <LayerActivation setting={settings.openflightmapsBase} defaultSetting={SharedSettingsDefault.openflightmapsBase}>
+                  <LayerActivation setting={settings.openflightmapsBase} defaultSetting={SharedSettingsRecord.defaultValues.openflightmapsBase}>
                      Use Open Flight Base Layer (Background).
                   </LayerActivation>
-                  <LayerActivation setting={settings.USSectional} defaultSetting={SharedSettingsDefault.USSectional}>
+                  <LayerActivation setting={settings.USSectional} defaultSetting={SharedSettingsRecord.defaultValues.USSectional}>
                      Use US sectional Layers (iflightplanner).
                   </LayerActivation>
                </Items>
                <Items name="IFR" category="Layers">
-                  <LayerActivation setting={settings.USIFRHigh} defaultSetting={SharedSettingsDefault.USIFRHigh}>
+                  <LayerActivation setting={settings.USIFRHigh} defaultSetting={SharedSettingsRecord.defaultValues.USIFRHigh}>
                      Use US High IFR Layers (iflightplanner).
                   </LayerActivation>
-                  <LayerActivation setting={settings.USIFRLow} defaultSetting={SharedSettingsDefault.USIFRLow}>
+                  <LayerActivation setting={settings.USIFRLow} defaultSetting={SharedSettingsRecord.defaultValues.USIFRLow}>
                      Use US Low IFR Layers (iflightplanner).
                   </LayerActivation>
                </Items>
                <Items name="Topographic" category="Layers">
-                  <LayerActivation setting={settings.opentopo} defaultSetting={SharedSettingsDefault.opentopo}>
+                  <LayerActivation setting={settings.opentopo} defaultSetting={SharedSettingsRecord.defaultValues.opentopo}>
                      Use Open Topo Layer.
                   </LayerActivation>
-                  <LayerActivation setting={settings.mapforfree} defaultSetting={SharedSettingsDefault.mapforfree}>
+                  <LayerActivation setting={settings.mapforfree} defaultSetting={SharedSettingsRecord.defaultValues.mapforfree}>
                      Use Map for free Layer.
                   </LayerActivation>
                </Items>
                <Items name="World" category="Layers">
-                  <LayerActivation setting={settings.googlemap} defaultSetting={SharedSettingsDefault.googlemap}>
+                  <LayerActivation setting={settings.googlemap} defaultSetting={SharedSettingsRecord.defaultValues.googlemap}>
                      Use Google map Layer.
                   </LayerActivation>
-                  <LayerActivation setting={settings.openstreet} defaultSetting={SharedSettingsDefault.openstreet}>
+                  <LayerActivation setting={settings.openstreet} defaultSetting={SharedSettingsRecord.defaultValues.openstreet}>
                      Use Open Street map Layer.
                   </LayerActivation>
                </Items>
                <Items name="Cheat" category="Layers">
-                  <LayerActivation setting={settings.plane} defaultSetting={SharedSettingsDefault.plane}>
+                  <LayerActivation setting={settings.plane} defaultSetting={SharedSettingsRecord.defaultValues.plane}>
                      Use plane Layer (Displays aircraft position on the map).
                   </LayerActivation>
                </Items>
@@ -570,24 +577,41 @@ export const SettingsPage = ({ active }: {
                         Set zoom levels for which the layer is to be displayed on the map. Zooming out of this range on the map will hide the layer.
                      </div>
                   </Legend>
-                  <ZoomItem name="Airports" setting={settings.airports} defaultSetting={SharedSettingsDefault.airports} />
-                  <ZoomItem name="France AZBA" setting={settings.azba} defaultSetting={SharedSettingsDefault.azba} />
-                  <ZoomItem name="France OACI" setting={settings.OACI} defaultSetting={SharedSettingsDefault.OACI} />
-                  <ZoomItem name="Germany DFS" setting={settings.germany} defaultSetting={SharedSettingsDefault.germany} />
-                  <ZoomItem name="US sectional" setting={settings.USSectional} defaultSetting={SharedSettingsDefault.USSectional} />
-                  <ZoomItem name="US High IFR" setting={settings.USIFRHigh} defaultSetting={SharedSettingsDefault.USIFRHigh} />
-                  <ZoomItem name="US Low IFR" setting={settings.USIFRLow} defaultSetting={SharedSettingsDefault.USIFRLow} />
-                  <ZoomItem name="Open Flight" setting={settings.openflightmaps} defaultSetting={SharedSettingsDefault.openflightmaps} />
-                  <ZoomItem name="Open Flight Base" setting={settings.openflightmapsBase} defaultSetting={SharedSettingsDefault.openflightmapsBase} />
-                  <ZoomItem name="Open Topo" setting={settings.opentopo} defaultSetting={SharedSettingsDefault.opentopo} />
-                  <ZoomItem name="Open Street" setting={settings.openstreet} defaultSetting={SharedSettingsDefault.openstreet} />
-                  <ZoomItem name="Map4Free" setting={settings.mapforfree} defaultSetting={SharedSettingsDefault.mapforfree} />
-                  <ZoomItem name="Google" setting={settings.googlemap} defaultSetting={SharedSettingsDefault.googlemap} />
-                  <ZoomItem name="Plane" setting={settings.plane} defaultSetting={SharedSettingsDefault.plane} />
+                  <ZoomItem name="Airports" setting={settings.airports} defaultSetting={SharedSettingsRecord.defaultValues.airports} />
+                  <ZoomItem name="France AZBA" setting={settings.azba} defaultSetting={SharedSettingsRecord.defaultValues.azba} />
+                  <ZoomItem name="France OACI" setting={settings.OACI} defaultSetting={SharedSettingsRecord.defaultValues.OACI} />
+                  <ZoomItem name="Germany DFS" setting={settings.germany} defaultSetting={SharedSettingsRecord.defaultValues.germany} />
+                  <ZoomItem name="US sectional" setting={settings.USSectional} defaultSetting={SharedSettingsRecord.defaultValues.USSectional} />
+                  <ZoomItem name="US High IFR" setting={settings.USIFRHigh} defaultSetting={SharedSettingsRecord.defaultValues.USIFRHigh} />
+                  <ZoomItem name="US Low IFR" setting={settings.USIFRLow} defaultSetting={SharedSettingsRecord.defaultValues.USIFRLow} />
+                  <ZoomItem name="Open Flight" setting={settings.openflightmaps} defaultSetting={SharedSettingsRecord.defaultValues.openflightmaps} />
+                  <ZoomItem name="Open Flight Base" setting={settings.openflightmapsBase} defaultSetting={SharedSettingsRecord.defaultValues.openflightmapsBase} />
+                  <ZoomItem name="Open Topo" setting={settings.opentopo} defaultSetting={SharedSettingsRecord.defaultValues.opentopo} />
+                  <ZoomItem name="Open Street" setting={settings.openstreet} defaultSetting={SharedSettingsRecord.defaultValues.openstreet} />
+                  <ZoomItem name="Map4Free" setting={settings.mapforfree} defaultSetting={SharedSettingsRecord.defaultValues.mapforfree} />
+                  <ZoomItem name="Google" setting={settings.googlemap} defaultSetting={SharedSettingsRecord.defaultValues.googlemap} />
+                  <ZoomItem name="Plane" setting={settings.plane} defaultSetting={SharedSettingsRecord.defaultValues.plane} />
                </Items>
             </Group>
+            {__MSFS_EMBEDED__ ?
+               <Group name="Server">
+                  <InputItem name="Port" type="text" placeholder={"VFRNav' server port"} inputMode="decimal"
+                     value={settings.serverPort.toString()} defaultValue={SharedSettingsRecord.defaultValues.serverPort.toString()}
+                     validate={validateServerPort}
+                     onChange={setServerPort}>
+                     <div>
+                        Set the port to be used for communicating with the VFRNav&apos; Server app.
+                        <br /><span className="drop-shadow-md text-sky-300">This port must also be configured in settings of the server app.</span>
+                     </div>
+                     <ErrorMessage type='Error'>
+                        Invalid port (999 {'<'} value {'<'} 65&apos;536) !
+                     </ErrorMessage>
+                  </InputItem>
+               </Group>
+               : <></>
+            }
             <Group name="Map Display">
-               <ColorPicker name="Active high color" category="AZBA" defaultColor={SharedSettingsDefault.map.azba.activeHighColor} value={settings.map.azba.activeHighColor} setColor={settings.map.azba.setActiveHighColor}>
+               <ColorPicker name="Active high color" category="AZBA" defaultColor={SharedSettingsRecord.defaultValues.map.azba.activeHighColor} value={settings.map.azba.activeHighColor} setColor={settings.map.azba.setActiveHighColor}>
                   <div className="flex flex-row min-h-[60px]">
                      <div className="flex min-w-[50px] justify-center">
                         <div className={"flex flex-row justify-end rounded-md overflow-hidden mr-2 min-w-[50px]"} style={{ backgroundImage: `url(${oaciImg})`, backgroundSize: 'cover' }} >
@@ -600,7 +624,7 @@ export const SettingsPage = ({ active }: {
                      </div>
                   </div>
                </ColorPicker>
-               <ColorPicker name="Active low color" category="AZBA" defaultColor={SharedSettingsDefault.map.azba.activeLowColor} value={settings.map.azba.activeLowColor} setColor={settings.map.azba.setActiveLowColor}>
+               <ColorPicker name="Active low color" category="AZBA" defaultColor={SharedSettingsRecord.defaultValues.map.azba.activeLowColor} value={settings.map.azba.activeLowColor} setColor={settings.map.azba.setActiveLowColor}>
                   <div className="flex flex-row min-h-[60px]">
                      <div className="flex min-w-[50px] justify-center">
                         <div className={"flex flex-row justify-end rounded-md overflow-hidden mr-2 min-w-[50px]"} style={{ backgroundImage: `url(${oaciImg})`, backgroundSize: 'cover' }}  >
@@ -613,7 +637,7 @@ export const SettingsPage = ({ active }: {
                      </div>
                   </div>
                </ColorPicker>
-               <ColorPicker name="Inactive high color" category="AZBA" defaultColor={SharedSettingsDefault.map.azba.inactiveHighColor} value={settings.map.azba.inactiveHighColor} setColor={settings.map.azba.setInactiveHighColor}>
+               <ColorPicker name="Inactive high color" category="AZBA" defaultColor={SharedSettingsRecord.defaultValues.map.azba.inactiveHighColor} value={settings.map.azba.inactiveHighColor} setColor={settings.map.azba.setInactiveHighColor}>
                   <div className="flex flex-row min-h-[60px]">
                      <div className="flex min-w-[50px] justify-center">
                         <div className={"flex flex-row justify-end rounded-md overflow-hidden mr-2 min-w-[50px]"} style={{ backgroundImage: `url(${oaciImg})`, backgroundSize: 'cover' }} >
@@ -626,7 +650,7 @@ export const SettingsPage = ({ active }: {
                      </div>
                   </div>
                </ColorPicker>
-               <ColorPicker name="Inactive low color" category="AZBA" defaultColor={SharedSettingsDefault.map.azba.inactiveLowColor} value={settings.map.azba.inactiveLowColor} setColor={settings.map.azba.setInactiveLowColor}>
+               <ColorPicker name="Inactive low color" category="AZBA" defaultColor={SharedSettingsRecord.defaultValues.map.azba.inactiveLowColor} value={settings.map.azba.inactiveLowColor} setColor={settings.map.azba.setInactiveLowColor}>
                   <div className="flex flex-row min-h-[60px]">
                      <div className="flex min-w-[50px] justify-center">
                         <div className={"flex flex-row justify-end rounded-md overflow-hidden mr-2 min-w-[50px]"} style={{ backgroundImage: `url(${oaciImg})`, backgroundSize: 'cover' }}  >
@@ -654,7 +678,7 @@ export const SettingsPage = ({ active }: {
                </DualSliderItem>
                <SliderItem category="Legs" name="Border size"
                   range={{ min: 1, max: 15 }}
-                  defaultValue={SharedSettingsDefault.map.text.borderSize}
+                  defaultValue={SharedSettingsRecord.defaultValues.map.text.borderSize}
                   value={settings.map.text.borderSize}
                   onChange={settings.map.text.setBorderSize}>
                   <div className="flex flex-row min-h-[60px]">
@@ -668,7 +692,7 @@ export const SettingsPage = ({ active }: {
                      <div className="flex flex-col justify-center">Set navigation legs text border size.</div>
                   </div>
                </SliderItem>
-               <ColorPicker name="Text Color" category="Legs" defaultColor={SharedSettingsDefault.map.text.color} value={settings.map.text.color} setColor={settings.map.text.setColor}>
+               <ColorPicker name="Text Color" category="Legs" defaultColor={SharedSettingsRecord.defaultValues.map.text.color} value={settings.map.text.color} setColor={settings.map.text.setColor}>
                   <div className="flex flex-row min-h-[60px]">
                      <div className="flex min-w-[50px] justify-center">
                         <div className={"flex flex-col justify-center bg-white rounded-md px-2 mr-2"} style={{ font: `900 50px Inter-bold, sans-serif`, color: `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})` }}>A</div>
@@ -676,7 +700,7 @@ export const SettingsPage = ({ active }: {
                      </div>
                   </div>
                </ColorPicker>
-               <ColorPicker name="Border Color" category="Legs" defaultColor={SharedSettingsDefault.map.text.borderColor} value={settings.map.text.borderColor} setColor={settings.map.text.setBorderColor}>
+               <ColorPicker name="Border Color" category="Legs" defaultColor={SharedSettingsRecord.defaultValues.map.text.borderColor} value={settings.map.text.borderColor} setColor={settings.map.text.setBorderColor}>
                   <div className="flex flex-row min-h-[60px]">
                      <div className="flex min-w-[50px] justify-center mr-2">
                         <div className={"relative flex flex-col justify-center"} style={{ font: `900 50px Inter-bold, sans-serif` }}>
@@ -691,7 +715,7 @@ export const SettingsPage = ({ active }: {
                </ColorPicker>
                <SliderItem category="Marker" name="Size"
                   range={{ min: 10, max: 80 }}
-                  value={settings.map.markerSize} defaultValue={SharedSettingsDefault.map.markerSize}
+                  value={settings.map.markerSize} defaultValue={SharedSettingsRecord.defaultValues.map.markerSize}
                   onChange={settings.map.setMarkerSize}>
                   <div className="flex flex-row min-h-[80px]">
                      <div className="flex min-w-[80px] justify-center">
@@ -706,7 +730,7 @@ export const SettingsPage = ({ active }: {
                   <InputItem category="SIA" name="Authorization token" inputMode="text"
                      validate={value => Promise.resolve(/^(\w+)?=?$/g.test(value))}
                      placeholder='Please enter an authorization token'
-                     value={settings.SIAAuth} defaultValue={SharedSettingsDefault.SIAAuth}
+                     value={settings.SIAAuth} defaultValue={SharedSettingsRecord.defaultValues.SIAAuth}
                      onChange={settings.setSIAAuth}>
                      Authorization token for accessing SIA Enroute charts on the PDF page. Use this settings in case of a broken default address.<br />
                      For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
@@ -714,7 +738,7 @@ export const SettingsPage = ({ active }: {
                   <InputItem category="SIA" name="Address" inputMode="text"
                      validate={validateSIAAddr}
                      placeholder={__SIA_ADDR__}
-                     value={settings.SIAAddr} defaultValue={SharedSettingsDefault.SIAAddr}
+                     value={settings.SIAAddr} defaultValue={SharedSettingsRecord.defaultValues.SIAAddr}
                      onChange={settings.setSIAAddr}>
                      PDF template Address with {'{icao}'} placeholder. Use this settings in case of a broken default address.<br />
                      For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
@@ -725,7 +749,7 @@ export const SettingsPage = ({ active }: {
                   <InputItem category="SIA" name="AZBA address" inputMode="text"
                      validate={validateSIAAZBAAddr}
                      placeholder={__SIA_AZBA_ADDR__}
-                     value={settings.SIAAZBAAddr} defaultValue={SharedSettingsDefault.SIAAZBAAddr}
+                     value={settings.SIAAZBAAddr} defaultValue={SharedSettingsRecord.defaultValues.SIAAZBAAddr}
                      onChange={settings.setSIAAZBAAddr}>
                      AZBA template Address with {'{date}'} placeholder. Use this settings in case of a broken default address.<br />
                      For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>
@@ -736,7 +760,7 @@ export const SettingsPage = ({ active }: {
                   <InputItem category="SIA" name="AZBA date address" inputMode="text"
                      validate={validateSIAAZBADateAddr}
                      placeholder={__SIA_AZBA_DATE_ADDR__}
-                     value={settings.SIAAZBADateAddr} defaultValue={SharedSettingsDefault.SIAAZBADateAddr}
+                     value={settings.SIAAZBADateAddr} defaultValue={SharedSettingsRecord.defaultValues.SIAAZBADateAddr}
                      onChange={settings.setSIAAZBADateAddr}>
                      AZBA date template Address. Use this settings in case of a broken default address.<br />
                      For more information, please go to the addon wiki: <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/wiki">https://github.com/alx-home/msfs2024-vfrnav-efb/wiki</a>

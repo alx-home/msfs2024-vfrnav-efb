@@ -17,5 +17,5 @@
 
 Promise<std::string>
 Main::DefaultInstallPath() {
-   co_return GetAppData() + "\\MSFS VFRNav Server";
+   co_return GetAppData() + "\\MSFS2024 VFRNav' Server";
 }

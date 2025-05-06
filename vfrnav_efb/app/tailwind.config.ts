@@ -12,19 +12,15 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
-{
-   "extends": "./tsconfig.base.json",
-   "references": [{ "path": "../packages/ts-utils/tsconfig.json" }],
-   "compilerOptions": {
-      "outDir": "../build/vfrnav_efb/ts-dist",
-      "baseUrl": ".",
-      "composite": true,
-      "resolveJsonModule": true,
-      "moduleResolution": "nodenext", // Specifies how modules are resolved when bundling.
-      "module": "NodeNext",
-      "paths": {
-         "@alx-home/build": ["../packages/ts-utils/build_template.ts"]
-      }
-   },
-   "include": ["./build.ts", "./package.json"]
-}
+
+import type { Config } from "tailwindcss";
+import BaseTailwind from '../../packages/ts-utils/tailwind.config';
+
+const Tailwind: Config = {
+   ...BaseTailwind, content: [
+      "./src/**/*.{js,ts,jsx,tsx,mdx}",
+      "../../common/ts/**/*.{js,ts,jsx,tsx,mdx}",
+      "../../packages/ts-utils/src/**/*.{js,ts,jsx,tsx,mdx}"
+   ]
+};
+export default Tailwind;

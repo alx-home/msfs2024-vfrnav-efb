@@ -1,5 +1,9 @@
 include(FetchContent)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
+
+find_package(MSFS_SDK MODULE REQUIRED)
+
 message(STATUS "Fetching alx-home::ts-utils")
 FetchContent_Declare(
     ts_utils
@@ -77,7 +81,6 @@ FetchContent_Declare(
 )
 
 # Configure Boost
-
 find_program(MASM_EXECUTABLE ml64 REQUIRED)
 
 FetchContent_MakeAvailable(zlib)
@@ -85,7 +88,7 @@ FetchContent_MakeAvailable(zlib)
 get_target_property(ZLIB_INCLUDE_DIR zlibstatic INCLUDE_DIRECTORIES)
 get_target_property(ZLIB_LIBRARY zlibstatic BINARY_DIR)
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(ZLIB_LIBRARY "${ZLIB_LIBRARY}/zlibstaticd.lib")
 else()
     set(ZLIB_LIBRARY "${ZLIB_LIBRARY}/zlibstatic.lib")

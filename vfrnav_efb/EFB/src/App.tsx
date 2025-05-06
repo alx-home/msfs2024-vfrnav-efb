@@ -20,14 +20,13 @@ import {
   AppSuspendMode,
   AppView,
   AppViewProps,
-  Efb,
   RequiredProps,
   TVNode,
 } from "@alx-home/efb-api";
 
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import { FSComponent, VNode } from "@microsoft/msfs-sdk";
 import { MainPage } from "./Components/MainPage";
+import { Manager } from './Manager';
 
 class VfrNavAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
   /**
@@ -43,7 +42,7 @@ class VfrNavAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
    */
   protected registerViews(): void {
     this.appViewService.registerPage("main", () => (
-      <MainPage appViewService={this.appViewService} color="#7f8fa6" title="main" />
+      <MainPage manager={this.props.manager} appViewService={this.appViewService} color="#7f8fa6" title="main" />
     ));
   }
 
@@ -95,7 +94,9 @@ class VfrNavAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
   }
 }
 
-class VfrNavApp extends App {
+export class VfrNavApp extends App {
+  private manager: Manager | undefined;
+
   /**
    * Required getter for friendly app-name.
    * Used by the EFB as App's name shown to the user.
@@ -141,9 +142,11 @@ class VfrNavApp extends App {
    * @param _props props used when app has been setted up.
    * @returns Promise<void>
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async install(_props: AppInstallProps): Promise<void> {
+  public async install(props: AppInstallProps): Promise<void> {
     this.efbSettingsManager.addAppToFavorites(this);
+    this.manager = new Manager(this.bus);
+
+    console.assert(props.bus);
     return Promise.resolve();
   }
 
@@ -162,11 +165,6 @@ class VfrNavApp extends App {
    * @returns {AppView} created above
    */
   public render(): TVNode<VfrNavAppView> {
-    return <VfrNavAppView bus={this.bus} />;
+    return <VfrNavAppView manager={this.manager!} bus={this.bus} />;
   }
 }
-
-/**
- * App definition to be injected into EFB
- */
-Efb.use(VfrNavApp);

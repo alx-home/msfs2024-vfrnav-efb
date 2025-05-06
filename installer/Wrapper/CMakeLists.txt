@@ -1,10 +1,10 @@
-win32_executable(TARGET_NAME installer 
-    FILES 
-        main.cpp main.rc 
+win32_executable(TARGET_NAME installer
+    FILES
+        main.cpp main.rc
 )
 
-target_link_libraries(installer PRIVATE 
-    installer_wrapper_resources 
+target_link_libraries(installer PRIVATE
+    installer_wrapper_resources
     Boost::iostreams
     alx-home::windows
 )
@@ -17,11 +17,10 @@ set(VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${REVISION})
 
 set_target_properties(installer PROPERTIES VERSION ${MAJOR_VERSION})
 set_target_properties(installer PROPERTIES SOVERSION ${MAJOR_VERSION}.${MINOR_VERSION})
-set_target_properties(installer PROPERTIES OUTPUT_NAME "vfrnav-installer")
+set_target_properties(installer PROPERTIES OUTPUT_NAME "msfs2024-vfrnav_installer")
 
 # PACKAGER
-
-package(TARGET_NAME installer_wrapper_resources 
-        Z_RESOURCES 
-            INSTALLER_BIN ${CMAKE_BINARY_DIR}/installer/vfrnav-installer-int.exe
+package(TARGET_NAME installer_wrapper_resources
+        Z_RESOURCES
+    INSTALLER_BIN ${CMAKE_BINARY_DIR}/installer/msfs2024-vfrnav_installer-int.exe
 )

@@ -22,7 +22,7 @@
 namespace registry {
 
 template <Store STORE, class PARENT>
-class Uninstall : public Key<STORE, "Uninstall\\MSFS VFRNav Server", PARENT, true> {
+class Uninstall : public Key<STORE, "Uninstall\\MSFS2024 VFRNav' Server", PARENT, true> {
 public:
    Uninstall() = default;
 

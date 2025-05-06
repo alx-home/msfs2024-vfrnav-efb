@@ -14,19 +14,37 @@ function(package)
 
     set(ARGS "")
     unset(RESOURCE_NAME)
+    unset(EXCLUDE)
+    set(CURRENT_ARGS "")
+
     foreach(ELEM IN LISTS arg_APP_RESOURCES)
-        if(DEFINED RESOURCE_NAME)
+        if(${ELEM} STREQUAL EXCLUDE)
+            set(EXCLUDE TRUE)
+        elseif(DEFINED EXCLUDE)
+            unset(EXCLUDE)
+            set(CURRENT_ARGS --exclude ${ELEM} ${CURRENT_ARGS})
+        elseif(DEFINED RESOURCE_NAME)
             get_target_property(OUTPUT_DIRECTORY ${ELEM} OUTPUT_DIRECTORY)
-            get_target_property(DEPS ${ELEM} DEPS)
-            set(ARGS ${ARGS} --app ${RESOURCE_NAME} ${OUTPUT_DIRECTORY})
+            get_target_property(SOURCES ${ELEM} SOURCES)
+            set(CURRENT_ARGS ${CURRENT_ARGS} --app ${RESOURCE_NAME} ${OUTPUT_DIRECTORY})
             unset(RESOURCE_NAME)
-            list(APPEND arg_DEPENDS ${DEPS})
+            list(APPEND arg_DEPENDS ${SOURCES})
         else()
+            if(DEFINED CURRENT_ARGS)
+                set(ARGS ${ARGS} ${CURRENT_ARGS})
+                unset(CURRENT_ARGS)
+            endif()
+
             set(RESOURCE_NAME "${ELEM}")
         endif()
     endforeach()
-    
-    if (DEFINED RESOURCE_NAME)
+
+    if(DEFINED CURRENT_ARGS)
+        set(ARGS ${ARGS} ${CURRENT_ARGS})
+        unset(CURRENT_ARGS)
+    endif()
+
+    if(DEFINED RESOURCE_NAME)
         message(FATAL_ERROR "Invalid package args")
     endif()
 
@@ -39,8 +57,8 @@ function(package)
             set(RESOURCE_NAME "${ELEM}")
         endif()
     endforeach()
-    
-    if (DEFINED RESOURCE_NAME)
+
+    if(DEFINED RESOURCE_NAME)
         message(FATAL_ERROR "Invalid package args")
     endif()
 
@@ -53,29 +71,29 @@ function(package)
             set(RESOURCE_NAME "${ELEM}")
         endif()
     endforeach()
-    
-    if (DEFINED RESOURCE_NAME)
+
+    if(DEFINED RESOURCE_NAME)
         message(FATAL_ERROR "Invalid package args")
     endif()
 
     add_custom_command(
         OUTPUT ${ASM_FILE} ${ASM_CPP}
         COMMAND $<TARGET_FILE:packager> ${CMAKE_CURRENT_BINARY_DIR} ${ARGS}
-        DEPENDS 
-            packager 
+        DEPENDS
+            packager
             ${arg_DEPENDS}
-        COMMENT "Generating ${arg_DEPENDS} with ${ARGS}"
+        COMMENT "Generating ${arg_TARGET_NAME}"
     )
 
     add_custom_command(
         DEPENDS ${ASM_FILE}
-        OUTPUT ${ASM_OBJ} 
+        OUTPUT ${ASM_OBJ}
         COMMAND ${NASM_EXECUTABLE} -f win64 ${ASM_FILE} -o ${ASM_OBJ}
         COMMENT "Assembling ${ASM_FILE}"
     )
 
     add_library(${arg_TARGET_NAME} ${ASM_CPP} ${ASM_OBJ})
-    set_target_properties(${arg_TARGET_NAME} PROPERTIES 
+    set_target_properties(${arg_TARGET_NAME} PROPERTIES
         LINKER_LANGUAGE CXX
         CXX_STANDARD 26
         CMAKE_CXX_STANDARD_REQUIRED ON

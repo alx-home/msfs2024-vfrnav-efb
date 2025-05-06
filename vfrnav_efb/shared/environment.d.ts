@@ -35,6 +35,11 @@ declare global {
   const __SIA_ADDR__: string;
   const __SIA_AZBA_ADDR__: string;
   const __SIA_AZBA_DATE_ADDR__: string;
+
+  interface Window {
+    vfrnav_postMessage: ((_: MessageType) => void) | undefined
+    vfrnav_onmessage: ((_: MessageType) => Promise<void>) | undefined;
+  }
 }
 
 // If this file has no import/export statements (i.e. is a script)

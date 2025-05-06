@@ -183,7 +183,7 @@ export const AZBALayer = ({
 
       timer.current = setTimeout(() => {
         setRefresh(val => val + 1)
-      }, nextRefresh!.getTime() - now.getTime());
+      }, nextRefresh ? ((nextRefresh as Date).getTime() - now.getTime()) : 10000);
 
       activeHighLayer.setSource(activeHight);
       activeLowLayer.setSource(activeLow);

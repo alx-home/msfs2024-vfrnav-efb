@@ -13,18 +13,18 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react';
 
 import Logo from '@vfrnav/images/app-icon.svg?react';
 
 import { Button } from '@alx-home/Utils';
-import { Popup } from './Popup';
+import { Popup, PopupContextProvider } from '@common/Popup';
 import { Body } from './Body';
 
 const Header = () => {
   return <div className='flex flex-row shrink bg-msfs px-5 pb-5 shadow-color-default/80 shadow-md [&>*]:drop-shadow-xl'>
     <Logo height={"2.5rem"} width={"2.5rem"} />
-    <h1 className='text-3xl ml-2'>MSFS VFRNav&apos; Server</h1>
+    <h1 className='text-3xl ml-2'>MSFS2024 VFRNav&apos; Server</h1>
   </div>
 }
 
@@ -43,19 +43,20 @@ const Trailer = ({ canContinue, validate }: {
 }
 export const App = () => {
   const [canContinue, setCanContinue] = useState(false);
-
   const validateRef = useRef<() => void>(null)
 
   const validate = useCallback(() => {
     validateRef.current?.();
   }, []);
 
-  return <div className='flex flex-col h-full text-xl '>
-    <Header />
-    <div className='relative flex flex-col h-full w-full overflow-hidden'>
-      <Popup />
-      <Body setCanContinue={setCanContinue} validate={validateRef} />
-      <Trailer canContinue={canContinue} validate={validate} />
+  return <PopupContextProvider>
+    <div className='flex flex-col h-full text-xl '>
+      <Header />
+      <div className='relative flex flex-col h-full w-full overflow-hidden'>
+        <Popup />
+        <Body setCanContinue={setCanContinue} validate={validateRef} />
+        <Trailer canContinue={canContinue} validate={validate} />
+      </div>
     </div>
-  </div>
+  </PopupContextProvider >
 }

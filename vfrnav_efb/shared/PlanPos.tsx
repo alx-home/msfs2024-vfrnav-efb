@@ -13,10 +13,12 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { TypeRecord } from './Types';
+import { GenRecord } from './Types';
 
 
 export type PlanePos = {
+  __PLANE_POS__: true,
+
   date: number,
   lat: number,
   lon: number,
@@ -28,43 +30,36 @@ export type PlanePos = {
   windDirection: number
 }
 
-export type PlanePoses = { id: number, value: PlanePos[] };
+export type PlanePoses = {
+  __PLANE_POSES__: true,
 
-export const PlanePosRecord: TypeRecord<PlanePos> = {
-  date: 'number',
-  lat: 'number',
-  lon: 'number',
-  altitude: 'number',
-  ground: 'number',
-  heading: 'number',
-  verticalSpeed: 'number',
-  windVelocity: 'number',
-  windDirection: 'number'
-}
-
-export const PlanePosesRecord: TypeRecord<PlanePoses> = {
-  id: 'number',
-  value: [
-    PlanePosRecord
-  ]
-}
-
-export type OldPlaneRecord = {
-  name: string,
   id: number,
-  active: boolean,
-  record: PlanePos[],
-  touchdown: number
-}
-export const OldPlaneRecordRecord: TypeRecord<OldPlaneRecord> = {
-  name: 'string',
-  id: 'number',
-  active: 'boolean',
-  record: [PlanePosRecord],
-  touchdown: 'number'
-}
-export type OldPlaneRecords = OldPlaneRecord[];
-export const OldPlaneRecordsRecord: TypeRecord<OldPlaneRecords> = [OldPlaneRecordRecord];
+  value: PlanePos[]
+};
+
+export const PlanePosRecord = GenRecord<PlanePos>({
+  __PLANE_POS__: true,
+
+  date: -1,
+  lat: -1,
+  lon: -1,
+  altitude: -1,
+  ground: -1,
+  heading: -1,
+  verticalSpeed: -1,
+  windVelocity: -1,
+  windDirection: -1
+}, {});
+
+
+export const PlanePosesRecord = GenRecord<PlanePoses>({
+  __PLANE_POSES__: true,
+
+  id: 0,
+  value: []
+}, {
+  value: { array: true, record: PlanePosRecord }
+})
 
 export type PlaneRecord = {
   name: string,
@@ -73,69 +68,62 @@ export type PlaneRecord = {
   touchdown: number
 }
 
-export const PlaneRecordRecord: TypeRecord<PlaneRecord> = {
-  name: 'string',
-  id: 'number',
-  active: 'boolean',
-  touchdown: 'number'
-}
+export const PlaneRecordRecord = GenRecord<PlaneRecord>({
+  name: 'undef',
+  id: -1,
+  active: false,
+  touchdown: -1
+}, {})
 
-export type PlaneRecords = { value: PlaneRecord[] };
-export const PlaneRecordsRecord: TypeRecord<PlaneRecords> = { value: [PlaneRecordRecord] };
-export const PlaneRecordsDefault: PlaneRecords = {
-  value: [{
-    name: 'undef',
-    id: -1,
-    active: true,
-    // record: [
-    //    {
-    //       date: 0,
-    //       lat: 0,
-    //       lon: 0,
-    //       ground: 0,
-    //       altitude: 0,
-    //       heading: 0,
-    //       verticalSpeed: 0,
-    //       windDirection: 0,
-    //       windVelocity: 0
-    //    }
-    // ],
-    touchdown: 0
-  }]
+export type PlaneRecords = {
+  __RECORDS__: true,
+
+  value: PlaneRecord[]
 };
 
+export const PlaneRecordsRecord = GenRecord<PlaneRecords>({
+  __RECORDS__: true,
+
+  value: []
+}, {
+  value: { array: true, record: PlaneRecordRecord }
+});
+
+
 export type RemoveRecord = {
+  __REMOVE_RECORD__: true
+
   id: number
 }
 
 export type GetRecord = {
+  __GET_RECORD__: true
+
   id: number
 }
 
-export type ActiveRecord = {
-  id: number,
-  active: boolean
-}
-
 export type EditRecord = {
-  id: number,
+  __EDIT_RECORD__: true
+
+  id: number
   name: string
 }
 
-export const GetRecordRecord: TypeRecord<GetRecord> = {
-  id: 'number'
-}
+export const GetRecordRecord = GenRecord<GetRecord>({
+  __GET_RECORD__: true,
 
-export const RemoveRecordRecord: TypeRecord<RemoveRecord> = {
-  id: 'number'
-}
+  id: -1
+}, {});
 
-export const ActiveRecordRecord: TypeRecord<ActiveRecord> = {
-  id: 'number',
-  active: 'boolean'
-}
+export const RemoveRecordRecord = GenRecord<RemoveRecord>({
+  __REMOVE_RECORD__: true,
 
-export const EditRecordRecord: TypeRecord<EditRecord> = {
-  id: 'number',
-  name: 'string'
-}
+  id: -1
+}, {})
+
+export const EditRecordRecord = GenRecord<EditRecord>({
+  __EDIT_RECORD__: true,
+
+  id: -1,
+  name: "undef"
+}, {})

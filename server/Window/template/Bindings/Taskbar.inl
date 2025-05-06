@@ -42,6 +42,12 @@ Window<WINDOW>::OpenEFB() {
 
 template <WIN WINDOW>
 Promise<>
+Window<WINDOW>::OpenWebEFB() {
+   co_return Main::Get()->OpenWebEFB();
+}
+
+template <WIN WINDOW>
+Promise<>
 Window<WINDOW>::ShowToolTip() {
    co_return Main::Get()->OpenToolTip();
 }

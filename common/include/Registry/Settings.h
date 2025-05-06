@@ -20,7 +20,7 @@
 namespace registry {
 
 template <Store STORE, class PARENT>
-class Settings : public Key<STORE, "MSFS VFRNav Server", PARENT, true> {
+class Settings : public Key<STORE, "MSFS2024 VFRNav' Server", PARENT, true> {
 public:
    Settings() = default;
 

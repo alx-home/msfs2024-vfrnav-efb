@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Collection, Map, MapBrowserEvent, getUid } from 'ol';
+import { Collection, Map as olMap, MapBrowserEvent, getUid } from 'ol';
 import { createContext, Dispatch, PropsWithChildren, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import { NavData } from "./MapMenu/Menus/Nav";
 import BaseLayer from "ol/layer/Base";
@@ -26,7 +26,7 @@ import Feature, { FeatureLike } from "ol/Feature";
 import { SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
-import { PlaneRecord, PlaneRecords } from '../../../../shared/PlanPos';
+import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
 import { messageHandler } from '@Settings/SettingsProvider';
 
 export type Interactive = {
@@ -41,7 +41,7 @@ export type Interactive = {
 }
 
 export const MapContext = createContext<{
-  map: Map,
+  map: olMap,
   navData: NavData[],
   records: PlaneRecord[],
   profileScale: number,
@@ -73,7 +73,7 @@ export const MapContext = createContext<{
 } | undefined>(undefined);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getFeaturesAtPixel = (map: Map, layer: Layer, coords: Coordinate, event: MapBrowserEvent<any>): FeatureLike[] => {
+const getFeaturesAtPixel = (map: olMap, layer: Layer, coords: Coordinate, event: MapBrowserEvent<any>): FeatureLike[] => {
   if (!layer.isVisible?.()) {
     return [];
   }
@@ -104,7 +104,7 @@ const getFeaturesAtPixel = (map: Map, layer: Layer, coords: Coordinate, event: M
 
 const MapContextProvider = ({ children }: PropsWithChildren) => {
   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
-  const map = useMemo<Map>(() => {
+  const map = useMemo<olMap>(() => {
     const layers = new Collection<BaseLayer>();
     const focused: {
       feature: Interactive | undefined,
@@ -114,7 +114,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       args: []
     };
 
-    const map = new Map({
+    const map = new olMap({
       layers: layers,
       interactions: defaults({ doubleClickZoom: false })
     });
@@ -203,6 +203,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     return map;
   }, []);
   const [records, setRecords] = useState<PlaneRecord[]>([]);
+  const [activeRecords, setActiveRecords] = useState(new Map<number, boolean>());
   const [addNav, setAddNav] = useState<() => void>();
   const [cancel, setCancel] = useState<() => void>();
   const [navData, setNavData] = useState<NavData[]>([]);
@@ -233,13 +234,24 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     const onPlaneRecords = (records: PlaneRecords) => {
-      setRecords(records.value);
+      const newActiveRecords = new Map<number, boolean>();
+      const newRecords = records.value.map(value => {
+        const active = activeRecords.get(value.id) ?? false;
+
+        newActiveRecords.set(value.id, active);
+        return { ...value, active: active };
+      });
+      setActiveRecords(newActiveRecords);
+      setRecords(newRecords);
     };
 
-    messageHandler.subscribe("PlaneRecords", onPlaneRecords)
-    messageHandler.send({ mType: "GetPlaneRecords" });
-    return () => messageHandler.unsubscribe("PlaneRecords", onPlaneRecords);
-  }, [])
+    messageHandler.subscribe("__RECORDS__", onPlaneRecords)
+    return () => messageHandler.unsubscribe("__RECORDS__", onPlaneRecords);
+  }, [activeRecords])
+
+  useEffect(() => {
+    messageHandler.send({ __GET_RECORDS__: true });
+  }, []);
 
   const provider = useMemo(() => ({
     map: map,
@@ -300,20 +312,22 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     },
     removeRecord: (id: number) => {
       messageHandler.send({
-        mType: "RemoveRecord",
+        __REMOVE_RECORD__: true,
+
         id: id
       })
     },
     activeRecord: (id: number, active: boolean) => {
-      messageHandler.send({
-        mType: "ActiveRecord",
-        id: id,
-        active: active
-      })
+      const newActiveRecords = new Map(activeRecords);
+      newActiveRecords.set(id, active);
+
+      setActiveRecords(newActiveRecords);
+      setRecords(records => records.map(value => ({ ...value, active: newActiveRecords.get(value.id) ?? false })));
     },
     editRecord: (id: number, newName: string) => {
       messageHandler.send({
-        mType: "EditRecord",
+        __EDIT_RECORD__: true,
+
         id: id,
         name: newName
       })
@@ -329,7 +343,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         return orders.map((order, index) => ({ ...data[index], order: order }))
       });
     }
-  }), [map, navData, records, counter, flash, flashKey, profileScale, touchdown, ground]);
+  }), [map, navData, records, counter, flash, flashKey, profileScale, touchdown, ground, activeRecords]);
 
   return (
     <MapContext.Provider

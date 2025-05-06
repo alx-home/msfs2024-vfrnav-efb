@@ -14,6 +14,7 @@
  */
 
 #include "window/FileDialog.h"
+#include "utils/Scoped.h"
 #include "utils/String.h"
 
 #include <array>
@@ -164,16 +165,14 @@ Open(std::string_view path) {
            std::lock_guard lock{s__thread_mutex};
            std::jthread    thread{
              [&reject, &resolve, value = std::filesystem::path{ReplaceEnv(std::string{path})}]() {
-                struct UnregisterThread {
-                   ~UnregisterThread() {
-                      std::lock_guard lock{s__thread_mutex};
+                ScopeExit _{[]() constexpr {
+                   std::lock_guard lock{s__thread_mutex};
 
-                      auto it = s__threads.find(std::this_thread::get_id());
-                      assert(it != s__threads.end());
-                      it->second.detach();
-                      s__threads.erase(it);
-                   }
-                } _{};
+                   auto it = s__threads.find(std::this_thread::get_id());
+                   assert(it != s__threads.end());
+                   it->second.detach();
+                   s__threads.erase(it);
+                }};
 
                 try {
                    FileDialog fdialog{};
