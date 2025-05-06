@@ -12,14 +12,18 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
-
-import type { Config } from "tailwindcss";
-import BaseTailwind from '../packages/ts-utils/tailwind.config';
-
-const Tailwind: Config = {
-   ...BaseTailwind, content: [
-      "./app/**/*.{js,ts,jsx,tsx,mdx}",
-      "../packages/ts-utils/src/**/*.{js,ts,jsx,tsx,mdx}"
-   ]
-};
-export default Tailwind;
+{
+   "extends": "../tsconfig.base.json",
+   "references": [{ "path": "../../packages/ts-utils/tsconfig.json" }],
+   "compilerOptions": {
+      "baseUrl": ".",
+      "rootDir": "../../",
+      "outDir": "../../build/vfrnav_efb/ts-dist/efb/app/",
+      "composite": true,
+      "resolveJsonModule": true,
+      "paths": {
+         "@alx-home/build": ["../../packages/ts-utils/build_template.ts"]
+      }
+   },
+   "include": ["./build.ts", "./package.json", "../../eslint.config.ts"]
+}

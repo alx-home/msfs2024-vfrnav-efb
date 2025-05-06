@@ -17,7 +17,7 @@
          "type": "cppvsdbg",
          "request": "launch",
          "program": "${workspaceFolder}/build/server/vfrnav-server.exe",
-         "args": ["--configure"],
+         "args": [],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",
          "environment": [],

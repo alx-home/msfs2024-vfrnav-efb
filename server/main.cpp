@@ -83,6 +83,9 @@ ParseArgs(std::string_view cmd) {
       }
    }
 
+   if (!minimized && !uninstall && !configure && !open_web) {
+      open_efb = true;
+   }
    return std::make_tuple(minimized, uninstall, configure, open_web, open_efb);
 }
 

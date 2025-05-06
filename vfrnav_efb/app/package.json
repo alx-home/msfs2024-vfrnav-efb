@@ -1,0 +1,32 @@
+{
+  "name": "@efb/msfs2024-vfrnav",
+  "version": "1.0.0",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "author": "alex-home",
+  "scripts": {
+    "watch": "npx tsx build.ts --dev --watch",
+    "build": "npx tsx build.ts",
+    "build:dev": "npx tsx build.ts --dev",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@alx-home/pdfjs-dist": "5.0.36",
+    "abortcontroller-polyfill": "^1.7.8",
+    "geometry-polyfill": "^1.0.7",
+    "js-sha512": "0.9.0",
+    "lightningcss": "1.29.3",
+    "ol": "10.5.0",
+    "pdfjs-dist": "^5.2.133",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "resize-observer-polyfill": "^1.5.1"
+  },
+  "browserslist": [
+    "defaults and fully supports es6-module",
+    "maintained node versions"
+  ]
+}

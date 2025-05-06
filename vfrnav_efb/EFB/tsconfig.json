@@ -15,15 +15,7 @@
 {
    "extends": "../tsconfig.base.json",
    "references": [
-      { "path": "../../packages/ts-utils/tsconfig.json" },
-      { "path": "../shared/tsconfig.json" }
-   ],
-   "compilerOptions": {
-      "baseUrl": "..",
-      "outDir": "../../build/vfrnav_efb/ts-dist/efb/",
-      "jsx": "react",
-      "jsxFactory": "FSComponent.buildComponent",
-      "jsxFragmentFactory": "FSComponent.Fragment"
-   },
-   "include": ["src/**/*.ts", "src/**/*.tsx"]
+      { "path": "./tsconfig.EFB.json" },
+      { "path": "./tsconfig.build.json" }
+   ]
 }

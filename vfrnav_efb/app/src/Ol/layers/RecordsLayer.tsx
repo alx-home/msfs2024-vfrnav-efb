@@ -29,7 +29,7 @@ import Fill from "ol/style/Fill";
 import { Coordinate } from "ol/coordinate";
 import { toContext } from "ol/render";
 import { messageHandler } from "@Settings/SettingsProvider";
-import { PlanePoses } from "../../../../shared/PlanPos";
+import { PlanePoses } from "@shared/PlanPos";
 import LayerGroup from "ol/layer/Group";
 
 const getNorm = (a: Coordinate, b: Coordinate) => {

@@ -4,7 +4,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable getter-return */
 /* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
 'use strict';
 
 var CLASS_PREFIX = "dnd-poly-";

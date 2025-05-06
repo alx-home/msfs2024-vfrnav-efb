@@ -14,7 +14,7 @@
  */
 
 import { Input, Scroll, Select, CheckBox, SelectOption } from "@alx-home/Utils";
-import { StartupOption } from "@common/env";
+import { StartupOption } from "@server-common/env";
 import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 
 const Elem = ({ children }: PropsWithChildren) => {
@@ -131,7 +131,10 @@ export const Body = () => {
                   <div className="flex flex-col grow [&:has(.invalid)_:last-child]:opacity-100">
                      <div className="flex flex-row transition-all [&>.invalid]:mt-[-10px] justify-end">
                         <Input className='peer transition-all max-w-60 px-2' inputClass='text-right' value={port?.toString()}
-                           active={true} placeholder={"Server listening port"} inputMode={'decimal'}
+                           active={false} placeholder={
+                              // "Server listening port"
+                              "Not yet available"
+                           } inputMode={'decimal'}
                            validate={validatePort} onChange={_setPort} />
                      </div>
                      <div className="flex flex-row grow opacity-0 transition-all justify-end">

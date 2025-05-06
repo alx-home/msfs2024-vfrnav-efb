@@ -12,7 +12,21 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
-
-import { default as ResizeObserver } from 'resize-observer-polyfill';
-
-window.ResizeObserver = ResizeObserver;
+{
+   "extends": "./packages/ts-utils/tsconfig.base.json",
+   "references": [
+      { "path": "./packages/ts-utils/tsconfig.json" },
+      { "path": "./server/ts/tsconfig.json" },
+      { "path": "./installer/ts/tsconfig.json" },
+      { "path": "./common/ts/tsconfig.json" },
+      { "path": "./vfrnav_efb/tsconfig.json" }
+   ],
+   "compilerOptions": {
+      "baseUrl": ".",
+      "composite": true,
+      "resolveJsonModule": true,
+      "outDir": "./build/ts-dist/",
+      "rootDir": "."
+   },
+   "include": ["eslint.config.ts"]
+}

@@ -16,8 +16,7 @@
    "extends": "../../packages/ts-utils/tsconfig.base.json",
    "compilerOptions": {
       "outDir": "../../build/installer/ts-dist",
-      "rootDir": ".",
-      "rootDirs": [".", "../../"],
+      "rootDir": "../../",
       "baseUrl": ".",
       "paths": {
          "@alx-home/global.css": ["../../packages/ts-utils/src/global.css"],
@@ -28,6 +27,9 @@
 
          "@alx-home/Events": ["../../packages/ts-utils/src/Events/index.d.ts"],
          "@alx-home/Utils": ["../../packages/ts-utils/src/Utils/index.d.ts"],
+         "@alx-home/build": ["../../packages/ts-utils/build_template.ts"],
+
+         "@common/*": ["../../common/ts/*"],
 
          "@vfrnav/images/*": ["../../images/*"]
       }
