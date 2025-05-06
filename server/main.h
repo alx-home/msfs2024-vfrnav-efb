@@ -60,7 +60,7 @@ public:
 
    void OpenEFB();
 
-   void Run(bool minimized, bool configure);
+   void Run(bool minimized, bool configure, bool open_efb, bool open_web);
    void SetServerPort(uint16_t port);
 
    static void Terminate();

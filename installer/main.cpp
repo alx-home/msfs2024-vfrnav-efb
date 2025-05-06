@@ -30,11 +30,9 @@
 #include <winnt.h>
 #include <winreg.h>
 
-#include <algorithm>
 #include <cstdlib>
 #include <functional>
 #include <iostream>
-#include <string>
 #include <utility>
 
 #ifdef _WIN32
@@ -103,7 +101,7 @@ Main::Main()
    InstallBindings();
 
 #ifdef WATCH_MODE
-   webview_.Navigate("http://localhost:4000");
+   webview_.Navigate("http://localhost:3999");
 #else
    webview_.Navigate("app://app/index.html");
 #endif

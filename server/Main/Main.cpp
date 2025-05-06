@@ -18,6 +18,7 @@
 #include "Resources.h"
 #include "Window/template/Window.h"
 #include "webview/detail/backends/win32_edge.h"
+#include "windows/Process.h"
 
 #include <windows/Lock.h>
 #include <json/json.h>
@@ -40,7 +41,6 @@
 
 #include <chrono>
 #include <memory>
-#include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
 #include <string_view>
@@ -55,7 +55,7 @@ AppStopping::AppStopping()
 
 static uint32_t const MF_MOUSE_EVENT = ::RegisterWindowMessage("MainFrameMouseEvent");
 Main::Main()
-   : win32::SystemTray("MSFS VFRNav server")
+   : win32::SystemTray("MSFS VFRNav server", "MSFS VFRNav server")
    , mouse_watcher_([this]() constexpr {
       bool was_l_down{false};
       bool was_r_down{false};
@@ -121,6 +121,12 @@ Main::OnMessageImpl(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam) {
             CloseTaskbar();
          }
       }
+   }
+
+   if (msg == WM_OPEN_SETTINGS) {
+      OpenSettings();
+   } else if (msg == WM_OPEN_EFB) {
+      OpenEFB();
    }
 
    return win32::SystemTray::OnMessageImpl(handle, msg, wParam, lParam);
@@ -203,7 +209,16 @@ Main::OpenEFB() {
 }
 
 void
-Main::Run(bool minimized, bool configure) {
+Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
+   {
+      std::string exe_path = win32::GetExecutablePath();
+
+      win32::JumpList jump_list{};
+      jump_list.AddTask("Open In App", exe_path, "vfrnav-server.exe --open-efb");
+      // jump_list.AddTask("Open In WebBrowser", exe_path, "vfrnav-server.exe --open-web"); @todo
+      jump_list.AddTask("Open Settings", exe_path, "vfrnav-server.exe --configure");
+   }
+
    server_ = std::make_unique<Server>();
 
    taskbar_ =
@@ -212,11 +227,23 @@ Main::Run(bool minimized, bool configure) {
       this->OnTerminate<WIN::TASKBAR_TOOLTIP>();
    });
 
+   if (minimized) {
+      CloseToolTip();
+   }
+
    if (configure) {
       OpenSettings();
-   } else if (minimized) {
-      CloseToolTip();
-   } else {
+   }
+
+   if (open_efb) {
+      OpenEFB();
+   }
+
+   if (open_web) {
+      // todo
+   }
+
+   if (!minimized && !open_efb && !open_web && !configure) {
       OpenToolTip();
    }
 

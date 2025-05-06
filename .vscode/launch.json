@@ -24,6 +24,17 @@
          "console": "integratedTerminal"
       },
       {
+         "name": "(Windows) Launch promise_test",
+         "type": "cppvsdbg",
+         "request": "launch",
+         "program": "${workspaceFolder}/build/_deps/promise-build/promise_test.exe",
+         "args": [],
+         "stopAtEntry": false,
+         "cwd": "${workspaceFolder}",
+         "environment": [],
+         "console": "integratedTerminal"
+      },
+      {
          "name": "(Windows) Launch Packager",
          "type": "cppvsdbg",
          "request": "attach",

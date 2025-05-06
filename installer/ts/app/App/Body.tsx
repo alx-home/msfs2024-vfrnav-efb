@@ -14,7 +14,7 @@
  */
 
 import { Button, EndSlot, Input, Scroll, SelectOption, Select } from "@alx-home/Utils";
-import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { addPopup, LoadingPopup } from "./Popup";
 
 const Elem = ({ children }: PropsWithChildren) => {
@@ -183,33 +183,43 @@ export const Body = ({ setCanContinue, validate }: {
    </div>
 }
 
-const RunClosePopup = ({ close }: {
-   close?: () => void
+const RunClosePopup = ({ resolve }: {
+   resolve: (_: boolean | PromiseLike<boolean>) => void
 }) => {
+   const abort = useCallback(() => {
+      resolve(false);
+   }, []);
+   const startServer = useCallback(() => {
+      resolve(true);
+   }, []);
+
    return <div className='flex flex-col gap-y-6 grow'>
       <div className='text-3xl text-blue-400'>Info</div>
       <div className='text-xl gap-y-2 overflow-hidden'>
          <Scroll>
             <div className="mb-4">
-               MSFS VFRNav Successfully installed !<br />
-               Would you like to start it ?
+               MSFS VFRNav Successfully installed !
             </div>
          </Scroll>
       </div>
-      <div className='flex flex-row grow'>
-         <Button active={true} onClick={close}>OK</Button>
+      <div className='flex flex-row [&>*>*]:px-14'>
+         <Button active={true} className="grow" onClick={startServer}>Start Server</Button>
+         <div className='flex flex-row [&>*]:bg-red-800 [&>*]:hover:bg-red-500 [&>*]:hover:border-white'>
+            <Button active={true} onClick={abort}>Close</Button>
+         </div>
       </div>
    </div>
 };
 
 window.start_program = async (): Promise<boolean> => {
+   let resolve: ((_: boolean | PromiseLike<boolean>) => void) | null = null;
+   const promise = new Promise<boolean>((resolve_) => {
+      resolve = resolve_;
+   });
+
+
    closeValidate.current!();
+   addPopup(<RunClosePopup resolve={resolve!} />)
 
-   addPopup(<RunClosePopup
-      close={() => {
-         window.abort()
-      }}
-   />)
-
-   return false;
+   return promise;
 };

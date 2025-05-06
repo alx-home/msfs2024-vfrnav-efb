@@ -18,6 +18,7 @@
 #include "Registry/Install.h"
 #include "Registry/Registry.h"
 #include "Utils/LaunchMode.h"
+#include "promise/impl/Promise.inl"
 #include "promise/promise.h"
 #include "windows/Env.h"
 #include "windows/Process.h"
@@ -26,7 +27,9 @@
 
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <string>
+#include <thread>
 #include <json/json.h>
 #include <processthreadsapi.h>
 
@@ -71,7 +74,6 @@ Main::Validate(
       copy(in, file);
    }
 
-   std::cout << GetAppData() << std::endl;
    if (auto result = win32::CreateLink(
          installPath + "\\vfrnav-server.exe",
          GetAppData() + R"(\Microsoft\Windows\Start Menu\Programs\MSFS VFRNav' Server.lnk)",
@@ -123,9 +125,12 @@ Main::Validate(
    }
 
    if (co_await webview_.Call<bool>("start_program")) {
-      webview_.Dispatch([installPath]() {
+      webview_.Dispatch([this, installPath]() constexpr {
          win32::NewProcess(installPath + "\\vfrnav-server.exe", "--configure");
+         Abort()();
       });
+   } else {
+      webview_.Dispatch([this]() constexpr { Abort()(); });
    }
 
    co_return;

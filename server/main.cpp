@@ -32,10 +32,12 @@
 #include <intsafe.h>
 #include <minwindef.h>
 #include <windef.h>
+#include <winerror.h>
 #include <winnt.h>
 #include <winreg.h>
 #include <winuser.h>
 
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string_view>
@@ -46,6 +48,8 @@ ParseArgs(std::string_view cmd) {
    bool minimized{false};
    bool uninstall{false};
    bool configure{false};
+   bool open_web{false};
+   bool open_efb{false};
 
    auto constexpr split = [](std::string_view cmd) constexpr -> std::string_view {
       auto const pos = cmd.find_first_of(' ');
@@ -72,10 +76,14 @@ ParseArgs(std::string_view cmd) {
          uninstall = true;
       } else if (value == "--configure") {
          configure = true;
+      } else if (value == "--open-efb") {
+         open_efb = true;
+      } else if (value == "--open-web") {
+         open_web = true;
       }
    }
 
-   return std::make_tuple(minimized, uninstall, configure);
+   return std::make_tuple(minimized, uninstall, configure, open_web, open_efb);
 }
 
 #ifdef _WIN32
@@ -85,13 +93,30 @@ WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR lpCmdLine, int /*nCm
 int
 main() {
 #endif
+   if (auto const hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+       !SUCCEEDED(hr)) {
+      std::cerr << "Coinitialized failed (" << hr << ")" << std::endl;
+   }
 
-   auto const [minimized, _, configure] = ParseArgs(lpCmdLine);
+   auto const [minimized, _, configure, open_web, open_efb] = ParseArgs(lpCmdLine);
 
    auto const lock = win32::CreateLock("MSFS_VFR_NAV_SERVER");
    if (lock.result_ == ERROR_ALREADY_EXISTS) {
-      MessageBox(nullptr, "VFRNav Server is already runnning !", "Error", MB_OK | MB_ICONERROR);
-      return EXIT_FAILURE;
+      if (auto window = FindWindow("system_tray", "MSFS VFRNav server"); window) {
+         if (configure) {
+            SendMessageA(window, WM_OPEN_SETTINGS, 0ul, 0ul);
+         }
+         if (open_web) {
+            SendMessageA(window, WM_OPEN_WEB, 0ul, 0ul);
+         }
+         if (open_efb) {
+            SendMessageA(window, WM_OPEN_EFB, 0ul, 0ul);
+         }
+         return EXIT_SUCCESS;
+      } else {
+         MessageBox(nullptr, "VFRNav Server is already runnning !", "Error", MB_OK | MB_ICONERROR);
+         return EXIT_FAILURE;
+      }
    }
 
 #ifdef PROMISE_MEMCHECK
@@ -108,7 +133,7 @@ main() {
 #endif  // DEBUG
 
       auto const main = Main::Get();
-      main->Run(minimized, configure);
+      main->Run(minimized, configure, open_efb, open_web);
    } catch (const webview::Exception& e) {
       std::cerr << e.what() << '\n';
       return 1;

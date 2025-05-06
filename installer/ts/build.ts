@@ -13,9 +13,15 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { UserConfig, build, createServer } from "vite";
+import { UserConfig, build, createServer, searchForWorkspaceRoot } from "vite";
 
 import { AppConfig } from '@alx-home/build';
+
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let watch = false;
 process.argv.forEach(function (val) {
@@ -34,8 +40,14 @@ if (watch) {
       server: {
          port: 4000,
          host: 'localhost',
+         fs: {
+            allow: [
+               searchForWorkspaceRoot(__dirname),
+               path.resolve(__dirname, "../../packages/ts-utils/src/fonts")
+            ]
+         }
       }
-   }).then((server) => server.listen(4000));
+   }).then((server) => server.listen(3999));
 } else {
    await build(Config);
 }

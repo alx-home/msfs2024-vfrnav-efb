@@ -27,4 +27,7 @@ extern AppResources const TASKBAR_TOOLTIP_WINDOW_RESOURCES;
 extern AppResources const EFB_RESOURCES;
 #endif
 
-#define WM_SYSTEM_TRAY WM_APP + 1
+#define WM_SYSTEM_TRAY   WM_APP + 1
+#define WM_OPEN_SETTINGS WM_SYSTEM_TRAY + 1
+#define WM_OPEN_EFB      WM_OPEN_SETTINGS + 1
+#define WM_OPEN_WEB      WM_OPEN_EFB + 1
