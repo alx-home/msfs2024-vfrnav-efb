@@ -1,0 +1,20 @@
+{
+  "name": "@efb/msfs2024-vfrnav-efb",
+  "version": "1.0.0",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "author": "alex-home",
+  "scripts": {
+    "watch": "npx tsx build.ts --dev --watch",
+    "build": "npx tsx build.ts",
+    "build:dev": "npx tsx build.ts --dev",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@microsoft/msfs-sdk": "2.0.7",
+    "@microsoft/msfs-types": "1.14.6"
+  },
+  "dependencies": {
+    "@alx-home/efb-api": "^1.0.2"
+  }
+}

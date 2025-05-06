@@ -15,15 +15,6 @@
 
 #include "Window.inl"
 
-#include "Bindings/abort.inl"
-#include "Bindings/exists.inl"
-#include "Bindings/log.inl"
-#include "Bindings/openFile.inl"
-#include "Bindings/openFolder.inl"
-#include "Bindings/parentExists.inl"
-#include "Bindings/Taskbar.inl"
-#include "Bindings/Settings.inl"
-
 template class Window<WIN::MAIN>;
 template class Window<WIN::TASKBAR>;
 template class Window<WIN::TASKBAR_TOOLTIP>;

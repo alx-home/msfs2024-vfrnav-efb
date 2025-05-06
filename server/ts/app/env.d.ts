@@ -1,1 +1,1 @@
-import "@common/env";
+import "@server-common/env";

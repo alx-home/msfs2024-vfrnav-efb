@@ -25,8 +25,8 @@ import { SettingsPage } from '@pages/Settings/SettingsPage';
 
 import SettingsContextProvider from '@Settings/SettingsProvider';
 
-import mapImg from '@images/map.svg';
-import navlogImg from '@images/navlog.svg';
+import mapImg from '@efb-images/map.svg';
+import navlogImg from '@efb-images/navlog.svg';
 
 import settingsImg from '@alx-home/images/settings.svg';
 import filesImg from '@alx-home/images/files.svg';

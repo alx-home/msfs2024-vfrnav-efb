@@ -115,26 +115,28 @@ export const AZBAPopup = ({ data }: {
     <div className='text-4xl font-semibold mt-4 mb-10'>
       {data.name}
     </div>
-    <Scroll className='flex flex-row justify-center'>
-      <div className='flex flex-col mx-5 shadow-sm w-full'>
-        <div className='flex flex-col gap-y-7 pb-8'>
-          {Activation}
-          <Category title='Altitude'>
-            <SubCategory title={"Upper: " + parseAlt(data.upper)}>
-            </SubCategory>
-            <SubCategory title={"Lower: " + parseAlt(data.lower)}>
-            </SubCategory>
-          </Category>
-          <Category title='Info'>
-            <div className='!ml-6'>
-              <div className='flex flex-row justify-start' dangerouslySetInnerHTML={{ __html: data.remark.replaceAll('#', '<br />') }}>
+    <div className='flex flex-col grow overflow-hidden'>
+      <Scroll className='flex flex-row justify-center'>
+        <div className='flex flex-col mx-5 shadow-sm w-full'>
+          <div className='flex flex-col [&>:not(:first-child)]:my-7 pb-8'>
+            {Activation}
+            <Category title='Altitude'>
+              <SubCategory title={"Upper: " + parseAlt(data.upper)}>
+              </SubCategory>
+              <SubCategory title={"Lower: " + parseAlt(data.lower)}>
+              </SubCategory>
+            </Category>
+            <Category title='Info'>
+              <div className='!ml-6'>
+                <div className='flex flex-row justify-start' dangerouslySetInnerHTML={{ __html: data.remark.replaceAll('#', '<br />') }}>
+                </div>
               </div>
-            </div>
-          </Category>
+            </Category>
+          </div>
         </div>
-      </div>
-    </Scroll>
-    <div className='flex flex-row grow w-full [&>:not(:first-child)]:ml-2 pt-10 justify-end' >
+      </Scroll>
+    </div>
+    <div className='flex flex-row grow shrink-0 w-full min-h-0 [&>:not(:first-child)]:ml-2 pt-10 justify-end' >
       <Button active={true} className='px-2'
         onClick={() => {
           setPopup(emptyPopup);

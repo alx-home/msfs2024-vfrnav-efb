@@ -38,3 +38,5 @@ build/
 .cache/
 packages/Microsoft.Web.WebView2
 **/node_modules/
+**/package-lock.json
+**/msfs2024-vfrnavProject.xml.user

@@ -18,3 +18,10 @@ declare module '*.svg';
 declare module '*.css';
 declare module '*.ttf';
 declare module '*.pdf';
+
+declare module '@alx-home/pdfjs-dist/build/pdf.worker.min.mjs';
+declare module 'pdfjs-dist/build/pdf.worker.min.mjs';
+
+declare module 'abortcontroller-polyfill/dist/polyfill-patch-fetch.js';
+declare module '@polyfills/pointer-events.js';
+declare module 'geometry-polyfill';

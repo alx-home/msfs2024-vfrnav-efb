@@ -13,58 +13,9 @@
 # not, see <https://www.gnu.org/licenses/>.
 #
 
-file(GLOB_RECURSE SHARED_DEPENDS LIST_DIRECTORIES false CONFIGURE_DEPENDS 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/*
+file(GLOB_RECURSE SHARED_DEPENDS LIST_DIRECTORIES false CONFIGURE_DEPENDS
+   ${CMAKE_CURRENT_SOURCE_DIR}/shared/*
 )
 
-file(GLOB_RECURSE APP_CONTENT_DEPENDS LIST_DIRECTORIES false CONFIGURE_DEPENDS 
-   ${CMAKE_CURRENT_SOURCE_DIR}/app/*
-)
-
-file(GLOB_RECURSE EFB_CONTENT_DEPENDS LIST_DIRECTORIES false CONFIGURE_DEPENDS 
-   ${CMAKE_CURRENT_SOURCE_DIR}/EFB/src/*
-)
-list(APPEND EFB_CONTENT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/EFB/tsconfig.json)
-
-set(BUILD_DEPENDS
-      ${CMAKE_CURRENT_SOURCE_DIR}/build.ts
-      ${CMAKE_CURRENT_SOURCE_DIR}/package.json
-      ${CMAKE_CURRENT_SOURCE_DIR}/eslint.config.mjs
-      ${CMAKE_CURRENT_SOURCE_DIR}/tsconfig.json
-      ${CMAKE_CURRENT_SOURCE_DIR}/.env.development
-      ${CMAKE_CURRENT_SOURCE_DIR}/.env.production
-      ${CMAKE_CURRENT_SOURCE_DIR}/tailwind.config.ts
-)
-
-ts_app(TARGET_NAME vfrnav_efb
-      BUILD_TARGET 
-         "build$<$<CONFIG:DEBUG>:\:dev>" app
-      APP_DIR 
-         app
-      OUTPUT_DIR 
-         ${CMAKE_CURRENT_BINARY_DIR}/dist/efb
-      OUTPUT
-         ${CMAKE_CURRENT_BINARY_DIR}/dist/efb/index.html
-   
-      DEPENDS 
-         ${BUILD_DEPENDS}
-         ${APP_CONTENT_DEPENDS}
-         ${SHARED_DEPENDS}
-)
-
-ts_app(TARGET_NAME vfrnav_efb_msfs
-      BUILD_TARGET 
-         "build$<$<CONFIG:DEBUG>:\:dev>" efb
-      APP_DIR 
-         EFB
-       OUTPUT_DIR 
-         ${CMAKE_CURRENT_BINARY_DIR}/dist
-       OUTPUT
-          ${CMAKE_CURRENT_BINARY_DIR}/dist/App.js
-
-       DEPENDS 
-         vfrnav_efb
-         ${BUILD_DEPENDS}
-         ${EFB_CONTENT_DEPENDS}
-         ${SHARED_DEPENDS}
-)
+add_subdirectory(app)
+add_subdirectory(EFB)

@@ -14,8 +14,8 @@
  */
 
 import { Button, EndSlot, Input, Scroll, SelectOption, Select } from "@alx-home/Utils";
-import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { addPopup, LoadingPopup } from "./Popup";
+import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useRef, useState, useContext } from 'react';
+import { addPopup, LoadingPopup, PopupContext } from "@common/Popup";
 
 const Elem = ({ children }: PropsWithChildren) => {
    return <div className='flex flex-row bg-slate-800 p-5 text-left h-20'>
@@ -100,14 +100,12 @@ const useFolder = ({ placeholder, initPath, autoSub }: {
    };
 }
 
-const closeValidate: {
-   current?: () => void
-} = {};
-
 export const Body = ({ setCanContinue, validate }: {
    setCanContinue: (_setter: SetStateAction<boolean>) => void,
    validate: RefObject<(() => void) | null>
 }) => {
+   const { setInstalling } = useContext(PopupContext)!;
+
    const { path: communityPath, valid: communityValid, set: setCommunityPath, elem: communityElem } = useFolder({ placeholder: 'Location of MSFS 2024 community folder', autoSub: 'alexhome-msfs2024-vfrnav' });
    const { path: installPath, valid: installPathValid, set: setInstallPath, elem: installPathElem } = useFolder({ placeholder: 'VFRNav\' Server installation path', autoSub: 'MSFS VFRNav Server' });
 
@@ -137,11 +135,14 @@ export const Body = ({ setCanContinue, validate }: {
 
    useEffect(() => {
       validate.current = () => {
-         addPopup(<LoadingPopup title="Installing" message="Installing MSFS VFRNav server..." closeRef={closeValidate} />)
+         setInstalling(true);
+         addPopup(<LoadingPopup title="Installing" message="Installing MSFS VFRNav server..." />, 0)
 
-         window.validate(startupOption, communityPath, installPath);
+         window.validate(startupOption, communityPath, installPath).then(() => {
+            setInstalling(false);
+         }).catch(() => { setInstalling(false); });
       }
-   }, [communityPath, installPath, startupOption, validate])
+   }, [communityPath, installPath, startupOption, validate, setInstalling])
 
    return <div className='flex flex-row grow min-h-0 overflow-hidden'>
       <Scroll className='flex-col grow'>
@@ -188,10 +189,10 @@ const RunClosePopup = ({ resolve }: {
 }) => {
    const abort = useCallback(() => {
       resolve(false);
-   }, []);
+   }, [resolve]);
    const startServer = useCallback(() => {
       resolve(true);
-   }, []);
+   }, [resolve]);
 
    return <div className='flex flex-col gap-y-6 grow'>
       <div className='text-3xl text-blue-400'>Info</div>
@@ -217,9 +218,7 @@ window.start_program = async (): Promise<boolean> => {
       resolve = resolve_;
    });
 
-
-   closeValidate.current!();
-   addPopup(<RunClosePopup resolve={resolve!} />)
+   addPopup(<RunClosePopup resolve={resolve!} />, 1)
 
    return promise;
 };

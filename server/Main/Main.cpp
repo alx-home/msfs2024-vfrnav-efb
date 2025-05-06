@@ -16,6 +16,7 @@
 #include "main.h"
 
 #include "Resources.h"
+#include "SimConnect/SimConnect.h"
 #include "Window/template/Window.h"
 #include "webview/detail/backends/win32_edge.h"
 #include "windows/Process.h"
@@ -158,6 +159,18 @@ Main::OpenSettings() {
 }
 
 void
+Main::GetFacilities(
+  Resolve<FacilityList> const& resolve,
+  Reject const&                reject,
+  double                       lat,
+  double                       lon
+) {
+   sim_connect_->Post<sim_connect::Message::SIMCONNECT_GET_FACILITIES_LIST>(
+     {.lat_ = lat, .lon_ = lon, .resolve_ = resolve, .reject_ = reject}
+   );
+}
+
+void
 Main::OpenTaskbar() const {
    assert(taskbar_);
    taskbar_->Show();
@@ -219,7 +232,8 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
       jump_list.AddTask("Open Settings", exe_path, "vfrnav-server.exe --configure");
    }
 
-   server_ = std::make_unique<Server>();
+   server_      = std::make_unique<Server>();
+   sim_connect_ = std::make_unique<SimConnect>();
 
    taskbar_ =
      std::make_unique<Window<WIN::TASKBAR>>([this]() { this->OnTerminate<WIN::TASKBAR>(); });

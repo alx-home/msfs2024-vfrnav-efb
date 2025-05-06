@@ -21,7 +21,7 @@ import { App } from './App/App';
 import '@alx-home/global.css';
 
 window.onerror = function (_message, _file, _line, _col, error) {
-  window.display_error(error?.message ?? "An unknown error occurred !");
+  window.display_error([error?.message ?? "An unknown error occurred !"]);
   return false;
 };
 

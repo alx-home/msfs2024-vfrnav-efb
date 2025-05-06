@@ -25,18 +25,16 @@ import Style from "ol/style/Style";
 import VectorLayer from "ol/layer/Vector";
 
 
-import { AirportFacility, Facilities } from "../../../../shared/Facilities";
+import { AirportFacility, Facilities } from "@shared/Facilities";
 import { Interactive, MapContext } from "@pages/Map/MapContext";
 import { AirportPopup } from "./AirportPopup";
 import { Coordinate } from "ol/coordinate";
 
-import facilitiesJson from '@Utils/Facilities.json';
-
-import AirportsImg from '@images/airport.svg';
-import SoftAirportsImg from '@images/softairport.svg';
-import WaterAirportsImg from '@images/waterairport.svg';
-import MilitaryAirportImg from '@images/militaryAirport.svg';
-import HelipadImg from '@images/helipad.svg';
+import AirportsImg from '@efb-images/airport.svg';
+import SoftAirportsImg from '@efb-images/softairport.svg';
+import WaterAirportsImg from '@efb-images/waterairport.svg';
+import MilitaryAirportImg from '@efb-images/militaryAirport.svg';
+import HelipadImg from '@efb-images/helipad.svg';
 
 export const AirportsLayer = ({
   opacity,
@@ -97,19 +95,21 @@ export const AirportsLayer = ({
   }) as VectorLayer & Interactive, [vectorSource]);
 
   useEffect(() => {
-    const onGetFacilities = (facilities: Facilities) => {
-      setFacilities(facilities.facilities);
-    };
+    if (__MSFS_EMBEDED__) {
+      const onGetFacilities = (facilities: Facilities) => {
+        setFacilities(facilities.facilities);
+      };
 
-    messageHandler.subscribe("Facilities", onGetFacilities)
-    return () => messageHandler.unsubscribe("Facilities", onGetFacilities);
+      messageHandler.subscribe("Facilities", onGetFacilities)
+      return () => messageHandler.unsubscribe("Facilities", onGetFacilities);
+    }
   }, [map, setPopup, vectorSource])
 
   useEffect(() => {
     const onMouseEnd = (coords: Coordinate) => {
-      if (__MSFS_EMBEDED__) {
-        const pos = toLonLat(coords)
+      const pos = toLonLat(coords)
 
+      if (__MSFS_EMBEDED__) {
         messageHandler.send({
           mType: "GetFacilities",
 
@@ -117,7 +117,9 @@ export const AirportsLayer = ({
           lon: pos[0]
         });
       } else {
-        messageHandler.send({ mType: 'Facilities', ...facilitiesJson })
+        window.getFacilities(pos[1], pos[0]).then((facilities) => {
+          setFacilities(facilities);
+        });
       }
     };
 

@@ -26,7 +26,7 @@ import Feature, { FeatureLike } from "ol/Feature";
 import { SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
-import { PlaneRecord, PlaneRecords } from '../../../../shared/PlanPos';
+import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
 import { messageHandler } from '@Settings/SettingsProvider';
 
 export type Interactive = {

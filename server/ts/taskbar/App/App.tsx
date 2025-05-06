@@ -14,7 +14,7 @@
  */
 
 import { useCallback } from "react";
-import { useServer } from '@common/Hooks';
+import { useServer } from '@server-common/Hooks';
 
 export const Element = ({ label, onClick, disabled, hideTaskbar }: {
   label: string,
@@ -45,14 +45,18 @@ export const Separator = () => {
 export const App = () => {
   const exit = useCallback(() => { window.abort() }, []);
   const showSettings = useCallback(() => { window.showSettings() }, []);
-  const { serverState, switchServer, serverStateStr, serverLock } = useServer();
+  const { serverState, switchServer, serverLock } = useServer();
 
   return <div className='flex flex-col h-full text-xl '>
     <div className='relative flex flex-col h-full w-full border-2 overflow-hidden p-4'>
       <Element onClick={window.openEFB} label="Open In App" />
-      <Element disabled={serverState != 'running'} label="Open In Browser" />
+      <Element disabled={serverState != 'running' || true} label="Open In Browser" />
+      {/* todo */}
       <Separator />
-      <Element label={serverStateStr} disabled={serverLock} hideTaskbar={false} onClick={switchServer} />
+      <Element label={
+        // serverStateStr
+        "Not yet available"
+      } disabled={serverLock} hideTaskbar={false} onClick={switchServer} />
       <Element label="Configure" onClick={showSettings} />
       <Separator />
       <Element label="Close" onClick={exit} />

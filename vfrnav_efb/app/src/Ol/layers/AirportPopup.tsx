@@ -14,15 +14,15 @@
  */
 
 import { PropsWithChildren, useContext, useEffect, useMemo, useState, ReactElement } from 'react';
-import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
+import { messageHandler, SettingsContext } from "@Settings/SettingsProvider.jsx";
 
 import { Tabs, Button, Scroll } from '@alx-home/Utils';
 import { useKeyUp } from "@alx-home/Events";
 
 import { AirportFacility, Frequency, FrequencyTypeStr, Metar as MetarT, Runway, RunwaySurfaceTypeStr } from '@shared/Facilities';
 
-import toweredImg from '@images/towered.svg';
-import notToweredImg from '@images/nottowered.svg';
+import toweredImg from '@efb-images/towered.svg';
+import notToweredImg from '@efb-images/nottowered.svg';
 
 
 const Category = ({ title, children }: PropsWithChildren<{
@@ -72,7 +72,7 @@ const FrequencyType = ({ type, groups }: {
 const Frequencies = ({ data }: {
    data: AirportFacility
 }) => {
-   const frequencies = useMemo(() => FrequencyTypeStr.toSorted((left) => left === "Other" ? 1 : -1).map(type => {
+   const frequencies = useMemo(() => FrequencyTypeStr.filter((elem) => elem !== "Other").concat(...["Other"]).map(type => {
       const frequencies = data.frequencies.filter(frequency => FrequencyTypeStr[frequency.type] === type);
       const groups = new Map<string, Frequency[]>;
 
@@ -154,7 +154,7 @@ const Runways = ({ data }: {
       </Category>
    }), [groups]);
 
-   return <div className='flex flex-col gap-y-8'>{child}</div>
+   return <div className='flex flex-col [&>:not(:first-child)]:my-8'>{child}</div>
 }
 
 const Fuels = ({ data }: {
@@ -221,26 +221,13 @@ const Metar = ({ data }: {
 
       messageHandler.subscribe("Metar", callback)
 
-      if (__MSFS_EMBEDED__) {
-         messageHandler.send({
-            mType: "GetMetar",
+      messageHandler.send({
+         mType: "GetMetar",
 
-            icao: data.icao,
-            lat: data.lat,
-            lon: data.lon
-         })
-      } else {
-         messageHandler.send({
-            mType: "Metar",
-
-            metar: `metar value of ${data.icao}`,
-            taf: `taf value of ${data.icao}`,
-            localMetar: `metar value of ${data.lat}/${data.lon}`,
-            localTaf: `taf value of ${data.lat}/${data.lon}`,
-            cavok: true,
-            icao: data.icao
-         })
-      }
+         icao: data.icao,
+         lat: data.lat,
+         lon: data.lon
+      })
 
       return () => messageHandler.unsubscribe("Metar", callback)
    }, [data.icao, data.lat, data.lon])
@@ -302,7 +289,7 @@ const TabElem = ({ tab, currentTab, children }: PropsWithChildren<{
          'block ml-5 [&>:not(:first-child)]:mt-8'
       }>
          <div className='flex flex-col mx-5 shadow-sm w-full'>
-            <div className='flex flex-col gap-y-7 pb-8'>
+            <div className='flex flex-col [&>:not(:first-child)]:my-7 pb-8'>
                {children}
             </div>
          </div>
@@ -376,7 +363,7 @@ export const AirportPopup = ({ data }: {
             {tabElems}
          </div>
       </div>
-      <div className='flex flex-row w-full h-[56px] min-h-[56px] [&>:not(:first-child)]:ml-2 pt-10 justify-end' >
+      <div className='flex flex-row w-full min-h-0 shrink-0 [&>:not(:first-child)]:ml-2 pt-10 justify-end' >
          <Button active={true} className='px-2'
             onClick={() => {
                setPopup(emptyPopup);

@@ -19,6 +19,7 @@
 #include <winnt.h>
 
 #include <cassert>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -46,12 +47,15 @@ main() {
    std::string_view cmd{lpCmdLine};
 
    std::unordered_map<std::string, std::pair<std::string, bool>> resources{};
-   std::unordered_map<std::string, std::pair<std::string, bool>> app_resources{};
-   std::string                                                   name{};
+   using Excludes = std::vector<std::string>;
+   std::unordered_map<std::string, std::tuple<std::string, bool, Excludes>> app_resources{};
+   std::string                                                              name{};
 
    std::string_view type{};
    std::string_view tag{};
-   bool             option{false};
+   Excludes         excludes{};
+   bool             arg_option{false};
+   bool             exclude_option{false};
    bool             zip{false};
 
    auto constexpr split = [](std::string_view cmd) constexpr -> std::string_view {
@@ -73,10 +77,17 @@ main() {
    };
 
    for (std::string_view value = split(cmd); cmd.size(); cmd = next(cmd), value = split(cmd)) {
-      if (option) {
+      if (arg_option) {
          assert(value == "zip");
-         zip    = true;
-         option = false;
+         zip        = true;
+         arg_option = false;
+      } else if (exclude_option) {
+         exclude_option = false;
+         excludes.emplace_back(value);
+      } else if (value == "--option") {
+         arg_option = true;
+      } else if (value == "--exclude") {
+         exclude_option = true;
       } else if (name.empty()) {
          name = value;
       } else if (type.empty()) {
@@ -85,10 +96,6 @@ main() {
       } else if (tag.empty()) {
          tag = value;
       } else {
-         if (value == "--option") {
-            option = true;
-            continue;
-         }
 
          assert(!value.starts_with("--"));
 
@@ -96,8 +103,10 @@ main() {
          assert(tag.size());
 
          if (type == "--app") {
-            app_resources.emplace(tag, std::pair{value, zip});
+            app_resources.emplace(tag, std::make_tuple(value, zip, excludes));
+            excludes.clear();
          } else {
+            assert(excludes.empty());
             assert(type == "--resource");
             resources.emplace(tag, std::pair{value, zip});
          }
@@ -107,6 +116,9 @@ main() {
          zip  = false;
       }
    }
+
+   assert(!exclude_option);
+   assert(!arg_option);
 
    std::string const headerpath{name + "/Resources.cpp"};
    std::string const buildpath{name + "/Resources.asm"};
@@ -123,17 +135,22 @@ main() {
 #include <cstddef>
 #include <string>
 #include <span>
+#include <chrono>
 #include <unordered_map>
 
-)_" << std::endl;
+extern const std::chrono::file_clock::time_point TIMESTAMP;
+const std::chrono::file_clock::time_point        TIMESTAMP{
+  std::chrono::duration<int64_t, std::ratio<1, 10'000'000>>{)_"
+              << std::chrono::file_clock::now().time_since_epoch().count() << R"(}
+};
+)" << std::endl;
 
    std::size_t resource_index = 0;
 
    for (auto const& [name, resource_] : app_resources) {
-      auto const& [resource, _] = resource_;
+      auto const& [resource, _, excludes] = resource_;
       assert(!_);
 
-      std::size_t                                      offset = resource.size();
       std::vector<std::pair<std::string, std::string>> entries{};
 
       header_out << std::format(
@@ -153,35 +170,28 @@ main() {
          }
 
          for (auto const& entry : std::filesystem::directory_iterator(path)) {
+            auto relpath{std::filesystem::relative(entry, resource).string()};
+            std::ranges::transform(relpath, relpath.begin(), [](char const ELEM) constexpr {
+               return ELEM == '\\' ? '/' : ELEM;
+            });
+
+            if ([&]() constexpr {
+                   for (auto const& exclude : excludes) {
+                      if (exclude == relpath) {
+                         std::cout << "Skipping: " << relpath << std::endl;
+                         return true;
+                      }
+                   }
+                   return false;
+                }()) {
+               continue;
+            }
+
             if (entry.is_directory()) {
                recurse(entry.path().string());
             } else {
-               std::string file_path_in = entry.path().string();
-               std::string file_path;
                std::string var_name = std::format("INCBIN_{}", resource_index);
                ++resource_index;
-               std::string relpath;
-
-               for (std::size_t i = 0; i < file_path_in.size(); ++i) {
-                  if (i >= offset) {
-                     if (file_path_in[i] == '\\') {
-                        relpath += "/";
-                     } else {
-                        relpath += file_path_in[i];
-                     }
-                  }
-
-                  if (file_path_in[i] == '\\' || file_path_in[i] == '/' || file_path_in[i] == '.'
-                      || file_path_in[i] == '-') {
-                     if (file_path_in[i] == '\\') {
-                        file_path += "/";
-                     } else {
-                        file_path += file_path_in[i];
-                     }
-                  } else {
-                     file_path += file_path_in[i];
-                  }
-               }
 
                std::cout << "Generating " << entry << ": " << var_name << std::endl;
                asm_out << std::format(
@@ -191,7 +201,7 @@ incbin "{1}"
 {0}_END:
     )_",
                  var_name,
-                 file_path
+                 entry.path().string()
                ) << std::endl;
 
                header_out << std::format(

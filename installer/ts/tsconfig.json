@@ -16,14 +16,11 @@
    "extends": "./tsconfig.base.json",
    "references": [
       { "path": "../../packages/ts-utils/tsconfig.json" },
+      { "path": "../../common/ts/tsconfig.json" },
       { "path": "./tsconfig.build.json" },
       { "path": "./app/tsconfig.json" }
    ],
    "compilerOptions": {
-      "baseUrl": ".",
-      "paths": {
-         "@alx-home/build": ["../../packages/ts-utils/build_template.ts"]
-      }
-   },
-   "include": []
+      "baseUrl": "."
+   }
 }

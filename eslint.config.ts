@@ -13,16 +13,19 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { fixupConfigRules } from "@eslint/compat";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
+
+import typescriptParser from '@typescript-eslint/parser';
+import { fixupConfigRules } from "@eslint/compat";
 import { FlatCompat } from "@eslint/eslintrc";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const compat = new FlatCompat({
-    baseDirectory: __dirname + '/../../',
+    baseDirectory: __dirname,
     recommendedConfig: js.configs.recommended,
     allConfig: js.configs.all
 });
@@ -39,23 +42,53 @@ export default [...fixupConfigRules(compat.extends(
     "plugin:@typescript-eslint/recommended",
     "eslint-config-prettier",
 )), {
+    files: [
+        '**/*.js',
+        '**/*.jsx',
+        '**/*.cjs',
+        '**/*.mjs',
+        '**/*.ts',
+        '**/*.tsx',
+        '**/*.cts',
+        '**/*.mts'
+    ],
+    ignores: [
+        '**/node_modules/*',
+        './packages/*',
+        '**/polyfills/pointer-events.js',
+        '**/polyfills/drag-events/index.js',// @todo ?
+    ],
+    languageOptions: {
+        parser: typescriptParser,
+        parserOptions: {
+            projectService: true,
+            // typescript-eslint specific options
+            warnOnUnsupportedTypeScriptVersion: true,
+        },
+    },
     settings: {
+        'import/resolver': {
+            // Load <rootdir>/tsconfig.json
+            typescript: {
+                // Always try resolving any corresponding @types/* folders
+                alwaysTryTypes: true,
+            },
+        },
+
+
         react: {
             version: "detect",
         },
-
-        "import/resolver": {
-            typescript: {},
-
-            node: {
-                paths: ["src"],
-                extensions: [".js", ".jsx", ".ts", ".tsx"],
-            },
-        },
     },
-
     rules: {
+        "react-hooks/exhaustive-deps": "error",
         "no-unused-vars": ["error", {
+            vars: "all",
+            args: "after-used",
+            ignoreRestSiblings: true,
+            argsIgnorePattern: "^_",
+        }],
+        "@typescript-eslint/no-unused-vars": ["error", {
             vars: "all",
             args: "after-used",
             ignoreRestSiblings: true,
@@ -64,3 +97,4 @@ export default [...fixupConfigRules(compat.extends(
         "react/react-in-jsx-scope": "off",
     },
 }];
+

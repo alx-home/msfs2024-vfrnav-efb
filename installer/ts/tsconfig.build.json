@@ -19,8 +19,6 @@
       "outDir": "../../build/installer/ts-dist",
       "baseUrl": ".",
       "composite": true,
-      "moduleResolution": "nodenext", // Specifies how modules are resolved when bundling.
-      "module": "NodeNext",
       "paths": {
          "@alx-home/build": ["../../packages/ts-utils/build_template.ts"]
       }

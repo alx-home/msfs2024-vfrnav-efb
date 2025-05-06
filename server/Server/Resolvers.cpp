@@ -13,13 +13,37 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Config } from "tailwindcss";
-import BaseTailwind from '../packages/ts-utils/tailwind.config';
+#include "main.h"
 
-const Tailwind: Config = {
-   ...BaseTailwind, content: [
-      "./app/**/*.{js,ts,jsx,tsx,mdx}",
-      "../packages/ts-utils/src/**/*.{js,ts,jsx,tsx,mdx}"
-   ]
-};
-export default Tailwind;
+#include "Resources.h"
+
+#include <windows/Lock.h>
+#include <json/json.h>
+#include <libloaderapi.h>
+#include <promise/promise.h>
+#include <shellapi.h>
+#include <synchapi.h>
+#include <webview/webview.h>
+
+#include <ShObjIdl_core.h>
+#include <WinUser.h>
+#include <dwmapi.h>
+#include <errhandlingapi.h>
+#include <intsafe.h>
+#include <minwindef.h>
+#include <windef.h>
+#include <winnt.h>
+#include <winreg.h>
+#include <winuser.h>
+
+Resolvers::~Resolvers() { RejectAll(); }
+
+void
+Resolvers::RejectAll() {
+   Resolvers::Vector resolvers{};
+   std::swap(*this, resolvers);
+
+   for (auto const& [_, reject] : resolvers) {
+      MakeReject<AppStopping>(reject);
+   }
+}

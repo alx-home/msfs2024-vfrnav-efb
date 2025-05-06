@@ -18,6 +18,7 @@ import BaseTailwind from '../../packages/ts-utils/tailwind.config.js';
 
 const Tailwind: Config = {
    ...BaseTailwind, content: [
+      "../../common/ts/**/*.{js,ts,jsx,tsx,mdx}",
       "./app/**/*.{js,ts,jsx,tsx,mdx}",
       "../../packages/ts-utils/src/**/*.{js,ts,jsx,tsx,mdx}"
    ]

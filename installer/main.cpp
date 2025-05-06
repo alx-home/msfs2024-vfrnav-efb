@@ -31,9 +31,11 @@
 #include <winreg.h>
 
 #include <cstdlib>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <utility>
+#include <vector>
 
 #ifdef _WIN32
 int WINAPI
@@ -75,7 +77,7 @@ Main::Main()
        nullptr,
        []() constexpr {
           auto const options{webview::detail::Win32EdgeEngine::MakeOptions()};
-          webview::detail::Win32EdgeEngine::SetSchemesOption({"app"}, options);
+          webview::detail::Win32EdgeEngine::SetSchemesOption({"app", "coui"}, options);
           return options;
        }(),
        USER_DATA_DIR,
@@ -152,26 +154,6 @@ Main::Bind(std::string_view name, RETURN (Main::*member_ptr)(ARGS...)) {
         name, std::function<RETURN(ARGS...)>{std::bind(member_ptr, this, std::_Ph<INDEX + 1>{}...)}
       );
    }(std::make_index_sequence<sizeof...(ARGS)>());
-}
-
-void
-Main::Warning(std::string_view message) {
-   webview_.Eval(R"(window.display_warning()" + js::Serialize(message) + R"();)");
-}
-
-void
-Main::Error(std::string_view message) {
-   webview_.Eval(R"(window.display_error()" + js::Serialize(message) + R"();)");
-}
-
-void
-Main::Fatal(std::string_view message) {
-   webview_.Eval(R"(window.display_fatal()" + js::Serialize(message) + R"();)");
-}
-
-void
-Main::Info(std::string_view message) {
-   webview_.Eval(R"(window.display_info()" + js::Serialize(message) + R"();)");
 }
 
 void

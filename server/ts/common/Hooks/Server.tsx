@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ServerState } from "@common/env";
+import { ServerState } from "@server-common/env";
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 export const useServer = () => {

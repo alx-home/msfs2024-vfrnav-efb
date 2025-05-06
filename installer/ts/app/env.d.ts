@@ -14,10 +14,11 @@
  */
 
 import "@alx-home/types"
+import "@common/env.d.ts"
 
 declare global {
    interface Window {
-      openFile: ({ }: {
+      openFile: ({ _ }: {
          value: string,
          filters?: {
             name: string,
@@ -31,12 +32,7 @@ declare global {
       exists: (_val: string) => Promise<boolean>;
       parentExists: (_val: string) => Promise<boolean>;
       abort: () => void;
-      validate: (_startupOption: StartupOption, _communityPath: string, _installPath: string) => void;
-      log: (_val: string) => void;
-      display_fatal: (_message: string) => void;
-      display_error: (_message: string) => void;
-      display_warning: (_message: string) => void;
-      display_info: (_message: string) => void;
+      validate: (_startupOption: StartupOption, _communityPath: string, _installPath: string) => Promise<void>;
       start_program: () => Promise<boolean>;
 
    }

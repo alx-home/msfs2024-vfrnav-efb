@@ -15,40 +15,8 @@
 {
    "extends": "../tsconfig.base.json",
    "references": [
-      { "path": "../../packages/ts-utils/tsconfig.json" },
-      { "path": "../shared/tsconfig.json" }
-   ],
-   "compilerOptions": {
-      "baseUrl": ".",
-      "outDir": "../../build/vfrnav_efb/ts-dist/efb/app/",
-      "paths": {
-         "@alx-home/global.css": ["../../packages/ts-utils/src/global.css"],
-
-         "@alx-home/fonts/*": ["../../packages/ts-utils/src/fonts/*"],
-         "@alx-home/images/*": ["../../packages/ts-utils/src/images/*"],
-         "@alx-home/types": ["../../packages/ts-utils/types/index.d.ts"],
-
-         "@alx-home/Events": ["../../packages/ts-utils/src/Events/index.d.ts"],
-         "@alx-home/Utils": ["../../packages/ts-utils/src/Utils/index.d.ts"],
-
-         "@vfrnav/images/*": ["../../images/*"],
-
-         "@images/*": ["./src/images/*"],
-         "@polyfills/*": ["./src/polyfills/*"],
-         "@app/*": ["./src/app/*"],
-         "@Ol/*": ["./src/Ol/*"],
-         "@Settings/*": ["./src/Settings/*"],
-         "@pages/*": ["./src/pages/*"],
-         "@Utils/*": ["./src/Utils/*"],
-
-         "@shared/*": ["../shared/*"],
-         "@shared/env": ["../shared/environment.d.ts"]
-      }
-   },
-   "include": [
-      "src/**/*.ts",
-      "src/**/*.tsx",
-      "src/Utils/*.json",
-      "../tailwind.config.ts"
+      { "path": "./tsconfig.app.json" },
+      { "path": "./tsconfig.build.json" },
+      { "path": "../../packages/ts-utils/tsconfig.json" }
    ]
 }

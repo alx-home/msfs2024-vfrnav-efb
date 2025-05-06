@@ -20,9 +20,7 @@
       { "path": "../common/tsconfig.json" }
    ],
    "compilerOptions": {
-      "outDir": "../../../build/server/ts-dist/taskbar/",
-      "moduleResolution": "bundler",
-      "module": "ES6"
+      "outDir": "../../../build/server/ts-dist/taskbar/"
    },
    "include": ["./**/*.ts", "./**/*.tsx"]
 }

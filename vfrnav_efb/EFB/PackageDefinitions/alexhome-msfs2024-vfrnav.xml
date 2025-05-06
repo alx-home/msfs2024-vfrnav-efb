@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<AssetPackage ReleaseNotes="PackageDefinitions\alexhome-msfs2024-vfrnav\ReleaseNotes.xml" Version="0.4.1">
+<AssetPackage ReleaseNotes="PackageDefinitions\alexhome-msfs2024-vfrnav\ReleaseNotes.xml"
+	Version="0.4.1">
 	<ItemSettings>
 		<ContentType>MISC</ContentType>
 		<Title>EFB MSFS2024 VfrNav</Title>
-		<Manufacturer/>
+		<Manufacturer />
 		<Creator>alex-home</Creator>
 	</ItemSettings>
 	<Flags>
@@ -29,4 +30,3 @@
 		</AssetGroup>
 	</AssetGroups>
 </AssetPackage>
-

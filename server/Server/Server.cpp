@@ -13,9 +13,10 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "main.h"
+#include "Server.h"
 
 #include "Resources.h"
+#include "main.h"
 #include "Registry/Registry.h"
 #include "Window/template/Window.h"
 
@@ -47,7 +48,7 @@
 #include <utility>
 
 ServerState
-Main::Server::GetState(Server::Lock) const {
+Server::GetState(Server::Lock) const {
    if (switching_) {
       return "switching";
    } else if (runing_) {
@@ -60,13 +61,13 @@ Main::Server::GetState(Server::Lock) const {
 }
 
 uint16_t
-Main::Server::GetPort() const {
+Server::GetPort() const {
    auto& registry = registry::Get();
    return *registry.alx_home_->settings_->server_port_;
 }
 
 void
-Main::Server::SetServerPort(uint16_t port) {
+Server::SetServerPort(uint16_t port) {
    registry::Get().alx_home_->settings_->server_port_ = port;
 
    std::shared_lock lock{mutex_};
@@ -74,27 +75,27 @@ Main::Server::SetServerPort(uint16_t port) {
 }
 
 void
-Main::Server::FlushState() {
+Server::FlushState() {
    std::shared_lock lock{mutex_};
    Notify(GetState(lock), lock);
 }
 
 void
-Main::Server::RejectAll() {
+Server::RejectAll() {
    resolvers_.RejectAll();
 }
 
 void
-Main::Server::Notify(std::string_view state, Server::Lock) {
+Server::Notify(ServerState state, Server::Lock) {
    Resolvers::Vector resolvers{};
    std::swap(resolvers_, resolvers);
 
    for (auto const& [resolve, _] : resolvers) {
-      resolve(state);
+      resolve(std::move(state));
    }
 }
 
-Main::Server::Server()
+Server::Server()
    : thread_{[this]() {
       while (Main::Running()) {
          std::unique_lock lock{mutex_};

@@ -15,19 +15,16 @@
 
 #pragma once
 
+#include "Server/Server.h"
+#include "SimConnect/Facilities.h"
+#include "SimConnect/SimConnect.h"
 #include "promise/promise.h"
 #include "Window/template/Window.h"
 
-#include <condition_variable>
-#include <functional>
 #include <memory>
 #include <memory>
-#include <mutex>
-#include <shared_mutex>
 #include <stdexcept>
-#include <string_view>
 #include <unordered_map>
-#include <unordered_set>
 #include <webview/webview.h>
 #include <windows/Env.h>
 #include <windows/SystemTray.h>
@@ -52,6 +49,13 @@ public:
 
    void OpenSettings();
 
+   void GetFacilities(
+     Resolve<FacilityList> const& resolve,
+     Reject const&                reject,
+     double                       lat,
+     double                       lon
+   );
+
    void OpenTaskbar() const;
    void CloseTaskbar() const;
 
@@ -67,46 +71,6 @@ public:
    static bool Running();
 
 private:
-   class Resolvers
-      : public std::vector<std::pair<
-          std::reference_wrapper<promise::Resolve<ServerState> const>,
-          std::reference_wrapper<promise::Reject const>>> {
-   public:
-      using Vector = std::vector<std::pair<
-        std::reference_wrapper<promise::Resolve<ServerState> const>,
-        std::reference_wrapper<promise::Reject const>>>;
-      using Vector::value_type;
-
-      Resolvers() = default;
-      ~Resolvers();
-
-      void RejectAll();
-   };
-
-   struct Server {
-      Server();
-
-      using Lock = std::variant<
-        std::reference_wrapper<std::unique_lock<std::shared_mutex> const>,
-        std::reference_wrapper<std::shared_lock<std::shared_mutex> const>>;
-
-      uint16_t    GetPort() const;
-      ServerState GetState(Lock) const;
-      void        SetServerPort(uint16_t);
-      void        FlushState();
-      void        RejectAll();
-      void        Notify(std::string_view state, Lock);
-
-      bool                        runing_    = false;
-      bool                        switching_ = false;
-      std::shared_mutex           mutex_{};
-      std::condition_variable_any cv_{};
-      Resolvers                   resolvers_{};
-
-      // Must stays at the end
-      std::jthread thread_{};
-   };
-
    std::jthread mouse_watcher_;
    LRESULT      OnTrayNotification(WPARAM wParam, LPARAM lParam) override;
    LRESULT      OnMessageImpl(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) override;
@@ -126,7 +90,8 @@ private:
    std::unordered_map<std::size_t, EFBPtr> efbs_{};
 
    // Must be afters windows to resolve every promises
-   std::unique_ptr<Server> server_{};
+   std::unique_ptr<SimConnect> sim_connect_{};
+   std::unique_ptr<Server>     server_{};
 
    static std::atomic<bool>   s__running;
    static std::weak_ptr<Main> s__instance;

@@ -18,9 +18,7 @@
    "references": [{ "path": "../../packages/ts-utils/tsconfig.json" }],
    "compilerOptions": {
       "baseUrl": ".",
-      "outDir": "../../build/vfrnav_efb/ts-dist/common/",
-      "moduleResolution": "bundler",
-      "module": "ES6"
+      "outDir": "../../build/vfrnav_efb/ts-dist/common/"
    },
    "include": ["./**/*.ts", "./**/*.tsx"]
 }

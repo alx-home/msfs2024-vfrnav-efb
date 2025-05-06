@@ -17,6 +17,9 @@
 
 #include "Resources.h"
 
+#include "SimConnect/Facilities.h"
+#include "promise/promise.h"
+
 #include <json/json.h>
 #include <windows/Env.h>
 
@@ -78,6 +81,13 @@ private:
    Promise<> ShowTaskbar();
 
    Promise<> ShowSettings();
+
+   Promise<FacilityList, true> GetFacilities(
+     Resolve<FacilityList> const& resolve,
+     Reject const&                reject,
+     double                       lat,
+     double                       lon
+   );
 
    Promise<bool>                                  AutostartServer(std::optional<bool> value);
    Promise<uint16_t>                              ServerPort(std::optional<uint16_t> port);

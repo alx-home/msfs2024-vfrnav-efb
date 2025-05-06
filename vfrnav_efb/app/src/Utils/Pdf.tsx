@@ -18,14 +18,24 @@ import { createRef, JSX, MouseEvent, PropsWithChildren, RefObject, useCallback, 
 import { Button, Scroll } from "@alx-home/Utils";
 import { useMouseMove, useMouseRelease } from "@alx-home/Events";
 
-import { getDocument, PDFDocumentProxy, RenderTask /*, TextLayer*/ } from '@alx-home/pdfjs-dist';
-
 import '@alx-home/pdfjs-dist/web/pdf_viewer.css';
 
 import prevImage from "@alx-home/images/prev.svg";
 import nextImage from "@alx-home/images/next.svg";
 import zoomInImg from '@alx-home/images/zoom-in.svg';
 import zoomOutImg from '@alx-home/images/zoom-out.svg';
+
+import { PDFDocumentProxy, RenderTask } from "@alx-home/pdfjs-dist";
+
+type PDFJs = typeof import("@alx-home/pdfjs-dist/types/src/pdf");
+
+const getDocument = (async () => {
+  if (__MSFS_EMBEDED__) {
+    return (await import('@alx-home/pdfjs-dist')).getDocument;
+  } else {
+    return ((await import('pdfjs-dist')) as unknown as PDFJs).getDocument;
+  }
+})();
 
 type Refs = { canvas: RefObject<HTMLCanvasElement | null>, text: RefObject<HTMLDivElement | null>, container: RefObject<HTMLDivElement | null> };
 
@@ -43,34 +53,35 @@ const usePdf = (src: string | Uint8Array) => {
     }
 
     pdfRef.current = null;
-    getDocument({
-      ...(src instanceof Uint8Array ? { data: new Uint8Array(src) } : { url: src }),
-      stopAtErrors: true,
-      useSystemFonts: true, disableFontFace: false
-    }).promise.then(pdf => {
-      if (pdfRef.current === null) {
-        pdfRef.current = pdf;
+    (async () =>
+      (await getDocument)({
+        ...(src instanceof Uint8Array ? { data: new Uint8Array(src) } : { url: src }),
+        stopAtErrors: true,
+        useSystemFonts: true, disableFontFace: false
+      }).promise.then(pdf => {
+        if (pdfRef.current === null) {
+          pdfRef.current = pdf;
 
-        const refs = Array.from({ length: pdf.numPages }, () => ({ canvas: createRef<HTMLCanvasElement>(), text: createRef<HTMLDivElement>(), container: createRef<HTMLDivElement>(), renderIndex: 0 }));
+          const refs = Array.from({ length: pdf.numPages }, () => ({ canvas: createRef<HTMLCanvasElement>(), text: createRef<HTMLDivElement>(), container: createRef<HTMLDivElement>(), renderIndex: 0 }));
 
-        timeouts.current = Array.from({ length: pdf.numPages });
-        tasks.current = Array.from({ length: pdf.numPages }, () => undefined);
+          timeouts.current = Array.from({ length: pdf.numPages });
+          tasks.current = Array.from({ length: pdf.numPages }, () => undefined);
 
-        setRef(refs);
-        setRenderers(Array.from({ length: pdf.numPages }, () => (() => Promise.resolve())));
-        setCanvas(Array.from({ length: pdf.numPages }, (_v, index) => {
-          const { canvas, container } = refs[index];
+          setRef(refs);
+          setRenderers(Array.from({ length: pdf.numPages }, () => (() => Promise.resolve())));
+          setCanvas(Array.from({ length: pdf.numPages }, (_v, index) => {
+            const { canvas, container } = refs[index];
 
-          return <div ref={container} key={"pdf-" + src + "@" + index} className="relative pdfViewer overflow-hidden">
-            <canvas ref={canvas} className="select-none" />
-            {/* <div className="absolute left-0 right-0 bottom-0 top-0 overflow-hidden"> */}
-            {/* <div ref={text} className="textLayer"></div> */}
-            {/* </div> */}
-          </div>
+            return <div ref={container} key={"pdf-" + src + "@" + index} className="relative pdfViewer overflow-hidden">
+              <canvas ref={canvas} className="select-none" />
+              {/* <div className="absolute left-0 right-0 bottom-0 top-0 overflow-hidden"> */}
+              {/* <div ref={text} className="textLayer"></div> */}
+              {/* </div> */}
+            </div>
+          }
+          ));
         }
-        ));
-      }
-    });
+      }))();
   }, [src]);
 
 

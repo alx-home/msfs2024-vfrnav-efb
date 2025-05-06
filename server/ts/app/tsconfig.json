@@ -17,12 +17,11 @@
    "extends": "../tsconfig.base.json",
    "references": [
       { "path": "../../../packages/ts-utils/tsconfig.json" },
-      { "path": "../common/tsconfig.json" }
+      { "path": "../common/tsconfig.json" },
+      { "path": "../../../common/ts/tsconfig.json" }
    ],
    "compilerOptions": {
-      "outDir": "../../../build/server/ts-dist/app/",
-      "moduleResolution": "bundler",
-      "module": "ES6"
+      "outDir": "../../../build/server/ts-dist/app/"
    },
    "include": ["./**/*.ts", "./**/*.tsx"]
 }

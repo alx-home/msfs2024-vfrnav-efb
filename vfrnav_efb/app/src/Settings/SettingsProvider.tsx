@@ -13,12 +13,13 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { AirportLayerOptions, Color, LayerSetting, SharedSettings, SharedSettingsDefault } from "../../../shared/Settings";
-import { deepEquals } from "../../../shared/Types";
 import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { GlobalSettings, Settings } from "./Settings";
 import { useSIAZBA } from "./SIAAZBA";
 import { useSIAPDF } from "./SiaPDF";
+
+import { AirportLayerOptions, Color, LayerSetting, SharedSettings, SharedSettingsDefault } from "@shared/Settings";
+import { deepEquals } from "@shared/Types";
 import { MessageHandler } from "@shared/MessageHandler";
 
 export const messageHandler = new MessageHandler();

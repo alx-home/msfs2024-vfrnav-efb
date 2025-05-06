@@ -17,13 +17,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './app/App'
 
-import 'abortcontroller-polyfill/dist/polyfill-patch-fetch'
-
-import { polyfill } from '@polyfills/drag-events/index';
-import '@polyfills/drag-events/default.css';
-import '@polyfills/pointer-events.js';
-
-import "@polyfills/canvas/canvas";
+import ResizeObserver from 'resize-observer-polyfill';
 
 import InterBlackFont from '@alx-home/fonts/Inter-Regular.ttf';
 import InterBlackItalicFont from '@alx-home/fonts/Inter-Italic.ttf';
@@ -34,71 +28,59 @@ import InterExtraBoldItalicFont from '@alx-home/fonts/Inter-ExtraBoldItalic.ttf'
 import InterExtraLightFont from '@alx-home/fonts/Inter-ExtraLight.ttf';
 import InterExtraLightItalicFont from '@alx-home/fonts/Inter-ExtraLightItalic.ttf';
 
-import "@alx-home/pdfjs-dist/build/pdf.worker.min.mjs";
-
-import 'geometry-polyfill';
-
-if (!globalThis.PointerEvent) {
-
-  class PointerEventImpl extends MouseEvent {
-    readonly altitudeAngle: number = 0;
-    readonly azimuthAngle: number = 0;
-    readonly height: number = 0;
-    readonly isPrimary: boolean = true;
-    readonly pointerId: number = 0;
-    readonly pointerType: string = "";
-    readonly pressure: number = 0;
-    readonly tangentialPressure: number = 0;
-    readonly tiltX: number = 0;
-    readonly tiltY: number = 0;
-    readonly twist: number = 0;
-    readonly width: number = 0;
-
-    getCoalescedEvents(): PointerEvent[] {
-      console.assert(false);
-      return [];
-    }
-    getPredictedEvents(): PointerEvent[] {
-      console.assert(false);
-      return [];
-    }
-  };
-
-  globalThis.PointerEvent = PointerEventImpl;
-}
-
-polyfill({
-  holdToDrag: 100
-});
-
-const loadFont = (font: string, weight: "normal" | "bold" | "bolder" | "lighter", style: "normal" | "italic") => {
-  const fontFace = new FontFace(
-    "Inter-" + weight,
-    `url(${font})`,
-    {
-      style: style
-    }
-  );
-
-  document.fonts.add(fontFace);
-  fontFace.load();
-}
-
-loadFont(InterBlackFont, "normal", "normal");
-loadFont(InterBlackItalicFont, "normal", "italic");
-loadFont(InterBoldFont, "bold", "normal");
-loadFont(InterBoldItalicFont, "bold", "italic");
-loadFont(InterExtraBoldFont, "bolder", "normal");
-loadFont(InterExtraBoldItalicFont, "bolder", "italic");
-loadFont(InterExtraLightFont, "lighter", "normal");
-loadFont(InterExtraLightItalicFont, "lighter", "italic");
-
 import "@alx-home/global.css";
 import './global.css';
 import "./ol.css";
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-)
+import '@polyfills/drag-events/default.css';
+(async () => {
+  if (__MSFS_EMBEDED__) {
+    await import('abortcontroller-polyfill/dist/polyfill-patch-fetch.js');
+    await import('@polyfills/pointer-events.js');
+    await import('geometry-polyfill');
+    await import("@polyfills/canvas/canvas.js");
+
+    const drag_polyfill = (await import('@polyfills/drag-events/index.js')).polyfill;
+    drag_polyfill({
+      holdToDrag: 100
+    });
+
+    if (!globalThis.ResizeObserver) {
+      globalThis.ResizeObserver = ResizeObserver;
+    }
+
+    await import('@alx-home/pdfjs-dist/build/pdf.worker.min.mjs');
+  } else {
+    await import("pdfjs-dist/build/pdf.worker.min.mjs");
+  }
+
+  console.assert((typeof PointerEvent !== "undefined"));
+
+  const loadFont = (font: string, weight: "normal" | "bold" | "bolder" | "lighter", style: "normal" | "italic") => {
+    const fontFace = new FontFace(
+      "Inter-" + weight,
+      `url(${font})`,
+      {
+        style: style
+      }
+    );
+
+    document.fonts.add(fontFace);
+    fontFace.load();
+  }
+
+  loadFont(InterBlackFont, "normal", "normal");
+  loadFont(InterBlackItalicFont, "normal", "italic");
+  loadFont(InterBoldFont, "bold", "normal");
+  loadFont(InterBoldItalicFont, "bold", "italic");
+  loadFont(InterExtraBoldFont, "bolder", "normal");
+  loadFont(InterExtraBoldItalicFont, "bolder", "italic");
+  loadFont(InterExtraLightFont, "lighter", "normal");
+  loadFont(InterExtraLightItalicFont, "lighter", "italic");
+
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  )
+})()

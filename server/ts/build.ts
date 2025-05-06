@@ -17,7 +17,7 @@ import { UserConfig, build, createServer, searchForWorkspaceRoot } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { AppConfig } from '@alx-home/build';
+import { AppConfig, lint } from '@alx-home/build';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,13 +29,13 @@ process.argv.forEach(function (val) {
    }
 });
 
-const GetConfig = (name: string): UserConfig => ({
+const GetConfig = (name: string) => ({
    ...AppConfig({
       output_dir: "../../../build/server/ts/" + name + "/dist",
    }), ...{
       root: name
    },
-});
+}) as UserConfig;
 
 const buildProject = async (name: string, port: number) => {
    // console.log(JSON.stringify(GetConfig(name), undefined, 3))
@@ -59,15 +59,27 @@ const buildProject = async (name: string, port: number) => {
    }
 }
 
-process.argv.forEach(function (val) {
+process.argv.forEach(async (val) => {
    if (val == "taskbar") {
+
       console.log("Building taskbar...")
+
+      await lint("taskbar");
       buildProject("taskbar", 4001)
+
    } else if (val == "taskbar-tooltip") {
+
       console.log("Building taskbar_tooltip...")
+
+      await lint("taskbar_tooltip");
       buildProject("taskbar_tooltip", 4002)
+
    } else if (val == "app") {
+
       console.log("Building app...")
+
+      await lint("app");
       buildProject("app", 4000)
+
    }
 });

@@ -40,19 +40,54 @@ add_subdirectory(vfrnav_efb)
 add_subdirectory(server)
 add_subdirectory(installer)
 
-
 add_custom_target(init_submodules
    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
    COMMAND git submodule update --init --recursive
 )
 
-add_custom_target(init_npm 
+add_custom_target(init_npm
    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/app
    COMMENT "initializing npm modules"
    COMMAND npm install
 )
 
-add_custom_target(init 
+add_custom_target(init
    COMMENT "initializing git submodules"
    DEPENDS init_submodules init_npm
 )
+
+# Organize targets directories
+function(get_all_targets _result _dir)
+   get_property(_subdirs DIRECTORY "${_dir}" PROPERTY SUBDIRECTORIES)
+
+   foreach(_subdir IN LISTS _subdirs)
+      get_all_targets(${_result} "${_subdir}")
+   endforeach()
+
+   get_directory_property(_sub_targets DIRECTORY "${_dir}" BUILDSYSTEM_TARGETS)
+   set(${_result} ${${_result}} ${_sub_targets} PARENT_SCOPE)
+endfunction()
+
+get_all_targets(ALL_TARGETS ${CMAKE_CURRENT_LIST_DIR})
+
+foreach(VARIABLE ${ALL_TARGETS})
+   if(VARIABLE MATCHES "^boost_.*$")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/Packages/Boost")
+   elseif(VARIABLE MATCHES "^zlib.*|example|minigzip$")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/Packages/zlib")
+   elseif(VARIABLE MATCHES "^alx-home_.*|promise_test$")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/Packages/alx-home")
+   elseif(VARIABLE MATCHES "^init.*$")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Configure")
+   elseif(VARIABLE MATCHES "^installer.*$")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/Installer")
+   elseif(VARIABLE MATCHES "^packager.*$")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/Build")
+   elseif(VARIABLE MATCHES "^server.*$")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/Server")
+   elseif(VARIABLE MATCHES "^vfrnav_common.*$")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/common")
+   elseif(VARIABLE MATCHES "^vfrnav.*$")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/EFB")
+   endif()
+endforeach()

@@ -13,4 +13,4 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import "@common/env"
+import "@server-common/env"

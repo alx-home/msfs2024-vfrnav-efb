@@ -13,9 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { UserConfig, build, createServer, searchForWorkspaceRoot } from "vite";
+import { build, createServer, searchForWorkspaceRoot, UserConfig } from "vite";
 
-import { AppConfig } from '@alx-home/build';
+import { AppConfig, lint } from '@alx-home/build';
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -30,9 +30,9 @@ process.argv.forEach(function (val) {
    }
 });
 
-const Config: UserConfig = AppConfig({
-   output_dir: "../../build/installer/ts/app/dist"
-});
+const Config = AppConfig({
+   output_dir: "../../build/installer/ts/app/dist",
+}) as UserConfig;
 
 if (watch) {
    await createServer({
@@ -47,7 +47,8 @@ if (watch) {
             ]
          }
       }
-   }).then((server) => server.listen(3999));
+   } as UserConfig).then((server) => server.listen(3999));
 } else {
+   await lint("app");
    await build(Config);
 }

@@ -17,14 +17,14 @@ import { CheckBox, Slider, Input, Scroll, DualSlider } from "@alx-home/Utils";
 
 import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { AirportLayerOptions, Color, LayerSetting, SharedSettingsDefault } from "../../../../shared/Settings";
+import { AirportLayerOptions, Color, LayerSetting, SharedSettingsDefault } from "@shared/Settings";
 
 import { SettingsContext } from "@Settings/SettingsProvider";
 import { AirportLayerSettingSetter, LayerSettingSetter } from "@Settings/Settings";
 
 import undoImg from '@alx-home/images/undo.svg';
-import markerImg from '@images/marker-icon-blue.svg';
-import oaciImg from '@images/oaci.jpg';
+import markerImg from '@efb-images/marker-icon-blue.svg';
+import oaciImg from '@efb-images/oaci.jpg';
 
 const List = ({ children }: PropsWithChildren) => {
    return <Scroll className="flex flex-col">
