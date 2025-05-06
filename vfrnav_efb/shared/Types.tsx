@@ -14,13 +14,13 @@
  */
 
 type ObjectMapper<T> = {
-  [K in keyof T as T[K] extends Required<T>[K] ? K : never]: TypeRecord<T[K]>;
+  [K in keyof T as T[K] extends Required<T>[K] ? K : never]: TypeRecord2<T[K]>;
 } & {
-  [K in keyof T as T[K] extends Required<T>[K] ? never : K]: { optional: true, record: TypeRecord<T[K]> };
+  [K in keyof T as T[K] extends Required<T>[K] ? never : K]: { optional: true, record: TypeRecord2<T[K]> };
 };
 
-export type TypeRecord<T> =
-  T extends (unknown[]) ? TypeRecord<T[number]>[]
+export type TypeRecord2<T> =
+  T extends (unknown[]) ? TypeRecord2<T[number]>[]
   : T extends typeof Function ? never
   : T extends object ? (object extends ObjectMapper<T> ? never : ObjectMapper<T>)
   : T extends boolean ? 'boolean'
@@ -28,6 +28,10 @@ export type TypeRecord<T> =
   : T extends bigint ? 'bigint'
   : T extends string ? 'string'
   : T;
+
+export type TypeRecord<T> = TypeRecord2<T> & {
+  defaultValues: T
+};
 
 export type ReducedType<T> =
   T extends (unknown[]) ? ReducedType<T[number]>[]
@@ -60,7 +64,7 @@ export const isType = <T,>(elem: unknown, type: TypeRecord<T>): elem is T => {
     if (elem === undefined) {
       return true;
     } else {
-      return isType(elem, (type as { optional: true, record: TypeRecord<unknown> }).record)
+      return isType(elem, (type as any)['record'])
     }
   } else if (typeof elem !== 'object') {
     return false;
@@ -105,7 +109,7 @@ const reduceImpl = <T,>(elem: T, type: unknown): T => {
   const result: object = {};
   for (const key in (type as object)) {
     const value = (type as object)[key as keyof object];
-    const subElem = (elem as T)[key as keyof T];
+    const subElem = elem[key as keyof T];
 
     const res = reduceImpl(subElem, value);
     if (res !== undefined) {
@@ -185,6 +189,7 @@ export const deepEquals = (object1: object, object2: object) => {
 export const isObject = (object: object) => {
   return object != null && typeof object === 'object';
 }
+
 
 // String.prototype.hashCode = function (seed: number = 0) {
 //    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;

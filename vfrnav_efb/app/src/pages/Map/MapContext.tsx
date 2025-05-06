@@ -26,7 +26,7 @@ import Feature, { FeatureLike } from "ol/Feature";
 import { SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
-import { PlaneRecord, PlaneRecords } from '../../../../shared/PlanPos';
+import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
 import { messageHandler } from '@Settings/SettingsProvider';
 
 export type Interactive = {
@@ -236,9 +236,9 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       setRecords(records.value);
     };
 
-    messageHandler.subscribe("PlaneRecords", onPlaneRecords)
-    messageHandler.send({ mType: "GetPlaneRecords" });
-    return () => messageHandler.unsubscribe("PlaneRecords", onPlaneRecords);
+    messageHandler.subscribe("__RECORDS__", onPlaneRecords)
+    messageHandler.send({ __GET_RECORDS__: true });
+    return () => messageHandler.unsubscribe("__RECORDS__", onPlaneRecords);
   }, [])
 
   const provider = useMemo(() => ({
@@ -300,20 +300,22 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     },
     removeRecord: (id: number) => {
       messageHandler.send({
-        mType: "RemoveRecord",
+        __REMOVE_RECORD__: true,
+
         id: id
       })
     },
     activeRecord: (id: number, active: boolean) => {
       messageHandler.send({
-        mType: "ActiveRecord",
+        __ACTIVE_RECORD__: true,
         id: id,
         active: active
       })
     },
     editRecord: (id: number, newName: string) => {
       messageHandler.send({
-        mType: "EditRecord",
+        __EDIT_RECORD__: true,
+
         id: id,
         name: newName
       })

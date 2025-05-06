@@ -16,8 +16,7 @@
    "extends": "../packages/ts-utils/tsconfig.base.json",
    "compilerOptions": {
       "outDir": "../build/vfrnav_efb/ts-dist",
-      "rootDir": ".",
-      "rootDirs": [".", "../"],
+      "rootDir": "../",
       "baseUrl": ".",
       "paths": {
          "@alx-home/fonts/*": ["../packages/ts-utils/src/fonts/*"],
@@ -26,6 +25,8 @@
 
          "@alx-home/Events": ["../packages/ts-utils/src/Events/index.d.ts"],
          "@alx-home/Utils": ["../packages/ts-utils/src/Utils/index.d.ts"],
+
+         "@alx-home/build": ["../packages/ts-utils/build_template.ts"],
 
          "@vfrnav/images/*": ["../images/*"],
 

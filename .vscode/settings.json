@@ -4,5 +4,36 @@
    "sonarlint.connectedMode.project": {
       "connectionId": "https-sonarqube-alex-home-fr-",
       "projectKey": "alx-home_msfs2024-vfrnav-efb-installer_19eb5f24-cbe2-4964-a5ee-1f83d66479da"
+   },
+   "eslint.enable": true,
+   "eslint.workingDirectories": [
+      "./",
+
+      "./common/ts",
+
+      "./vfrnav_efb",
+      "./vfrnav_efb/shared",
+      "./vfrnav_efb/app",
+      "./vfrnav_efb/EFB",
+
+      "./installer/ts/app",
+
+      "./packages/ts-utils",
+
+      "./server/ts",
+      "./server/ts/app",
+      "./server/ts/common",
+      "./server/ts/taskbar",
+      "./server/ts/taskbar_tooltip"
+   ],
+   "maptz.regionfolder": {
+      "[cpp]": {
+         "foldEndRegex": "[\\s]*#endregion",
+         "foldEnd": "// #endregion",
+         "foldStart": "// #region [NAME]",
+         "foldStartRegex": "[\\s]*#region[\\s]*(.*)",
+         "defaultfoldStartRegex": "\\/\\/[\\s]*#region\\(collapsed\\)[\\s]*(.*)",
+         "disableFolding": false
+      }
    }
 }

@@ -15,10 +15,10 @@
 
 import Logo from '@vfrnav/images/app-icon.svg?react';
 import { Button } from '@alx-home/Utils';
-import { Popup } from './Popup';
 import { Body } from './Body';
 import { useCallback } from 'react';
-import { useServer } from '@common/Hooks';
+import { useServer } from '@server-common/Hooks';
+import { Popup, PopupContextProvider } from '@common/Popup';
 
 const Header = () => {
   return <div className='flex flex-row shrink bg-msfs px-5 pb-5 shadow-color-default/80 shadow-md [&>*]:drop-shadow-xl'>
@@ -28,7 +28,7 @@ const Header = () => {
 }
 
 const Trailer = () => {
-  const { serverState, switchServer, serverStateStr, serverLock } = useServer();
+  const { serverState, serverStateStr, switchServer, serverLock } = useServer();
   const abort = useCallback(() => {
     window.abort();
   }, []);
@@ -37,7 +37,9 @@ const Trailer = () => {
 
   return <div className='flex flex-row shrink bg-slate-800 p-2 shadow-md justify-end'>
     <Button className='px-4' active={!serverLock} disabled={serverLock} onClick={switchServer}
-    >{serverStateStr}</Button>
+    >
+      {serverStateStr}
+    </Button>
     <Button className='px-4' active={serverState == 'running'} disabled={serverState != 'running'}>Open In Browser</Button>
     <Button className='px-4' active={true} onClick={openEFB}>Open In App</Button>
     <div className='[&>*]:bg-red-800 [&>*]:hover:bg-red-500 [&>*]:hover:border-white'>
@@ -47,12 +49,14 @@ const Trailer = () => {
 }
 
 export const App = () => {
-  return <div className='flex flex-col h-full text-xl '>
-    <Header />
-    <div className='relative flex flex-col h-full w-full overflow-hidden'>
-      <Popup />
-      <Body />
-      <Trailer />
+  return <PopupContextProvider>
+    <div className='flex flex-col h-full text-xl '>
+      <Header />
+      <div className='relative flex flex-col h-full w-full overflow-hidden'>
+        <Popup />
+        <Body />
+        <Trailer />
+      </div>
     </div>
-  </div>
+  </PopupContextProvider>
 }

@@ -25,9 +25,9 @@ import {
   TVNode,
 } from "@alx-home/efb-api";
 
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import { FSComponent, VNode } from "@microsoft/msfs-sdk";
 import { MainPage } from "./Components/MainPage";
+import { simconnect } from "./Components/Websock";
 
 class VfrNavAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
   /**
@@ -141,8 +141,9 @@ class VfrNavApp extends App {
    * @param _props props used when app has been setted up.
    * @returns Promise<void>
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async install(_props: AppInstallProps): Promise<void> {
+    simconnect().then(e => console.log(e)).catch(e => console.warn(e));
+
     this.efbSettingsManager.addAppToFavorites(this);
     return Promise.resolve();
   }
@@ -169,4 +170,5 @@ class VfrNavApp extends App {
 /**
  * App definition to be injected into EFB
  */
+// eslint-disable-next-line react-hooks/rules-of-hooks
 Efb.use(VfrNavApp);

@@ -13,12 +13,13 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { AirportLayerOptions, Color, LayerSetting, SharedSettings, SharedSettingsDefault } from "../../../shared/Settings";
-import { deepEquals } from "../../../shared/Types";
 import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { GlobalSettings, Settings } from "./Settings";
 import { useSIAZBA } from "./SIAAZBA";
 import { useSIAPDF } from "./SiaPDF";
+
+import { AirportLayerOptions, Color, LayerSetting, SharedSettings, SharedSettingsRecord } from "@shared/Settings";
+import { deepEquals } from "@shared/Types";
 import { MessageHandler } from "@shared/MessageHandler";
 
 export const messageHandler = new MessageHandler();
@@ -68,7 +69,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
   setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>,
   emptyPopup: ReactElement
 }>) => {
-  const [sharedSettings, setSharedSettings] = useState(SharedSettingsDefault);
+  const [sharedSettings, setSharedSettings] = useState(SharedSettingsRecord.defaultValues);
 
   const getSIAPDF = useSIAPDF(sharedSettings.SIAAddr, sharedSettings.SIAAuth)
   const getSIAAZBA = useSIAZBA(sharedSettings.SIAAZBAAddr, sharedSettings.SIAAZBADateAddr, sharedSettings.SIAAuth);
@@ -222,7 +223,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
 
   useEffect(() => {
     if (!deepEquals(sharedSettings, lastSent)) {
-      messageHandler.send({ mType: 'SharedSettings', ...sharedSettings });
+      messageHandler.send(sharedSettings);
       setLastSent(sharedSettings);
     }
   }, [lastSent, sharedSettings]);
@@ -233,10 +234,10 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
       setSharedSettings(settings);
     };
 
-    messageHandler.subscribe("SharedSettings", onGetSettings)
-    messageHandler.send({ mType: "GetSettings" });
+    messageHandler.subscribe("__SETTINGS__", onGetSettings)
+    messageHandler.send({ __GET_SETTINGS__: true });
     return () => {
-      messageHandler.unsubscribe("SharedSettings", onGetSettings);
+      messageHandler.unsubscribe("__SETTINGS__", onGetSettings);
     }
   }, []);
 

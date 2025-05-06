@@ -178,10 +178,14 @@ export type AirportFacility = {
 };
 
 export type Facilities = {
+  __FACILITIES__: true,
+
   facilities: AirportFacility[]
 }
 
 export const FacilitiesRecord: TypeRecord<Facilities> = {
+  __FACILITIES__: 'boolean',
+
   facilities: [{
     icao: 'string',
     lat: 'number',
@@ -213,10 +217,18 @@ export const FacilitiesRecord: TypeRecord<Facilities> = {
     }],
     transitionAlt: 'number',
     transitionLevel: 'number',
-  }]
+  }],
+
+  defaultValues: {
+    __FACILITIES__: true,
+
+    facilities: []
+  }
 }
 
 export type Metar = {
+  __METAR__: true,
+
   metar?: string,
   taf?: string,
   localMetar?: string,
@@ -226,33 +238,64 @@ export type Metar = {
 }
 
 export const MetarRecord: TypeRecord<Metar> = {
+  __METAR__: 'boolean',
+
   metar: { optional: true, record: 'string' },
   taf: { optional: true, record: 'string' },
   localMetar: { optional: true, record: 'string' },
   localTaf: { optional: true, record: 'string' },
   cavok: { optional: true, record: 'boolean' },
-  icao: 'string'
+  icao: 'string',
+
+  defaultValues: {
+    __METAR__: true,
+
+    icao: ""
+  }
 }
 
 export type GetFacilities = {
+  __GET_FACILITIES__: true,
+
   lat: number
   lon: number
 };
 
 export const GetFacilitiesRecord: TypeRecord<GetFacilities> = {
+  __GET_FACILITIES__: 'boolean',
+
   lat: 'number',
   lon: 'number',
+
+  defaultValues: {
+    __GET_FACILITIES__: true,
+
+    lat: 0,
+    lon: 0
+  }
 }
 
 
 export type GetMetar = {
+  __GET_METAR__: true,
+
   icao: string,
   lat: number,
   lon: number
 };
 
 export const GetMetarRecord: TypeRecord<GetMetar> = {
+  __GET_METAR__: 'boolean',
+
   icao: 'string',
   lat: 'number',
-  lon: 'number'
+  lon: 'number',
+
+  defaultValues: {
+    __GET_METAR__: true,
+
+    icao: "",
+    lat: 0,
+    lon: 0
+  }
 }

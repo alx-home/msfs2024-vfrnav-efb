@@ -13,8 +13,6 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable no-unused-vars */
-
 if (typeof PointerEvent === "undefined") {
 
   /* eslint-disable no-undef */
@@ -37,23 +35,66 @@ if (typeof PointerEvent === "undefined") {
       pointerEventProperties;
 
 
+    class PointerEvent extends MouseEvent {
+      constructor(type, eventInitDict = {}) {
+        super(type, eventInitDict);
+
+        Object.assign(this, {
+          altitudeAngle: eventInitDict.altitudeAngle || 0,
+          azimuthAngle: eventInitDict.azimuthAngle || 0,
+          width: eventInitDict.width || 0,
+          height: eventInitDict.height || 0,
+          isPrimary: eventInitDict.isPrimary ?? true,
+          pointerId: eventInitDict.pointerId || 0,
+          pointerType: eventInitDict.pointerType || "",
+          pressure: eventInitDict.pressure || 0,
+          tangentialPressure: eventInitDict.tangentialPressure || 0,
+          tiltX: eventInitDict.tiltX || 0,
+          tiltY: eventInitDict.tiltY || 0,
+          twist: eventInitDict.twist || 0,
+        });
+        Object.setPrototypeOf(this, PointerEvent.prototype);
+      }
+
+      getCoalescedEvents() {
+        console.assert(false);
+        return [];
+      }
+      getPredictedEvents() {
+        console.assert(false);
+        return [];
+      }
+    };
+
+    globalThis.PointerEvent = PointerEvent;
+
     // Pointer events supported? Great, nothing to do, let's go home
     if (window.onpointerdown !== undefined) {
       return;
+    }
+
+    if (window.ontouchstart === null) {
+      window.ontouchstart = undefined;
+    }
+
+    if (window.ontouchend === null) {
+      window.ontouchend = undefined;
     }
 
     pointerEventProperties = 'screenX screenY clientX clientY pageX pageY ctrlKey shiftKey altKey metaKey relatedTarget detail button buttons pointerId pointerType width height pressure tiltX tiltY isPrimary'.split(' ');
 
     // Can we create events using the MouseEvent constructor? If so, gravy
     try {
-      i = new UIEvent('test');
+      i = new PointerEvent('test');
 
       createUIEvent = function (type, bubbles) {
-        return new UIEvent(type, { view: window, bubbles: bubbles });
+        return new PointerEvent(type, { view: window, bubbles: bubbles });
       };
 
       // otherwise we need to do things oldschool
     } catch (err) {
+      console.assert(false);
+
       if (document.createEvent) {
         createUIEvent = function (type, bubbles) {
           var pointerEvent = document.createEvent('UIEvents');

@@ -16,6 +16,7 @@
 #include "Window.h"
 #include "Resources.h"
 #include "main.h"
+#include "utils/Scoped.h"
 #include "windows/SystemTray.h"
 
 #include <json/json.h>
@@ -95,18 +96,12 @@ template <WIN WINDOW>
 Window<WINDOW>::Window(std::function<void()> on_terminate)
    : thread_{
        [this](std::stop_token stoken, std::function<void()> on_terminate) constexpr {
-          struct Destructor {
-             Window&          self_;
-             std::stop_token& stoken_;
+          ScopeExit _{[this, &stoken]() constexpr {
+             std::unique_lock lock{mutex_};
+             std::condition_variable_any().wait(lock, stoken, [] { return false; });
+             webview_ = nullptr;
+          }};
 
-             ~Destructor() {
-                {
-                   std::unique_lock lock{self_.mutex_};
-                   std::condition_variable_any().wait(lock, stoken_, [] { return false; });
-                }
-                self_.webview_ = nullptr;
-             }
-          } _{.self_ = *this, .stoken_ = stoken};
           {
              struct Unlock {
                 Window& self_;
@@ -183,11 +178,7 @@ Window<WINDOW>::Window(std::function<void()> on_terminate)
 #ifdef WATCH_MODE
              webview_->Navigate("http://localhost:" + std::to_string(Params<WINDOW>::PORT));
 #else
-             if constexpr (WINDOW == WIN::EFB) {
-                webview_->Navigate("coui://html_ui/efb_ui/apps/msfs2024-vfrnav/efb/index.html");
-             } else {
-                webview_->Navigate("app://app/index.html");
-             }
+             webview_->Navigate("app://app/index.html");
 #endif
           };
 
@@ -208,7 +199,7 @@ Window<WINDOW>::Dispatch(std::function<void()> func) const {
 
 template <WIN WINDOW>
 Window<WINDOW>::~Window() {
-   Dispatch([]() { PostQuitMessage(0); });
+   Dispatch([]() constexpr { PostQuitMessage(0); });
    thread_.request_stop();
 }
 
@@ -297,7 +288,7 @@ Window<WINDOW>::InstallResourceHandler() {
    auto const filters = []() constexpr -> std::vector<std::string_view> {
       if constexpr (WINDOW == WIN::EFB) {
          // Passthrough other requests
-         return {"app://*", "coui://*"};
+         return {"app://*"};
       } else {
          return {"*"};
       }
@@ -308,12 +299,7 @@ Window<WINDOW>::InstallResourceHandler() {
       if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
          file  = request.uri.substr(origin.size());
          found = true;
-      } else if (std::string const origin = "coui://html_ui/efb_ui/apps/msfs2024-vfrnav/efb/";
-                 request.uri.starts_with(origin)) {
-         file  = request.uri.substr(origin.size());
-         found = true;
       }
-
       if (found) {
          auto const& resources = Params<WINDOW>::s__resources;
          auto const  resource  = resources.find(file);
@@ -359,55 +345,25 @@ Window<WINDOW>::Bind(std::string_view name, RETURN (Window::*member_ptr)(ARGS...
 template <WIN WINDOW>
 void
 Window<WINDOW>::Warning(std::string_view message) {
-   webview_->Eval(R"(window.display_warning()" + js::Serialize(message) + R"();)");
+   webview_->Eval(R"(window.display_warning()" + js::Stringify(message) + R"();)");
 }
 
 template <WIN WINDOW>
 void
 Window<WINDOW>::Error(std::string_view message) {
-   webview_->Eval(R"(window.display_error()" + js::Serialize(message) + R"();)");
+   webview_->Eval(R"(window.display_error()" + js::Stringify(message) + R"();)");
 }
 
 template <WIN WINDOW>
 void
 Window<WINDOW>::Fatal(std::string_view message) {
-   webview_->Eval(R"(window.display_fatal()" + js::Serialize(message) + R"();)");
+   webview_->Eval(R"(window.display_fatal()" + js::Stringify(message) + R"();)");
 }
 
 template <WIN WINDOW>
 void
 Window<WINDOW>::Info(std::string_view message) {
-   webview_->Eval(R"(window.display_info()" + js::Serialize(message) + R"();)");
+   webview_->Eval(R"(window.display_info()" + js::Stringify(message) + R"();)");
 }
 
-template <WIN WINDOW>
-void
-Window<WINDOW>::InstallBindings() {
-   Bind("abort", &Window::Abort);
-
-   Bind("exists", &Window::Exists);
-   Bind("parentExists", &Window::ParentExists);
-
-   Bind("log", &Window::Log);
-
-   Bind("openFile", &Window::OpenFile);
-   Bind("openFolder", &Window::OpenFolder);
-
-   Bind("showTaskbar", &Window::ShowTaskbar);
-   Bind("hideTaskbar", &Window::HideTaskbar);
-
-   Bind("showTaskbarToolTip", &Window::ShowToolTip);
-   Bind("hideTaskbarToolTip", &Window::HideToolTip);
-
-   Bind("openEFB", &Window::OpenEFB);
-
-   Bind("showSettings", &Window::ShowSettings);
-
-   Bind("autostartServer", &Window::AutostartServer);
-   Bind("serverPort", &Window::ServerPort);
-   Bind("startupOption", &Window::StartupOption);
-
-   Bind("watchServerState", &Window::WatchServerState);
-   Bind("getServerState", &Window::GetServerState);
-   Bind("switchServer", &Window::SwitchServer);
-}
+#include "Bindings.inl"

@@ -29,7 +29,7 @@ import Fill from "ol/style/Fill";
 import { Coordinate } from "ol/coordinate";
 import { toContext } from "ol/render";
 import { messageHandler } from "@Settings/SettingsProvider";
-import { PlanePoses } from "../../../../shared/PlanPos";
+import { PlanePoses } from "@shared/PlanPos";
 import LayerGroup from "ol/layer/Group";
 
 const getNorm = (a: Coordinate, b: Coordinate) => {
@@ -44,14 +44,15 @@ const getNorm = (a: Coordinate, b: Coordinate) => {
 const fetchRecord = async (id: number) => new Promise<PlanePoses>(resolve => {
   const callback = (poses: PlanePoses) => {
     if (poses.id === id) {
-      messageHandler.unsubscribe('PlanePoses', callback)
+      messageHandler.unsubscribe('__PLANE_POSES__', callback)
       resolve(poses)
     }
   }
 
-  messageHandler.subscribe('PlanePoses', callback)
+  messageHandler.subscribe('__PLANE_POSES__', callback)
   messageHandler.send({
-    mType: 'GetRecord',
+    __GET_RECORD__: true,
+
     id: id
   })
 })
@@ -95,9 +96,7 @@ export const RecordsLayer = ({
 
             let norm = getNorm(a, b);
 
-            if (!start) {
-              start = norm;
-            }
+            start ??= norm;
 
             const na = a[j + 2] - (withGround ? 0 : a[j + 3]);
             segment.push([a[0] + start[0] * na * res, a[1] + start[1] * na * res])

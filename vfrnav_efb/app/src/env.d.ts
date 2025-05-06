@@ -14,3 +14,11 @@
  */
 
 import "@shared/env"
+
+import { AirportFacility } from '../../shared/Facilities';
+
+declare global {
+   interface Window {
+      getFacilities: (_lat: number, _lon: number) => Promise<AirportFacility[]>;
+   }
+}

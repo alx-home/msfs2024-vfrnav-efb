@@ -17,9 +17,12 @@
    "extends": "../tsconfig.base.json",
    "references": [{ "path": "../../../packages/ts-utils/tsconfig.json" }],
    "compilerOptions": {
-      "outDir": "../../../build/installer/ts-dist/app/",
-      "moduleResolution": "bundler",
-      "module": "ES6"
+      "outDir": "../../../build/installer/ts-dist/app/"
    },
-   "include": ["./**/*.ts", "./**/*.tsx"]
+   "include": [
+      "./**/*.ts",
+      "./**/*.tsx",
+      "../../../common/ts/Popup.tsx",
+      "../../../common/ts/State.tsx"
+   ]
 }

@@ -18,81 +18,64 @@ import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetMe
 import { SharedSettingsRecord, SharedSettings } from './Settings';
 import { ActiveRecord, ActiveRecordRecord, EditRecord, EditRecordRecord, GetRecord, GetRecordRecord, PlanePos, PlanePoses, PlanePosesRecord, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
 
-const MessageIdValues = ["SharedSettings", "GetSettings", "GetPlaneRecords", "GetFacilities",
-  "Facilities", "GetMetar", "Metar", "PlanePos", "PlanePoses", "PlaneRecords",
-  "RemoveRecord", "EditRecord", "ActiveRecord", 'GetRecord'] as const;
+const MessageIdValues = ["__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__", "__GET_FACILITIES__",
+  "__FACILITIES__", "__GET_METAR__", "__METAR__", "__PLANE_POS__", "__PLANE_POSES__", "__RECORDS__",
+  "__REMOVE_RECORD__", "__EDIT_RECORD__", "__ACTIVE_RECORD__", '__GET_RECORD__'] as const;
 type MessageId = (typeof MessageIdValues)[number];
-type HandledType = SharedSettings | Facilities | "GetSettings" | "GetPlaneRecords"
-  | GetFacilities | GetMetar | Metar | PlanePos | PlanePoses | PlaneRecords
-  | RemoveRecord | EditRecord | ActiveRecord | GetRecord;
 
-// todo generic ?
-type MessageType = (SharedSettings & {
-  mType: 'SharedSettings'
-})
-  | (Facilities & {
-    mType: 'Facilities'
-  })
-  | ({ mType: "GetSettings" })
-  | { mType: "GetPlaneRecords" }
-  | (GetFacilities & {
-    mType: 'GetFacilities'
-  })
-  | (GetMetar & {
-    mType: 'GetMetar'
-  })
-  | (Metar & {
-    mType: 'Metar'
-  })
-  | (PlanePos & {
-    mType: 'PlanePos'
-  })
-  | (PlanePoses & {
-    mType: 'PlanePoses'
-  })
-  | (PlaneRecords & {
-    mType: 'PlaneRecords'
-  })
-  | (ActiveRecord & {
-    mType: 'ActiveRecord'
-  })
-  | (EditRecord & {
-    mType: 'EditRecord'
-  })
-  | (RemoveRecord & {
-    mType: 'RemoveRecord'
-  })
-  | (GetRecord & {
-    mType: 'GetRecord'
-  });
+type MessageType = SharedSettings
+  | { __GET_SETTINGS__: true }
+  | { __GET_RECORDS__: true }
+  | GetFacilities
+  | Facilities
+  | GetMetar
+  | Metar
+  | PlanePos
+  | PlanePoses
+  | PlaneRecords
+  | RemoveRecord
+  | EditRecord
+  | ActiveRecord
+  | GetRecord;
 
-const MessageRecord: Record<MessageId, TypeRecord<HandledType> | undefined> = {
-  "SharedSettings": SharedSettingsRecord,
-  "GetSettings": undefined,
-  "GetPlaneRecords": undefined,
-  "GetFacilities": GetFacilitiesRecord,
-  "Facilities": FacilitiesRecord,
-  "GetMetar": GetMetarRecord,
-  "Metar": MetarRecord,
-  "PlanePos": PlanePosRecord,
-  "PlanePoses": PlanePosesRecord,
-  "PlaneRecords": PlaneRecordsRecord,
-  "RemoveRecord": RemoveRecordRecord,
-  "GetRecord": GetRecordRecord,
-  "EditRecord": EditRecordRecord,
-  "ActiveRecord": ActiveRecordRecord
+const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
+  "__SETTINGS__": SharedSettingsRecord,
+  "__GET_SETTINGS__": undefined,
+  "__GET_RECORDS__": undefined,
+  "__GET_FACILITIES__": GetFacilitiesRecord,
+  "__FACILITIES__": FacilitiesRecord,
+  "__GET_METAR__": GetMetarRecord,
+  "__METAR__": MetarRecord,
+  "__PLANE_POS__": PlanePosRecord,
+  "__PLANE_POSES__": PlanePosesRecord,
+  "__RECORDS__": PlaneRecordsRecord,
+  "__REMOVE_RECORD__": RemoveRecordRecord,
+  "__EDIT_RECORD__": EditRecordRecord,
+  "__ACTIVE_RECORD__": ActiveRecordRecord,
+  "__GET_RECORD__": GetRecordRecord
 }
 
 export class MessageHandler {
-  private callbacks: Record<MessageId, ((_message: unknown) => void)[]> = JSON.parse(`{${MessageIdValues.map(value => `"${value}":[]`).join()}}`);
+  private readonly callbacks: Record<MessageId, ((_message: unknown) => void)[]> = (() => {
+    const record_str = MessageIdValues.map(value => `"${value}":[]`).join();
+    return JSON.parse(`{${record_str}}`)
+  })();
 
   // eslint-disable-next-line no-unused-vars
   constructor(private readonly iframe?: HTMLIFrameElement) {
     const onmessage = window.onmessage;
     window.onmessage = (e) => {
       if (e.data.source === 'vfrNav') {
-        const obj = JSON.parse(e.data.value) as { id: MessageId, value: unknown };
-        this.callbacks[obj.id].forEach(callback => callback(obj.value));
+        const obj = JSON.parse(e.data.value);
+
+        MessageIdValues.find(value => {
+          if (obj[value]) {
+            this.callbacks[value].forEach(callback => callback(obj));
+            return true
+          }
+
+          return false
+        })
       } else {
         onmessage?.call(window, e);
       }
@@ -100,25 +83,34 @@ export class MessageHandler {
   }
 
   send<T extends MessageType>(data: T) {
-    this.sendImpl(data, MessageRecord[data.mType] as TypeRecord<T>);
+    MessageIdValues.find(value => {
+      if ((data as any)[value]) {
+        this.sendImpl(data, MessageRecord[value]);
+        return true
+      }
+
+      return false
+    })
   }
 
-  subscribe<T extends HandledType>(uuid: MessageId, callback: (_message: T) => void) {
+  subscribe<T extends MessageType>(uuid: MessageId, callback: (_message: T) => void) {
     this.callbacks[uuid].push(callback as (_: unknown) => void);
   }
 
-  unsubscribe<T extends HandledType>(uuid: MessageId, callback: (_message: T) => void) {
+  unsubscribe<T extends MessageType>(uuid: MessageId, callback: (_message: T) => void) {
     const index = this.callbacks[uuid].findIndex(value => value === callback as (_: unknown) => void);
 
     if (index !== -1) {
       this.callbacks[uuid].splice(index, 1);
+    } else {
+      console.error(`Unsubscribe: callback not registered for message ${uuid}`);
     }
   }
 
-  private sendImpl<T extends MessageType>(data: T, record?: TypeRecord<T>) {
-    const sanitizedData = JSON.stringify({ id: data.mType, value: record ? reduce(data, record) : data });
+  private sendImpl(data: MessageType, record?: TypeRecord<MessageType>) {
+    const sanitizedData = JSON.stringify(record ? reduce(data, record) : data);
 
     const elem = this.iframe ? this.iframe.contentWindow : window.top;
-    elem?.postMessage({ source: 'vfrNav', value: sanitizedData }, '*');
+    elem?.postMessage({ source: 'vfrNav', value: sanitizedData }, elem.origin);
   }
 };

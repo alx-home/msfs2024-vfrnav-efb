@@ -12,38 +12,18 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
-
-#include "main.h"
-
-#include "Resources.h"
-
-#include <windows/Lock.h>
-#include <json/json.h>
-#include <libloaderapi.h>
-#include <promise/promise.h>
-#include <shellapi.h>
-#include <synchapi.h>
-#include <webview/webview.h>
-
-#include <ShObjIdl_core.h>
-#include <WinUser.h>
-#include <dwmapi.h>
-#include <errhandlingapi.h>
-#include <intsafe.h>
-#include <minwindef.h>
-#include <windef.h>
-#include <winnt.h>
-#include <winreg.h>
-#include <winuser.h>
-
-Main::Resolvers::~Resolvers() { RejectAll(); }
-
-void
-Main::Resolvers::RejectAll() {
-   Resolvers::Vector resolvers{};
-   std::swap(*this, resolvers);
-
-   for (auto const& [_, reject] : resolvers) {
-      MakeReject<AppStopping>(reject);
-   }
+{
+   "extends": "../tsconfig.base.json",
+   "references": [{ "path": "../../packages/ts-utils/tsconfig.json" }],
+   "compilerOptions": {
+      "baseUrl": ".",
+      "rootDir": "../../",
+      "outDir": "../../build/vfrnav_efb/ts-dist/efb/app/",
+      "composite": true,
+      "resolveJsonModule": true,
+      "paths": {
+         "@alx-home/build": ["../../packages/ts-utils/build_template.ts"]
+      }
+   },
+   "include": ["./build.ts", "./package.json", "../../eslint.config.ts"]
 }

@@ -19,7 +19,7 @@ import { useRef } from "react";
 export const Menu = ({ setPage, pages, activePage }: { pages: (Page | Space)[], setPage: (_page: string) => void, activePage: string }) => {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  return <div className={'relative z-10 w-[40px] min-w-[40px!important] bg-menu shadow-smd flex h-full flex-col [&>*]:mt-2 overflow-hidden first:pt-11'}>
+  return <div className={'relative p-2 z-10 shrink-0 min-w-0 bg-menu shadow-smd flex flex-col [&>*]:mt-2 first:pt-11'}>
     {pages.map((_page, index) => {
       if (_page.type === 'page') {
         const page = (_page as Page);

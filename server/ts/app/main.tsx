@@ -15,13 +15,14 @@
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { addPopup, MessagePopup } from "@common/Popup";
 
 import { App } from './App/App';
 
 import '@alx-home/global.css';
 
 window.onerror = function (_message, _file, _line, _col, error) {
-  window.display_error(error?.message ?? "An unknown error occurred !");
+  window.display_error([error?.message ?? "An unknown error occurred !"]);
   return false;
 };
 
@@ -37,6 +38,14 @@ window.addEventListener('unhandledrejection', function (e) {
     window.display_error(e.reason);
   }
 })
+
+window.display_appstopping = () => {
+  addPopup(<MessagePopup
+    title={<div className='text-3xl text-blue-400'>Info</div>}
+    messages="App is stopping !"
+    close="steady"
+  />, 3)
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
