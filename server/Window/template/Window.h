@@ -17,6 +17,8 @@
 
 #include "Resources.h"
 
+#include "window/FileDialog.h"
+
 #include "Server/WebSockets/Messages/Messages.h"
 #include "promise/promise.h"
 
@@ -65,12 +67,14 @@ private:
    Promise<> Abort();
 
    Promise<bool> Exists(std::string path);
+   Promise<bool> FileExists(std::string path);
    Promise<bool> ParentExists(std::string path);
 
-   Promise<> Log(std::string value);
-
-   Promise<std::string> OpenFile(std::string defaultPath);
+   Promise<std::string> OpenFile(std::string defaultPath, std::vector<dialog::Filter> filters);
    Promise<std::string> OpenFolder(std::string defaultPath);
+   Promise<std::string> GetFile(std::string file);
+
+   Promise<> Log(std::string value);
 
    Promise<> ShowToolTip();
    Promise<> HideToolTip();

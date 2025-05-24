@@ -18,11 +18,8 @@
 #include "Window.h"
 
 #include "Bindings/abort.inl"
-#include "Bindings/exists.inl"
 #include "Bindings/log.inl"
-#include "Bindings/openFile.inl"
-#include "Bindings/openFolder.inl"
-#include "Bindings/parentExists.inl"
+#include "Bindings/Files.inl"
 #include "Bindings/Taskbar.inl"
 #include "Bindings/Settings.inl"
 #include "Bindings/Message.inl"
@@ -33,11 +30,13 @@ Window<WINDOW>::InstallBindings() {
    Bind("abort", &Window::Abort);
 
    Bind("exists", &Window::Exists);
+   Bind("file_exists", &Window::FileExists);
    Bind("parentExists", &Window::ParentExists);
 
    Bind("log", &Window::Log);
 
    Bind("openFile", &Window::OpenFile);
+   Bind("getFile", &Window::GetFile);
    Bind("openFolder", &Window::OpenFolder);
 
    Bind("showTaskbar", &Window::ShowTaskbar);

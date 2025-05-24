@@ -1,5 +1,6 @@
 import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
 import { AirportFacility, FrequencyType, GetFacilities, GetMetar, Metar } from "@shared/Facilities";
+import { FileExist, GetFile, OpenFile } from "@shared/Files";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { EditRecord, GetRecord, PlanePos, PlanePoses, PlaneRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord } from "@shared/PlanPos";
 import { SharedSettings, SharedSettingsRecord } from "@shared/Settings";
@@ -82,30 +83,55 @@ export class Manager {
          });
 
          if (isMessage("__HELLO_WORLD__", data.content)) {
-            const messageHandler = (message: MessageType) => {
-               if (done.value) {
-                  console.assert(false)
-                  this.unsubscribe(data.id, messageHandler);
-                  return;
-               }
-               if (!isMessage("__SETTINGS__", data.content) && !isMessage("__GET_SETTINGS__", data.content)) {
-                  this.socket?.send(JSON.stringify({
-                     id: data.id,
-                     content: message
-                  }))
-               }
-            };
+            if (data.id === 1) {
+               // EFB Server used to relay message between EFB app (id:0) / server
 
-            messageHandlers.set(data.id, messageHandler);
-            this.subscribe(data.id, messageHandler);
-         } else if (isMessage("__BYE_BYE__", data.content)) {
-            const handler = messageHandlers.get(data.id);
+               const messageHandler = (message: MessageType) => {
+                  if (done.value) {
+                     console.assert(false)
+                     this.unsubscribe(data.id, messageHandler);
+                     return;
+                  }
+                  if (!isMessage("__SETTINGS__", message) && !isMessage("__GET_SETTINGS__", message)) {
+                     this.socket?.send(JSON.stringify({
+                        id: 0,
+                        content: message
+                     }))
+                  }
+               };
 
-            if (handler) {
-               this.unsubscribe(data.id, handler)
-               messageHandlers.delete(data.id);
+               messageHandlers.set(data.id, messageHandler);
+               this.subscribe(data.id, messageHandler);
             } else {
-               console.assert(false)
+               const messageHandler = (message: MessageType) => {
+                  if (done.value) {
+                     console.assert(false)
+                     this.unsubscribe(data.id, messageHandler);
+                     return;
+                  }
+                  if (!isMessage("__SETTINGS__", message) && !isMessage("__GET_SETTINGS__", message)) {
+                     this.socket?.send(JSON.stringify({
+                        id: data.id,
+                        content: message
+                     }))
+                  }
+               };
+
+               messageHandlers.set(data.id, messageHandler);
+               this.subscribe(data.id, messageHandler);
+            }
+         } else if (isMessage("__BYE_BYE__", data.content)) {
+            if (data.content.__BYE_BYE__ === "EFB") {
+               this.socket!.close();
+            } else {
+               const handler = messageHandlers.get(data.id);
+
+               if (handler) {
+                  this.unsubscribe(data.id, handler)
+                  messageHandlers.delete(data.id);
+               } else {
+                  console.assert(false)
+               }
             }
          } else if (isMessage("__SETTINGS__", data.content)) {
             console.assert(false);
@@ -125,6 +151,14 @@ export class Manager {
             this.onEditRecord(data.content);
          } else if (isMessage("__GET_RECORD__", data.content)) {
             this.onGetRecord(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+         } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
+            || isMessage("__OPEN_FILE_RESPONSE__", data.content)
+            || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
+            if (data.id === 0) {
+               this.subscribers.get(0)!(data.content);
+            } else {
+               console.assert(false);
+            }
          }
       };
 
@@ -388,6 +422,18 @@ export class Manager {
 
    onGetRecord(messageHandler: (_: PlanePoses) => void, { id }: GetRecord) {
       messageHandler({ __PLANE_POSES__: true, id: id, value: JSON.parse(GetStoredData(`record-${id}`) as string) as PlanePos[] });
+   }
+
+   onGetFile(message: GetFile) {
+      this.subscribers.get(1)?.(message);
+   }
+
+   onOpenFile(message: OpenFile) {
+      this.subscribers.get(1)?.(message);
+   }
+
+   onFileExists(message: FileExist) {
+      this.subscribers.get(1)?.(message);
    }
 
    subscribe(id: number, messageHandler: (_: MessageType) => void) {

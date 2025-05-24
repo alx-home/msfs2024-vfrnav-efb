@@ -18,6 +18,6 @@
 #include <window/FileDialog.h>
 
 Promise<std::string>
-Main::OpenFile(std::string defaultPath) {
-   co_return co_await dialog::OpenFile(defaultPath);
+Main::OpenFile(std::string defaultPath, std::vector<dialog::Filter> const& filters) {
+   co_return co_await dialog::OpenFile(defaultPath, filters);
 }

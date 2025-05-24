@@ -12,15 +12,26 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
+#pragma once
 
+#include "json/json.h"
 #include <promise/promise.h>
 #include <string>
 #include <string_view>
 
 namespace dialog {
 
-Promise<std::string> OpenFile(std::string_view path);
+struct Filter {
+   std::string              name_;
+   std::vector<std::string> value_;
 
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"name", &Filter::name_},
+     js::_{"value", &Filter::value_},
+   };
+};
+
+Promise<std::string> OpenFile(std::string_view path, std::vector<Filter>);
 Promise<std::string> OpenFolder(std::string_view path);
 
 }  // namespace dialog

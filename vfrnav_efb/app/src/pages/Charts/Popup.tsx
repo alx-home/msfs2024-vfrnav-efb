@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Button, Input, Tabs } from "@alx-home/Utils";
+import { Button, EndSlot, Input, Tabs } from "@alx-home/Utils";
 import { useKeyUp } from "@alx-home/Events";
 
 import { SettingsContext } from "@Settings/SettingsProvider";
@@ -23,7 +23,7 @@ import { Src } from "./ChartsPage";
 
 import loadingImg from '@alx-home/images/loading.svg';
 
-const sources = ['SIA', 'TEMSI', 'Weather Fronts', 'Local'] as const;
+const sources = ['Local', 'SIA', 'TEMSI', 'Weather Fronts'] as const;
 type Source = typeof sources[number];
 
 export const ChartsPopup = ({ setSrcs }: {
@@ -33,23 +33,36 @@ export const ChartsPopup = ({ setSrcs }: {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
-  const [sourceType, setSourceType] = useState<Source>("SIA")
+  const [sourceType, setSourceType] = useState<Source>("Local")
   const [valid, setValid] = useState(false);
+  const [partialValid, setPartialValid] = useState(true);
   const [result, setResult] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const active = useMemo(() => !loading && (sourceType === 'SIA' || sourceType === 'Local'), [sourceType, loading]);
 
   const [pdf, setPdf] = useState<Uint8Array | undefined>();
 
   const key = useKeyUp();
+  const [pathReload, setPathReload] = useState(false);
+  const [path, setPath] = useState('');
 
   const validator = useMemo(() => {
     switch (sourceType) {
       case "SIA":
         return async (_value: string) => {
           const result = /^(L|$)(F|$)([a-z]{1,2})?$/i.test(_value)
-          setValid(/^LF[a-z]{2}.?$/i.test(_value))
+          setValid(result && /^LF[a-z]{2}.?$/i.test(_value))
+          setPartialValid(result);
+          return result
+        }
+
+      case "Local":
+        return async (_value: string) => {
+          const result = _value.endsWith('.pdf') && await window.file_exists(_value);
+          setValid(result)
+          setPartialValid(result);
           return result
         }
 
@@ -64,14 +77,22 @@ export const ChartsPopup = ({ setSrcs }: {
     switch (sourceType) {
       case "SIA":
         return "Enter an OACI code"
+      case "Local":
+        return "Select a file to upload"
+
       default:
         return "not yet implemented !"
     }
   }, [sourceType]);
+
   const errorMessage = useMemo(() => {
     switch (sourceType) {
       case "SIA":
         return "ICAO Code must be of the form LF** (France only)"
+
+      case "Local":
+        return "Invalid Path"
+
       default:
         return "not yet implemented !"
     }
@@ -80,10 +101,35 @@ export const ChartsPopup = ({ setSrcs }: {
     switch (sourceType) {
       case "SIA":
         return "Page name for this pdf (default: ICAO code)"
+      case "Local":
+        return "Page name for this pdf (default: File name)"
+
       default:
         return "not yet implemented !"
     }
   }, [sourceType]);
+
+  const openFile = useCallback(async () => {
+    const result = await window.openFile(inputRef.current!.value.length ? inputRef.current!.value : path, [{
+      name: "Pdf File",
+      value: ["*.pdf"]
+    }])
+    if (result && result !== '') {
+      setPathReload(true);
+      setPath(result);
+      setValid(true);
+    }
+  }, [path]);
+
+  const fileBrowser = useMemo(() => {
+    return sourceType == "Local" ? <EndSlot>
+      <div className='[&>*]:border-0 [&>*]:hover:border-l-2 [&>*]:bg-slate-600 [&>*]:hover:bg-slate-700 [&>*]:h-full'>
+        <Button active={true} className='px-4'
+          onClick={openFile}>...</Button>
+      </div>
+    </EndSlot> : <></>
+  }, [openFile, sourceType]);
+
   const setSource = useCallback((sourceType: Source) => {
     inputRef.current!.value = ''
     inputRef.current!.focus()
@@ -92,27 +138,54 @@ export const ChartsPopup = ({ setSrcs }: {
 
   const switchSource = useCallback((source: Source) => {
     setSource(source);
-    if (source !== 'SIA') {
+    if (source !== 'SIA' && source !== "Local") {
       setError('Not yet implemented !');
     } else {
       setError(undefined);
     }
   }, [setSource]);
+
   const download = useCallback(() => {
     if (valid) {
-      const icao = result.toUpperCase();
-
       setError(undefined);
       setLoading(true);
 
-      getSIAPDF(icao).then(src => {
-        setPdf(src);
-      }).catch((e: Error) => {
-        setLoading(false);
-        setError(e.message);
-      });
+
+      switch (sourceType) {
+        case "SIA": {
+          const icao = result.toUpperCase();
+
+          getSIAPDF(icao).then(src => {
+            setPdf(src);
+          }).catch((e: Error) => {
+            setLoading(false);
+            setError(e.message);
+          });
+          break;
+        }
+
+        case "Local": {
+          window.getFile(result).then(base64 => {
+            const binaryString = atob(base64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; ++i) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            setPdf(bytes);
+          }).catch((e: Error) => {
+            setLoading(false);
+            setError(e.message);
+          });
+          break;
+        }
+
+        default:
+          setLoading(false);
+          setError("Unknown source type");
+      }
     }
-  }, [getSIAPDF, result, valid]);
+  }, [sourceType, getSIAPDF, result, valid]);
+
 
   useEffect(() => {
     if (key == 'Escape') {
@@ -124,18 +197,27 @@ export const ChartsPopup = ({ setSrcs }: {
 
   useEffect(() => {
     if (pdf) {
-      const icao = result.toUpperCase();
+      let file_name = result.substring(result.lastIndexOf('\\') + 1);
+      file_name = file_name.substring(0, file_name.lastIndexOf("."));
+
+      const icao_or_name = sourceType == "Local" ? file_name : result.toUpperCase();
 
       setLoading(false);
       setPopup(emptyPopup);
       setSrcs(srcs => {
         const newSrcs = new Map<string, Src>(srcs);
-        newSrcs.set(icao, { src: pdf, name: name.length ? name : icao });
+        newSrcs.set(icao_or_name, { src: pdf, name: name.length ? name : icao_or_name });
         return newSrcs;
       });
     }
-  }, [emptyPopup, name, pdf, result, setPopup, setSrcs]);
+  }, [sourceType, emptyPopup, name, pdf, result, setPopup, setSrcs]);
 
+
+  useEffect(() => {
+    if (pathReload) {
+      setPathReload(false);
+    }
+  }, [pathReload]);
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -151,12 +233,20 @@ export const ChartsPopup = ({ setSrcs }: {
       </div>
       <div className='flex flex-col [&>:not(:first-child)]:ml-2 shadow-sm'>
         <Tabs disabled={loading} tabs={Array.from(sources)} activeTab={sourceType} switchTab={switchSource}>
-          <Input active={!loading && sourceType === 'SIA'} ref={inputRef} placeholder={sourceMessage} inputMode="text"
-            validate={validator} onChange={setResult} onValidate={download} className="peer" />
-          <div className="hidden peer-[.invalid]:flex h-0">
-            <p className="pl-8 pt-2 text-red-500 text-base">
-              {errorMessage}
-            </p>
+          <div className='flex flex-col grow justify-center'>
+            <div className="flex flex-col grow">
+              <div className="flex flex-row transition-all justify-end">
+                <Input active={active} ref={inputRef} placeholder={sourceMessage} inputMode="text" value={path}
+                  validate={validator} onChange={setResult} reload={pathReload} onValidate={download} className='peer transition-all pr-0'  >
+                  {fileBrowser}
+                </Input>
+              </div>
+              <div className={"flex flex-row grow transition-all" + (partialValid ? " opacity-0" : " opacity-100 pl-4")}>
+                <p className="pt-1 text-red-500 text-base h-0">
+                  {errorMessage}
+                </p>
+              </div>
+            </div>
           </div>
         </Tabs>
       </div>
@@ -166,12 +256,12 @@ export const ChartsPopup = ({ setSrcs }: {
         Name
       </div>
       <div className='flex'>
-        <Input active={!loading && sourceType === 'SIA'} placeholder={nameMessage}
+        <Input active={active} placeholder={nameMessage}
           inputMode="text" onChange={setName} onValidate={download} />
       </div>
     </div>
     <div className="no-margin flex h-0">
-      <div className={"pt-2 w-full h-[fit-content] flex flex-row justify-center" + ((error || (sourceType !== 'SIA')) ? '' : ' ')}>
+      <div className={"pt-2 w-full h-[fit-content] flex flex-row justify-center" + ((error || (sourceType !== 'SIA' && sourceType != 'Local')) ? '' : ' ')}>
         <div className={"flex flex-row grow text-xl font-bold justify-center shrink p-2"
           + " text-rose-600 border-slate-900 border-1 shadow-smd"
           + (error ? '' : ' hidden')}>

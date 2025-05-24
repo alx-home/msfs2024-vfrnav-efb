@@ -21,15 +21,14 @@ export type ServerState = 'switching' | 'running' | 'stopped' | 'invalid_port';
 
 declare global {
    interface Window {
-      openFile: ({ _ }: {
-         value: string,
-         filters?: {
+      openFile: (
+         _value: string,
+         _filters: {
             name: string,
             value: string[]
-         }[]
-      } | string) => Promise<string | undefined>;
+         }[]) => Promise<string | undefined>;
 
-      openFolder: (_val: string) => Promise<string | undefined>;
+      openFolder: (_value: string) => Promise<string | undefined>;
 
       findCommunity: () => Promise<string | undefined>;
       defaultInstallPath: () => Promise<string | undefined>;

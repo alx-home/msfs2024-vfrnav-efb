@@ -18,14 +18,15 @@ import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetMe
 import { SharedSettingsRecord, SharedSettings } from './Settings';
 import { EditRecord, EditRecordRecord, GetRecord, GetRecordRecord, PlanePos, PlanePoses, PlanePosesRecord, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
 import { ByeBye, ByeByeRecord, HelloWorld, HelloWorldRecord } from './HelloWorld';
+import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord, GetFile, GetFileRecord, GetFileResponse, GetFileResponseRecord, OpenFile, OpenFileRecord, OpenFileResponse, OpenFileResponseRecord } from './Files';
 
-const MessageIdValues = ["__HELLO_WORLD__", "__BYE_BYE__", "__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__", "__GET_FACILITIES__",
+const MessageIdValues = ["__HELLO_WORLD__", "__BYE_BYE__", "__FILE_EXISTS__", "__FILE_EXISTS_RESPONSE__", "__OPEN_FILE__", "__OPEN_FILE_RESPONSE__", "__GET_FILE__", "__GET_FILE_RESPONSE__", "__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__", "__GET_FACILITIES__",
    "__FACILITIES__", "__GET_METAR__", "__METAR__", "__PLANE_POS__", "__PLANE_POSES__", "__RECORDS__",
    "__REMOVE_RECORD__", "__EDIT_RECORD__", '__GET_RECORD__'] as const;
 type MessageId = (typeof MessageIdValues)[number];
 
-type GetSettings = { __GET_SETTINGS__: true };
-type GetRecords = { __GET_RECORDS__: true };
+export type GetSettings = { __GET_SETTINGS__: true };
+export type GetRecords = { __GET_RECORDS__: true };
 
 const GetSettingsRecord = GenRecord<GetSettings>({
    __GET_SETTINGS__: true
@@ -37,6 +38,12 @@ const GetRecordsRecord = GenRecord<GetRecords>({
 type MessageTypes = {
    "__BYE_BYE__": ByeBye,
    "__HELLO_WORLD__": HelloWorld,
+   "__FILE_EXISTS__": FileExist,
+   "__FILE_EXISTS_RESPONSE__": FileExistResponse,
+   "__OPEN_FILE__": OpenFile,
+   "__OPEN_FILE_RESPONSE__": OpenFileResponse,
+   "__GET_FILE__": GetFile,
+   "__GET_FILE_RESPONSE__": GetFileResponse,
    "__SETTINGS__": SharedSettings,
    "__GET_SETTINGS__": GetSettings,
    "__GET_RECORDS__": GetRecords,
@@ -56,6 +63,12 @@ export type MessageType = MessageTypes[keyof MessageTypes];
 const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__BYE_BYE__": ByeByeRecord,
    "__HELLO_WORLD__": HelloWorldRecord,
+   "__FILE_EXISTS__": FileExistRecord,
+   "__FILE_EXISTS_RESPONSE__": FileExistResponseRecord,
+   "__OPEN_FILE__": OpenFileRecord,
+   "__OPEN_FILE_RESPONSE__": OpenFileResponseRecord,
+   "__GET_FILE__": GetFileRecord,
+   "__GET_FILE_RESPONSE__": GetFileResponseRecord,
    "__SETTINGS__": SharedSettingsRecord,
    "__GET_SETTINGS__": GetSettingsRecord,
    "__GET_RECORDS__": GetRecordsRecord,
@@ -105,6 +118,7 @@ export class MessageHandler {
       } else {
          window.vfrnav_onmessage = async (obj: MessageType) => {
             MessageIdValues.find(value => {
+               // eslint-disable-next-line @typescript-eslint/no-explicit-any
                if ((obj as any)[value]) {
                   this.callbacks[value].forEach(callback => callback(obj));
                   return true
@@ -118,6 +132,7 @@ export class MessageHandler {
 
    send<T extends MessageType>(data: T) {
       MessageIdValues.find(value => {
+         // eslint-disable-next-line @typescript-eslint/no-explicit-any
          if ((data as any)[value]) {
             this.sendImpl(data, MessageRecord[value]);
             return true
@@ -127,7 +142,7 @@ export class MessageHandler {
       })
    }
 
-   subscribe<T extends MessageType>(uuid: MessageId, callback: (_message: T) => void) {
+   subscribe<T extends MessageId>(uuid: T, callback: (_message: MessageTypes[T]) => void) {
       this.callbacks[uuid].push(callback as (_: unknown) => void);
    }
 

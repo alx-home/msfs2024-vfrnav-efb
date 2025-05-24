@@ -17,6 +17,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './app/App'
 
+import { messageHandler } from '@Settings/SettingsProvider';
+
 import ResizeObserver from 'resize-observer-polyfill';
 
 import InterBlackFont from '@alx-home/fonts/Inter-Regular.ttf';
@@ -33,6 +35,7 @@ import './global.css';
 import "./ol.css";
 
 import '@polyfills/drag-events/default.css';
+
 (async () => {
   if (__MSFS_EMBEDED__) {
     await import('abortcontroller-polyfill/dist/polyfill-patch-fetch.js');
@@ -83,4 +86,131 @@ import '@polyfills/drag-events/default.css';
       <App />
     </StrictMode>
   )
+
+  if (__MSFS_EMBEDED__) {
+    window.file_exists = (() => {
+      const id = {
+        next: 0
+      };
+
+      const resolvers = new Map<number, {
+        resolve: (_: boolean) => void,
+        reject: (_: Error) => void
+      }>();
+
+      messageHandler.subscribe("__FILE_EXISTS_RESPONSE__", message => {
+        const resolver = resolvers.get(message.id);
+        console.assert(resolver);
+
+        resolver?.resolve(message.result);
+        resolvers.delete(message.id);
+      });
+
+      return (name: string): Promise<boolean> => {
+        return new Promise<boolean>((resolve, reject) => {
+          const my_id = ++id.next;
+
+          resolvers.set(my_id, {
+            resolve: resolve,
+            reject: reject
+          });
+
+          messageHandler.send({
+            __FILE_EXISTS__: true,
+
+            path: name,
+            id: my_id
+          });
+        });
+      }
+    })();
+
+
+    window.openFile = (() => {
+      const id = {
+        next: 0
+      };
+
+      const resolvers = new Map<number, {
+        resolve: (_: string) => void,
+        reject: (_: Error) => void
+      }>();
+
+      messageHandler.subscribe("__OPEN_FILE_RESPONSE__", message => {
+        const resolver = resolvers.get(message.id);
+        console.assert(resolver);
+
+        if (message.path.length) {
+          resolver?.resolve(message.path);
+        } else {
+          resolver?.reject(new Error("File not found"));
+        }
+        resolvers.delete(message.id);
+      });
+
+      return (path: string, filters: {
+        name: string,
+        value: string[]
+      }[]): Promise<string> => {
+        return new Promise<string>((resolve, reject) => {
+          const my_id = ++id.next;
+
+          resolvers.set(my_id, {
+            resolve: resolve,
+            reject: reject
+          });
+
+          messageHandler.send({
+            __OPEN_FILE__: true,
+
+            path: path,
+            filters: filters,
+            id: my_id
+          });
+        });
+      }
+    })();
+
+
+    window.getFile = (() => {
+      const id = {
+        next: 0
+      };
+
+      const resolvers = new Map<number, {
+        resolve: (_: string) => void,
+        reject: (_: Error) => void
+      }>();
+
+      messageHandler.subscribe("__GET_FILE_RESPONSE__", message => {
+        const resolver = resolvers.get(message.id);
+        console.assert(resolver);
+
+        if (message.data.length) {
+          resolver?.resolve(message.data);
+        } else {
+          resolver?.reject(new Error("File not found"));
+        }
+        resolvers.delete(message.id);
+      });
+
+      return (name: string): Promise<string> => {
+        return new Promise<string>((resolve, reject) => {
+          const my_id = ++id.next;
+
+          resolvers.set(my_id, {
+            resolve: resolve,
+            reject: reject
+          });
+
+          messageHandler.send({
+            __GET_FILE__: true,
+
+            path: name,
+            id: my_id
+          });
+        });
+      }
+    })();
+  }
 })()

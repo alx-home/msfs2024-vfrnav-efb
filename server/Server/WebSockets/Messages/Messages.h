@@ -34,19 +34,6 @@ struct ByeBye {
    };
 };
 
-struct Settings;
-struct GetSettings;
-struct GetRecords;
-struct GetFacilities;
-struct Facilities;
-struct GetMetar;
-struct Metar;
-struct PlanePos;
-struct PlanePoses;
-struct Records;
-struct RemoveRecord;
-struct EditRecord;
-struct GetRecord;
 }  // namespace ws::msg
 
 #include "Facilities.h"
@@ -54,6 +41,7 @@ struct GetRecord;
 #include "Records.h"
 #include "Settings.h"
 #include "PlanePos.h"
+#include "Files.h"
 
 namespace ws {
 
@@ -71,6 +59,12 @@ using Message = std::variant<
   msg::GetRecord,
   msg::EditRecord,
   msg::RemoveRecord,
+  msg::FileExists,
+  msg::FileExistsResponse,
+  msg::OpenFile,
+  msg::OpenFileResponse,
+  msg::GetFile,
+  msg::GetFileResponse,
   msg::HelloWorld,
   msg::ByeBye>;
 

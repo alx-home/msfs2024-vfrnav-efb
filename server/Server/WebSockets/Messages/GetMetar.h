@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "Messages.h"
-
 #include <json/json.h>
 
 namespace ws::msg {

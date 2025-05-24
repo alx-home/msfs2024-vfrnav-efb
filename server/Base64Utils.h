@@ -12,14 +12,10 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
-#include "../Window.h"
+#include <string>
+#include <string_view>
 
-#include <window/FileDialog.h>
-
-template <WIN WINDOW>
-Promise<std::string>
-Window<WINDOW>::OpenFile(std::string defaultPath) {
-   co_return co_await dialog::OpenFile(defaultPath);
-}
+std::string Base64Open(std::string_view path);

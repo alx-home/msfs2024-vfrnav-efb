@@ -15,11 +15,45 @@
 #pragma once
 
 #include "../Window.h"
+#include "Base64Utils.h"
 
 #include <window/FileDialog.h>
+#include <filesystem>
+#include <vector>
+
+template <WIN WINDOW>
+Promise<std::string>
+Window<WINDOW>::OpenFile(std::string defaultPath, std::vector<dialog::Filter> filters) {
+   co_return co_await dialog::OpenFile(defaultPath, std::move(filters));
+}
 
 template <WIN WINDOW>
 Promise<std::string>
 Window<WINDOW>::OpenFolder(std::string defaultPath) {
    co_return co_await dialog::OpenFolder(defaultPath);
+}
+
+template <WIN WINDOW>
+Promise<std::string>
+Window<WINDOW>::GetFile(std::string path) {
+   co_return Base64Open(path);
+}
+
+template <WIN WINDOW>
+Promise<bool>
+Window<WINDOW>::ParentExists(std::string path) {
+   std::filesystem::path const fs_path = path;
+   co_return fs_path.has_parent_path() && std::filesystem::exists(fs_path.parent_path());
+}
+
+template <WIN WINDOW>
+Promise<bool>
+Window<WINDOW>::Exists(std::string path) {
+   co_return std::filesystem::exists(path);
+}
+
+template <WIN WINDOW>
+Promise<bool>
+Window<WINDOW>::FileExists(std::string path) {
+   co_return std::filesystem::is_regular_file(path);
 }
