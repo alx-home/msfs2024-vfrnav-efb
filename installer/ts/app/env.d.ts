@@ -18,15 +18,13 @@ import "@common/env.d.ts"
 
 declare global {
    interface Window {
-      openFile: ({ _ }: {
-         value: string,
-         filters?: {
+      openFile: (_path: string,
+         _filters: {
             name: string,
             value: string[]
-         }[]
-      } | string) => Promise<string | undefined>;
+         }[]) => Promise<string | undefined>;
 
-      openFolder: (_val: string) => Promise<string | undefined>;
+      openFolder: (_path: string) => Promise<string | undefined>;
       findCommunity: () => Promise<string | undefined>;
       defaultInstallPath: () => Promise<string | undefined>;
       exists: (_val: string) => Promise<boolean>;

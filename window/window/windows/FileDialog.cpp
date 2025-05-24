@@ -26,6 +26,7 @@
 #include <objbase.h>
 #include <promise/promise.h>
 #include <ShObjIdl_core.h>
+#include <ranges>
 #include <span>
 #include <string_view>
 #include <string>
@@ -153,59 +154,72 @@ private:
 
 template <Type TYPE>
 Promise<std::string>
-Open(std::string_view path) {
+Open(std::string_view path, std::vector<Filter> filters) {
    static std::mutex                                        s__thread_mutex{};
    static std::unordered_map<std::thread::id, std::jthread> s__threads{};
 
    co_return co_await MakePromise(
-     [path](
+     [path, filters = std::move(filters)](
        Resolve<std::string> const& resolve, Reject const& reject
      ) -> Promise<std::string, true> {
         {
            std::lock_guard lock{s__thread_mutex};
-           std::jthread    thread{
-             [&reject, &resolve, value = std::filesystem::path{ReplaceEnv(std::string{path})}]() {
-                ScopeExit _{[]() constexpr {
-                   std::lock_guard lock{s__thread_mutex};
+           std::jthread    thread{[&reject,
+                                &resolve,
+                                filters = std::move(filters),
+                                value = std::filesystem::path{ReplaceEnv(std::string{path})}]() {
+              ScopeExit _{[]() constexpr {
+                 std::lock_guard lock{s__thread_mutex};
 
-                   auto it = s__threads.find(std::this_thread::get_id());
-                   assert(it != s__threads.end());
-                   it->second.detach();
-                   s__threads.erase(it);
-                }};
+                 auto it = s__threads.find(std::this_thread::get_id());
+                 assert(it != s__threads.end());
+                 it->second.detach();
+                 s__threads.erase(it);
+              }};
 
-                try {
-                   FileDialog fdialog{};
+              try {
+                 FileDialog fdialog{};
 
-                   if constexpr (TYPE == Type::FILE) {
-                      std::array<COMDLG_FILTERSPEC, 1> file_types = {COMDLG_FILTERSPEC{
-                        L"MSFS Executable", L"FlightSimulator2024.exe;FlightSimulator.exe"
-                      }};
-                      fdialog.SetFileTypes(file_types);
-                   } else {
-                      fdialog.AddOptions(FOS_PICKFOLDERS);
-                   }
+                 if constexpr (TYPE == Type::FILE) {
+                    std::vector<COMDLG_FILTERSPEC>                     file_types{};
+                    std::vector<std::pair<std::wstring, std::wstring>> wfilters;
 
-                   if (std::filesystem::exists(value)) {
+                    for (auto const& filter : filters) {
+                       wfilters.emplace_back(
+                         utils::WidenString(filter.name_),
+                         utils::WidenString(
+                           filter.value_ | std::views::join_with(';')
+                           | std::ranges::to<std::string>()
+                         )
+                       );
 
-                      std::filesystem::path path{value};
-                      if (!std::filesystem::is_directory(path)) {
-                         path = path.parent_path();
-                      }
+                       auto const& [wname, wfilter] = wfilters.back();
+                       file_types.emplace_back(COMDLG_FILTERSPEC{wname.c_str(), wfilter.c_str()});
+                    }
+                    fdialog.SetFileTypes(file_types);
+                 } else {
+                    fdialog.AddOptions(FOS_PICKFOLDERS);
+                 }
 
-                      fdialog.SetFolder(path);
-                   }
+                 if (std::filesystem::exists(value)) {
 
-                   if (!fdialog.Show()) {
-                      return MakeReject<Exception>(reject, "FileDialog closed");
-                   }
+                    std::filesystem::path path{value};
+                    if (!std::filesystem::is_directory(path)) {
+                       path = path.parent_path();
+                    }
 
-                   return resolve(utils::NarrowString(fdialog.GetResult()));
-                } catch (...) {
-                   return reject(std::current_exception());
-                }
-             }
-           };
+                    fdialog.SetFolder(path);
+                 }
+
+                 if (!fdialog.Show()) {
+                    return MakeReject<Exception>(reject, "FileDialog closed");
+                 }
+
+                 return resolve(utils::NarrowString(fdialog.GetResult()));
+              } catch (...) {
+                 return reject(std::current_exception());
+              }
+           }};
            s__threads.emplace(thread.get_id(), std::move(thread));
         }
 
@@ -216,12 +230,12 @@ Open(std::string_view path) {
 }  // namespace
 
 Promise<std::string>
-OpenFile(std::string_view path) {
-   return MakePromise(Open<Type::FILE>, path);
+OpenFile(std::string_view path, std::vector<Filter> filters) {
+   return MakePromise(Open<Type::FILE>, path, std::move(filters));
 }
 
 Promise<std::string>
 OpenFolder(std::string_view path) {
-   return MakePromise(Open<Type::FOLDER>, path);
+   return MakePromise(Open<Type::FOLDER>, path, std::vector<dialog::Filter>{});
 }
 }  // namespace dialog

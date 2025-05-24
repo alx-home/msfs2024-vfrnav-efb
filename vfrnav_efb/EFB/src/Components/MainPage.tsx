@@ -18,7 +18,8 @@ import { FSComponent } from "@microsoft/msfs-sdk";
 import { GetFacilities, GetMetar } from "@shared/Facilities";
 import { MessageHandler, MessageType } from "@shared/MessageHandler";
 import { EditRecord, GetRecord, RemoveRecord } from "@shared/PlanPos";
-import { Manager } from "src/Manager";
+import { Manager } from "../Manager";
+import { FileExist, GetFile, OpenFile } from "@shared/Files";
 
 interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
   /** The page title */
@@ -70,6 +71,18 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onGetRecord(this.messageHandle, message);
   }
 
+  onGetFile(message: GetFile) {
+    this.props.manager.onGetFile(message);
+  }
+
+  onOpenFile(message: OpenFile) {
+    this.props.manager.onOpenFile(message);
+  }
+
+  onFileExists(message: FileExist) {
+    this.props.manager.onFileExists(message);
+  }
+
 
   destroy(): void {
     if (messageHandler !== undefined) {
@@ -83,6 +96,9 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("__REMOVE_RECORD__", this.onRemoveRecord)
       messageHandler.unsubscribe("__EDIT_RECORD__", this.onEditRecord)
       messageHandler.unsubscribe("__GET_RECORD__", this.onGetRecord)
+      messageHandler.unsubscribe("__GET_FILE__", this.onGetFile)
+      messageHandler.unsubscribe("__OPEN_FILE__", this.onOpenFile)
+      messageHandler.unsubscribe("__FILE_EXISTS__", this.onFileExists)
     }
 
     super.destroy();
@@ -111,6 +127,9 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__EDIT_RECORD__", this.onEditRecord.bind(this))
       messageHandler.subscribe("__REMOVE_RECORD__", this.onRemoveRecord.bind(this))
       messageHandler.subscribe("__GET_RECORD__", this.onGetRecord.bind(this))
+      messageHandler.subscribe("__GET_FILE__", this.onGetFile.bind(this))
+      messageHandler.subscribe("__OPEN_FILE__", this.onOpenFile.bind(this))
+      messageHandler.subscribe("__FILE_EXISTS__", this.onFileExists.bind(this))
     }
   }
 

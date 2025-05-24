@@ -15,8 +15,9 @@
 
 #pragma once
 
-#include <windows/Env.h>
+#include "window/FileDialog.h"
 
+#include <windows/Env.h>
 #include <webview/webview.h>
 #include <wrl/client.h>
 #include <condition_variable>
@@ -35,11 +36,12 @@ private:
 #endif
    void InstallBindings();
 
-   Promise<>            Abort();
-   Promise<bool>        Exists(std::string path);
-   Promise<bool>        ParentExists(std::string path);
-   Promise<>            Log(std::string value);
-   Promise<std::string> OpenFile(std::string defaultPath);
+   Promise<>     Abort();
+   Promise<bool> Exists(std::string path);
+   Promise<bool> ParentExists(std::string path);
+   Promise<>     Log(std::string value);
+   Promise<std::string>
+   OpenFile(std::string defaultPath, std::vector<dialog::Filter> const& filters);
    Promise<std::string> OpenFolder(std::string defaultPath);
    Promise<std::string> FindCommunity();
    Promise<std::string> DefaultInstallPath();

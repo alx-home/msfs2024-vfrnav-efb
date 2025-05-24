@@ -37,8 +37,15 @@ declare global {
   const __SIA_AZBA_DATE_ADDR__: string;
 
   interface Window {
-    vfrnav_postMessage: ((_: MessageType) => void) | undefined
+    vfrnav_postMessage: ((_: MessageType) => void) | undefined;
     vfrnav_onmessage: ((_: MessageType) => Promise<void>) | undefined;
+
+    file_exists: (_: string) => Promise<boolean>;
+    openFile: (_path: string, _filters: {
+      name: string,
+      value: string[]
+    }[]) => Promise<string>;
+    getFile: (_: string) => Promise<string>;
   }
 }
 

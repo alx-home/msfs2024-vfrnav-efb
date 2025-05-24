@@ -16,6 +16,8 @@ set(SOURCES
 
     Main/Main.cpp
 
+    Base64Utils.cpp
+
     Window/template/Window.cpp
 
     Server/Server.cpp
@@ -26,7 +28,7 @@ set(SOURCES
     Server/WebSockets/WebWebSocket.cpp
 
     Window/template/Bindings/log.cpp
-    Window/template/Bindings/openFile.cpp
+    Window/template/Bindings/Files.cpp
 )
 
 win32_executable(TARGET_NAME server

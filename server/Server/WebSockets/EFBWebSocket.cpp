@@ -13,14 +13,17 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "Base64Utils.h"
 #include "Messages/Messages.h"
 #include "../Server.h"
 
+#include <window/FileDialog.h>
 #include <boost/beast/websocket/error.hpp>
 #include <json/json.h>
 
 #include <processthreadsapi.h>
-#include <stdexcept>
+#include <filesystem>
+#include <ranges>
 #include <variant>
 
 using namespace boost::beast;
@@ -57,19 +60,14 @@ Server::EFBWebSocket::Unsubscribe(std::size_t id) {
 
 void
 Server::EFBWebSocket::VDispatchMessage(std::size_t id, ws::Message message) {
-   if (server_.subscribers_.contains(id)) {
-      if (std::holds_alternative<ws::msg::GetSettings>(message)
-          || std::holds_alternative<ws::msg::Settings>(message)) {
-         // todo
-      } else {
-         auto const message_str =
-           js::Stringify(ws::Proxy{.id_ = id, .content_ = std::move(message)});
-
-         ws_.text(true);
-         ws_.write(net::buffer(message_str));
-      }
+   if (std::holds_alternative<ws::msg::GetSettings>(message)
+       || std::holds_alternative<ws::msg::Settings>(message)) {
+      // todo
    } else {
-      assert(false);
+      auto const message_str = js::Stringify(ws::Proxy{.id_ = id, .content_ = std::move(message)});
+
+      ws_.text(true);
+      ws_.write(net::buffer(message_str));
    }
 }
 
@@ -78,6 +76,14 @@ Server::EFBWebSocket::Start() {
    if (!server_.want_run_) {
       return;
    }
+
+   server_.Dispatch([this]() constexpr {
+      auto const response =
+        js::Stringify(ws::Proxy{.id_ = 1, .content_ = ws::msg::HelloWorld{.type_ = "EFB"}});
+
+      ws_.text(true);
+      ws_.write(net::buffer(response));
+   });
 
    for (auto const& [id, handler] : server_.subscribers_) {
       server_.Dispatch([this, id]() constexpr {
@@ -138,9 +144,39 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
    try {
       auto message = js::Parse<ws::Proxy>(data);
 
-      if (auto const subscriber = server_.subscribers_.find(message.id_);
-          subscriber != server_.subscribers_.end()) {
-         subscriber->second(std::move(message.content_));
+      if (std::holds_alternative<ws::msg::FileExists>(message.content_)) {
+         auto const& msg = std::get<ws::msg::FileExists>(message.content_);
+         VDispatchMessage(
+           message.id_,
+           ws::msg::FileExistsResponse{
+             .id_ = msg.id_, .result_ = std::filesystem::is_regular_file(msg.path_)
+           }
+         );
+      } else if (std::holds_alternative<ws::msg::OpenFile>(message.content_)) {
+         auto const& msg = std::get<ws::msg::OpenFile>(message.content_);
+
+         dialog::OpenFile(msg.path_, {{.name_ = "Pdf File", .value_ = {"*.pdf"}}})
+           .Then(
+             [this, id = message.id_, req_id = msg.id_](std::string const& path) -> Promise<void> {
+                co_return VDispatchMessage(
+                  id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path}
+                );
+             }
+           )
+           .Detach();  // @todo do not detach
+      } else if (std::holds_alternative<ws::msg::GetFile>(message.content_)) {
+         auto const& msg = std::get<ws::msg::GetFile>(message.content_);
+
+         if (auto const data = Base64Open(msg.path_); data.empty()) {
+            VDispatchMessage(message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .data_ = ""});
+         } else {
+            VDispatchMessage(message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .data_ = data});
+         }
+      } else {
+         if (auto const subscriber = server_.subscribers_.find(message.id_);
+             subscriber != server_.subscribers_.end()) {
+            subscriber->second(std::move(message.content_));
+         }
       }
    } catch (std::runtime_error e) {
       std::cerr << e.what() << std::endl;
