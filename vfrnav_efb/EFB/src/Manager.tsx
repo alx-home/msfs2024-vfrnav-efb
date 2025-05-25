@@ -68,10 +68,27 @@ export class Manager {
 
       if (this.socket) {
          this.socket.close();
+
+         // Leave rooms for socket to be correctly closed
+         this.socketTimeout = setTimeout(this.connectToServer.bind(this), 1000);
+         return;
       }
       this.socket = new WebSocket("ws://localhost:" + this.GetSettings().serverPort);
 
       const messageHandlers = new Map<number, (_: MessageType) => void>();
+
+      const onClose = () => {
+         if (!done.value) {
+            done.value = true;
+
+            messageHandlers.forEach((messageHandler, id) => this.unsubscribe(id, messageHandler))
+            this.socket = undefined;
+            if (this.socketTimeout) {
+               clearTimeout(this.socketTimeout)
+            }
+            this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
+         }
+      }
 
       const done = {
          value: false
@@ -122,7 +139,7 @@ export class Manager {
             }
          } else if (isMessage("__BYE_BYE__", data.content)) {
             if (data.content.__BYE_BYE__ === "EFB") {
-               this.socket!.close();
+               this.socket?.close();
             } else {
                const handler = messageHandlers.get(data.id);
 
@@ -162,18 +179,6 @@ export class Manager {
          }
       };
 
-      const onClose = () => {
-         if (!done.value) {
-            done.value = true;
-
-            messageHandlers.forEach((messageHandler, id) => this.unsubscribe(id, messageHandler))
-            this.socket = undefined;
-            if (this.socketTimeout) {
-               clearTimeout(this.socketTimeout)
-            }
-            this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
-         }
-      }
       this.socket.onclose = () => {
          onClose()
       };
@@ -376,7 +381,6 @@ export class Manager {
 
    onGetSettings(messageHandler: (_: SharedSettings) => void) {
       const settings = this.GetSettings()
-      this.connectToServer();
 
       if (settings) {
          messageHandler(settings);
