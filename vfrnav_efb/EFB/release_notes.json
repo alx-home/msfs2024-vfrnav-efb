@@ -135,9 +135,15 @@
          ]
       },
       {
-         "version": "0.5.0",
+         "version": "1.0.0",
          "date": "MAY 25, 2025",
          "notes": [
+            "**ALL**",
+            "  Fixes:",
+            "     - SU12: Application malfunction / SU12: Dysfonctionnement de l'application",
+            "  Improvements / améliorations:",
+            "     - Menu items adjust to DPI settings / Les éléments du menu s'adaptent aux paramètres DPI",
+            "",
             "**Installer/Server (new)**",
             "  Improvements / améliorations:",
             "     - Added the ability to load PDF files from the computer / Ajout de la possibilité de charger des fichiers PDF depuis le PC.",
