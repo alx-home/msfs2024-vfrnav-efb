@@ -30,6 +30,7 @@ export const Body = () => {
    const [startServer, setStartServer] = useState(true);
    const [port, setPort] = useState<number | undefined>(undefined);
    const [invalidPort, setInvalidPort] = useState<boolean>(true);
+   const [reloadPort, setReloadPort] = useState(true);
 
    useEffect(() => {
       (async () => {
@@ -45,6 +46,7 @@ export const Body = () => {
          // Enforce input port (Initial value)
          if (port != 0) {
             setPort(port);
+            setReloadPort(true);
          }
       })()
    }, []);
@@ -61,6 +63,7 @@ export const Body = () => {
             } else {
                setPort(undefined);
             }
+            setReloadPort(true);
          }
       })()
    }, []);
@@ -138,7 +141,7 @@ export const Body = () => {
                         <Input className='peer transition-all max-w-60 px-2' inputClass='text-right' value={port?.toString()}
                            active={true} placeholder={
                               "Server listening port"
-                           } inputMode={'decimal'}
+                           } inputMode={'decimal'} reload={reloadPort}
                            validate={validatePort} onChange={_setPort} />
                      </div>
                      <div className="flex flex-row grow opacity-0 transition-all justify-end">
