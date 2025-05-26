@@ -78,11 +78,15 @@ const useFolder = ({ placeholder, initPath, autoSub }: {
    const [path, setPath] = useState(initPath ?? '');
    const [pathValid, setPathValid] = useState(true);
    const [pathReload, setPathReload] = useState(false);
+   const forcePath = useCallback((path: string) => {
+      setPath(path)
+      setPathReload(true);
+   }, []);
    const askPath = useCallback(async (value: string) => {
       const result = await window.openFolder((autoSub && value.lastIndexOf('\\') > 0) ? value.substring(0, value.lastIndexOf('\\') + 1) : value)
       if (result && result !== '') {
-         setPathReload(true);
          setPath(autoSub ? result + '\\' + autoSub : result);
+         setPathReload(true);
          setPathValid(true);
       }
    }, [autoSub]);
@@ -94,7 +98,7 @@ const useFolder = ({ placeholder, initPath, autoSub }: {
    }, [pathReload]);
 
    return {
-      path: path, valid: pathValid, setValid: setPathValid, ask: askPath, set: setPath, reload: pathReload, elem:
+      path: path, valid: pathValid, setValid: setPathValid, ask: askPath, set: forcePath, reload: pathReload, elem:
          <Path onClick={askPath} onChange={setPath} path={path} defaultValue='' reload={pathReload}
             placeholder={placeholder} setIsValid={setPathValid} checkParent={!!autoSub} />
    };
