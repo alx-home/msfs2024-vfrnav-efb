@@ -83,11 +83,15 @@ const useFolder = ({ placeholder, initPath, autoSub }: {
       setPathReload(true);
    }, []);
    const askPath = useCallback(async (value: string) => {
-      const result = await window.openFolder((autoSub && value.lastIndexOf('\\') > 0) ? value.substring(0, value.lastIndexOf('\\') + 1) : value)
-      if (result && result !== '') {
-         setPath(autoSub ? result + '\\' + autoSub : result);
-         setPathReload(true);
-         setPathValid(true);
+      try {
+         const result = await window.openFolder((autoSub && value.lastIndexOf('\\') > 0) ? value.substring(0, value.lastIndexOf('\\') + 1) : value)
+         if (result && result !== '') {
+            setPath(autoSub ? result + '\\' + autoSub : result);
+            setPathReload(true);
+            setPathValid(true);
+         }
+      } catch {
+         // Cancel
       }
    }, [autoSub]);
 
