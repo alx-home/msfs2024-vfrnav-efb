@@ -171,7 +171,6 @@ import '@polyfills/drag-events/default.css';
       }
     })();
 
-
     window.getFile = (() => {
       const id = {
         next: 0
@@ -210,6 +209,32 @@ import '@polyfills/drag-events/default.css';
             id: my_id
           });
         });
+      }
+    })();
+
+    window.severStateChanged = (() => {
+      const state = {
+        current: false
+      }
+      const resolvers = new Array<(_: boolean) => void>();
+
+      messageHandler.subscribe("__SERVER_STATE__", message => {
+        state.current = message.state;
+        const resolvers_ = [...resolvers];
+        resolvers.length = 0;
+        resolvers_.forEach(resolve => resolve(state.current));
+      });
+
+      messageHandler.send({ __GET_SERVER_STATE__: true });
+
+      return async (currentState: boolean) => {
+        if (currentState != state.current) {
+          return state.current
+        } else {
+          return new Promise<boolean>((resolve) => {
+            resolvers.push(resolve)
+          });
+        }
       }
     })();
   }

@@ -46,6 +46,7 @@ declare global {
       value: string[]
     }[]) => Promise<string>;
     getFile: (_: string) => Promise<string>;
+    severStateChanged: (_currentState: boolean) => Promise<boolean>;
   }
 }
 
