@@ -97,6 +97,8 @@ private:
 
    Promise<ServerState, true>
    WatchServerState(promise::Resolve<ServerState> const&, promise::Reject const&);
+   Promise<bool, true>
+   WatchEfbState(promise::Resolve<bool> const&, promise::Reject const&, bool currentState);
    Promise<ServerState> GetServerState();
    Promise<>            SwitchServer();
 

@@ -42,6 +42,7 @@ struct ByeBye {
 #include "Settings.h"
 #include "PlanePos.h"
 #include "Files.h"
+#include "NavData.h"
 
 namespace ws {
 
@@ -65,6 +66,8 @@ using Message = std::variant<
   msg::OpenFileResponse,
   msg::GetFile,
   msg::GetFileResponse,
+  msg::ImportNav,
+  msg::ExportNav,
   msg::HelloWorld,
   msg::ByeBye>;
 

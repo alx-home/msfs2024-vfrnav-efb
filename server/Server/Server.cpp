@@ -96,11 +96,11 @@ Server::RejectAll() {
 
 void
 Server::Notify(ServerState state, Server::Lock) {
-   Resolvers::Vector resolvers{};
+   Resolvers<ServerState>::Vector resolvers{};
    std::swap(resolvers_, resolvers);
 
    for (auto const& [resolve, _] : resolvers) {
-      resolve(std::move(state));
+      (*resolve)(std::move(state));
    }
 }
 
@@ -331,6 +331,48 @@ Server::Unsubscribe(std::size_t id) {
       auto const efb_socket = efb_socket_;
       if (efb_socket) {
          efb_socket->Unsubscribe(id);
+      }
+
+      // Notify EFB State ==> Clean Promises
+      auto const resolvers = std::move(efb_resolvers_);
+      efb_resolvers_       = {};
+
+      for (auto const& [resolve, _] : resolvers) {
+         (*resolve)(efb_connected_);
+      }
+   });
+}
+
+void
+Server::WatchServerState(Resolve<ServerState> const& resolve, Reject const& reject) {
+   std::unique_lock lock{mutex_};
+   resolvers_.emplace_back(resolve.shared_from_this(), reject.shared_from_this());
+}
+
+void
+Server::WatchEFBState(Resolve<bool> const& resolve, Reject const& reject, bool currentState) {
+   Dispatch([this,
+             resolve = resolve.shared_from_this(),
+             reject  = reject.shared_from_this(),
+             currentState]() constexpr {
+      if (currentState != efb_connected_) {
+         (*resolve)(efb_connected_);
+         return;
+      }
+
+      efb_resolvers_.emplace_back(std::move(resolve), std::move(reject));
+   });
+}
+
+void
+Server::NotifyEFBState(bool value) {
+   Dispatch([this, value]() constexpr {
+      auto const resolvers = std::move(efb_resolvers_);
+      efb_resolvers_       = {};
+      efb_connected_       = value;
+
+      for (auto const& [resolve, _] : resolvers) {
+         (*resolve)(value);
       }
    });
 }

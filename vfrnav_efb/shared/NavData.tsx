@@ -15,18 +15,33 @@
 
 import { GenRecord } from './Types';
 
-export type HelloWorld = {
-   __HELLO_WORLD__: "EFB" | "Web",
+export type ExportNav = {
+   __EXPORT_NAV__: true,
+
+   data: { name: string, shortName: string, order: number, data: string }[]
 };
 
-export const HelloWorldRecord = GenRecord<HelloWorld>({
-   __HELLO_WORLD__: "EFB",
-}, {})
+export const ExportNavRecord = GenRecord<ExportNav>({
+   __EXPORT_NAV__: true,
 
-export type ByeBye = {
-   __BYE_BYE__: "EFB" | "Web",
+   data: []
+}, {
+   data: {
+      array: true, record: {
+         name: "string",
+         shortName: "string",
+         order: "number",
+         data: "string"
+      }
+   }
+})
+
+
+export type ImportNav = {
+   __IMPORT_NAV__: true,
 };
 
-export const ByeByeRecord = GenRecord<ByeBye>({
-   __BYE_BYE__: "EFB",
+export const ImportNavRecord = GenRecord<ImportNav>({
+   __IMPORT_NAV__: true,
 }, {})
+

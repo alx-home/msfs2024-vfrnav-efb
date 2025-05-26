@@ -15,7 +15,7 @@
 
 import { Collection, Map as olMap, MapBrowserEvent, getUid } from 'ol';
 import { createContext, Dispatch, PropsWithChildren, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
-import { NavData } from "./MapMenu/Menus/Nav";
+import { NavData } from './MapMenu/Menus/Nav';
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
 import VectorLayer from "ol/layer/Vector";

@@ -123,8 +123,8 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
   }, [setOpen]);
 
   const onMouseDown = useCallback((e: MouseEvent) => onDragStart(e.pageX), [onDragStart])
-  const className = useMemo(() => ('overflow-hidden shrink-0 flex flex-col [&>*:not(:first-child)]:mt-[7px]'
-    + (width > 0 ? ' p-3 pt-[25px]' : ' hidden')), [width]);
+  const className = useMemo(() => ('overflow-hidden shrink-0 flex flex-col'
+    + (width > 0 ? ' p-3' : ' hidden')), [width]);
 
   const layer = useMemo(() => {
     switch (menu) {

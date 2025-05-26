@@ -21,7 +21,6 @@ set(SOURCES
     Window/template/Window.cpp
 
     Server/Server.cpp
-    Server/Resolvers.cpp
 
     Server/WebSockets/WebSocket.cpp
     Server/WebSockets/EFBWebSocket.cpp

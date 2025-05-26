@@ -15,6 +15,7 @@
 
 #include "main.h"
 
+#include "Exceptions.h"
 #include "Resources.h"
 #include "Server/WebSockets/Messages/Messages.h"
 #include "Window/template/Window.h"
@@ -291,6 +292,7 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
 
 void
 Main::SetServerPort(uint16_t port) {
+   assert(server_);
    return server_->SetServerPort(port);
 }
 
@@ -338,17 +340,23 @@ Main::WatchServerState(
   promise::Resolve<ServerState> const& resolve,
   promise::Reject const&               reject
 ) {
-   if (Running()) {
-      assert(server_);
-      std::shared_lock lock{server_->mutex_};
-      server_->resolvers_.emplace_back(std::cref(resolve), std::cref(reject));
-   } else {
-      MakeReject<AppStopping>(reject);
-   }
+   assert(server_);
+   server_->WatchServerState(resolve, reject);
+}
+
+void
+Main::WatchEFBState(
+  promise::Resolve<bool> const& resolve,
+  promise::Reject const&        reject,
+  bool                          currentState
+) {
+   assert(server_);
+   server_->WatchEFBState(resolve, reject, currentState);
 }
 
 void
 Main::FlushServerState() {
+   assert(server_);
    server_->FlushState();
 }
 

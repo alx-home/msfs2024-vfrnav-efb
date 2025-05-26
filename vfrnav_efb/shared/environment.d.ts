@@ -47,6 +47,7 @@ declare global {
     }[]) => Promise<string>;
     getFile: (_: string) => Promise<string>;
     severStateChanged: (_currentState: boolean) => Promise<boolean>;
+    efbStateChanged: (_currentState: boolean) => Promise<boolean>;
   }
 }
 

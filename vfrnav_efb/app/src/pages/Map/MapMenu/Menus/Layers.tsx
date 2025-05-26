@@ -85,14 +85,16 @@ export const Layers = ({ layers, onLayerChange, className, style }: {
     onLayerChange(orders.map((order, index) => ({ index: index, order: order })));
   }, [onLayerChange]);
 
-  return <Scroll className={className} style={style}>
+  return <div className={'flex flex-col h-full overflow-hidden p-2 pt-8'}>
     <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
       Layers
     </div>
-    <Draggable className='@container flex flex-col p-4 [&>*:not(:first-child):has(>:not(.hidden))]:mt-[7px] w-full'
-      vertical={true}
-      onOrdersChange={onOrdersChange}>
-      {childs}
-    </Draggable>
-  </Scroll>;
+    <Scroll className={className} style={style}>
+      <Draggable className='@container flex flex-col p-4 [&>*:not(:first-child):has(>:not(.hidden))]:mt-[7px] w-full'
+        vertical={true}
+        onOrdersChange={onOrdersChange}>
+        {childs}
+      </Draggable>
+    </Scroll>
+  </div>;
 };
