@@ -3,6 +3,7 @@ import { AirportFacility, FrequencyType, GetFacilities, GetMetar, Metar } from "
 import { FileExist, GetFile, OpenFile } from "@shared/Files";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { EditRecord, GetRecord, PlanePos, PlanePoses, PlaneRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord } from "@shared/PlanPos";
+import { ServerState } from "@shared/Server";
 import { SharedSettings, SharedSettingsRecord } from "@shared/Settings";
 import { fill } from "@shared/Types";
 
@@ -20,6 +21,7 @@ class FacilityManager {
 export class Manager {
    private readonly facilityLoader: FacilityLoader;
    private readonly facilityManager = new Map<number, FacilityManager>();
+   private serverConnected = false;
 
    private socket: WebSocket | undefined;
    private socketTimeout: NodeJS.Timeout | undefined;
@@ -31,6 +33,10 @@ export class Manager {
       setInterval(this.fetchPosition.bind(this), 100);
 
       this.connectToServer();
+   }
+
+   public get isServerConnected() {
+      return this.serverConnected;
    }
 
    private plane: PlanePos[] = [];
@@ -78,8 +84,14 @@ export class Manager {
       const messageHandlers = new Map<number, (_: MessageType) => void>();
 
       const onClose = () => {
-         if (!done.value) {
-            done.value = true;
+         if (!state.done) {
+            this.serverConnected = false;
+            this.subscribers.forEach(messageHandler => messageHandler({
+               "__SERVER_STATE__": true,
+
+               state: false
+            }));
+            state.done = true;
 
             messageHandlers.forEach((messageHandler, id) => this.unsubscribe(id, messageHandler))
             this.socket = undefined;
@@ -90,9 +102,10 @@ export class Manager {
          }
       }
 
-      const done = {
-         value: false
+      const state = {
+         done: false
       };
+      const canSendMessage = (message: MessageType) => !isMessage("__SETTINGS__", message) && !isMessage("__GET_SETTINGS__", message) && !isMessage("__SERVER_STATE__", message);
       this.socket.onmessage = (event) => {
          const data = (JSON.parse(event.data) as {
             id: number,
@@ -104,12 +117,12 @@ export class Manager {
                // EFB Server used to relay message between EFB app (id:0) / server
 
                const messageHandler = (message: MessageType) => {
-                  if (done.value) {
+                  if (state.done) {
                      console.assert(false)
                      this.unsubscribe(data.id, messageHandler);
                      return;
                   }
-                  if (!isMessage("__SETTINGS__", message) && !isMessage("__GET_SETTINGS__", message)) {
+                  if (canSendMessage(message)) {
                      this.socket?.send(JSON.stringify({
                         id: 0,
                         content: message
@@ -119,14 +132,21 @@ export class Manager {
 
                messageHandlers.set(data.id, messageHandler);
                this.subscribe(data.id, messageHandler);
+
+               this.serverConnected = true;
+               this.subscribers.forEach(messageHandler => messageHandler({
+                  "__SERVER_STATE__": true,
+
+                  state: true
+               }));
             } else {
                const messageHandler = (message: MessageType) => {
-                  if (done.value) {
+                  if (state.done) {
                      console.assert(false)
                      this.unsubscribe(data.id, messageHandler);
                      return;
                   }
-                  if (!isMessage("__SETTINGS__", message) && !isMessage("__GET_SETTINGS__", message)) {
+                  if (canSendMessage(message)) {
                      this.socket?.send(JSON.stringify({
                         id: data.id,
                         content: message
@@ -387,6 +407,10 @@ export class Manager {
       }
    }
 
+   onGetServerState(messageHandler: (_: ServerState) => void) {
+      messageHandler({ __SERVER_STATE__: true, state: this.serverConnected })
+   }
+
    onGetPlaneRecords(messageHandler: (_: PlaneRecords) => void) {
       const flightsStr = GetStoredData("flights") as string;
       messageHandler(fill({ __RECORDS__: true, value: flightsStr === "" ? [] : (JSON.parse(flightsStr) as PlaneRecord[]) }, PlaneRecordsRecord.defaultValues));
@@ -442,6 +466,11 @@ export class Manager {
 
    subscribe(id: number, messageHandler: (_: MessageType) => void) {
       this.subscribers.set(id, messageHandler);
+      messageHandler({
+         "__SERVER_STATE__": true,
+
+         state: this.serverConnected
+      });
    }
 
    unsubscribe(id: number, messageHandler: ((_: MessageType) => void)) {

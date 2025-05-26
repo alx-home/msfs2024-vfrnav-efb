@@ -19,8 +19,9 @@ import { SharedSettingsRecord, SharedSettings } from './Settings';
 import { EditRecord, EditRecordRecord, GetRecord, GetRecordRecord, PlanePos, PlanePoses, PlanePosesRecord, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
 import { ByeBye, ByeByeRecord, HelloWorld, HelloWorldRecord } from './HelloWorld';
 import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord, GetFile, GetFileRecord, GetFileResponse, GetFileResponseRecord, OpenFile, OpenFileRecord, OpenFileResponse, OpenFileResponseRecord } from './Files';
+import { GetServerState, GetServerStateRecord, ServerState, ServerStateRecord } from './Server';
 
-const MessageIdValues = ["__HELLO_WORLD__", "__BYE_BYE__", "__FILE_EXISTS__", "__FILE_EXISTS_RESPONSE__", "__OPEN_FILE__", "__OPEN_FILE_RESPONSE__", "__GET_FILE__", "__GET_FILE_RESPONSE__", "__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__", "__GET_FACILITIES__",
+const MessageIdValues = ["__SERVER_STATE__", "__GET_SERVER_STATE__", "__HELLO_WORLD__", "__BYE_BYE__", "__FILE_EXISTS__", "__FILE_EXISTS_RESPONSE__", "__OPEN_FILE__", "__OPEN_FILE_RESPONSE__", "__GET_FILE__", "__GET_FILE_RESPONSE__", "__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__", "__GET_FACILITIES__",
    "__FACILITIES__", "__GET_METAR__", "__METAR__", "__PLANE_POS__", "__PLANE_POSES__", "__RECORDS__",
    "__REMOVE_RECORD__", "__EDIT_RECORD__", '__GET_RECORD__'] as const;
 type MessageId = (typeof MessageIdValues)[number];
@@ -36,6 +37,8 @@ const GetRecordsRecord = GenRecord<GetRecords>({
 }, {});
 
 type MessageTypes = {
+   "__SERVER_STATE__": ServerState,
+   "__GET_SERVER_STATE__": GetServerState,
    "__BYE_BYE__": ByeBye,
    "__HELLO_WORLD__": HelloWorld,
    "__FILE_EXISTS__": FileExist,
@@ -61,6 +64,8 @@ type MessageTypes = {
 export type MessageType = MessageTypes[keyof MessageTypes];
 
 const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
+   "__SERVER_STATE__": ServerStateRecord,
+   "__GET_SERVER_STATE__": GetServerStateRecord,
    "__BYE_BYE__": ByeByeRecord,
    "__HELLO_WORLD__": HelloWorldRecord,
    "__FILE_EXISTS__": FileExistRecord,

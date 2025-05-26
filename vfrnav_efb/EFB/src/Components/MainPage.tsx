@@ -47,6 +47,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onGetSettings(this.messageHandle);
   }
 
+  onGetServerState() {
+    this.props.manager.onGetServerState(this.messageHandle);
+  }
+
   onGetPlaneRecords() {
     this.props.manager.onGetPlaneRecords(this.messageHandle);
   }
@@ -90,6 +94,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
       messageHandler.unsubscribe("__SETTINGS__", this.props.manager.onSharedSettings)
       messageHandler.unsubscribe("__GET_SETTINGS__", this.onGetSettings)
+      messageHandler.unsubscribe("__GET_SERVER_STATE__", this.onGetServerState)
       messageHandler.unsubscribe("__GET_RECORDS__", this.onGetPlaneRecords)
       messageHandler.unsubscribe("__GET_FACILITIES__", this.onGetFacilities)
       messageHandler.unsubscribe("__GET_METAR__", this.onGetMetar)
@@ -121,6 +126,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
       messageHandler.subscribe("__SETTINGS__", this.props.manager.onSharedSettings.bind(this.props.manager))
       messageHandler.subscribe("__GET_SETTINGS__", this.onGetSettings.bind(this))
+      messageHandler.subscribe("__GET_SERVER_STATE__", this.onGetServerState.bind(this))
       messageHandler.subscribe("__GET_RECORDS__", this.onGetPlaneRecords.bind(this))
       messageHandler.subscribe("__GET_FACILITIES__", this.onGetFacilities.bind(this))
       messageHandler.subscribe("__GET_METAR__", this.onGetMetar.bind(this))

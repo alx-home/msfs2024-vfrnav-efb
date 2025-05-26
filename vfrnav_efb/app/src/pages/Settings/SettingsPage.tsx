@@ -595,7 +595,7 @@ export const SettingsPage = ({ active }: {
             </Group>
             {__MSFS_EMBEDED__ ?
                <Group name="Server">
-                  <InputItem name="Port" type="text" placeholder={"VFRNav' server port"} inputMode="decimal"
+                  <InputItem name="Port" type="text" placeholder={"VFRNav' server port (default 48578)"} inputMode="decimal"
                      value={settings.serverPort.toString()} defaultValue={SharedSettingsRecord.defaultValues.serverPort.toString()}
                      validate={validateServerPort}
                      onChange={setServerPort}>

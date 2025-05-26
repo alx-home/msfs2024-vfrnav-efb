@@ -22,69 +22,27 @@ import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, 
 import { Src } from "./ChartsPage";
 
 import loadingImg from '@alx-home/images/loading.svg';
+import { useServer } from "@Utils/useServer";
 
 const sources = ['Local', 'SIA', 'TEMSI', 'Weather Fronts'] as const;
 type Source = typeof sources[number];
 
-export const ChartsPopup = ({ setSrcs }: {
-  setSrcs: Dispatch<SetStateAction<Map<string, Src>>>
+const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, loading, enable }: {
+  sourceType: Source,
+  inputRef: React.RefObject<HTMLInputElement | null>,
+  setValid: Dispatch<SetStateAction<boolean>>,
+  setResult: Dispatch<SetStateAction<string>>,
+  download: () => void,
+  loading: boolean,
+  enable: boolean
 }) => {
-  const { getSIAPDF } = useContext(SettingsContext)!;
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const { setPopup, emptyPopup } = useContext(SettingsContext)!;
-  const [sourceType, setSourceType] = useState<Source>("Local")
-  const [valid, setValid] = useState(false);
-  const [partialValid, setPartialValid] = useState(true);
-  const [result, setResult] = useState("");
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>();
-  const active = useMemo(() => !loading && (sourceType === 'SIA' || sourceType === 'Local'), [sourceType, loading]);
-
-  const [pdf, setPdf] = useState<Uint8Array | undefined>();
-
-  const key = useKeyUp();
-  const [pathReload, setPathReload] = useState(false);
   const [path, setPath] = useState('');
-
-  const validator = useMemo(() => {
-    switch (sourceType) {
-      case "SIA":
-        return async (_value: string) => {
-          const result = /^(L|$)(F|$)([a-z]{1,2})?$/i.test(_value)
-          setValid(result && /^LF[a-z]{2}.?$/i.test(_value))
-          setPartialValid(result);
-          return result
-        }
-
-      case "Local":
-        return async (_value: string) => {
-          const result = _value.endsWith('.pdf') && await window.file_exists(_value);
-          setValid(result)
-          setPartialValid(result);
-          return result
-        }
-
-      default:
-        return async () => {
-          setValid(false)
-          return false
-        }
-    }
-  }, [sourceType]);
-  const sourceMessage = useMemo(() => {
-    switch (sourceType) {
-      case "SIA":
-        return "Enter an OACI code"
-      case "Local":
-        return "Select a file to upload"
-
-      default:
-        return "not yet implemented !"
-    }
-  }, [sourceType]);
-
+  const [pathReload, setPathReload] = useState(false);
+  const [partialValid, setPartialValid] = useState(true);
+  const [reload, setReload] = useState(true);
+  const active = useMemo(() => !loading && (sourceType === 'SIA' || sourceType === 'Local'), [sourceType, loading]);
   const errorMessage = useMemo(() => {
     switch (sourceType) {
       case "SIA":
@@ -97,12 +55,13 @@ export const ChartsPopup = ({ setSrcs }: {
         return "not yet implemented !"
     }
   }, [sourceType]);
-  const nameMessage = useMemo(() => {
+
+  const sourceMessage = useMemo(() => {
     switch (sourceType) {
       case "SIA":
-        return "Page name for this pdf (default: ICAO code)"
+        return "Enter an OACI code"
       case "Local":
-        return "Page name for this pdf (default: File name)"
+        return "Select a file to upload"
 
       default:
         return "not yet implemented !"
@@ -115,11 +74,94 @@ export const ChartsPopup = ({ setSrcs }: {
       value: ["*.pdf"]
     }])
     if (result && result !== '') {
-      setPathReload(true);
       setPath(result);
+      setPathReload(true);
       setValid(true);
+      setPartialValid(true);
+
+      inputRef.current?.focus();
     }
-  }, [path]);
+  }, [path, setValid]);
+
+  const validator = useMemo(() => {
+    switch (sourceType) {
+      case "SIA":
+        return async (value: string) => {
+          setValid(false);
+          const result = /^LF[a-z]{2}$/i.test(value);
+          setValid(result);
+          return result
+        }
+
+      case "Local":
+        return async (value: string) => {
+          setValid(false);
+          const result = path.endsWith('.pdf') && await window.file_exists(value);
+          setValid(result);
+          return result
+        }
+
+      default:
+        return async () => {
+          setValid(false);
+        }
+    }
+  }, [path, setValid, sourceType]);
+
+  const partialValidator = useMemo(() => {
+    switch (sourceType) {
+      case "SIA":
+        return async (value: string) => {
+          const result = /^(L|$)(F|$)([a-z]{1,2})?$/i.test(value)
+          setPartialValid(result);
+          setPath(value);
+          return result
+        }
+
+      case "Local":
+        return async (value: string) => {
+          const result = value.endsWith('.pdf') && await window.file_exists(value);
+          setPartialValid(result);
+          setPath(value);
+          return result
+        }
+
+      default:
+        return async () => {
+          setPartialValid(false)
+          setValid(false);
+          return false
+        }
+    }
+  }, [setValid, sourceType]);
+
+  useEffect(() => {
+    if (enable) {
+      setReload(true);
+    }
+  }, [enable]);
+
+  useEffect(() => {
+    if (reload) {
+      globalRef.current = inputRef.current;
+      setPathReload(true);
+      validator(path);
+      setResult(path);
+
+      setReload(false);
+    }
+  }, [globalRef, path, reload, setResult, validator]);
+
+  useEffect(() => {
+    if (pathReload) {
+      setPathReload(false)
+    }
+  }, [pathReload]);
+
+  useEffect(() => {
+    validator(path);
+    setResult(path);
+  }, [path, setResult, validator])
 
   const fileBrowser = useMemo(() => {
     return sourceType == "Local" ? <EndSlot>
@@ -129,6 +171,56 @@ export const ChartsPopup = ({ setSrcs }: {
       </div>
     </EndSlot> : <></>
   }, [openFile, sourceType]);
+
+
+  return <div className={"flex flex-col grow transition-all" + (enable ? "" : " hidden") + (partialValid ? "" : " -mt-4 mb-4")}>
+    <div className="flex flex-row justify-end">
+      <Input active={active} ref={inputRef} placeholder={sourceMessage} inputMode="text" value={path}
+        validate={partialValidator}
+        reload={pathReload} onValidate={download} className='peer transition-all pr-0'  >
+        {fileBrowser}
+      </Input>
+    </div>
+    <div className={"flex flex-row grow transition-all pl-4" + (partialValid ? " opacity-0" : " opacity-100")}>
+      <p className="pt-1 text-red-500 text-base h-0 [text-shadow:1px_2px_8px_rgba(0_0_0_0.2)]">
+        {errorMessage}
+      </p>
+    </div>
+  </div>
+}
+
+export const ChartsPopup = ({ setSrcs }: {
+  setSrcs: Dispatch<SetStateAction<Map<string, Src>>>
+}) => {
+  const { getSIAPDF } = useContext(SettingsContext)!;
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+  const [sourceType, setSourceType] = useState<Source>("Local")
+  const [valid, setValid] = useState(false);
+  const [result, setResult] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const notLoading = useMemo(() => !loading, [loading]);
+  const [error, setError] = useState<string | undefined>();
+  const [pdf, setPdf] = useState<Uint8Array | undefined>();
+  const serverConnected = useServer();
+  const disabled = useMemo(() => error, [error]);
+  const ready = useMemo(() => valid && !error && !loading, [error, loading, valid]);
+
+  const key = useKeyUp();
+
+  const nameMessage = useMemo(() => {
+    switch (sourceType) {
+      case "SIA":
+        return "Page name for this pdf (default: ICAO code)"
+      case "Local":
+        return "Page name for this pdf (default: File name)"
+
+      default:
+        return "not yet implemented !"
+    }
+  }, [sourceType]);
 
   const setSource = useCallback((sourceType: Source) => {
     inputRef.current!.value = ''
@@ -149,7 +241,6 @@ export const ChartsPopup = ({ setSrcs }: {
     if (valid) {
       setError(undefined);
       setLoading(true);
-
 
       switch (sourceType) {
         case "SIA": {
@@ -186,6 +277,9 @@ export const ChartsPopup = ({ setSrcs }: {
     }
   }, [sourceType, getSIAPDF, result, valid]);
 
+  const tabs = useMemo(() =>
+    sources.map(source => <Tab enable={source === sourceType} key={source} sourceType={source} loading={loading || !!disabled} download={download} inputRef={inputRef} setResult={setResult} setValid={setValid} />)
+    , [disabled, download, loading, sourceType]);
 
   useEffect(() => {
     if (key == 'Escape') {
@@ -212,18 +306,21 @@ export const ChartsPopup = ({ setSrcs }: {
     }
   }, [sourceType, emptyPopup, name, pdf, result, setPopup, setSrcs]);
 
-
   useEffect(() => {
-    if (pathReload) {
-      setPathReload(false);
+    if (sourceType === 'Local') {
+      if (serverConnected) {
+        if (error === "Server not connected!") {
+          setError(undefined);
+        }
+      } else {
+        setError("Server not connected!");
+      }
     }
-  }, [pathReload]);
+  }, [error, serverConnected, sourceType]);
 
   useEffect(() => {
     inputRef.current?.focus()
   }, []);
-
-  useEffect(() => setValid(false), [sourceType]);
 
   return <div className='relative flex flex-col p-2 [&>:not(:first-child_.no-margin)]:mt-8 w-full'>
     <img src={loadingImg} alt='loading' className={"absolute w-72 right-[-5rem] top-[-4rem] z-50" + (loading ? '' : ' hidden')} />
@@ -231,24 +328,13 @@ export const ChartsPopup = ({ setSrcs }: {
       <div className='text-2xl font-semibold'>
         Source
       </div>
-      <div className='flex flex-col [&>:not(:first-child)]:ml-2 shadow-sm'>
-        <Tabs disabled={loading} tabs={Array.from(sources)} activeTab={sourceType} switchTab={switchSource}>
+      <div className='flex flex-col [&>:not(:first-child)]:ml-2 shadow-xl border-slate-700 border-1 pb-4'>
+        <Tabs disabled={loading} tabs={Array.from(sources)} activeTab={sourceType} switchTab={switchSource} />
+        <div className='grid shrink px-4'>
           <div className='flex flex-col grow justify-center'>
-            <div className="flex flex-col grow">
-              <div className="flex flex-row transition-all justify-end">
-                <Input active={active} ref={inputRef} placeholder={sourceMessage} inputMode="text" value={path}
-                  validate={validator} onChange={setResult} reload={pathReload} onValidate={download} className='peer transition-all pr-0'  >
-                  {fileBrowser}
-                </Input>
-              </div>
-              <div className={"flex flex-row grow transition-all" + (partialValid ? " opacity-0" : " opacity-100 pl-4")}>
-                <p className="pt-1 text-red-500 text-base h-0">
-                  {errorMessage}
-                </p>
-              </div>
-            </div>
+            {tabs}
           </div>
-        </Tabs>
+        </div>
       </div>
     </div>
     <div className="flex flex-col [&>:not(:first-child)]:mt-3">
@@ -256,26 +342,26 @@ export const ChartsPopup = ({ setSrcs }: {
         Name
       </div>
       <div className='flex'>
-        <Input active={active} placeholder={nameMessage}
+        <Input active={!disabled} placeholder={nameMessage}
           inputMode="text" onChange={setName} onValidate={download} />
       </div>
     </div>
-    <div className="no-margin flex h-0">
-      <div className={"pt-2 w-full h-[fit-content] flex flex-row justify-center" + ((error || (sourceType !== 'SIA' && sourceType != 'Local')) ? '' : ' ')}>
+    <div className='flex flex-row grow w-full [&>:not(:first-child)]:ml-2 pt-2' >
+      <Button active={notLoading} disabled={loading} className='px-2'
+        onClick={() => {
+          setPopup(emptyPopup);
+        }}>Cancel</Button>
+      <Button active={ready} disabled={!ready} className='px-2'
+        onClick={download}>Download</Button>
+    </div>
+    <div className={"px-8 absolute -top-4 flex h-full w-full pointer-events-none" + ((error || (sourceType !== 'SIA' && sourceType != 'Local')) ? '' : ' hidden')}>
+      <div className="w-full flex flex-row m-auto justify-center">
         <div className={"flex flex-row grow text-xl font-bold justify-center shrink p-2"
-          + " text-rose-600 border-slate-900 border-1 shadow-smd"
+          + " text-rose-600 border-slate-900 border-1 shadow-smd bg-slate-800"
           + (error ? '' : ' hidden')}>
           {error}
         </div>
       </div>
-    </div>
-    <div className='flex flex-row grow w-full [&>:not(:first-child)]:ml-2 pt-8' >
-      <Button active={!loading} disabled={loading} className='px-2'
-        onClick={() => {
-          setPopup(emptyPopup);
-        }}>Cancel</Button>
-      <Button active={!loading} disabled={!valid || loading} className='px-2'
-        onClick={download}>Download</Button>
     </div>
   </div >;
 };
