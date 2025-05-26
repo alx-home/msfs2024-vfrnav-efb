@@ -59,4 +59,5 @@ Window<WINDOW>::InstallBindings() {
    Bind("switchServer", &Window::SwitchServer);
 
    Bind("vfrnav_postMessage", &Window::VDispatchMessage);
+   Bind("efbStateChanged", &Window::WatchEfbState);
 }

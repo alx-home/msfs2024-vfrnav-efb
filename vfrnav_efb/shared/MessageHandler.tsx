@@ -20,10 +20,11 @@ import { EditRecord, EditRecordRecord, GetRecord, GetRecordRecord, PlanePos, Pla
 import { ByeBye, ByeByeRecord, HelloWorld, HelloWorldRecord } from './HelloWorld';
 import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord, GetFile, GetFileRecord, GetFileResponse, GetFileResponseRecord, OpenFile, OpenFileRecord, OpenFileResponse, OpenFileResponseRecord } from './Files';
 import { GetServerState, GetServerStateRecord, ServerState, ServerStateRecord } from './Server';
+import { ExportNav, ExportNavRecord, ImportNav, ImportNavRecord } from './NavData';
 
 const MessageIdValues = ["__SERVER_STATE__", "__GET_SERVER_STATE__", "__HELLO_WORLD__", "__BYE_BYE__", "__FILE_EXISTS__", "__FILE_EXISTS_RESPONSE__", "__OPEN_FILE__", "__OPEN_FILE_RESPONSE__", "__GET_FILE__", "__GET_FILE_RESPONSE__", "__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__", "__GET_FACILITIES__",
    "__FACILITIES__", "__GET_METAR__", "__METAR__", "__PLANE_POS__", "__PLANE_POSES__", "__RECORDS__",
-   "__REMOVE_RECORD__", "__EDIT_RECORD__", '__GET_RECORD__'] as const;
+   "__REMOVE_RECORD__", "__EDIT_RECORD__", '__GET_RECORD__', '__EXPORT_NAV__', '__IMPORT_NAV__'] as const;
 type MessageId = (typeof MessageIdValues)[number];
 
 export type GetSettings = { __GET_SETTINGS__: true };
@@ -59,7 +60,9 @@ type MessageTypes = {
    "__RECORDS__": PlaneRecords,
    "__REMOVE_RECORD__": RemoveRecord,
    "__EDIT_RECORD__": EditRecord,
-   "__GET_RECORD__": GetRecord
+   "__GET_RECORD__": GetRecord,
+   "__EXPORT_NAV__": ExportNav,
+   "__IMPORT_NAV__": ImportNav,
 };
 export type MessageType = MessageTypes[keyof MessageTypes];
 
@@ -86,7 +89,9 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__RECORDS__": PlaneRecordsRecord,
    "__REMOVE_RECORD__": RemoveRecordRecord,
    "__EDIT_RECORD__": EditRecordRecord,
-   "__GET_RECORD__": GetRecordRecord
+   "__GET_RECORD__": GetRecordRecord,
+   "__EXPORT_NAV__": ExportNavRecord,
+   "__IMPORT_NAV__": ImportNavRecord,
 };
 
 export const isMessage = <Id extends MessageId,>(id: Id, message: MessageType): message is MessageTypes[Id] => {

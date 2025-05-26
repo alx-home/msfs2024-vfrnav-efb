@@ -22,16 +22,11 @@
 
 #include <memory>
 #include <memory>
-#include <stdexcept>
 #include <unordered_map>
 #include <webview/webview.h>
 #include <windows/Env.h>
 #include <windows/SystemTray.h>
 #include <wrl/client.h>
-
-struct AppStopping : std::runtime_error {
-   AppStopping();
-};
 
 class Main : public win32::SystemTray {
 private:
@@ -45,6 +40,8 @@ public:
    void        WatchServerState(promise::Resolve<ServerState> const&, promise::Reject const&);
    void        FlushServerState();
    void        SwitchServer();
+
+   void WatchEFBState(promise::Resolve<bool> const&, promise::Reject const&, bool currentState);
 
    void OpenSettings();
 

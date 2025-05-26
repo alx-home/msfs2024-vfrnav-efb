@@ -13,12 +13,16 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "main.h"
+#pragma once
+
+#include "Server.h"
 
 #include "Resources.h"
+#include "Exceptions.h"
 
 #include <windows/Lock.h>
 #include <json/json.h>
+#include <promise/promise.h>
 #include <libloaderapi.h>
 #include <promise/promise.h>
 #include <shellapi.h>
@@ -36,14 +40,18 @@
 #include <winreg.h>
 #include <winuser.h>
 
-Resolvers::~Resolvers() { RejectAll(); }
+template <class TYPE>
+Resolvers<TYPE>::~Resolvers() {
+   RejectAll();
+}
 
+template <class TYPE>
 void
-Resolvers::RejectAll() {
+Resolvers<TYPE>::RejectAll() {
    Resolvers::Vector resolvers{};
    std::swap(*this, resolvers);
 
    for (auto const& [_, reject] : resolvers) {
-      MakeReject<AppStopping>(reject);
+      MakeReject<AppStopping>(*reject);
    }
 }

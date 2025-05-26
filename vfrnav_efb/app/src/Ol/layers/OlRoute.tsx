@@ -30,12 +30,15 @@ import { toContext } from "ol/render";
 import Fill from "ol/style/Fill";
 import { Coordinate } from "ol/coordinate";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { SettingsContext } from "@Settings/SettingsProvider";
+import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 import { MapContext } from "@pages/Map/MapContext";
 
 import greenMarker from '@efb-images/marker-icon-green.svg';
 import redMarker from '@efb-images/marker-icon-red.svg';
 import blueMarker from '@efb-images/marker-icon-blue.svg';
+import { GeoJSON } from "ol/format";
+import { ExportNav } from "@shared/NavData";
+import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
 const useMap = () => {
    const { map } = useContext(MapContext)!;
@@ -384,6 +387,28 @@ export const OlRouteLayer = ({
          layer?.setZIndex(order);
       }
    }, [order, layer]);
+
+   useEffect(() => {
+      if (__MSFS_EMBEDED__) {
+         const onExportNav = (message: ExportNav) => {
+            const writer = new GeoJSON();
+
+            let currentCounter = counter;
+
+            const data = message.data.map((data): NavData => {
+               const result = { id: currentCounter, order: data.order, active: true, name: data.name, shortName: data.shortName, feature: writer.readFeature(data.data) as Feature<Geometry>, layer: layer! }
+               ++currentCounter;
+
+               return result;
+            })
+            setCounter(currentCounter);
+            setNavData(data);
+         };
+
+         messageHandler.subscribe("__EXPORT_NAV__", onExportNav)
+         return () => messageHandler.unsubscribe("__EXPORT_NAV__", onExportNav);
+      }
+   }, [counter, layer, navData, setCounter, setNavData])
 
    return <div className="hidden">
       <img ref={greenMarkerImg} src={greenMarker} alt='start marker' />

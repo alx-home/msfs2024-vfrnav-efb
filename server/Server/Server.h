@@ -18,6 +18,7 @@
 #include "Registry/Registry.h"
 #include "Server/WebSockets/Messages/Messages.h"
 #include "Window/template/Window.h"
+#include "boost/beast/http/string_body_fwd.hpp"
 #include "utils/MessageQueue.h"
 
 #include <promise/promise.h>
@@ -42,21 +43,24 @@
 #include <boost/beast/core/error.hpp>
 #pragma clang diagnostic pop
 
+template <class TYPE>
 class Resolvers
    : public std::vector<std::pair<
-       std::reference_wrapper<promise::Resolve<ServerState> const>,
-       std::reference_wrapper<promise::Reject const>>> {
+       std::shared_ptr<promise::Resolve<TYPE> const>,
+       std::shared_ptr<promise::Reject const>>> {
 public:
    using Vector = std::vector<std::pair<
-     std::reference_wrapper<promise::Resolve<ServerState> const>,
-     std::reference_wrapper<promise::Reject const>>>;
-   using Vector::value_type;
+     std::shared_ptr<promise::Resolve<TYPE> const>,
+     std::shared_ptr<promise::Reject const>>>;
+   using typename Vector::value_type;
 
    Resolvers() = default;
    ~Resolvers();
 
    void RejectAll();
 };
+
+#include "Resolvers.inl"
 
 struct Server : public MessageQueue {
    Server();
@@ -77,6 +81,8 @@ struct Server : public MessageQueue {
    void Stop();
    void Start();
 
+   void NotifyEFBState(bool state);
+
    using tcp         = boost::asio::ip::tcp;
    using io_context  = boost::asio::io_context;
    using boost_error = boost::system::error_code;
@@ -87,10 +93,15 @@ struct Server : public MessageQueue {
    void Subscribe(std::size_t id, std::function<void(ws::Message)>);
    void Unsubscribe(std::size_t id);
 
+   void WatchServerState(Resolve<ServerState> const& resolve, Reject const& reject);
+   void WatchEFBState(Resolve<bool> const& resolve, Reject const& reject, bool currentState);
+
    bool                        runing_ = false;
    std::shared_mutex           mutex_{};
    std::condition_variable_any cv_{};
-   Resolvers                   resolvers_{};
+   Resolvers<ServerState>      resolvers_{};
+   Resolvers<bool>             efb_resolvers_{};
+   bool                        efb_connected_{false};
    bool                        want_run_{[]() constexpr {
       auto& registry = registry::Get();
       return *registry.alx_home_->settings_->auto_start_server_;
@@ -169,6 +180,10 @@ private:
    boost::beast::websocket::stream<tcp::socket> ws_;
    boost::beast::flat_buffer                    buffer_;
    tcp::endpoint                                peer_;
+
+   std::shared_mutex           mutex_{};
+   std::condition_variable_any cv_{};
+   std::atomic<std::size_t>    promises_{};
 
    std::jthread thread_;
 };

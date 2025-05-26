@@ -151,12 +151,12 @@ export const Records = ({ className, style }: {
 
   const reset = useCallback(() => setProfileScale(1), [setProfileScale]);
 
-  return <div className='flex flex-col grow overflow-hidden'>
+  return <div className={'flex flex-col h-full overflow-hidden p-2 pt-8'}>
+    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
+      Record&apos;s
+    </div>
     <div className='grow overflow-hidden'>
       <Scroll className={className} style={style}>
-        <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
-          Record&apos;s
-        </div>
         <menu className={"flex flex-col [&>*:not(:first-child)]:mt-[5px]"}>
           {childs}
         </menu>

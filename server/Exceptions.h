@@ -1,3 +1,4 @@
+
 /*
  * SPDX-License-Identifier: (GNU General Public License v3.0 only)
  * Copyright © 2024 Alexandre GARCIN
@@ -13,20 +14,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { GenRecord } from './Types';
+#pragma once
 
-export type HelloWorld = {
-   __HELLO_WORLD__: "EFB" | "Web",
+#include <stdexcept>
+struct AppStopping : std::runtime_error {
+   AppStopping();
 };
-
-export const HelloWorldRecord = GenRecord<HelloWorld>({
-   __HELLO_WORLD__: "EFB",
-}, {})
-
-export type ByeBye = {
-   __BYE_BYE__: "EFB" | "Web",
-};
-
-export const ByeByeRecord = GenRecord<ByeBye>({
-   __BYE_BYE__: "EFB",
-}, {})

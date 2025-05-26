@@ -27,6 +27,9 @@ import importImg from '@alx-home/images/import.svg';
 import exportImg from '@alx-home/images/export.svg';
 import editImg from "@alx-home/images/edit.svg";
 import deleteImg from "@alx-home/images/delete.svg";
+import { useEFBServer } from '@Utils/useServer';
+import { messageHandler } from '@Settings/SettingsProvider';
+import { GeoJSON } from 'ol/format';
 
 export class NavData {
   // eslint-disable-next-line no-unused-vars
@@ -174,7 +177,7 @@ const Add = ({ name, image, onClick, disabled, active }: PropsWithChildren<{
   const isActive = useMemo(() => active ?? true, [active]);
   const isDisabled = useMemo(() => disabled ?? false, [disabled]);
   return <Button onClick={onClick} active={isActive} disabled={isDisabled} className='px-2 min-h-8 pt-[2px] flex flex-row grow @container'>
-    <div className='hidden @[47px]:flex'>{name}</div>
+    <div className='hidden @[47px]:flex justify-center w-full'>{name}</div>
     <div className='flex grow justify-center @[47px]:hidden'>
       <img src={image} alt={name} className='invert' />
     </div>
@@ -207,6 +210,7 @@ export const Nav = ({ closeMenu, className, style }: {
   className: string,
   style: CSSProperties
 }) => {
+  const efbConnected = useEFBServer();
 
   const { addNav, navData, reorderNav } = useContext(MapContext)!;
   const key = useMemo(() => navData.reduce((prev, elem) => { return prev + ";" + elem.name; }, ""), [navData]);
@@ -222,29 +226,50 @@ export const Nav = ({ closeMenu, className, style }: {
     addNav?.()
     closeMenu()
   }, [addNav, closeMenu]);
-  const noop = useCallback(() => { }, []);
+
+  const importNav = useCallback(() => { }, []);
+  const exportNav = useCallback(() => {
+    const writer = new GeoJSON();
+    messageHandler.send({
+      __EXPORT_NAV__: true,
+
+      data: navData.map(data => (
+        {
+          name: data.name,
+          order: data.order,
+          shortName: data.shortName,
+          data: writer.writeFeature(data.feature)
+        }))
+    })
+  }, [navData]);
 
   const onOrdersChange = useMemo(() => (orders: number[]) => {
     reorderNav(orders);
   }, [reorderNav]);
 
-  return <Scroll className={className} style={style}>
+  return <div className={'flex flex-col h-full overflow-hidden p-2 pt-8'}>
     <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
       Nav&apos;s
     </div>
-    <menu className={"flex flex-col [&>*:not(:first-child)]:mt-[5px]"}>
-      <Draggable key={key} className={'@container flex flex-col w-full overflow-hidden [&>*:not(:first-child)]:mt-[4px] [&>*:last-child]:mb-[4px]'}
-        vertical={true}
-        active={draggable}
-        onOrdersChange={onOrdersChange}
-      >
-        {childs}
-      </Draggable>
-      <div className='flex [&>*:not(:first-child)]:ml-[7px] pt-[8px]'>
-        <Add name='Add' image={newFileImg} onClick={onAdd} />
-        <Add name='Import' image={importImg} disabled={true} onClick={noop} />
+    <Scroll style={style} className={className}>
+      <div className={"flex flex-col [&>*:not(:first-child)]:mt-[5px]"}>
+        <Draggable key={key} className={'@container flex flex-col w-full overflow-hidden [&>*:not(:first-child)]:mt-[4px] [&>*:last-child]:mb-[4px]'}
+          vertical={true}
+          active={draggable}
+          onOrdersChange={onOrdersChange}
+        >
+          {childs}
+        </Draggable>
       </div>
-      <Add name='Export' image={exportImg} disabled={true} onClick={noop} />
-    </menu>
-  </Scroll>
+    </Scroll>
+    <div className='flex flex-col p-2 mt-auto'>
+      <div className='flex pt-4'>
+        <Add name='Create' image={newFileImg} onClick={onAdd} />
+      </div>
+      <div className='flex'>
+        <Add name='Import' image={importImg} disabled={true} onClick={importNav} />
+        <Add name='Export' image={exportImg} disabled={!efbConnected || __MSFS_EMBEDED__} onClick={exportNav} />
+      </div>
+    </div>
+  </div >
 };

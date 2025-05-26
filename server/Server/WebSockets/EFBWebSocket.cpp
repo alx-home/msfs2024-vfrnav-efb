@@ -22,7 +22,9 @@
 #include <json/json.h>
 
 #include <processthreadsapi.h>
+#include <exception>
 #include <filesystem>
+#include <mutex>
 #include <ranges>
 #include <variant>
 
@@ -38,6 +40,14 @@ Server::EFBWebSocket::EFBWebSocket(WebSocket&& socket)
 
 Server::EFBWebSocket::~EFBWebSocket() {
    std::cout << "Session " << peer_ << " closed" << std::endl;
+
+   {
+      // Wait promises to be done
+      std::unique_lock lock{mutex_};
+      cv_.wait(lock, [this]() constexpr { return promises_ == 0; });
+   }
+
+   server_.NotifyEFBState(false);
 }
 
 void
@@ -114,6 +124,8 @@ Server::EFBWebSocket::Start() {
       }
    }
 
+   server_.NotifyEFBState(true);
+
    Read();
 }
 
@@ -155,15 +167,25 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
       } else if (std::holds_alternative<ws::msg::OpenFile>(message.content_)) {
          auto const& msg = std::get<ws::msg::OpenFile>(message.content_);
 
+         ++promises_;
          dialog::OpenFile(msg.path_, {{.name_ = "Pdf File", .value_ = {"*.pdf"}}})
            .Then(
              [this, id = message.id_, req_id = msg.id_](std::string const& path) -> Promise<void> {
-                co_return VDispatchMessage(
-                  id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path}
-                );
+                VDispatchMessage(id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path});
+                std::shared_lock lock{mutex_};
+                --promises_;
+                cv_.notify_all();
+                co_return;
              }
            )
-           .Detach();  // @todo do not detach
+           .Catch([this](std::exception_ptr const& exc) -> Promise<void> {
+              std::shared_lock lock{mutex_};
+              --promises_;
+              cv_.notify_all();
+              std::rethrow_exception(exc);
+              co_return;
+           })
+           .Detach();
       } else if (std::holds_alternative<ws::msg::GetFile>(message.content_)) {
          auto const& msg = std::get<ws::msg::GetFile>(message.content_);
 
