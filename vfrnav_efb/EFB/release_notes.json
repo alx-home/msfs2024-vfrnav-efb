@@ -154,6 +154,16 @@
             "     - Increased text size in AZBA and airport information popups / Augmentation de la taille du texte des popups AZBA et des informations sur les aéroports.",
             "     - Enhanced the visual presentation of AZBA and airport information popups / Amélioration de la présentation des popups AZBA et des informations sur les aéroports."
          ]
+      },
+      {
+         "version": "1.0.1",
+         "date": "MAY 26, 2025",
+         "notes": [
+            "**EFB**",
+            "  Improvements / améliorations:",
+            "     - Show server status on the \"local\" tab of the PDF popup / Afficher le statut du serveur sur l'onglet \"local\" du popup PDF.",
+            "     - Fix validation of the SIA input field / Corriger la validation du champ SIA."
+         ]
       }
    ]
 }
