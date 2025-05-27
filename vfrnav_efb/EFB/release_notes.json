@@ -164,6 +164,16 @@
             "     - Show server status on the \"local\" tab of the PDF popup / Afficher le statut du serveur sur l'onglet \"local\" du popup PDF.",
             "     - Fix validation of the SIA input field / Corriger la validation du champ SIA."
          ]
+      },
+      {
+         "version": "1.1.0",
+         "date": "MAY 27, 2025",
+         "notes": [
+            "**Installer/Server (new)**",
+            "  Improvements / améliorations:",
+            "     - Enable the option to upload navigation data from the app to the EFB / Ajoute la possibilité de synchroniser les données de navigation de l'application vers l'EFB",
+            "     - General bug fixes / Correction de bugs"
+         ]
       }
    ]
 }
