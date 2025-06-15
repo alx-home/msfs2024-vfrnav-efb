@@ -7,6 +7,7 @@ target_link_libraries(installer PRIVATE
     installer_wrapper_resources
     Boost::iostreams
     alx-home::windows
+    vfrnav::common
 )
 
 set(MAJOR_VERSION 1)

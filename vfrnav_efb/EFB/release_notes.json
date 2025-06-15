@@ -174,6 +174,15 @@
             "     - Enable the option to upload navigation data from the app to the EFB / Ajoute la possibilité de synchroniser les données de navigation de l'application vers l'EFB",
             "     - General bug fixes / Correction de bugs"
          ]
+      },
+      {
+         "version": "1.2.0",
+         "date": "JUN 15, 2025",
+         "notes": [
+            "**EFB**",
+            "  Improvements / améliorations:",
+            "     - Add OpenAPI Layer (preview; performance is not optimized, there are some glitches) / Ajout du layer OpenAPI (aperçu; les performances ne sont pas optimisées, possède quelques glitches)."
+         ]
       }
    ]
 }

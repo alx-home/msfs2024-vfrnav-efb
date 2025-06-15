@@ -138,7 +138,7 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
   },
   openaipmaps: {
     enabled: true,
-    active: true,
+    active: false,
   },
   openflightmaps: {
     enabled: false,
@@ -173,7 +173,7 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
     active: true
   },
   openstreet: {
-    enabled: false,
+    enabled: true,
     active: false
   },
 
