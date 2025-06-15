@@ -55,6 +55,7 @@ export type SharedSettings = {
   airports: LayerSetting & AirportLayerOptions,
   OACI: LayerSetting,
   germany: LayerSetting,
+  openaipmaps: LayerSetting,
   openflightmaps: LayerSetting,
   openflightmapsBase: LayerSetting,
   USSectional: LayerSetting,
@@ -135,13 +136,17 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
     enabled: true,
     active: false,
   },
-  openflightmaps: {
+  openaipmaps: {
     enabled: true,
     active: true,
   },
+  openflightmaps: {
+    enabled: false,
+    active: false,
+  },
   openflightmapsBase: {
-    enabled: true,
-    active: true,
+    enabled: false,
+    active: false,
   },
   USSectional: {
     enabled: true,
@@ -225,6 +230,7 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
   airports: LayerRecord,
   OACI: LayerRecord,
   germany: LayerRecord,
+  openaipmaps: LayerRecord,
   openflightmaps: LayerRecord,
   openflightmapsBase: LayerRecord,
   USSectional: LayerRecord,

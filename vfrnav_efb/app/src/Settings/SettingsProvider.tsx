@@ -141,6 +141,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
   const planeSetting = useLayer('plane', sharedSettings, setSharedSettings);
   const OACISetting = useLayer('OACI', sharedSettings, setSharedSettings);
   const germanySetting = useLayer('germany', sharedSettings, setSharedSettings);
+  const openaipmapsSettings = useLayer('openaipmaps', sharedSettings, setSharedSettings);
   const openflightmapsSettings = useLayer('openflightmaps', sharedSettings, setSharedSettings);
   const openflightmapsBaseSettings = useLayer('openflightmapsBase', sharedSettings, setSharedSettings);
   const USSectionalSetting = useLayer('USSectional', sharedSettings, setSharedSettings);
@@ -160,6 +161,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
     plane: { ...planeSetting },
     OACI: { ...OACISetting },
     germany: { ...germanySetting },
+    openaipmaps: { ...openaipmapsSettings },
     openflightmaps: { ...openflightmapsSettings },
     openflightmapsBase: { ...openflightmapsBaseSettings },
     USSectional: { ...USSectionalSetting },
@@ -212,7 +214,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
   }), [
     airportsSetting, googlemapSetting, mapforfreeSetting, openstreetSetting, opentopoSetting, OACISetting,
     USIFRHighSetting, USIFRLowSetting, USSectionalSetting, azbaSetting, germanySetting, openflightmapsSettings,
-    openflightmapsBaseSettings, planeSetting,
+    openaipmapsSettings, openflightmapsBaseSettings, planeSetting,
     getSIAAZBA, getSIAPDF,
     setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor, setAZBARange,
     setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setSpeed,

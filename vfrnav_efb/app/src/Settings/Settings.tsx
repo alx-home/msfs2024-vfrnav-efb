@@ -55,6 +55,7 @@ export type GlobalSettings = Settings & SharedSettings & {
   plane: LayerSettingSetter & SharedSettings['plane'],
   OACI: LayerSettingSetter & SharedSettings['OACI'],
   germany: LayerSettingSetter & SharedSettings['germany'],
+  openaipmaps: LayerSettingSetter & SharedSettings['openaipmaps'],
   openflightmaps: LayerSettingSetter & SharedSettings['openflightmaps'],
   openflightmapsBase: LayerSettingSetter & SharedSettings['openflightmapsBase'],
   USSectional: LayerSettingSetter & SharedSettings['USSectional'],

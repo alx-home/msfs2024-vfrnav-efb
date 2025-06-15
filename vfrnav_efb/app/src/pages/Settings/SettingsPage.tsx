@@ -532,6 +532,9 @@ export const SettingsPage = ({ active }: {
                   <LayerActivation setting={settings.germany} defaultSetting={SharedSettingsRecord.defaultValues.germany}>
                      Use Germany DFS Layer (secais).
                   </LayerActivation>
+                  <LayerActivation setting={settings.openaipmaps} defaultSetting={SharedSettingsRecord.defaultValues.openaipmaps}>
+                     Use Open Aip Layer.
+                  </LayerActivation>
                   <LayerActivation setting={settings.openflightmaps} defaultSetting={SharedSettingsRecord.defaultValues.openflightmaps}>
                      Use Open Flight Layer.
                   </LayerActivation>
@@ -584,6 +587,7 @@ export const SettingsPage = ({ active }: {
                   <ZoomItem name="US sectional" setting={settings.USSectional} defaultSetting={SharedSettingsRecord.defaultValues.USSectional} />
                   <ZoomItem name="US High IFR" setting={settings.USIFRHigh} defaultSetting={SharedSettingsRecord.defaultValues.USIFRHigh} />
                   <ZoomItem name="US Low IFR" setting={settings.USIFRLow} defaultSetting={SharedSettingsRecord.defaultValues.USIFRLow} />
+                  <ZoomItem name="Open Aip" setting={settings.openaipmaps} defaultSetting={SharedSettingsRecord.defaultValues.openaipmaps} />
                   <ZoomItem name="Open Flight" setting={settings.openflightmaps} defaultSetting={SharedSettingsRecord.defaultValues.openflightmaps} />
                   <ZoomItem name="Open Flight Base" setting={settings.openflightmapsBase} defaultSetting={SharedSettingsRecord.defaultValues.openflightmapsBase} />
                   <ZoomItem name="Open Topo" setting={settings.opentopo} defaultSetting={SharedSettingsRecord.defaultValues.opentopo} />
