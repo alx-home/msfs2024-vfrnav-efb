@@ -40,6 +40,7 @@ import airportsImg from '@efb-images/airports.jpg';
 import planeImg from '@efb-images/plane.jpg';
 import dsfImg from '@efb-images/dsf.jpg';
 import openflightmapsImg from '@efb-images/openflightmaps.jpg';
+import openAIPImg from '@efb-images/open_aip.jpg';
 import openflightmapsBaseImg from '@efb-images/openflightmaps_base.jpg';
 import map4freeImg from '@efb-images/map4free.jpg';
 import bingImg from '@efb-images/bing.jpg';
@@ -48,6 +49,7 @@ import ifrLowImg from '@efb-images/ifr_low.jpg';
 import ifrHighImg from '@efb-images/ifr_high.jpg';
 import sectionalImg from '@efb-images/sectional.jpg';
 import osmImg from '@efb-images/osm.jpg';
+import { OpenAip } from "@Ol/layers/OpenAip";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -161,6 +163,12 @@ export const MapPage = ({ active }: {
       src: dsfImg,
       alt: 'dsf layer',
       getSettings: (_settings: GlobalSettings) => _settings.germany
+    },
+    {
+      olLayer: <OpenAip key="openaip" url="https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.pbf" crossOrigin={null} />,
+      src: openAIPImg,
+      alt: 'openaip layer',
+      getSettings: (_settings: GlobalSettings) => _settings.openaipmaps
     },
     {
       olLayer: <OlOSMLayer key="openflightmaps" url="https://nwy-tiles-api.prod.newaydata.com/tiles/{z}/{x}/{y}.png?path=2502/aero/latest" crossOrigin={null} />,
