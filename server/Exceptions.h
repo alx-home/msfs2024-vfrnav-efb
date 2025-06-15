@@ -1,4 +1,3 @@
-
 /*
  * SPDX-License-Identifier: (GNU General Public License v3.0 only)
  * Copyright © 2024 Alexandre GARCIN
