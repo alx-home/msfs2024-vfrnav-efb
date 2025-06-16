@@ -1,4 +1,4 @@
-name: Build
+name: SonarQube
 
 on:
    push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
    build:
-      name: Build and analyze
+      name: Analyze
       runs-on: ubuntu-latest
 
       steps:
@@ -18,7 +18,6 @@ jobs:
               echo ${SONAR_CERT} | base64 -d > /tmp/certs.p12
            env:
               SONAR_CERT: ${{ secrets.SONAR_CERT }}
-              SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
          - uses: SonarSource/sonarqube-scan-action@v5
            env:
               SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -26,7 +25,9 @@ jobs:
               SONAR_CERT_PWD: ${{ secrets.SONAR_CERT_PWD }}
          # If you wish to fail your job when the Quality Gate is red, uncomment the
          # following lines. This would typically be used to fail a deployment.
-         # - uses: SonarSource/sonarqube-quality-gate-action@v1
-         #   timeout-minutes: 5
-         #   env:
-         #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+         - uses: SonarSource/sonarqube-quality-gate-action@v1
+           timeout-minutes: 5
+           env:
+              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+              SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+              SONAR_CERT_PWD: ${{ secrets.SONAR_CERT_PWD }}
