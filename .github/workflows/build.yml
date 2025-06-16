@@ -31,6 +31,7 @@ jobs:
               SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
               SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
               SONAR_CERT_PWD: ${{ secrets.SONAR_CERT_PWD }}
+              SONAR_PROJECT_BADGE_TOKEN: ${{ secrets.SONAR_BADGE_TOKEN }}
            with:
               svgFrom: sonarqube
          # If you wish to fail your job when the Quality Gate is red, uncomment the
