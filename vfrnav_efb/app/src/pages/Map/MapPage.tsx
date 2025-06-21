@@ -30,6 +30,7 @@ import { SettingsContext } from "@Settings/SettingsProvider";
 import { AirportsLayer } from "@Ol/layers/AirportsLayer";
 import { PlaneLayer } from "@Ol/layers/PlaneLayer";
 import { RecordsLayer } from "@Ol/layers/RecordsLayer";
+import { OpenAip } from "@Ol/layers/OpenAip";
 
 import flightPlanImg from '@efb-images/flight-plan.svg';
 import recordImg from '@efb-images/record.svg';
@@ -49,7 +50,7 @@ import ifrLowImg from '@efb-images/ifr_low.jpg';
 import ifrHighImg from '@efb-images/ifr_high.jpg';
 import sectionalImg from '@efb-images/sectional.jpg';
 import osmImg from '@efb-images/osm.jpg';
-import { OpenAip } from "@Ol/layers/OpenAip";
+import { ToolBar } from "./Toolbar";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -272,13 +273,18 @@ export const MapPage = ({ active }: {
         <RecordsLayer key="records" order={layers.length + 1} active={true} />
       </OlMap>
       <div className="absolute z-10 pointer-events-none flex grow justify-end w-full h-full top-0 left-0">
-        <div className={"relative flex grow justify-end h-full overflow-hidden"} >
-          <SpinAnimation />
-          <Overlay menu={menu} setMenu={setMenu} setOpen={setOpen} />
-        </div>
-        <div className="flex flex-row pointer-events-auto">
-          <MapMenu key={"map-menu"} open={open} setOpen={setOpen} menu={menu} layers={layers}
-            onLayerChange={onLayerChange} />
+        <div className="flex flex-col-reverse grow transition-all">
+          <ToolBar menu={menu} />
+          <div className="relative flex flex-row grow transition-all">
+            <div className={"relative flex grow justify-end h-full overflow-hidden"} >
+              <SpinAnimation />
+              <Overlay menu={menu} setMenu={setMenu} setOpen={setOpen} />
+            </div>
+            <div className="flex flex-row pointer-events-auto">
+              <MapMenu key={"map-menu"} open={open} setOpen={setOpen} menu={menu} layers={layers}
+                onLayerChange={onLayerChange} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
