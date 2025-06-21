@@ -15,21 +15,27 @@
   },
   "dependencies": {
     "@alx-home/pdfjs-dist": "5.0.36",
-    "abortcontroller-polyfill": "^1.7.8",
-    "geometry-polyfill": "^1.0.7",
+    "abortcontroller-polyfill": "1.7.8",
+    "chart.js": "4.5.0",
+    "chartjs": "0.3.24",
+    "chartjs-plugin-dragdata": "2.3.1",
+    "geometry-polyfill": "1.0.7",
+    "intl": "^1.2.5",
     "js-sha512": "0.9.0",
-    "lightningcss": "1.29.3",
-    "ol": "10.5.0",
-    "pdfjs-dist": "^5.2.133",
+    "lightningcss": "1.30.1",
+    "ol": "10.6.1",
+    "pdfjs-dist": "5.3.31",
     "react": "19.1.0",
+    "react-chartjs-2": "5.3.0",
     "react-dom": "19.1.0",
-    "resize-observer-polyfill": "^1.5.1"
+    "resize-observer-polyfill": "1.5.1"
   },
   "browserslist": [
     "defaults and fully supports es6-module",
     "maintained node versions"
   ],
   "devDependencies": {
-    "jiti": "^2.4.2"
+    "@types/chart.js": "2.9.41",
+    "jiti": "2.4.2"
   }
 }

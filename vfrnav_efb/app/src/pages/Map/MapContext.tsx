@@ -14,7 +14,7 @@
  */
 
 import { Collection, Map as olMap, MapBrowserEvent, getUid } from 'ol';
-import { createContext, Dispatch, PropsWithChildren, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NavData } from './MapMenu/Menus/Nav';
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
@@ -23,11 +23,13 @@ import Layer from "ol/layer/Layer";
 import LayerGroup from "ol/layer/Group";
 import { Coordinate } from "ol/coordinate";
 import Feature, { FeatureLike } from "ol/Feature";
-import { SimpleGeometry } from "ol/geom";
+import { LineString, SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
 import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
 import { messageHandler } from '@Settings/SettingsProvider';
+import { Deviation, Properties } from '@shared/NavData';
+import { getLength } from 'ol/sphere';
 
 export type Interactive = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,6 +42,8 @@ export type Interactive = {
   onMoveEnd?: (_pixel: MapBrowserEvent<any>, _features: FeatureLike[]) => boolean
 }
 
+export type FuelUnit = 'gal' | 'liter';
+
 export const MapContext = createContext<{
   map: olMap,
   navData: NavData[],
@@ -50,11 +54,10 @@ export const MapContext = createContext<{
   enableTouchdown: (_value: boolean) => void,
   withGround: boolean,
   enableGround: (_value: boolean) => void,
-  counter: number
+  counter: RefObject<number>
   flash: boolean,
   flashKey: number,
   setNavData: Dispatch<SetStateAction<NavData[]>>,
-  setCounter: Dispatch<SetStateAction<number>>,
   setFlash: Dispatch<SetStateAction<boolean>>,
   registerMouseEnd: (_callback: (_coords: Coordinate) => void) => void
   unregisterMouseEnd: (_callback: (_coords: Coordinate) => void) => void
@@ -66,10 +69,23 @@ export const MapContext = createContext<{
   removeNav: (_id: number) => void,
   activeNav: (_id: number, _active: boolean) => void,
   editNav: (_id: number, _newName: string) => void,
+  editNavProperties: (_id: number, _properties: Properties[]) => void,
   removeRecord: (_id: number) => void,
   activeRecord: (_id: number, _active: boolean) => void,
   editRecord: (_id: number, _newName: string) => void,
-  reorderNav: (_orders: number[]) => void
+  reorderNav: (_orders: number[]) => void,
+
+  updateNavProps: (_props: Properties, _prevCoords: Coordinate, _coords: Coordinate) => Properties
+
+  deviations: { x: number, y: number }[],
+  setDeviations: Dispatch<SetStateAction<Deviation[]>>,
+
+  fuelConsumption: number,
+  loadedFuel: number,
+  setLoadedFuel: Dispatch<SetStateAction<number>>,
+  setFuelConsumption: Dispatch<SetStateAction<number>>,
+  fuelUnit: FuelUnit,
+  setFuelUnit: Dispatch<SetStateAction<FuelUnit>>,
 } | undefined>(undefined);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,6 +117,82 @@ const getFeaturesAtPixel = (map: olMap, layer: Layer, coords: Coordinate, event:
 
   return [];
 }
+
+const updateFuel = (fuelConsumption: number, props: Properties): Properties => {
+  return { ...props, conso: fuelConsumption / 3600 * props.dur.full }
+}
+
+const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props: Properties, prevCoords: Coordinate, coords: Coordinate): Properties => {
+  if (props.coords.length
+    && props.coords[0][0] === prevCoords[0] && props.coords[0][1] === prevCoords[1]
+    && props.coords[1][0] === coords[0] && props.coords[1][1] === coords[1]
+    && deviations === props.deviations) {
+    return updateFuel(fuelConsumption, props);
+  }
+
+  const { ias, oat, altitude, wind, magVar } = props;
+  const { direction, speed: windVel } = wind;
+  const windDir = direction > 180 ? direction - 180 : direction + 180;
+
+  const vector = [coords[0] - prevCoords[0], coords[1] - prevCoords[1]];
+  const angle = Math.atan2(vector[1], vector[0]) * 180 / Math.PI;
+  let TC = 90 - angle;
+
+  if (TC < 0) {
+    TC += 360;
+  }
+
+  const dist = getLength(new LineString([prevCoords, coords])) * 0.0005399568;
+
+  // const tas = ias * Math.sqrt(1 +  altitude / 44330 + (oat - (15 - 0.0065 * altitude)) / 273.15)
+  const tas = ias * Math.sqrt(0.945085118 + altitude * 4.635453591185e-5 + oat / 273.15)
+
+  const WCA = Math.asin(windVel * Math.sin((TC - windDir) * (Math.PI / 180)) / tas) * (180 / Math.PI)
+  const MH = (TC + magVar) % 360;
+  const [CH, dev] = (() => {
+    const value = (MH + WCA) % 360;
+    const devIndex = deviations.findIndex(elem => elem.x > value)
+
+    if (devIndex === -1) {
+      return [(value + deviations[devIndex].y) % 360, deviations[devIndex].y];
+    } else {
+      const index = devIndex - 1;
+      console.assert(index >= 0);
+
+      const x = value - deviations[index].x
+      const slope = (deviations[index + 1].y - deviations[index].y) / (deviations[index + 1].x - deviations[index].x)
+      const dev = slope * x + deviations[index].y;
+      return [(value + dev) % 360, dev];
+    }
+  })()
+
+  const GS = tas * Math.cos(WCA * (Math.PI / 180)) + windVel * Math.cos((TC - windDir) * (Math.PI / 180));
+  const dur = dist * 3600 / GS;
+
+  const fdays = dur / 86400;
+  const days = Math.floor(fdays);
+  const fhours = (fdays - days) * 24;
+  const hours = Math.floor(fhours);
+  const fminutes = (fhours - hours) * 60;
+  const minutes = Math.floor(fminutes);
+  const fseconds = (fminutes - minutes) * 60;
+  const seconds = Math.floor(fseconds);
+
+  return updateFuel(fuelConsumption, {
+    ...props, TC: TC, CH: CH, dev: dev, MH: MH, dur: {
+      days: days,
+      hours: hours,
+      minutes: minutes,
+      seconds: seconds,
+      full: dur
+    }, tas: tas, GS: GS, dist: dist, coords: [
+      [...prevCoords],
+      [...coords]
+    ],
+    deviations: deviations
+  })
+}
+
 
 const MapContextProvider = ({ children }: PropsWithChildren) => {
   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
@@ -207,7 +299,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [addNav, setAddNav] = useState<() => void>();
   const [cancel, setCancel] = useState<() => void>();
   const [navData, setNavData] = useState<NavData[]>([]);
-  const [counter, setCounter] = useState(0);
+  const counter = useRef(0);
   const [flash, setFlash] = useState(false);
   const [flashKey, setFlashKey] = useState(0);
 
@@ -217,6 +309,34 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [profileScale, setProfileScale] = useState(1);
   const [touchdown, setTouchdown] = useState(false);
   const [ground, setGround] = useState(true);
+  const [deviations, setDeviations] = useState<Deviation[]>([
+    {
+      x: 0,
+      y: 0
+    },
+    {
+      x: 360,
+      y: 0
+    }
+  ])
+
+  const [fuelConsumption, setFuelConsumption] = useState(8);
+  const [loadedFuel, setLoadedFuel] = useState(255);
+  const [fuelUnit, setFuelUnit] = useState<FuelUnit>('gal')
+
+  const updateNavPropsCB = useCallback((props: Properties, prevCoords: Coordinate, coords: Coordinate) =>
+    updateNavProps(fuelConsumption, deviations, props, prevCoords, coords)
+    , [deviations, fuelConsumption])
+
+  useEffect(() => {
+    setNavData(navData => navData.map(elem => (
+      {
+        ...elem,
+        properties: elem.properties.map((props, index) =>
+          updateNavProps(fuelConsumption, deviations, props, elem.coords[index], elem.coords[index + 1]))
+      }
+    )))
+  }, [deviations, fuelConsumption])
 
   useEffect(() => {
     if (cancelRequest) {
@@ -269,7 +389,6 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     setNavData: setNavData,
     records: records,
     counter: counter,
-    setCounter: setCounter,
     flash: flash,
     setFlash: setFlash,
     flashKey: flashKey,
@@ -310,6 +429,22 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         return newItems;
       })
     },
+    editNavProperties: (id: number, properties: Properties[]) => {
+      setNavData(items => {
+        const newItems = items.map(item => ({ ...item }));
+        const item = newItems.find((item) => item.id === id);
+        if (item) {
+          const { coords } = item;
+          item.properties = properties.map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
+        }
+        return newItems;
+      })
+    },
+    reorderNav: (orders: number[]) => {
+      setNavData(data => {
+        return orders.map((order, index) => ({ ...data[index], order: order }))
+      });
+    },
     removeRecord: (id: number) => {
       messageHandler.send({
         __REMOVE_RECORD__: true,
@@ -338,12 +473,18 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     withTouchdown: touchdown,
     enableGround: setGround,
     withGround: ground,
-    reorderNav: (orders: number[]) => {
-      setNavData(data => {
-        return orders.map((order, index) => ({ ...data[index], order: order }))
-      });
-    }
-  }), [map, navData, records, counter, flash, flashKey, profileScale, touchdown, ground, activeRecords]);
+
+    deviations: deviations,
+    setDeviations: setDeviations,
+    updateNavProps: updateNavPropsCB,
+
+    loadedFuel: loadedFuel,
+    setLoadedFuel: setLoadedFuel,
+    fuelConsumption: fuelConsumption,
+    setFuelConsumption: setFuelConsumption,
+    fuelUnit: fuelUnit,
+    setFuelUnit: setFuelUnit,
+  }), [map, navData, records, flash, flashKey, profileScale, touchdown, ground, deviations, updateNavPropsCB, loadedFuel, fuelConsumption, fuelUnit, activeRecords]);
 
   return (
     <MapContext.Provider
