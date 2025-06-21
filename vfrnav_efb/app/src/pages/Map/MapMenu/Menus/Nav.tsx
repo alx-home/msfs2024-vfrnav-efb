@@ -15,7 +15,6 @@
 
 import { ChangeEvent, Children, CSSProperties, Dispatch, FocusEvent, isValidElement, KeyboardEvent, MouseEventHandler, PropsWithChildren, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Feature } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
 
 import { Draggable, Scroll, Button } from '@alx-home/Utils';
@@ -29,11 +28,12 @@ import editImg from "@alx-home/images/edit.svg";
 import deleteImg from "@alx-home/images/delete.svg";
 import { useEFBServer } from '@Utils/useServer';
 import { messageHandler } from '@Settings/SettingsProvider';
-import { GeoJSON } from 'ol/format';
+import { Properties } from '@shared/NavData';
+import { Coordinate } from 'ol/coordinate';
 
 export class NavData {
   // eslint-disable-next-line no-unused-vars
-  constructor(public id: number, public order: number, public name: string, public active: boolean, public shortName: string, public feature: Feature, public layer: VectorLayer) { }
+  constructor(public id: number, public order: number, public name: string, public active: boolean, public shortName: string, public coords: Coordinate[], public properties: Properties[], public layer: VectorLayer) { }
 };
 
 const Label = ({ name, shortName, editMode }: {
@@ -62,7 +62,7 @@ const Edit = ({ onClick, image, alt, background }: {
 }) => {
   return <button className={'flex w-11 h-11 hover:brightness-125 focus:border-2 focus:border-with ' + ' ' + background}
     onClick={onClick}>
-    <img className='w-8 h-8 grow mt-auto mb-auto justify-center cursor-pointer' src={image} alt={alt} />
+    <img className='w-8 h-8 min-w-8 min-h-8 grow mt-auto mb-auto justify-center cursor-pointer' src={image} alt={alt} />
   </button>;
 };
 
@@ -229,17 +229,16 @@ export const Nav = ({ closeMenu, className, style }: {
 
   const importNav = useCallback(() => { }, []);
   const exportNav = useCallback(() => {
-    const writer = new GeoJSON();
     messageHandler.send({
       __EXPORT_NAV__: true,
 
-      data: navData.map(data => (
-        {
-          name: data.name,
-          order: data.order,
-          shortName: data.shortName,
-          data: writer.writeFeature(data.feature)
-        }))
+      data: navData.map(data => ({
+        name: data.name,
+        order: data.order,
+        shortName: data.shortName,
+        coords: data.coords,
+        properties: data.properties
+      }))
     })
   }, [navData]);
 

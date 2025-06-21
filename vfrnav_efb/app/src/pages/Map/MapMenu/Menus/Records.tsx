@@ -52,7 +52,7 @@ const Edit = ({ onClick, image, alt, background }: {
 }) => {
   return <button className={'flex w-11 h-11 hover:brightness-125 focus:border-2 focus:border-with ' + ' ' + background}
     onClick={onClick}>
-    <img className='w-8 h-8 grow mt-auto mb-auto justify-center cursor-pointer' src={image} alt={alt} />
+    <img className='w-8 h-8 min-h-8 max-h-8 grow mt-auto mb-auto justify-center cursor-pointer' src={image} alt={alt} />
   </button>;
 };
 
@@ -144,7 +144,7 @@ export const Records = ({ className, style }: {
 }) => {
   const { records } = useContext(MapContext)!;
   const childs = useMemo(() => records.map((record) => {
-    return <div key={record.id} className='flex'>
+    return <div key={record.id} className='flex min-h-max'>
       <RecordItem key={record.id} active={record.active} name={record.name} shortName={record.id.toFixed(0)} id={record.id} />
     </div>
   }), [records]);
@@ -153,7 +153,7 @@ export const Records = ({ className, style }: {
     <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
       Record&apos;s
     </div>
-    <div className='grow overflow-hidden'>
+    <div className='flex flex-col grow overflow-hidden'>
       <Scroll className={className} style={style}>
         <menu className={"flex flex-col [&>*:not(:first-child)]:mt-[5px]"}>
           {childs}
@@ -168,26 +168,30 @@ export const RecordsToolbar = () => {
   const reset = useCallback(() => setProfileScale(1), [setProfileScale]);
 
   return <div className='flex flex-col grow'>
-    <div className='flex flex-row grow mt-4'>
-      <div className='flex flex-row mr-4'>
-        <CheckBox className="w-8" value={withTouchdown} onChange={enableTouchdown} />
+    <div className='flex flex-col'>
+      <div className='flex flex-row grow mt-4'>
+        <div className='flex flex-row mr-4'>
+          <CheckBox className="w-8" value={withTouchdown} onChange={enableTouchdown} />
+        </div>
+        <div className='text-left text-xl grow'>Touchdown</div>
       </div>
-      <div className='text-left text-xl grow'>Touchdown</div>
-    </div>
-    <div className='flex flex-row grow mt-4'>
-      <div className='flex flex-row mr-4'>
-        <CheckBox className="w-8" value={withGround} onChange={enableGround} />
+      <div className='flex flex-row grow mt-4'>
+        <div className='flex flex-row mr-4'>
+          <CheckBox className="w-8" value={withGround} onChange={enableGround} />
+        </div>
+        <div className='text-left text-xl grow'>Ground Layer</div>
       </div>
-      <div className='text-left text-xl grow'>Ground Layer</div>
-    </div>
-    <div className='flex flex-col grow mb-4 mt-2'>
-      <div className='flex flex-row grow'>
-        <div className='flex flex-row text-xl ml-12 mr-4 min-w-36'>Scale 1:{profileScale.toFixed(3)}</div>
-        <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
+      <div className='flex flex-col grow mb-4 mt-2'>
+        <div className='flex flex-row grow'>
+          <div className='flex flex-row text-xl ml-12 mr-4 min-w-36'>Scale 1:{profileScale.toFixed(3)}</div>
+          <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
+        </div>
+      </div>
+      <div className='flex'>
+        <Button className="flex flex-row grow justify-center min-h-0" active={true} onClick={reset}>
+          Reset
+        </Button>
       </div>
     </div>
-    <Button className="flex flex-row grow justify-center" active={true} onClick={reset}>
-      Reset
-    </Button>
   </div>
 }
