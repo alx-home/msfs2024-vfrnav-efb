@@ -16,7 +16,7 @@
 import { OlLayerProp } from "./OlLayer";
 import VectorSource from "ol/source/Vector";
 import { Feature } from "ol";
-import { Geometry, LineString, SimpleGeometry } from "ol/geom";
+import { Geometry, MultiLineString, SimpleGeometry } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import Draw from "ol/interaction/Draw";
 import Modify from "ol/interaction/Modify";
@@ -24,10 +24,6 @@ import Snap from "ol/interaction/Snap";
 import { doubleClick } from 'ol/events/condition';
 import { FeatureLike } from "ol/Feature";
 import Style from "ol/style/Style";
-import Stroke from "ol/style/Stroke";
-import { getLength } from 'ol/sphere';
-import { toContext } from "ol/render";
-import Fill from "ol/style/Fill";
 import { Coordinate } from "ol/coordinate";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
@@ -36,49 +32,97 @@ import { MapContext } from "@pages/Map/MapContext";
 import greenMarker from '@efb-images/marker-icon-green.svg';
 import redMarker from '@efb-images/marker-icon-red.svg';
 import blueMarker from '@efb-images/marker-icon-blue.svg';
-import { GeoJSON } from "ol/format";
-import { ExportNav } from "@shared/NavData";
+import { ExportNav, PropertiesRecord } from "@shared/NavData";
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
+
 const useMap = () => {
-   const { map } = useContext(MapContext)!;
-   const [, setNextId] = useState(1);
+   const { map, navData, setNavData, counter, updateNavProps } = useContext(MapContext)!;
    const [modify, setModify] = useState<Modify>();
    const [snap, setSnap] = useState<Snap>();
    const [layer, setLayer] = useState<VectorLayer>();
-   const [modified, setModified] = useState<Feature[]>();
-   const [newFeatures, setNewFeatures] = useState<Feature[]>();
+   const [modified, setModified] = useState<Feature<MultiLineString>[] | undefined>(undefined);
+
+   const initFeature = useCallback((feature: Feature<MultiLineString>) => {
+      if (!feature.getProperties()['initialized']) {
+         feature.setId(++counter.current);
+
+         feature.on('change', () => {
+            setModified(items => [...(items ?? []), feature]);
+         })
+
+         feature.setProperties({ ...feature.getProperties(), initialized: true })
+         return true
+      }
+
+      return false
+   }, [counter])
+
+   const [newFeatures, setNewFeatures] = useState<Feature<MultiLineString>[] | undefined>(undefined)
+   const [orders, setOrders] = useState<number[]>([]);
 
    const source = useMemo(() => {
       const source = new VectorSource<Feature<Geometry>>({
          features: []
-      })
-      source.on('addfeature', e => {
-         if (e.feature && e.feature.getId() === undefined) {
-            setNextId(id => {
-               e.feature!.setId(id);
-
-               setNewFeatures(newFeatures => {
-                  const result = ([...(newFeatures ?? [])]);
-                  const index = result.findIndex(elem => elem.getId() === e.feature!.getId());
-
-                  if (index === -1) {
-                     result[result.length] = e.feature!;
-                  } else {
-                     result[index] = e.feature!;
-                  }
-
-                  return result;
-               });
-               return id + 1;
-            });
-         }
       });
+      source.on('addfeature', (e) => setNewFeatures(items => ([...(items ?? []), (e.feature as Feature<MultiLineString>)])));
 
-      return source;
+      return source
    }, []);
 
+   useEffect(() => {
+      if (orders.length != navData.length || navData.find((data, index) => data.order !== orders[index])) {
+         const oldFeatures = source.getFeatures();
 
+         source.clear();
+         setOrders(navData.map(data => data.order));
+         source.addFeatures(navData.toSorted((left, right) => left.order - right.order).map(data => {
+            const oldFeature = oldFeatures.find((feature) => feature.getId() === data.id)!;
+            const feature = oldFeature.clone();
+            feature.setProperties(oldFeature.getProperties())
+            feature.setId(oldFeature.getId())
+
+            return feature;
+         }));
+      }
+   }, [navData, orders, source])
+
+   useEffect(() => {
+      if (newFeatures) {
+         const newData: NavData[] = [];
+         let hasChanges = false;
+
+         for (const feature of newFeatures) {
+            if (initFeature(feature)) {
+               const coords = feature.getGeometry()!.getCoordinates()[0].map(coords => ([...coords]));
+               const id = feature.getId() as number;
+
+               hasChanges = true;
+               newData.push({
+                  id: id,
+                  order: 0,
+                  active: true,
+                  name: `New Nav ${id}`,
+                  shortName: `${id}`,
+                  coords: coords,
+                  layer: layer!,
+                  properties: coords.filter((_, index) => index).map((value, index) => {
+                     const props = { ...PropertiesRecord.defaultValues };
+                     return updateNavProps(props, coords[index], value)
+                  })
+               })
+            }
+         }
+
+         if (hasChanges) {
+            setNavData(items => ([...items, ...newData.map((value, index) => ({
+               ...value,
+               order: items.length + index
+            }))]));
+         }
+         setNewFeatures(undefined);
+      }
+   }, [initFeature, layer, newFeatures, setNavData, updateNavProps])
 
    useEffect(() => {
       const layer = new VectorLayer({
@@ -93,24 +137,7 @@ const useMap = () => {
    useEffect(() => {
       const modify = new Modify({
          source: source,
-         deleteCondition: doubleClick
-      });
-
-      modify.on('modifyend', e => {
-         setModified(features => {
-            const newFeatures = [...(features ?? [])];
-            e.features.forEach(feature => {
-               const index = newFeatures.findIndex((elem) => elem.getId() === feature.getId());
-
-               if (index !== -1) {
-                  newFeatures[index] = feature;
-               } else {
-                  newFeatures[newFeatures.length] = feature;
-               }
-            });
-
-            return newFeatures;
-         });
+         deleteCondition: doubleClick,
       });
 
       map.addInteraction(modify);
@@ -129,23 +156,73 @@ const useMap = () => {
 
    useEffect(() => {
       if (modified) {
+         const newNavData = navData.map(data => ({ ...data }))
+
+         let hasChanges = false;
+
+         modified.forEach((feature) => {
+            const data = newNavData.find(elem => elem.id === feature.getId());
+
+            if (data) {
+               const oldCoords = data.coords;
+               const newCoords = (feature.getGeometry() as MultiLineString).getCoordinates()[0];
+
+               const index = oldCoords.findIndex((coord, index) => (coord[0] !== newCoords[index][0]) || (coord[1] !== newCoords[index][1]))
+
+               if (index === -1) {
+                  return;
+               }
+
+               data.coords = newCoords.map(coords => [...coords])
+               hasChanges = true;
+
+               const properties = data.properties.map(props => ({ ...props }));
+
+               if (oldCoords.length !== newCoords.length) {
+                  console.assert(Math.abs(newCoords.length - oldCoords.length) === 1);
+                  console.assert(index !== 0);
+
+                  if (oldCoords.length < newCoords.length) {
+                     const prevProps = properties[index - 1];
+                     properties.splice(index - 1, 0, { ...prevProps, wind: { ...prevProps.wind }, vor: { ...prevProps.vor } })
+
+                     if (index + 1 === properties.length) {
+                        properties[index].active = true
+                     } else {
+                        properties[index].active = properties[index + 1].active
+                     }
+                  } else {
+                     properties.splice(index, 1)
+                  }
+               }
+
+               if (index < properties.length) {
+                  properties[index] = updateNavProps(properties[index], newCoords[index], newCoords[index + 1])
+               }
+
+               if (index > 0) {
+                  properties[index - 1] = updateNavProps(properties[index - 1], newCoords[index - 1], newCoords[index])
+               }
+
+               data.properties = properties
+            }
+         });
+
+         if (hasChanges) {
+            setNavData(newNavData)
+         }
+
          setModified(undefined);
       }
-   }, [modified]);
+   }, [modified, navData, setNavData, updateNavProps]);
 
-   useEffect(() => {
-      if (newFeatures) {
-         setNewFeatures(undefined);
-      }
-   }, [newFeatures, setNewFeatures]);
 
    return {
       source: source,
       modify: modify,
       snap: snap,
       layer: layer,
-      modified: modified,
-      newFeatures: newFeatures
+      initFeature: initFeature
    };
 };
 
@@ -195,28 +272,15 @@ export const OlRouteLayer = ({
 }: {
    zIndex: number
 } & OlLayerProp) => {
-   const { setNavData, setCounter, counter, map, setCancel, navData } = useContext(MapContext)!;
+   const { setNavData, counter, map, setCancel, navData } = useContext(MapContext)!;
    const settings = useContext(SettingsContext)!;
 
-   const { source, layer, modified, newFeatures } = useMap();
+   const { source, layer, initFeature } = useMap();
    const { draw } = useDraw(source);
 
    const greenMarkerImg = useRef<HTMLImageElement | null>(null);
    const redMarkerImg = useRef<HTMLImageElement | null>(null);
    const blueMarkerImg = useRef<HTMLImageElement | null>(null);
-
-   const onAddFeature = useCallback(((feature: Feature, layer: VectorLayer) => {
-      setNavData(items => {
-         return [...items, { id: counter, order: items.length, active: true, name: `New Nav ${counter}`, shortName: `${counter}`, feature: feature, layer: layer }];
-      });
-      setCounter(counter => counter + 1);
-   }), [setNavData, setCounter, counter]);
-
-   useEffect(() => {
-      newFeatures?.forEach(feature => {
-         onAddFeature(feature, layer!)
-      });
-   }, [newFeatures, onAddFeature, layer]);
 
    const navRenderer = useMemo(() => (feature: FeatureLike) => {
       const geom = feature.getGeometry();
@@ -225,45 +289,20 @@ export const OlRouteLayer = ({
          return [new Style({
             renderer: (coords, state) => {
                const context = state.context;
-               const renderContext = toContext(context, {
-                  pixelRatio: 1,
-               });
+
+               const data = navData.find(data => data.id === state.feature.getId())!;
+
+               if (!data.active) {
+                  return;
+               }
+
+               const properties = data.properties;
 
                const geometry = state.geometry.clone() as SimpleGeometry;
                geometry.setCoordinates(coords);
 
-
-               renderContext.setFillStrokeStyle(new Fill(), new Stroke({
-                  width: 5,
-                  color: 'white'
-               }));
-               renderContext.drawGeometry(geometry);
-
-               renderContext.setFillStrokeStyle(new Fill(), new Stroke({
-                  width: 4,
-                  color: '#1f2937'
-               }));
-               renderContext.drawGeometry(geometry);
-
                if (geometry.getType() === 'MultiLineString') {
                   const coords_ = (coords as Coordinate[][])[0];
-
-                  // Draw markers
-                  //------------------------------
-                  coords_.forEach((coord, index) => {
-                     const size = settings.map.markerSize;
-
-                     if (index === 0) {
-                        // First Coord
-                        context.drawImage(greenMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
-                     } else if (index === coords_.length - 1) {
-                        // Last Coord
-                        context.drawImage(redMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
-                     } else {
-                        // Coord in between
-                        context.drawImage(blueMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
-                     }
-                  });
 
                   // Draw Distance/cap
                   //------------------------------
@@ -272,7 +311,11 @@ export const OlRouteLayer = ({
                         const nextCoord = coords_[index + 1];
 
                         const vector = [nextCoord[0] - coord[0], nextCoord[1] - coord[1]];
-                        let angle = Math.atan2(vector[1], vector[0]) * 180 / Math.PI;
+
+                        const { CH, TC, dist, dur } = properties[index];
+                        const { days, hours, minutes, seconds } = dur;
+
+                        let angle = TC - 90;
                         let mag = 90 + angle;
 
                         if (mag < 0) {
@@ -283,20 +326,10 @@ export const OlRouteLayer = ({
                            angle = angle - 180;
                         }
 
-                        const geoDistance = getLength((new LineString([map.getCoordinateFromPixelInternal(coord), map.getCoordinateFromPixelInternal(nextCoord)]))) * 0.0005399568;
                         const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
 
-                        const fdays = geoDistance / (24 * settings.speed);
-                        const days = Math.floor(fdays);
-                        const fhours = (fdays - days) * 24;
-                        const hours = Math.floor(fhours);
-                        const fminutes = (fhours - hours) * 60;
-                        const minutes = Math.floor(fminutes);
-                        const fseconds = (fminutes - minutes) * 60;
-                        const seconds = Math.floor(fseconds);
-
-                        const text = Math.floor(mag).toString() + "\u00b0 "
-                           + Math.floor(geoDistance).toString() + " nm  "
+                        const text = Math.round(CH).toString() + "\u00b0 "
+                           + Math.round(dist).toString() + " nm  "
                            + (days ? days.toString() + 'd ' : '')
                            + ((days || hours) ? ((days && (hours < 10) ? '0' : '') + hours.toString() + ":") : "")
                            + ((days || hours || minutes) ? ((minutes < 10 ? "0" : '') + minutes.toString() + ":") : "")
@@ -328,13 +361,66 @@ export const OlRouteLayer = ({
                         context.restore();
                      }
                   });
+
+                  // Draw lines Background
+                  //------------------------------
+                  context.lineWidth = 5;
+                  context.strokeStyle = `rgb(255, 255, 255)`;
+                  context.beginPath()
+                  context.moveTo(coords_[0][0], coords_[0][1])
+                  coords_.forEach((coord, index) => {
+                     if (index > 0) {
+                        context.lineTo(coord[0], coord[1])
+                     }
+                  });
+                  context.stroke();
+
+                  // Draw lines Foreground
+                  //------------------------------
+                  const firstActive = properties.findIndex(value => value.active);
+
+                  context.lineWidth = 4;
+                  context.strokeStyle = firstActive ? `rgb(0, 200, 120)` : `rgb(31, 41, 55)`;//@todo parameter
+                  context.beginPath()
+                  context.moveTo(coords_[0][0], coords_[0][1])
+                  coords_.forEach((coord, index) => {
+                     if (index > 0) {
+                        context.lineTo(coord[0], coord[1])
+
+                        if (index === firstActive) {
+                           context.stroke()
+
+                           context.strokeStyle = `rgb(31, 41, 55)`;
+                           context.beginPath()
+                           context.moveTo(coord[0], coord[1])
+                        }
+                     }
+                  });
+                  context.stroke();
+
+                  // Draw markers
+                  //------------------------------
+                  coords_.forEach((coord, index) => {
+                     const size = settings.map.markerSize;
+
+                     if (index === 0) {
+                        // First Coord
+                        context.drawImage(greenMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
+                     } else if (index === coords_.length - 1) {
+                        // Last Coord
+                        context.drawImage(redMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
+                     } else {
+                        // Coord in between
+                        context.drawImage(blueMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
+                     }
+                  });
                }
             }
          })]
       }
 
       return [];
-   }, [map, settings.map.markerSize, settings.map.text.borderColor.alpha, settings.map.text.borderColor.blue, settings.map.text.borderColor.green, settings.map.text.borderColor.red, settings.map.text.borderSize, settings.map.text.color.alpha, settings.map.text.color.blue, settings.map.text.color.green, settings.map.text.color.red, settings.map.text.maxSize, settings.map.text.minSize, settings.speed]);
+   }, [navData, settings.map.markerSize, settings.map.text.borderColor.alpha, settings.map.text.borderColor.blue, settings.map.text.borderColor.green, settings.map.text.borderColor.red, settings.map.text.borderSize, settings.map.text.color.alpha, settings.map.text.color.blue, settings.map.text.color.green, settings.map.text.color.red, settings.map.text.maxSize, settings.map.text.minSize]);
 
    useEffect(() => {
       layer?.setZIndex(zIndex);
@@ -347,39 +433,12 @@ export const OlRouteLayer = ({
    }, [navRenderer, layer]);
 
    useEffect(() => {
-      if (order !== undefined) {
-         layer?.setZIndex(order);
-      }
-   }, [order, layer]);
-
-   useEffect(() => {
       setCancel(() => () => {
          if (draw) {
             map.removeInteraction(draw);
          }
       });
    }, [map, setCancel, draw]);
-
-   useEffect(() => {
-      if (modified) {
-         modified.forEach((feature) => {
-            const data = navData.find(elem => elem.feature.getId() === feature.getId());
-            if (data) { data.feature = feature; }
-         });
-      }
-   }, [modified, navData]);
-
-   useEffect(() => {
-      if (source) {
-         const features = navData.filter(data => data.active).sort((left, right) => left.order - right.order).map(data => {
-            const feature = data.feature.clone();
-            feature.setId(data.feature.getId());
-            return feature;
-         });
-         source.clear();
-         source.addFeatures(features);
-      }
-   }, [navData, source]);
 
 
    useEffect(() => {
@@ -391,24 +450,37 @@ export const OlRouteLayer = ({
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
          const onExportNav = (message: ExportNav) => {
-            const writer = new GeoJSON();
+            source.clear();
 
-            let currentCounter = counter;
-
+            const features: Feature[] = [];
             const data = message.data.map((data): NavData => {
-               const result = { id: currentCounter, order: data.order, active: true, name: data.name, shortName: data.shortName, feature: writer.readFeature(data.data) as Feature<Geometry>, layer: layer! }
-               ++currentCounter;
+               const feature = new Feature<MultiLineString>([data.coords]);
+               initFeature(feature);
+
+               features.push(feature)
+               const result = {
+                  id: feature.getId() as number,
+                  order: data.order,
+                  featureId: feature.getId()!,
+                  active: true,
+                  name: data.name,
+                  shortName: data.shortName,
+                  coords: data.coords.map(coords => ([...coords])),
+                  layer: layer!,
+                  properties: data.properties
+               }
 
                return result;
             })
-            setCounter(currentCounter);
+
+            source.addFeatures(features);
             setNavData(data);
          };
 
          messageHandler.subscribe("__EXPORT_NAV__", onExportNav)
          return () => messageHandler.unsubscribe("__EXPORT_NAV__", onExportNav);
       }
-   }, [counter, layer, navData, setCounter, setNavData])
+   }, [counter, initFeature, layer, navData, setNavData, source])
 
    return <div className="hidden">
       <img ref={greenMarkerImg} src={greenMarker} alt='start marker' />

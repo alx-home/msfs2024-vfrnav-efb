@@ -22,7 +22,7 @@ export const ToolBar = ({ menu }: {
       setOpen(false)
    }, [content])
 
-   return <div className={"flex flex-col pointer-events-auto transition-all overflow-hidden" + (content ? '' : ' hidden')}>
+   return <div className={"flex flex-col pointer-events-auto transition-all min-h-max overflow-hidden" + (content ? '' : ' hidden')}>
       <button className="flex bg-slate-900 h-6 hocus:bg-msfs shadow-smd select-none transition-all cursor-pointer justify-center text-center"
          onClick={(e) => {
             setOpen(open => !open)
@@ -31,7 +31,7 @@ export const ToolBar = ({ menu }: {
       >
          <Arrow width={20} height={15} className={'transition-all m-auto' + (open ? ' -rotate-90' : ' rotate-90')} />
       </button>
-      <div className={"flex min-h-0 transition-all shrink border-t border-gray-700 bg-gray-800 overflow-hidden " + (open ? ' max-h-96' : ' max-h-0')}>
+      <div className={"flex transition-all shrink border-t border-gray-700 bg-gray-800 overflow-hidden" + (open ? ' max-h-[2000px]' : ' max-h-0')}>
          <div className="flex grow p-4 h-full">{content}</div>
       </div>
    </div>

@@ -19,6 +19,9 @@ declare module '*.css';
 declare module '*.ttf';
 declare module '*.pdf';
 
+declare module 'intl';
+declare module 'intl/locale-data/jsonp/en.js';
+
 declare module '@alx-home/pdfjs-dist/build/pdf.worker.min.mjs';
 declare module 'pdfjs-dist/build/pdf.worker.min.mjs';
 

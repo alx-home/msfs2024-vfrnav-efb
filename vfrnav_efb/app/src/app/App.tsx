@@ -22,6 +22,7 @@ import { ChartsPage } from '@pages/Charts/ChartsPage';
 import { CreditsPage } from '@pages/Credits/CreditsPage';
 import { MapPage } from '@pages/Map/MapPage';
 import { SettingsPage } from '@pages/Settings/SettingsPage';
+import { NavLogPage } from '@pages/NavLog/NavLogPage';
 
 import SettingsContextProvider from '@Settings/SettingsProvider';
 
@@ -31,6 +32,7 @@ import navlogImg from '@efb-images/navlog.svg';
 import settingsImg from '@alx-home/images/settings.svg';
 import filesImg from '@alx-home/images/files.svg';
 import creditsImg from '@alx-home/images/credits.svg';
+import MapContextProvider from '@pages/Map/MapContext';
 
 export class Page {
   public readonly type: string = 'page';
@@ -74,8 +76,7 @@ export const App = () => {
     new Page({
       name: "navlog",
       icon: <img src={navlogImg} alt='nav log' />,
-      elem: <div key="navlog" />,
-      disabled: true
+      elem: <NavLogPage key="navlog" active={page === 'navlog'} />,
     }),
     new Page({
       name: "charts",
@@ -101,21 +102,23 @@ export const App = () => {
   return (
     <MouseContextProvider>
       <SettingsContextProvider setPopup={setPopup} emptyPopup={empty}>
-        <div className={'fixed flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center text-xl'
-          + (popup === empty ? ' hidden' : '')
-        }>
-          <div className='flex flex-row box-border relative m-auto w-full max-w-4xl max-h-full'>
-            <div className='flex flex-row grow bg-menu border-2 hover:border-msfs px-8 py-5 shadow-slate-950 shadow-md m-8 max-h-full'>
-              <div className='flex flex-row grow overflow-hidden'>
-                {popup}
+        <MapContextProvider>
+          <div className={'fixed flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center text-xl'
+            + (popup === empty ? ' hidden' : '')
+          }>
+            <div className='flex flex-row box-border relative m-auto w-full max-w-4xl max-h-full'>
+              <div className='flex flex-row grow bg-menu border-2 hover:border-msfs px-8 py-5 shadow-slate-950 shadow-md m-8 max-h-full'>
+                <div className='flex flex-row grow overflow-hidden'>
+                  {popup}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div key='home' className='flex flex-row h-full' inert={popup !== empty}>
-          <Menu pages={pages} setPage={page => setPage(page)} activePage={page} />
-          {pages.map(elem => elem.elem)}
-        </div>
+          <div key='home' className='flex flex-row h-full' inert={popup !== empty}>
+            <Menu pages={pages} setPage={page => setPage(page)} activePage={page} />
+            {pages.map(elem => elem.elem)}
+          </div>
+        </MapContextProvider>
       </SettingsContextProvider>
     </MouseContextProvider>
   );

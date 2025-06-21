@@ -17,6 +17,8 @@
 
 #include <json/json.h>
 
+#include <optional>
+
 namespace ws::msg {
 
 struct GetMetar {

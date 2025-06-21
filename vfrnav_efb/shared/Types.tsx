@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
  * SPDX-License-Identifier: (GNU General Public License v3.0 only)
  * Copyright © 2024 Alexandre GARCIN
@@ -27,7 +28,7 @@ export type PartialTypeRecord<T> =
   : T extends string ? 'string'
   : T;
 
-type ExtendIf<T, U = T> = T extends never ? never : {} extends T ? never : U;
+type ExtendIf<T, U = T> = T extends never ? never : object extends T ? never : U;
 
 type ExtendObjectMapper<T> = {
   [K in keyof T as T[K] extends Required<T>[K] ? never : K]-?: { optional: true, record: TypeRecord2<T[K]> };
@@ -277,7 +278,7 @@ const AppendExt = (extensions: any, record?: any): any => {
   }
 }
 
-export const GenRecord = <T, R = ExtendTypeRecord<T> extends never ? {} | undefined : ExtendTypeRecord<T>>(defaultValues: T, extensions: R): TypeRecord<T> => {
+export const GenRecord = <T, R = ExtendTypeRecord<T> extends never ? object | undefined : ExtendTypeRecord<T>>(defaultValues: T, extensions: R): TypeRecord<T> => {
   const record = AppendExt(extensions as any, GenRecord2(defaultValues) as any);
   return { ...record, defaultValues: defaultValues };
 }

@@ -15,6 +15,7 @@
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Chart, registerables } from 'chart.js';
 import { App } from './app/App'
 
 import { messageHandler } from '@Settings/SettingsProvider';
@@ -36,12 +37,22 @@ import "./ol.css";
 
 import '@polyfills/drag-events/default.css';
 
+
+import 'chartjs-plugin-dragdata';
+
+Chart.register(...registerables);
+
 (async () => {
   if (__MSFS_EMBEDED__) {
     await import('abortcontroller-polyfill/dist/polyfill-patch-fetch.js');
     await import('@polyfills/pointer-events.js');
     await import('geometry-polyfill');
     await import("@polyfills/canvas/canvas.js");
+    globalThis.Intl = ((await import('intl')) as {
+      default: typeof globalThis.Intl
+    }).default;
+
+    await import('intl/locale-data/jsonp/en.js');
 
     const drag_polyfill = (await import('@polyfills/drag-events/index.js')).polyfill;
     drag_polyfill({
