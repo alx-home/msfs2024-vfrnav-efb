@@ -182,7 +182,7 @@ export const RecordsToolbar = () => {
     </div>
     <div className='flex flex-col grow mb-4 mt-2'>
       <div className='flex flex-row grow'>
-        <div className='flex flex-row text-xl ml-12 mr-4 min-w-20'>Scale 1:{profileScale.toFixed(3)}</div>
+        <div className='flex flex-row text-xl ml-12 mr-4 min-w-36'>Scale 1:{profileScale.toFixed(3)}</div>
         <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
       </div>
     </div>
