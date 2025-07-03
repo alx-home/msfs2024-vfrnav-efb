@@ -155,8 +155,8 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
    edit: boolean,
    navData: NavData
 }) => {
-   const { editNavProperties, fuelUnit } = useContext(MapContext)!;
-   const { properties, id } = navData;
+   const { editNavProperties, updateWaypoints, fuelUnit } = useContext(MapContext)!;
+   const { properties, waypoints, id } = navData;
    const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);
    const toUnit = useCallback((value: number) =>
       fuelUnit === 'gal' ? value : value / 3.785411784
@@ -206,23 +206,25 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       return coords.map((_value, index) => {
          let index_ = (index + 1) * gridSize;
 
-         if (index === 0) {
-            const name = properties[index].name;
+         const name = waypoints[index];
+         const result: ReactElement[] = [];
 
-            return [<GridElem key={"Waypoint"} index={index_} active={true} edit={edit} currentMode={mode}>
-               {
-                  edit ?
-                     <Input active={true} className="w-36" value={name} onChange={(value) => {
-                        properties[index].name = value;
-                        editNavProperties(id, properties);
-                     }} />
-                     : <div className="w-36 m-auto text-center">{name}</div>
-               }
-            </GridElem>]
-         } else {
+         result.push(<GridElem key={"Waypoint"} index={index_} active={true} edit={edit} currentMode={mode}>
+            {
+               edit ?
+                  <Input active={true} className="w-36" value={name} onChange={(value) => {
+                     waypoints[index] = value
+                     updateWaypoints(id, waypoints);
+                  }} />
+                  : <div className="w-36 m-auto text-center">{name}</div>
+            }
+         </GridElem>)
+         ++index_;
+
+         if (index > 0) {
             const active = actives[index - 1];
             const navProps = properties[index - 1];
-            const { altitude, dist, vor, wind, name, remark, CH, MH, GS, tas, ias, magVar, oat, conso, curFuel, ata } = navProps;
+            const { altitude, dist, vor, wind, remark, CH, MH, GS, tas, ias, magVar, oat, conso, curFuel, ata } = navProps;
             const { ident: vorIndent, freq: vorFreq, obs: vorObs } = vor;
             const { direction: windDir, speed: windVel } = wind;
 
@@ -281,19 +283,6 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                return (h < 10 ? '0' : '') + h + "h" + ((h || m) ? (m < 10 ? '0' : '') + m : '')
             })()
 
-
-            const result: ReactElement[] = [];
-            result.push(<GridElem key={"Waypoint"} index={index_} active={true} edit={edit} currentMode={mode}>
-               {
-                  edit ?
-                     <Input active={true} className="w-32" value={name} onChange={(value) => {
-                        navProps.name = value;
-                        editNavProperties(id, properties);
-                     }} />
-                     : <div className="w-32 m-auto text-center">{name}</div>
-               }
-            </GridElem>)
-            ++index_;
             result.push(<GridElem key={"Altitude"} index={index_} active={active} edit={edit} mode="Enroute" currentMode={mode}>
                <div className="flex flex-row grow h-full">
                   {((mode !== 'Vor' && mode !== 'Weather')) ? <Arrow className="rotate-180 h-full -ml-8" height={30} width={20} /> : <></>}
@@ -536,10 +525,11 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                   <CheckBox value={!active} onChange={() => setActive(index - 1)} />
                </GridElem>)
             }
-            return result;
          }
+
+         return result;
       })
-   }, [actives, coords, departureTime, edit, editNavProperties, fromUnit, id, loadedFuel, mode, properties, setActive, toUnit])
+   }, [actives, coords, departureTime, edit, editNavProperties, fromUnit, id, loadedFuel, mode, properties, setActive, toUnit, updateWaypoints, waypoints])
 
    return <div className={'flex flex-col text-xl [grid-row:1] [grid-column:1] overflow-hidden'
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')

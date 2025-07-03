@@ -33,7 +33,7 @@ import { Coordinate } from 'ol/coordinate';
 
 export class NavData {
   // eslint-disable-next-line no-unused-vars
-  constructor(public id: number, public order: number, public name: string, public active: boolean, public shortName: string, public coords: Coordinate[], public properties: Properties[], public layer: VectorLayer) { }
+  constructor(public id: number, public order: number, public name: string, public active: boolean, public shortName: string, public coords: Coordinate[], public properties: Properties[], public waypoints: string[], public layer: VectorLayer) { }
 };
 
 const Label = ({ name, shortName, editMode }: {
@@ -237,7 +237,8 @@ export const Nav = ({ closeMenu, className, style }: {
         order: data.order,
         shortName: data.shortName,
         coords: data.coords,
-        properties: data.properties
+        properties: data.properties,
+        waypoints: data.waypoints
       }))
     })
   }, [navData]);
