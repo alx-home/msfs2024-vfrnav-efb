@@ -656,5 +656,5 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             </div>
          </div>
       </Scroll >
-   </div >
+   </div>
 }
