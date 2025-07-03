@@ -293,7 +293,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
             result.push(<GridElem key={"Altitude"} index={index_} active={active} edit={edit} mode="Enroute" currentMode={mode}>
                <div className="flex flex-row grow h-full">
-                  {((mode !== 'Vor' && mode !== 'Weather')) ? <Arrow className="rotate-180 h-full -ml-8" height={30} width={20} /> : <></>}
+                  {(mode === 'Full' || mode === 'Enroute') ? <Arrow className="rotate-180 h-full -ml-8" height={30} width={20} /> : <></>}
                   <div className="flex grow [&_.invalid]:text-red-500">
                      {
                         edit ?
@@ -517,14 +517,17 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             </GridElem>)
             ++index_;
             result.push(<GridElem key={"Remarks"} index={index_} active={active} edit={edit} currentMode={mode}>
-               {
-                  edit ?
-                     <Input active={true} className="w-52" value={remark} onChange={(value) => {
-                        navProps.remark = value;
-                        editNavProperties(id, properties);
-                     }} />
-                     : <div className="min-w-52 m-auto text-center">{remark}</div>
-               }
+               <div className="flex flex-row grow h-full">
+                  {(mode === 'Remarks') ? <Arrow className="rotate-180 h-full -ml-8" height={30} width={20} /> : <></>}
+                  {
+                     edit ?
+                        <Input active={true} className="w-52" value={remark} onChange={(value) => {
+                           navProps.remark = value;
+                           editNavProperties(id, properties);
+                        }} />
+                        : <div className="min-w-52 m-auto text-center">{remark}</div>
+                  }
+               </div>
             </GridElem>)
 
             if (!edit) {
