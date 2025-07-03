@@ -155,7 +155,6 @@ const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props:
   const tas = ias * Math.sqrt(0.945085118 + altitude * 4.635453591185e-5 + oat / 273.15)
 
   const WCA = Math.asin(Math.max(-1, Math.min(1, windVel * Math.sin((TC - windDir) * (Math.PI / 180)) / tas))) * (180 / Math.PI)
-  console.log(WCA, windVel * Math.sin((TC - windDir) * (Math.PI / 180)) / tas)
   const MH = (TC + magVar) % 360;
   const [CH, dev] = (() => {
     const value = (() => {

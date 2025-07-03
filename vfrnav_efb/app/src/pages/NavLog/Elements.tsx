@@ -21,19 +21,21 @@ import { PropsWithChildren, ReactElement, useCallback, useContext, useMemo, useS
 import Arrow from '@alx-home/images/arrow.svg?react';
 import { CheckBox, Input, Scroll, Tabs } from "@alx-home/Utils";
 
-const modes = ['Enroute', 'Vor', 'Weather', 'Full'] as const;
+const modes = ['Enroute', 'Vor', 'Weather', 'Remarks', 'Full'] as const;
 type Modes = typeof modes[number];
 const modesStr: Record<Modes, string> = {
    'Enroute': 'Enroute',
    'Vor': 'Vor',
    'Weather': 'Weather',
    'Full': 'Full',
+   'Remarks': 'Remarks'
 }
 
 const gridSize = 16;
 
-const GridElem = ({ children, index, active, edit, mode, currentMode }: PropsWithChildren<{
-   index: number
+const GridElem = ({ children, className, index, active, edit, mode, currentMode }: PropsWithChildren<{
+   index: number,
+   className?: string,
    active: boolean
    edit: boolean,
    mode?: Modes,
@@ -47,12 +49,11 @@ const GridElem = ({ children, index, active, edit, mode, currentMode }: PropsWit
       if (currentMode === "Vor") {
          if (col === 1) {
             return 1
-         } if (col === 3) {
+         } else if (col === 3) {
             return 2
          } else if (col === 4) {
             return 3
-         } else if (col === 6) {
-            console.assert(col === 6)
+         } else if ((col === 6) || edit) {
             return 4
          } else {
             return 5
@@ -63,12 +64,14 @@ const GridElem = ({ children, index, active, edit, mode, currentMode }: PropsWit
                return 1
             } else if (col === 2) {
                return 2
-            } if (col === 7) {
+            } else if (col === 7) {
                return 3
             } else if (col === 9) {
                return 4
             } else if (col === 10) {
                return 5
+            } else {
+               return 6
             }
          } else {
             if (col === 1) {
@@ -83,6 +86,8 @@ const GridElem = ({ children, index, active, edit, mode, currentMode }: PropsWit
                return 5
             } else if (col === 12) {
                return 6
+            } else {
+               return 7
             }
          }
       } else if (currentMode === "Weather") {
@@ -90,10 +95,12 @@ const GridElem = ({ children, index, active, edit, mode, currentMode }: PropsWit
             return 1
          } else if (col === 5) {
             return 2
-         } if (col === 6) {
-            return 4
-         } else if (col === 8) {
+         } if (col === 8) {
             return 3
+         } else if (col == 6) {
+            return 4
+         } else {
+            return 5
          }
       }
 
@@ -135,7 +142,8 @@ const GridElem = ({ children, index, active, edit, mode, currentMode }: PropsWit
          + ((col > 1) ? ((row > 1) ? ' -translate-y-1/2' : ' translate-y-1/2') : '')
          + ((col === 1) ? ' border-l-2' : '')
          + (sep.find(index => index === col) ? " ml-2 border-l-2" : "")
-         + ((index < gridSize2) ? ' border-t-2' : '')}
+         + ((index < gridSize2) ? ' border-t-2' : '')
+         + (className ?? "")}
          style={{ gridColumn: column, gridRow: row }}>
          <div className={
             "flex justify-center m-auto w-full whitespace-nowrap"
@@ -461,7 +469,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                   <div className="w-16 m-auto text-center">{Math.round(GS).toString()}</div>
                </GridElem>)
                ++index_;
-               result.push(<GridElem key={"ETE"} index={index_} active={active} edit={edit} mode="Enroute" currentMode={mode}>
+               result.push(<GridElem key={"ETE"} index={index_} active={active} edit={edit} mode="Full" currentMode={mode}>
                   <div className="m-auto text-center">{dur}</div>
                </GridElem>)
                ++index_;
@@ -515,13 +523,13 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                         navProps.remark = value;
                         editNavProperties(id, properties);
                      }} />
-                     : <div className="w-52 m-auto text-center">{remark}</div>
+                     : <div className="min-w-52 m-auto text-center">{remark}</div>
                }
             </GridElem>)
 
             if (!edit) {
                ++index_;
-               result.push(<GridElem key={"checkbox"} index={index_} active={active} edit={edit} mode="Full" currentMode={mode}>
+               result.push(<GridElem key={"checkbox"} index={index_} active={active} edit={edit} mode="Remarks" currentMode={mode}>
                   <CheckBox value={!active} onChange={() => setActive(index - 1)} />
                </GridElem>)
             }
@@ -540,39 +548,43 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       <Scroll className={
          'block [&>:not(:first-child)]:mt-8'
       }>
-         <div className='flex flex-col mx-5 shadow-sm w-full min-h-max ml-5'>
-            <div className={"grid pb-8"}>
-               <GridElem index={0} active={true} edit={edit} currentMode={mode}>Waypoint</GridElem>
-               <GridElem index={1} active={true} edit={edit} mode="Enroute" currentMode={mode}>Altitude</GridElem>
-               <GridElem index={2} active={true} edit={edit} mode="Vor" currentMode={mode}>VOR Ind/Freq</GridElem>
-               <GridElem index={3} active={true} edit={edit} mode="Vor" currentMode={mode}>OBS</GridElem>
+         <div className="flex flex-col w-full min-h-max">
+            <div className="flex flex-row w-full">
+               <div className='flex flex-col mx-5 shadow-sm min-h-max ml-5 min-w-max'>
+                  <div className={"grid pb-8"}>
+                     <GridElem index={0} active={true} edit={edit} currentMode={mode}>Waypoint</GridElem>
+                     <GridElem index={1} active={true} edit={edit} mode="Enroute" currentMode={mode}>Altitude</GridElem>
+                     <GridElem index={2} active={true} edit={edit} mode="Vor" currentMode={mode}>VOR Ind/Freq</GridElem>
+                     <GridElem index={3} active={true} edit={edit} mode="Vor" currentMode={mode}>OBS</GridElem>
 
-               {edit ?
-                  <>
-                     <GridElem index={4} active={true} edit={edit} mode="Weather" currentMode={mode}>Wind Dir/Vel</GridElem>
-                     <GridElem index={5} active={true} edit={edit} mode="Weather" currentMode={mode}>VAR</GridElem>
-                     <GridElem index={6} active={true} edit={edit} mode="Enroute" currentMode={mode}>IAS</GridElem>
-                     <GridElem index={7} active={true} edit={edit} mode="Weather" currentMode={mode}>OAT</GridElem>
-                     <GridElem index={8} active={true} edit={edit} mode="Enroute" currentMode={mode}>ATA</GridElem>
-                  </>
-                  : mode === 'Weather' ? <>
-                     <GridElem index={4} active={true} edit={edit} mode="Weather" currentMode={mode}>Wind Dir/Vel</GridElem>
-                     <GridElem index={5} active={true} edit={edit} mode="Weather" currentMode={mode}>VAR</GridElem>
-                     <GridElem index={7} active={true} edit={edit} mode="Weather" currentMode={mode}>OAT</GridElem>
-                  </> : <>
-                     <GridElem index={4} active={true} edit={edit} mode="Full" currentMode={mode}>CH</GridElem>
-                     <GridElem index={5} active={true} edit={edit} mode="Vor" currentMode={mode}>MH</GridElem>
-                     <GridElem index={6} active={true} edit={edit} mode="Full" currentMode={mode}>Dist</GridElem>
-                     <GridElem index={7} active={true} edit={edit} mode="Enroute" currentMode={mode}>TAS</GridElem>
-                     <GridElem index={8} active={true} edit={edit} mode="Full" currentMode={mode}>GS</GridElem>
-                     <GridElem index={9} active={true} edit={edit} mode="Enroute" currentMode={mode}>ETE</GridElem>
-                     <GridElem index={10} active={true} edit={edit} mode="Enroute" currentMode={mode}>ETA</GridElem>
-                  </>
-               }
-               <GridElem index={1 + (edit ? 8 : mode === 'Weather' ? 7 : 10)} active={true} edit={edit} mode="Enroute" currentMode={mode}>Fuel ({fuelUnit === 'gal' ? 'gal' : 'l'})</GridElem>
-               <GridElem index={2 + (edit ? 8 : mode === 'Weather' ? 7 : 10)} active={true} edit={edit} currentMode={mode}>Remarks</GridElem>
-               {legs}
-            </div>
+                     {edit ?
+                        <>
+                           <GridElem index={4} active={true} edit={edit} mode="Weather" currentMode={mode}>Wind Dir/Vel</GridElem>
+                           <GridElem index={5} active={true} edit={edit} mode="Weather" currentMode={mode}>VAR</GridElem>
+                           <GridElem index={6} active={true} edit={edit} mode="Enroute" currentMode={mode}>IAS</GridElem>
+                           <GridElem index={7} active={true} edit={edit} mode="Weather" currentMode={mode}>OAT</GridElem>
+                           <GridElem index={8} active={true} edit={edit} mode="Enroute" currentMode={mode}>ATA</GridElem>
+                        </>
+                        : mode === 'Weather' ? <>
+                           <GridElem index={4} active={true} edit={edit} mode="Weather" currentMode={mode}>Wind Dir/Vel</GridElem>
+                           <GridElem index={5} active={true} edit={edit} mode="Weather" currentMode={mode}>VAR</GridElem>
+                           <GridElem index={7} active={true} edit={edit} mode="Weather" currentMode={mode}>OAT</GridElem>
+                        </> : <>
+                           <GridElem index={4} active={true} edit={edit} mode="Full" currentMode={mode}>CH</GridElem>
+                           <GridElem index={5} active={true} edit={edit} mode="Vor" currentMode={mode}>MH</GridElem>
+                           <GridElem index={6} active={true} edit={edit} mode="Full" currentMode={mode}>Dist</GridElem>
+                           <GridElem index={7} active={true} edit={edit} mode="Enroute" currentMode={mode}>TAS</GridElem>
+                           <GridElem index={8} active={true} edit={edit} mode="Full" currentMode={mode}>GS</GridElem>
+                           <GridElem index={9} active={true} edit={edit} mode="Full" currentMode={mode}>ETE</GridElem>
+                           <GridElem index={10} active={true} edit={edit} mode="Enroute" currentMode={mode}>ETA</GridElem>
+                        </>
+                     }
+                     <GridElem index={1 + (edit ? 8 : mode === 'Weather' ? 7 : 10)} active={true} edit={edit} mode="Enroute" currentMode={mode}>Fuel ({fuelUnit === 'gal' ? 'gal' : 'l'})</GridElem>
+                     <GridElem index={2 + (edit ? 8 : mode === 'Weather' ? 7 : 10)} active={true} edit={edit} currentMode={mode}>Remarks</GridElem>
+                     {legs}
+                  </div>
+               </div>
+            </div >
             {
                edit ?
                   <div className="flex flex-col m-auto shrink">
@@ -613,7 +625,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                   : <></>
             }
             <div className="flex flex-row p-4 pt-12">
-               <div className="flex flex-col mx-auto text-lg border-2 border-slate-700 shadow-lg py-4 px-14">
+               <div className="flex flex-col mx-auto text-lg border-2 border-slate-700 shadow-lg py-4 px-14 whitespace-nowrap">
                   {edit ? <>
                      <div className="flex flex-row"><div className="w-32">OBS: </div>Omni Beer Selector</div>
                      <div className="flex flex-row"><div className="w-32">VAR: </div>Variation</div>
@@ -639,7 +651,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                   }
                </div>
             </div>
-         </div >
+         </div>
       </Scroll >
    </div >
 }
