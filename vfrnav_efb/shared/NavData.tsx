@@ -21,7 +21,6 @@ export type Deviation = {
 };
 
 export type Properties = {
-   name: string,
    active: boolean
    altitude: number
    vor: {
@@ -74,12 +73,12 @@ export type ExportNav = {
       shortName: string,
       order: number,
       coords: number[][],
-      properties: Properties[]
+      properties: Properties[],
+      waypoints: string[]
    }[]
 };
 
 export const PropertiesRecord = GenRecord<Properties>({
-   name: "",
    active: true,
    altitude: 1000,
    vor: {
@@ -154,6 +153,9 @@ export const ExportNavRecord = GenRecord<ExportNav>({
          },
          properties: {
             array: true, record: PropertiesRecord
+         },
+         waypoints: {
+            array: true, record: "string"
          }
       }
    }

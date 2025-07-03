@@ -70,6 +70,7 @@ export const MapContext = createContext<{
   activeNav: (_id: number, _active: boolean) => void,
   editNav: (_id: number, _newName: string) => void,
   editNavProperties: (_id: number, _properties: Properties[]) => void,
+  updateWaypoints: (_id: number, _names: string[]) => void,
   removeRecord: (_id: number) => void,
   activeRecord: (_id: number, _active: boolean) => void,
   editRecord: (_id: number, _newName: string) => void,
@@ -119,7 +120,13 @@ const getFeaturesAtPixel = (map: olMap, layer: Layer, coords: Coordinate, event:
 }
 
 const updateFuel = (fuelConsumption: number, props: Properties): Properties => {
-  return { ...props, conso: fuelConsumption / 3600 * props.dur.full }
+  return {
+    ...props, vor: { ...props.vor }, wind: { ...props.wind },
+    dur: { ...props.dur },
+    coords: props.coords.map(coord => ([...coord])),
+    deviations: [...props.deviations],
+    conso: fuelConsumption / 3600 * props.dur.full
+  }
 }
 
 const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props: Properties, prevCoords: Coordinate, coords: Coordinate): Properties => {
@@ -147,14 +154,27 @@ const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props:
   // const tas = ias * Math.sqrt(1 +  altitude / 44330 + (oat - (15 - 0.0065 * altitude)) / 273.15)
   const tas = ias * Math.sqrt(0.945085118 + altitude * 4.635453591185e-5 + oat / 273.15)
 
-  const WCA = Math.asin(windVel * Math.sin((TC - windDir) * (Math.PI / 180)) / tas) * (180 / Math.PI)
+  const WCA = Math.asin(Math.max(-1, Math.min(1, windVel * Math.sin((TC - windDir) * (Math.PI / 180)) / tas))) * (180 / Math.PI)
+  console.log(WCA, windVel * Math.sin((TC - windDir) * (Math.PI / 180)) / tas)
   const MH = (TC + magVar) % 360;
   const [CH, dev] = (() => {
-    const value = (MH + WCA) % 360;
+    const value = (() => {
+      const value = (MH + WCA) % 360
+      if (value < 0) {
+        return value + 360;
+      }
+
+      return value;
+    })();
     const devIndex = deviations.findIndex(elem => elem.x > value)
 
     if (devIndex === -1) {
-      return [(value + deviations[devIndex].y) % 360, deviations[devIndex].y];
+      if (value === deviations[0].x) {
+        return [(value + deviations[0].y) % 360, deviations[0].y];
+      } else {
+        console.assert(value === deviations[deviations.length - 1].x)
+        return [(value + deviations[deviations.length - 1].y) % 360, deviations[deviations.length - 1].y];
+      }
     } else {
       const index = devIndex - 1;
       console.assert(index >= 0);
@@ -436,6 +456,16 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         if (item) {
           const { coords } = item;
           item.properties = properties.map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
+        }
+        return newItems;
+      })
+    },
+    updateWaypoints: (id: number, names: string[]) => {
+      setNavData(items => {
+        const newItems = items.map(item => ({ ...item }));
+        const item = newItems.find((item) => item.id === id);
+        if (item) {
+          item.waypoints = [...names];
         }
         return newItems;
       })

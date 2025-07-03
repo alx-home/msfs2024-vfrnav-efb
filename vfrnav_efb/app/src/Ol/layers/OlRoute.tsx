@@ -106,6 +106,7 @@ const useMap = () => {
                   shortName: `${id}`,
                   coords: coords,
                   layer: layer!,
+                  waypoints: coords.map(() => ""),
                   properties: coords.filter((_, index) => index).map((value, index) => {
                      const props = { ...PropertiesRecord.defaultValues };
                      return updateNavProps(props, coords[index], value)
@@ -454,7 +455,7 @@ export const OlRouteLayer = ({
 
             const features: Feature[] = [];
             const data = message.data.map((data): NavData => {
-               const feature = new Feature<MultiLineString>([data.coords]);
+               const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
                initFeature(feature);
 
                features.push(feature)
@@ -467,6 +468,7 @@ export const OlRouteLayer = ({
                   shortName: data.shortName,
                   coords: data.coords.map(coords => ([...coords])),
                   layer: layer!,
+                  waypoints: data.waypoints,
                   properties: data.properties
                }
 

@@ -71,8 +71,7 @@ struct Duration {
 };
 
 struct NavProperties {
-   std::string name_{};
-   bool        active_{};
+   bool active_{};
 
    double                             altitude_{};
    VorProperty                        vor_{};
@@ -96,7 +95,6 @@ struct NavProperties {
    std::string                        remark_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"name", &NavProperties::name_},
      js::_{"active", &NavProperties::active_},
      js::_{"altitude", &NavProperties::altitude_},
      js::_{"vor", &NavProperties::vor_},
@@ -127,6 +125,7 @@ struct NavData {
    std::size_t                        order_{};
    std::vector<std::array<double, 2>> coords_{};
    std::vector<NavProperties>         properties_{};
+   std::vector<std::string>           waypoints_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"name", &NavData::name_},
@@ -134,6 +133,7 @@ struct NavData {
      js::_{"order", &NavData::order_},
      js::_{"coords", &NavData::coords_},
      js::_{"properties", &NavData::properties_},
+     js::_{"waypoints", &NavData::waypoints_},
    };
 };
 
