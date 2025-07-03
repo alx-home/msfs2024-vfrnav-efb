@@ -19,8 +19,10 @@ import { ReactElement, useCallback, useContext, useEffect, useMemo, useState } f
 
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
-import { Aircraft } from "./Aircraft";
+import { Settings } from "./Settings";
 import { TabElem } from "./Elements";
+import { messageHandler } from "@Settings/SettingsProvider";
+import { useEFBServer } from "@Utils/useServer";
 
 export const NavLogPage = ({ active }: {
   active: boolean
@@ -28,7 +30,7 @@ export const NavLogPage = ({ active }: {
   const { navData } = useContext(MapContext)!;
 
   const [opacity, setOpacity] = useState(' opacity-0');
-  const [tab, setTab] = useState<string>('Aircraft');
+  const [tab, setTab] = useState<string>('Settings');
   const [edit, setEdit] = useState<boolean>(false);
   const [empty, setEmpty] = useState(true);
 
@@ -52,7 +54,7 @@ export const NavLogPage = ({ active }: {
       setEdit(false);
 
       elems.push(<div key="empty" className="flex text-xl overflow-hidden">
-        <div className="flex w-[800px] max-w-full">
+        <div className="flex w-full -mt-20">
           <div className="flex flex-col justify-center m-auto text-center">
             <div className="flex m-auto">
               Navigation path is empty.
@@ -66,11 +68,11 @@ export const NavLogPage = ({ active }: {
     } else {
       setEmpty(false);
 
-      elems.push(<div key="aircraft" className={"absolute top-0 bottom-0 right-0 left-0 overflow-hidden" + (tab === 'Aircraft' ? "" : " opacity-0 h-0")}>
-        <Aircraft />
+      elems.push(<div key="aircraft" className={"absolute top-0 bottom-0 right-0 left-0 overflow-hidden" + (tab === 'Settings' ? "" : " opacity-0 h-0")}>
+        <Settings />
       </div>)
-      tabs.push('Aircraft')
-      tabNames['Aircraft'] = 'Aircraft'
+      tabs.push('Settings')
+      tabNames['Settings'] = 'Settings'
     }
 
     return [tabs, elems, tabNames]
@@ -79,6 +81,22 @@ export const NavLogPage = ({ active }: {
   const switchEdit = useCallback(() => {
     setEdit(edit => !edit)
   }, [])
+
+  const efbConnected = useEFBServer();
+  const exportNav = useCallback(() => {
+    messageHandler.send({
+      __EXPORT_NAV__: true,
+
+      data: navData.map(data => ({
+        name: data.name,
+        order: data.order,
+        shortName: data.shortName,
+        coords: data.coords,
+        properties: data.properties,
+        waypoints: data.waypoints
+      }))
+    })
+  }, [navData]);
 
   useEffect(() => {
     if (!tabs.find(value => value === tab)) {
@@ -95,18 +113,12 @@ export const NavLogPage = ({ active }: {
   }, [active]);
 
 
-  useEffect(() => {
-    if (tab === 'Aircraft') {
-      setEdit(false);
-    }
-  }, [tab]);
-
   return <div className="flex grow justify-center overflow-hidden" style={active ? {} : { display: 'none' }}>
     <div className="flex flex-row w-full justify-center">
       <div className={"flex flex-col shrink transition transition-std py-1 h-full text-left"
         + " justify-start overflow-hidden bg-menu rounded-sm shadow-md"
         + " hocus:border-msfs"
-        + opacity
+        + opacity + " min-w-[70%]"
       }>
         <div className={"relative flex flex-col grow overflow-hidden"}>
           <div className="flex text-4xl py-6 px-8">Nav Log</div>
@@ -119,15 +131,20 @@ export const NavLogPage = ({ active }: {
             </div>
           </div>
         </div>
-        {
-          tab === 'Aircraft' ? <></> :
-            <div className="flex shrink-0 min-h-0">
-              <Button active={!empty} disabled={empty}
-                onClick={switchEdit}>
-                {edit ? "Done" : "Edit"}
-              </Button>
-            </div>
-        }
+        <div className="flex flex-row shrink-0 min-h-0 px-4">
+          {
+            __MSFS_EMBEDED__ ? <></> :
+              <div className="flex flex-row mr-2 grow">
+                <Button active={!empty} disabled={empty || !efbConnected || __MSFS_EMBEDED__} onClick={exportNav}>
+                  Upload
+                </Button>
+              </div>
+          }
+          <Button active={!empty} disabled={empty}
+            onClick={switchEdit}>
+            {edit ? "Done" : "Edit"}
+          </Button>
+        </div>
       </div>
     </div>
   </div >;

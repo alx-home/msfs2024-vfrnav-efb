@@ -22,7 +22,7 @@ import { ChartJSOrUndefined } from "node_modules/react-chartjs-2/dist/types";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 
-export const Aircraft = () => {
+export const Settings = () => {
    const { deviations, setDeviations, fuelConsumption, setFuelConsumption, fuelUnit, setFuelUnit } = useContext(MapContext)!;
    const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gal' : 'l', [fuelUnit])
    const toUnit = useCallback((value: number) =>
@@ -49,12 +49,13 @@ export const Aircraft = () => {
    const chartRef = useRef<ChartJSOrUndefined<"line", Point[], unknown>>(undefined);
 
 
-   const { minX, maxX, minY, maxY, hitRadius } = useMemo(() => ({
+   const { minX, maxX, minY, maxY, hitRadius, hoverRadius } = useMemo(() => ({
       minX: 0,
       maxX: 360,
       minY: -10,
       maxY: 10,
-      hitRadius: 4
+      hitRadius: 4,
+      hoverRadius: 10,
    }), [])
 
 
@@ -67,7 +68,7 @@ export const Aircraft = () => {
       elements: {
          point: {
             radius: 4,
-            hoverRadius: 10,
+            hoverRadius: hoverRadius,
             hoverBackgroundColor: 'white',
             hitRadius: hitRadius
          },
@@ -187,7 +188,7 @@ export const Aircraft = () => {
             },
          }
       },
-   }), [deviations, hitRadius, maxX, maxY, minX, minY, setDeviations]);
+   }), [deviations, hitRadius, hoverRadius, maxX, maxY, minX, minY, setDeviations]);
 
    const data = useMemo(() => ({
       datasets: [
@@ -218,27 +219,41 @@ export const Aircraft = () => {
 
             setDeviations(prev => {
                let index = 0;
-               let minDist = Math.pow(chart.canvas.width, 2) + Math.pow(chart.canvas.height, 2);
+
+               if (prev.find((elem, current_index) => {
+                  const dist = Math.pow(chart.scales.x.getPixelForValue(elem.x) - canvasPosition.x, 2) + Math.pow(chart.scales.y.getPixelForValue(elem.y) - canvasPosition.y, 2)
+
+                  if (dist <= Math.pow(2 * hitRadius, 2)) {
+                     if (current_index === 0 || current_index === prev.length - 1) {
+                        return false;
+                     } else {
+                        index = current_index
+                        return true;
+                     }
+                  }
+               })) {
+                  return prev.toSpliced(index, 1)
+               }
+
+               let minDist = chart.canvas.width;
                let offset = 0;
 
                prev.forEach((elem, current_index) => {
-                  const dist = Math.pow(chart.scales.x.getPixelForValue(elem.x) - canvasPosition.x, 2) + Math.pow(chart.scales.y.getPixelForValue(elem.y) - canvasPosition.y, 2)
-                  if (dist < minDist) {
-                     minDist = dist
+                  if (current_index === prev.length - 1) {
+                     return;
+                  }
+
+                  const dist = canvasPosition.x - chart.scales.x.getPixelForValue(elem.x)
+                  const adist = Math.abs(dist)
+
+                  if (adist < minDist) {
+                     minDist = adist
                      index = current_index;
-                     offset = (x > elem.x ? 1 : 0)
+                     offset = dist < 0 ? 0 : 1
                   }
                })
 
-               if (minDist < Math.pow(2 * hitRadius, 2)) {
-                  if (index === 0 || index === prev.length - 1) {
-                     return prev;
-                  } else {
-                     return prev.toSpliced(index, 1)
-                  }
-               } else {
-                  return prev.toSpliced(index + offset, 0, { x: x, y: y })
-               }
+               return prev.toSpliced(index + offset, 0, { x: x, y: y })
             });
          };
 
@@ -246,7 +261,7 @@ export const Aircraft = () => {
 
          return () => chart.canvas.removeEventListener('dblclick', onClick);
       }
-   }, [chartRef, hitRadius, setDeviations])
+   }, [chartRef, hitRadius, hoverRadius, setDeviations])
 
    return <div className="flex flex-col grow h-full">
       <div className="flex w-full grow justify-center overflow-hidden min-h-0">
