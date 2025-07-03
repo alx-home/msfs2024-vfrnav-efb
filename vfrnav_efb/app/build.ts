@@ -83,6 +83,9 @@ const msfs_postprocess = (): VitePlugin => {
             if (key.endsWith('.js')) {
               const chunk = elem as OutputChunk;
               chunk.code = process(chunk.code);
+              if (!key.includes('polyfills-legacy')) {
+                chunk.code = '(() => {\nif (typeof System === "undefined") {\n   return;\n   }\n' + chunk.code + '\n})()';
+              }
             } else {
               const asset = elem as OutputAsset;
               asset.source = process(asset.source as string);
