@@ -92,6 +92,7 @@ Server::FlushState() {
 void
 Server::RejectAll() {
    resolvers_.RejectAll();
+   efb_resolvers_.RejectAll();
 }
 
 void
@@ -188,6 +189,11 @@ Server::Server()
          Notify(GetState(lock), lock);
       }
    }} {}
+
+Server::~Server() {
+   assert(efb_resolvers_.empty());
+   assert(resolvers_.empty());
+}
 
 using namespace boost::beast;
 using namespace boost::urls;
@@ -351,17 +357,19 @@ Server::WatchServerState(Resolve<ServerState> const& resolve, Reject const& reje
 
 void
 Server::WatchEFBState(Resolve<bool> const& resolve, Reject const& reject, bool currentState) {
-   Dispatch([this,
-             resolve = resolve.shared_from_this(),
-             reject  = reject.shared_from_this(),
-             currentState]() constexpr {
-      if (currentState != efb_connected_) {
-         (*resolve)(efb_connected_);
-         return;
-      }
+   if (!Dispatch([this,
+                  resolve = resolve.shared_from_this(),
+                  reject  = reject.shared_from_this(),
+                  currentState]() constexpr {
+          if (currentState != efb_connected_) {
+             (*resolve)(efb_connected_);
+             return;
+          }
 
-      efb_resolvers_.emplace_back(std::move(resolve), std::move(reject));
-   });
+          efb_resolvers_.emplace_back(std::move(resolve), std::move(reject));
+       })) {
+      MakeReject<AppStopping>(reject);
+   }
 }
 
 void

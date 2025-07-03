@@ -64,6 +64,7 @@ public:
 
 struct Server : public MessageQueue {
    Server();
+   ~Server() override;
 
    using Lock = std::variant<
      std::reference_wrapper<std::unique_lock<std::shared_mutex> const>,
