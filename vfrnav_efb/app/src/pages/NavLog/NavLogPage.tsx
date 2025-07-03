@@ -121,9 +121,9 @@ export const NavLogPage = ({ active }: {
         + opacity + " min-w-[70%]"
       }>
         <div className={"relative flex flex-col grow overflow-hidden"}>
-          <div className="flex text-4xl py-6 px-8">Nav Log</div>
+          <div className="flex text-4xl pt-6 px-8">Nav Log</div>
           <div className='flex flex-col overflow-hidden grow  m-4 mt-8 mb-0'>
-            <div className="pt-6 px-8">
+            <div className="pt-6 pl-4">
               <Tabs tabs={Array.from(tabs)} activeTab={tab} names={tabNames} switchTab={setTab} className="hidden" />
             </div>
             <div className='relative grid grow overflow-hidden h-[60vh]'>

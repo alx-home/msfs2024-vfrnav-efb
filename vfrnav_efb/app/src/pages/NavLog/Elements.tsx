@@ -545,7 +545,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
    return <div className={'flex flex-col text-xl [grid-row:1] [grid-column:1] overflow-hidden'
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
-      <div className="flex flex-row px-8">
+      <div className="flex flex-row pl-4 pt-2">
          <Tabs tabs={Array.from(modes)} activeTab={mode} names={modesStr} switchTab={setMode} />
       </div>
       <Scroll className={
