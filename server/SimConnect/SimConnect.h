@@ -109,7 +109,7 @@ private:
    } waiting_requests_{};
 
    win32::Event event_{win32::CreateEvent()};
-   int64_t      server_port_{48578};
+   double       server_port_{48578};
 
    std::unique_ptr<HANDLE, void (*)(HANDLE*)> handle_{
      nullptr,

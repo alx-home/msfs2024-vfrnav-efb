@@ -88,7 +88,7 @@ SimConnect::SetServerPort(uint32_t port) {
            static_cast<uint32_t>(DataId::SET_PORT),
            SIMCONNECT_OBJECT_ID_USER,
            0,
-           1,
+           0,
            sizeof(server_port_),
            &server_port_
          );
@@ -100,24 +100,13 @@ void
 SimConnect::Run() {
    connected_ = true;
 
-   MessageQueue::Dispatch([this]() constexpr {
-      SimConnect_AddToDataDefinition(
-        *handle_,
-        static_cast<uint32_t>(DataId::SET_PORT),
-        "L:VFRNAV_SET_PORT",
-        "Number",
-        SIMCONNECT_DATATYPE_INT64
-      );
-      SimConnect_SetDataOnSimObject(
-        *handle_,
-        static_cast<uint32_t>(DataId::SET_PORT),
-        SIMCONNECT_OBJECT_ID_USER,
-        0,
-        1,
-        sizeof(server_port_),
-        &server_port_
-      );
-   });
+   SimConnect_AddToDataDefinition(
+     *handle_,
+     static_cast<uint32_t>(DataId::SET_PORT),
+     "L:VFRNAV_SET_PORT",
+     "Number",
+     SIMCONNECT_DATATYPE_FLOAT64
+   );
 
    while ((::WaitForSingleObject(event_, INFINITE) == WAIT_OBJECT_0) && Main::Running() && !stop_
           && connected_) {
@@ -136,6 +125,12 @@ SimConnect::Run() {
 void
 SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
    switch (data.dwID) {
+      case SIMCONNECT_RECV_ID_OPEN: {
+         /// @todo better
+         std::this_thread::sleep_for(std::chrono::seconds{5});
+         SetServerPort(server_port_);
+      } break;
+
       case SIMCONNECT_RECV_ID_EXCEPTION: {
          [[maybe_unused]] auto const& exception =
            static_cast<SIMCONNECT_RECV_EXCEPTION const&>(data);
