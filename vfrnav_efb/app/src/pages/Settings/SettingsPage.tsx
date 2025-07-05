@@ -140,13 +140,6 @@ export const SettingsPage = ({ active }: {
       return (hours ? hours + 'h' : '') + (minutes < 10 ? '0' : '') + minutes + 'min';
    }, [settings.map.azba.range]);
 
-   const validateServerPort = useCallback((value: string) => {
-      const result = /^\d+$/.test(value) && +value > 999 && +value < 65536;
-      return Promise.resolve(result);
-   }, [])
-
-   const setServerPort = useCallback((value: string) => settings.setServerPort(+value), [settings]);
-
 
    return <div className="flex grow justify-center m-2 p-4" style={active ? {} : { display: 'none' }}>
       <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col "
@@ -277,23 +270,6 @@ export const SettingsPage = ({ active }: {
                   <ZoomItem name="Plane" setting={settings.plane} defaultSetting={SharedSettingsRecord.defaultValues.plane} />
                </Items>
             </Group>
-            {__MSFS_EMBEDED__ ?
-               <Group name="Server">
-                  <InputItem name="Port" type="text" placeholder={"VFRNav' server port (default 48578)"} inputMode="decimal"
-                     value={settings.serverPort.toString()} defaultValue={SharedSettingsRecord.defaultValues.serverPort.toString()}
-                     validate={validateServerPort}
-                     onChange={setServerPort}>
-                     <div>
-                        Set the port to be used for communicating with the VFRNav&apos; Server app.
-                        <br /><span className="drop-shadow-md text-sky-300">This port must also be configured in settings of the server app.</span>
-                     </div>
-                     <ErrorMessage type='Error'>
-                        Invalid port (999 {'<'} value {'<'} 65&apos;536) !
-                     </ErrorMessage>
-                  </InputItem>
-               </Group>
-               : <></>
-            }
             <Group name="Map Display">
                <ColorPicker name="Active high color" category="AZBA" defaultColor={SharedSettingsRecord.defaultValues.map.azba.activeHighColor} value={settings.map.azba.activeHighColor} setColor={settings.map.azba.setActiveHighColor}>
                   <div className="flex flex-row min-h-[60px]">

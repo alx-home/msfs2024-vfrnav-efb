@@ -21,7 +21,7 @@
 namespace ws::msg {
 
 struct FileExists {
-   using THIS = FileExists;
+   using SELF = FileExists;
 
    bool header_{true};
 
@@ -29,15 +29,15 @@ struct FileExists {
    std::string path_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__FILE_EXISTS__", &THIS::header_},
+     js::_{"__FILE_EXISTS__", &SELF::header_},
 
-     js::_{"id", &THIS::id_},
-     js::_{"path", &THIS::path_},
+     js::_{"id", &SELF::id_},
+     js::_{"path", &SELF::path_},
    };
 };
 
 struct FileExistsResponse {
-   using THIS = FileExistsResponse;
+   using SELF = FileExistsResponse;
 
    bool header_{true};
 
@@ -45,15 +45,15 @@ struct FileExistsResponse {
    bool        result_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__FILE_EXISTS_RESPONSE__", &THIS::header_},
+     js::_{"__FILE_EXISTS_RESPONSE__", &SELF::header_},
 
-     js::_{"id", &THIS::id_},
-     js::_{"result", &THIS::result_},
+     js::_{"id", &SELF::id_},
+     js::_{"result", &SELF::result_},
    };
 };
 
 struct OpenFile {
-   using THIS = OpenFile;
+   using SELF = OpenFile;
 
    bool header_{true};
 
@@ -62,16 +62,16 @@ struct OpenFile {
    std::vector<dialog::Filter> filters_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__OPEN_FILE__", &THIS::header_},
+     js::_{"__OPEN_FILE__", &SELF::header_},
 
-     js::_{"id", &THIS::id_},
-     js::_{"path", &THIS::path_},
-     js::_{"filters", &THIS::filters_},
+     js::_{"id", &SELF::id_},
+     js::_{"path", &SELF::path_},
+     js::_{"filters", &SELF::filters_},
    };
 };
 
 struct OpenFileResponse {
-   using THIS = OpenFileResponse;
+   using SELF = OpenFileResponse;
 
    bool header_{true};
 
@@ -79,15 +79,15 @@ struct OpenFileResponse {
    std::string path_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__OPEN_FILE_RESPONSE__", &THIS::header_},
+     js::_{"__OPEN_FILE_RESPONSE__", &SELF::header_},
 
-     js::_{"id", &THIS::id_},
-     js::_{"path", &THIS::path_},
+     js::_{"id", &SELF::id_},
+     js::_{"path", &SELF::path_},
    };
 };
 
 struct GetFile {
-   using THIS = GetFile;
+   using SELF = GetFile;
 
    bool header_{true};
 
@@ -95,15 +95,15 @@ struct GetFile {
    std::string path_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__GET_FILE__", &THIS::header_},
+     js::_{"__GET_FILE__", &SELF::header_},
 
-     js::_{"id", &THIS::id_},
-     js::_{"path", &THIS::path_},
+     js::_{"id", &SELF::id_},
+     js::_{"path", &SELF::path_},
    };
 };
 
 struct GetFileResponse {
-   using THIS = GetFileResponse;
+   using SELF = GetFileResponse;
 
    bool header_{true};
 
@@ -111,10 +111,10 @@ struct GetFileResponse {
    std::string data_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__GET_FILE_RESPONSE__", &THIS::header_},
+     js::_{"__GET_FILE_RESPONSE__", &SELF::header_},
 
-     js::_{"id", &THIS::id_},
-     js::_{"data", &THIS::data_},
+     js::_{"id", &SELF::id_},
+     js::_{"data", &SELF::data_},
    };
 };
 

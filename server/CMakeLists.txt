@@ -26,6 +26,8 @@ set(SOURCES
     Server/WebSockets/EFBWebSocket.cpp
     Server/WebSockets/WebWebSocket.cpp
 
+    SimConnect/SimConnect.cpp
+
     Window/template/Bindings/log.cpp
     Window/template/Bindings/Files.cpp
 )

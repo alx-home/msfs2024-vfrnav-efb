@@ -254,8 +254,8 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
       jump_list.AddTask("Open Settings", exe_path, "msfs2024-vfrnav_server.exe --configure");
    }
 
-   server_ = std::make_unique<Server>();
-   // sim_connect_ = std::make_unique<SimConnect>();
+   sim_connect_ = std::make_unique<SimConnect>();
+   server_      = std::make_unique<Server>(*this);
 
    taskbar_ =
      std::make_unique<Window<WIN::TASKBAR>>([this]() { this->OnTerminate<WIN::TASKBAR>(); });
@@ -299,6 +299,11 @@ Main::SetServerPort(uint16_t port) {
 bool
 Main::Running() {
    return s__running;
+}
+
+void
+Main::SendServerPortToEFB(uint32_t port) {
+   sim_connect_->SetServerPort(port);
 }
 
 void
