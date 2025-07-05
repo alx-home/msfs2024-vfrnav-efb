@@ -13,340 +13,34 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { CheckBox, Slider, Input, Scroll, DualSlider } from "@alx-home/Utils";
+import { CheckBox } from "@alx-home/Utils";
 
-import { Children, HTMLInputTypeAttribute, isValidElement, PropsWithChildren, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { AirportLayerOptions, Color, LayerSetting, SharedSettingsRecord } from "@shared/Settings";
+import { AirportLayerOptions, LayerSetting, SharedSettingsRecord } from "@shared/Settings";
 
 import { SettingsContext } from "@Settings/SettingsProvider";
 import { AirportLayerSettingSetter, LayerSettingSetter } from "@Settings/Settings";
 
-import undoImg from '@alx-home/images/undo.svg';
+import { List } from "./List";
+import { Group } from "./Group";
+import { InputItem } from "./InputItem";
+import { SliderItem } from "./SliderItem";
+import { CheckItem } from "./CheckItem";
+import { Items } from "./Items";
+import { ZoomItem } from "./ZoomItem";
+import { Legend } from "./Legend";
+import { ColorPicker } from "./ColorPicker";
+import { DualSliderItem } from "./DualSliderItem";
+
 import markerImg from '@efb-images/marker-icon-blue.svg';
 import oaciImg from '@efb-images/oaci.jpg';
-
-const List = ({ children }: PropsWithChildren) => {
-   return <Scroll className="flex flex-col">
-      <div>
-         {children}
-      </div>
-   </Scroll>;
-}
-
-const Item = ({ children, name, category, className, onReset }: PropsWithChildren<{
-   name: string,
-   category?: string,
-   className?: string,
-   onReset?: () => void
-}>) => {
-   const [reset, setReset] = useState(false);
-
-   useEffect(() => {
-      if (reset) {
-         onReset?.();
-         setReset(false);
-      }
-   }, [onReset, reset, setReset]);
-
-   return <div className="group flex flex-row py-4 pl-6 hover:bg-menu [&>*:not(:first-child)]:ml-[22px] pr-4">
-      <div className="flex flex-col grow basis-0">
-         <div className="flex text-2xl font-semibold">
-            {(category ? <div className="flex text-slate-500">{category}:&nbsp;</div> : <></>)}
-            {name}
-         </div>
-         <div className={"flex flex-col my-auto [&>*:not(:first-child,.no-margin)]:mt-[11px] p-2 pl-0 text-xl text-slate-500 font-semibold pb-5 "
-            + (className ?? '')
-         }>
-            {children}
-         </div>
-      </div>
-      <div className="w-8">
-         <button className="p-1 bg-transparent" tabIndex={-1}
-            onClick={() => { setReset(true) }} >
-            <img className="invert hover:filter-msfs cursor-pointer" src={undoImg} alt='undo' />
-         </button>
-      </div>
-   </div>;
-}
 
 const ErrorMessage = ({ children }: PropsWithChildren<{
    type: string
 }>) => {
    return children;
 };
-
-const InputItem = ({ children, name, category, placeholder, pattern, className, type, inputMode, validate, onChange, defaultValue, value }: PropsWithChildren<{
-   name: string,
-   category?: string,
-   placeholder?: string,
-   pattern?: string,
-   className?: string,
-   defaultValue?: string,
-   value?: string,
-   inputMode?: "email" | "search" | "tel" | "text" | "url" | "none" | "numeric" | "decimal",
-   validate?: (_value: string, _blur: boolean) => Promise<boolean>,
-   type?: HTMLInputTypeAttribute,
-   onChange?: (_value: string) => void
-}>) => {
-   const childs = useMemo(() => Children.toArray(children), [children]);
-   const [reset, setReset] = useState(false);
-   const resetCallback = useMemo(() => () => setReset(true), [setReset]);
-
-   useEffect(() => {
-      if (reset) {
-         setReset(false);
-      }
-   }, [reset, setReset]);
-
-   return <Item name={name} category={category} onReset={resetCallback}>
-      {childs.filter(child => isValidElement<{ type: string }>(child) ? child.props.type !== 'Error' : true)}
-      <Input reset={reset} defaultValue={defaultValue} value={value} className={"max-w-3xl peer " + (className ?? '')} validate={validate}
-         onChange={onChange} inputMode={inputMode} type={type} active={true} placeholder={placeholder} pattern={pattern} />
-      <div className="no-margin hidden h-0 peer-[.invalid]:flex">
-         <p className="pl-8 pt-1 text-red-500 text-base">
-            {childs.filter(child => isValidElement<{ type: string }>(child) && child.props.type === 'Error')}
-         </p>
-      </div>
-   </Item>;
-}
-
-const SliderItem = ({ name, category, className, onChange, defaultValue, value, range, bounds, children }: PropsWithChildren<{
-   name: string,
-   category?: string,
-   className?: string,
-   defaultValue?: number,
-   value: number,
-   bounds?: {
-      min: number,
-      max: number
-   },
-   range: { min: number, max: number },
-   onChange: (_value: number) => void
-}>) => {
-   const [reset, setReset] = useState(false);
-   const resetCallback = useMemo(() => () => setReset(true), [setReset]);
-   const childs = useMemo(() => Children.toArray(children), [children]);
-
-   useEffect(() => {
-      if (reset) {
-         setReset(false);
-      }
-   }, [reset, setReset]);
-
-   return <Item name={name} category={category} onReset={resetCallback}>
-      {childs.filter(child => isValidElement<{ type: string }>(child) ? child.props.type !== 'Error' : true)}
-      <Slider reset={reset} defaultValue={defaultValue} value={value} className={"max-w-3xl peer " + (className ?? '')}
-         onChange={onChange} bounds={bounds} active={true} range={range} />
-   </Item>;
-}
-
-const DualSliderItem = ({ name, category, className, onChange, defaultValue, value, range, children }: PropsWithChildren<{
-   name: string,
-   category?: string,
-   className?: string,
-   defaultValue?: {
-      min: number,
-      max: number
-   },
-   value: {
-      min: number,
-      max: number
-   },
-   range: { min: number, max: number },
-   onChange: (_min: number, _max: number) => void
-}>) => {
-   const [reset, setReset] = useState(false);
-   const resetCallback = useMemo(() => () => setReset(true), [setReset]);
-   const childs = useMemo(() => Children.toArray(children), [children]);
-
-   useEffect(() => {
-      if (reset) {
-         setReset(false);
-      }
-   }, [reset, setReset]);
-
-   return <Item name={name} category={category} onReset={resetCallback}>
-      {childs.filter(child => isValidElement<{ type: string }>(child) ? child.props.type !== 'Error' : true)}
-      <DualSlider reset={reset} defaultValue={defaultValue} value={value} className={"max-w-3xl peer " + (className ?? '')}
-         onChange={onChange} active={true} range={range} />
-   </Item>;
-}
-
-const CheckItem = ({ children, name, category, value, defaultValue, onChange, disabled }: PropsWithChildren<{
-   name: string,
-   category?: string,
-   defaultValue?: boolean,
-   value: boolean,
-   onChange: (_checked: boolean) => void,
-   disabled?: boolean
-}>) => {
-   const [reset, setReset] = useState(false);
-   const resetCallback = useMemo(() => () => setReset(true), [setReset]);
-
-   useEffect(() => {
-      if (reset) {
-         setReset(false);
-      }
-   }, [reset, setReset]);
-
-   return <Item name={name} category={category} onReset={resetCallback}>
-      <CheckBox reset={reset} active={!(disabled ?? false)} className="flex flex-row my-auto" value={value} defaultValue={defaultValue} onChange={onChange}>
-         <div className="flex grow my-auto">
-            {children}
-         </div>
-      </CheckBox>
-   </Item>;
-}
-
-const isItem = <T,>(child: unknown): child is ReactElement<PropsWithChildren<T>> => {
-   if (!isValidElement(child)) {
-      return false;
-   }
-
-   return true
-};
-
-const Legend = ({ children }: PropsWithChildren) => {
-   return <>
-      {children}
-   </>
-}
-
-const ColorPicker = ({ defaultColor, value, setColor, name, category, children }: PropsWithChildren<{
-   defaultColor: Color,
-   value: Color,
-   name: string,
-   category: string,
-   setColor: (_setter: (_old: Color) => Color) => void
-}>) => {
-   const setRed = useCallback((value: number) => {
-      setColor((old) => ({ ...old, red: value }))
-   }, [setColor]);
-   const setGreen = useCallback((value: number) => {
-      setColor((old) => ({ ...old, green: value }))
-   }, [setColor]);
-   const setBlue = useCallback((value: number) => {
-      setColor((old) => ({ ...old, blue: value }))
-   }, [setColor]);
-   const setAlpha = useCallback((value: number) => {
-      setColor((old) => ({ ...old, alpha: value }))
-   }, [setColor]);
-
-   return <Items name={name} category={category}>
-      <Legend>
-         {children}
-      </Legend>
-      <Slider className="max-w-3xl"
-         range={{ min: 0, max: 255 }}
-         defaultValue={defaultColor.red}
-         value={value.red}
-         onChange={setRed}
-      >
-         <div className="flex flex-row w-20">
-            Red:
-         </div>
-      </Slider>
-      <Slider className="max-w-3xl"
-         range={{ min: 0, max: 255 }}
-         defaultValue={defaultColor.green}
-         value={value.green}
-         onChange={setGreen}
-      >
-         <div className="flex flex-row w-20">
-            Green:
-         </div>
-      </Slider>
-      <Slider className="max-w-3xl"
-         range={{ min: 0, max: 255 }}
-         defaultValue={defaultColor.blue}
-         value={value.blue}
-         onChange={setBlue}
-      >
-         <div className="flex flex-row w-20">
-            Blue:
-         </div>
-      </Slider>
-      <Slider className="max-w-3xl"
-         range={{ min: 0, max: 1 }}
-         defaultValue={defaultColor.alpha}
-         value={value.alpha}
-         onChange={setAlpha}>
-         <div className="flex flex-row w-20">
-            Alpha:
-         </div>
-      </Slider>
-   </Items>
-}
-
-const isLegend = (child: unknown) => {
-   if (!isValidElement(child)) {
-      return false;
-   }
-
-   return child.type === Legend;
-};
-
-type Props = PropsWithChildren<{
-   name: string,
-   category?: string
-}>;
-const Items = ({ children, name, category }: Props) => {
-   const [reset, setReset] = useState(false);
-   const resetCallback = useMemo(() => () => setReset(true), [setReset]);
-   const childs = useMemo(() =>
-      Children.toArray(children).filter(child => isItem(child)).map((child) => {
-         if (isLegend(child)) {
-            return child
-         } else {
-            return <child.type key={child.key} reset={reset} className="flex flex-row my-auto" {...child.props}>
-               {child.props.children}
-            </child.type>
-         }
-      }
-      ), [children, reset]);
-
-   useEffect(() => {
-      if (reset) {
-         setReset(false);
-      }
-   }, [reset, setReset]);
-
-   return <Item name={name} category={category} onReset={resetCallback}>
-      {childs}
-   </Item>;
-}
-
-const Group = ({ children, name, className }: PropsWithChildren<{
-   name: string,
-   className?: string
-}>) => {
-   return <div className={"flex-col pl-0 " + className}>
-      <div className="flex text-4xl font-semibold p-2 pl-6 hover:bg-white hover:text-slate-700">{name}</div>
-      <div className="content flex-col">
-         {children}
-      </div>
-   </div>;
-}
-
-const ZoomItem = ({ name, setting, defaultSetting, reset }: {
-   name: string,
-   setting: LayerSetting & LayerSettingSetter,
-   defaultSetting: LayerSetting,
-   reset?: boolean
-}) => {
-   const range = useMemo(() => ({ min: 0, max: 30 }), []);
-   const onChange = useCallback((min: number, max: number) => { setting.setMaxZoom(range.max - min); setting.setMinZoom(range.max - max) }, [range.max, setting]);
-   const defaultValue = useMemo(() => ({ max: range.max - (defaultSetting.minZoom ?? 0), min: range.max - (defaultSetting.maxZoom ?? range.max) }), [defaultSetting.maxZoom, defaultSetting.minZoom, range.max])
-   const value = useMemo(() => ({ max: range.max - (setting.minZoom ?? 0), min: range.max - (setting.maxZoom ?? range.max) }), [range.max, setting.maxZoom, setting.minZoom])
-
-   return <DualSlider onChange={onChange} range={range} reset={reset}
-      value={value}
-      defaultValue={defaultValue}
-      className={"max-w-3xl"}>
-      <div className="flex flex-row w-40">{name}:</div>
-   </DualSlider>
-}
 
 const LayerActivation = ({ setting, defaultSetting, reset, children }: PropsWithChildren<{
    setting: LayerSetting & LayerSettingSetter,
@@ -379,7 +73,7 @@ export const SettingsPage = ({ active }: {
    const settings = useContext(SettingsContext)!;
    const [opacity, setOpacity] = useState(' opacity-0');
    const [advanced, setAdvanced] = useState(false);
-   const setSpeed = useCallback((value: string) => settings.setSpeed(+value), [settings]);
+   const setSpeed = useCallback((value: string) => settings.setDefaultSpeed(+value), [settings]);
 
    useEffect(() => {
       if (active) {
@@ -465,18 +159,7 @@ export const SettingsPage = ({ active }: {
             </div>
          </div>
          <List>
-            <Group name="Flight">
-               <InputItem name="Speed" type="text" placeholder={SharedSettingsRecord.defaultValues.speed.toString()} inputMode="decimal"
-                  value={settings.speed.toString()} defaultValue={SharedSettingsRecord.defaultValues.speed.toString()}
-                  validate={value => Promise.resolve(/^\d*$/g.test(value))}
-                  onChange={setSpeed}>
-                  <div>
-                     Set the cruise speed of the aircraft. Leg duration will be calculated on belief of this settings.
-                  </div>
-                  <ErrorMessage type='Error'>
-                     Please enter a numerical value !
-                  </ErrorMessage>
-               </InputItem>
+            <Group name="Navigation">
                <SliderItem category="AZBA" name="Margin"
                   range={{ min: 0, max: 24 * 60 }}
                   defaultValue={SharedSettingsRecord.defaultValues.map.azba.range}
@@ -486,20 +169,17 @@ export const SettingsPage = ({ active }: {
                      <div className="flex flex-col justify-center">Consider an AZBA zone to be active {AZBARange} before its real beginning time.</div>
                   </div>
                </SliderItem>
-            </Group>
-            <Group name="Navigation">
-               <CheckItem category="Wind correction" name="Heading" disabled={true}
-                  value={settings.adjustHeading} defaultValue={SharedSettingsRecord.defaultValues.adjustHeading}
-                  onChange={settings.setAdjustHeading}>
-                  Adjust navigation heading by taking into account the given leg wind.<br />
-                  (not yet implemented)
-               </CheckItem>
-               <CheckItem category="Wind correction" name="Time" disabled={true}
-                  value={settings.adjustTime} defaultValue={SharedSettingsRecord.defaultValues.adjustTime}
-                  onChange={settings.setAdjustTime}>
-                  Adjust navigation time by taking into account the given leg wind.<br />
-                  (not yet implemented)
-               </CheckItem>
+               <InputItem name="Speed" type="text" placeholder={SharedSettingsRecord.defaultValues.defaultSpeed.toString()} inputMode="decimal"
+                  value={settings.defaultSpeed.toString()} defaultValue={SharedSettingsRecord.defaultValues.defaultSpeed.toString()}
+                  validate={value => Promise.resolve(/^\d*$/g.test(value))}
+                  onChange={setSpeed}>
+                  <div>
+                     Specify the default cruise speed for the aircraft when generating a new navigation path.
+                  </div>
+                  <ErrorMessage type='Error'>
+                     Please enter a numerical value !
+                  </ErrorMessage>
+               </InputItem>
             </Group>
             <Group name="Map">
                <Items name="Airports" category="Layers">

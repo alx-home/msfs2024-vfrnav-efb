@@ -42,9 +42,7 @@ export type SharedSettings = {
 
   serverPort: number,
 
-  speed: number,
-  adjustHeading: boolean,
-  adjustTime: boolean,
+  defaultSpeed: number,
   SIAAuth: string,
   SIAAddr: string,
   SIAAZBAAddr: string,
@@ -98,9 +96,7 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
 
   serverPort: 48578,
 
-  speed: 95,
-  adjustHeading: true,
-  adjustTime: true,
+  defaultSpeed: 95,
   SIAAuth: __SIA_AUTH__,
   SIAAddr: __SIA_ADDR__,
   SIAAZBAAddr: __SIA_AZBA_ADDR__,

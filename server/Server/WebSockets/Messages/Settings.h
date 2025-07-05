@@ -17,6 +17,7 @@
 
 #include <json/json.h>
 #include <cstdint>
+#include <optional>
 
 namespace ws::msg {
 
@@ -71,9 +72,7 @@ struct Settings {
 
    double server_port_{};
 
-   double      speed_{};
-   bool        adjust_heading_{};
-   bool        adjust_time_{};
+   double      default_speed_{};
    std::string sia_auth_{};
    std::string sia_addr_{};
    std::string sia_azba_addr_{};
@@ -145,9 +144,7 @@ struct Settings {
      js::_{"__SETTINGS__", &Settings::header_},
 
      js::_{"serverPort", &Settings::server_port_},
-     js::_{"speed", &Settings::speed_},
-     js::_{"adjustHeading", &Settings::adjust_heading_},
-     js::_{"adjustTime", &Settings::adjust_time_},
+     js::_{"defaultSpeed", &Settings::default_speed_},
      js::_{"SIAAuth", &Settings::sia_auth_},
      js::_{"SIAAddr", &Settings::sia_addr_},
      js::_{"SIAAZBAAddr", &Settings::sia_azba_addr_},

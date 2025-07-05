@@ -37,6 +37,7 @@ import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
 
 const useMap = () => {
+   const { defaultSpeed } = useContext(SettingsContext)!;
    const { map, navData, setNavData, counter, updateNavProps } = useContext(MapContext)!;
    const [modify, setModify] = useState<Modify>();
    const [snap, setSnap] = useState<Snap>();
@@ -104,7 +105,7 @@ const useMap = () => {
                   layer: layer!,
                   waypoints: coords.map(() => ""),
                   properties: coords.filter((_, index) => index).map((value, index) => {
-                     const props = { ...PropertiesRecord.defaultValues };
+                     const props = { ...PropertiesRecord.defaultValues, ias: defaultSpeed };
                      return updateNavProps(props, coords[index], value)
                   })
                })
@@ -119,7 +120,7 @@ const useMap = () => {
          }
          setNewFeatures(undefined);
       }
-   }, [initFeature, layer, newFeatures, setNavData, updateNavProps])
+   }, [defaultSpeed, initFeature, layer, newFeatures, setNavData, updateNavProps])
 
    useEffect(() => {
       const layer = new VectorLayer({

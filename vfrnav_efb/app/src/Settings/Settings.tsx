@@ -38,7 +38,7 @@ export type Settings = {
 
 export type GlobalSettings = Settings & SharedSettings & {
   setServerPort: (_port: number) => void,
-  setSpeed: (_speed: number) => void,
+  setDefaultSpeed: (_speed: number) => void,
   setSIAAddr: (_addr: string) => void,
   setSIAAZBAAddr: (_addr: string) => void,
   setSIAAZBADateAddr: (_addr: string) => void,

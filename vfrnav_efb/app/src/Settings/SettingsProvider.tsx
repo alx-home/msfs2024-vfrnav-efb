@@ -79,7 +79,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
   }), [emptyPopup]);
 
   const setServerPort = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, serverPort: value })), []);
-  const setSpeed = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, speed: value })), []);
+  const setDefaultSpeed = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, defaultSpeed: value })), []);
   const setAdjustHeading = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, adjustHeading: value })), []);
   const setAdjustTime = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, adjustTime: value })), []);
   const setSIAAuth = useCallback((value: string) => setSharedSettings(settings => ({ ...settings, SIAAuth: value })), []);
@@ -176,7 +176,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
     getSIAAZBA: getSIAAZBA,
 
     setServerPort: setServerPort,
-    setSpeed: setSpeed,
+    setDefaultSpeed: setDefaultSpeed,
     setAdjustHeading: setAdjustHeading,
     setAdjustTime: setAdjustTime,
     setSIAAuth: setSIAAuth,
@@ -217,7 +217,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
     openaipmapsSettings, openflightmapsBaseSettings, planeSetting,
     getSIAAZBA, getSIAPDF,
     setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor, setAZBARange,
-    setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setSpeed,
+    setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setDefaultSpeed,
     setServerPort, setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize, setTextMinSize,
     globalSettings,
     sharedSettings
