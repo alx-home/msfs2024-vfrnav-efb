@@ -123,18 +123,13 @@ export const Body = () => {
                   Additionally, even when accessing the EFB directly within the app, it must be launched to ensure synchronization with the simulator.
                </p>
             </blockquote>
-            <blockquote className="p-4 mb-6 border-s-4 border-gray-500 bg-gray-800">
-               <p className="text-xl font-medium leading-relaxed text-white">
-                  <span className="drop-shadow-md text-sky-400">The server port must also be configured</span> in the settings page of the <span className="drop-shadow-md text-sky-400">integrated EFB</span>.
-               </p>
-            </blockquote>
             <Elem>
                <div className='flex flex-row grow m-auto mr-5'>Start server at launch :</div>
                <CheckBox value={startServer} active={!invalidPort} onChange={_setStartServer} />
             </Elem>
             <Elem>
                <div className="peer flex flex-row grow">
-                  <div className='flex flex-row m-auto mr-5 grow drop-shadow-md text-sky-400'>Port :</div>
+                  <div className='flex flex-row m-auto mr-5 grow drop-shadow-md'>Port :</div>
                   {/* peer-[.invalid]:flex peer-[.invalid]:opacity-100 */}
                   <div className="flex flex-col grow [&:has(.invalid)_:last-child]:opacity-100">
                      <div className="flex flex-row transition-all [&>.invalid]:mt-[-10px] justify-end">
