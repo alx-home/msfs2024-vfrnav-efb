@@ -47,10 +47,6 @@ const useMap = () => {
       if (!feature.getProperties()['initialized']) {
          feature.setId(++counter.current);
 
-         feature.on('change', () => {
-            setModified(items => [...(items ?? []), feature]);
-         })
-
          feature.setProperties({ ...feature.getProperties(), initialized: true })
          return true
       }
@@ -140,6 +136,14 @@ const useMap = () => {
          source: source,
          deleteCondition: doubleClick,
       });
+
+      modify.on('modifystart', (e) => {
+         setModified(items => [...(items ?? []), ...(e.features.getArray() as Feature<MultiLineString>[])]);
+      })
+
+      modify.on('modifyend', (e) => {
+         setModified(items => [...(items ?? []), ...(e.features.getArray() as Feature<MultiLineString>[])]);
+      })
 
       map.addInteraction(modify);
       setModify(modify);
@@ -273,7 +277,7 @@ export const OlRouteLayer = ({
 }: {
    zIndex: number
 } & OlLayerProp) => {
-   const { setNavData, counter, map, setCancel, navData } = useContext(MapContext)!;
+   const { setNavData, counter, map, setCancel, navData, updateNavProps } = useContext(MapContext)!;
    const settings = useContext(SettingsContext)!;
 
    const { source, layer, initFeature } = useMap();
@@ -307,60 +311,59 @@ export const OlRouteLayer = ({
 
                   // Draw Distance/cap
                   //------------------------------
-                  coords_.forEach((coord, index) => {
-                     if (index !== coords_.length - 1) {
-                        const nextCoord = coords_[index + 1];
+                  coords_.filter((_, index) => index !== coords_.length - 1).forEach((coord, index) => {
+                     const nextCoord = coords_[index + 1];
 
-                        const vector = [nextCoord[0] - coord[0], nextCoord[1] - coord[1]];
+                     const vector = [nextCoord[0] - coord[0], nextCoord[1] - coord[1]];
 
-                        const { CH, TC, dist, dur } = properties[index];
-                        const { days, hours, minutes, seconds } = dur;
+                     const props = updateNavProps(properties[index], map.getCoordinateFromPixel(coord), map.getCoordinateFromPixel(nextCoord));
+                     const { CH, TC, dist, dur } = props;
+                     const { days, hours, minutes, seconds } = dur;
 
-                        let angle = TC - 90;
-                        let mag = 90 + angle;
+                     let angle = TC - 90;
+                     let mag = 90 + angle;
 
-                        if (mag < 0) {
-                           mag += 360;
-                        }
-
-                        if (angle < -90 || angle > 90) {
-                           angle = angle - 180;
-                        }
-
-                        const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
-
-                        const text = Math.round(CH).toString() + "\u00b0 "
-                           + Math.round(dist).toString() + " nm  "
-                           + (days ? days.toString() + 'd ' : '')
-                           + ((days || hours) ? ((days && (hours < 10) ? '0' : '') + hours.toString() + ":") : "")
-                           + ((days || hours || minutes) ? ((minutes < 10 ? "0" : '') + minutes.toString() + ":") : "")
-                           + (seconds < 10 ? '0' : '') + seconds.toString();
-
-                        const maxSize = settings.map.text.maxSize;
-
-                        const center = [(coord[0] + nextCoord[0]) >> 1, (coord[1] + nextCoord[1]) >> 1];
-
-                        context.save();
-                        context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
-                        context.lineWidth = Math.floor(settings.map.text.borderSize);
-                        context.font = "900 " + maxSize.toFixed(0) + "px Inter-bold, sans-serif";
-                        const textWidth = context.measureText(text).width;
-                        const textSize = Math.min(maxSize, maxSize * (distance - settings.map.markerSize * 1.5) / textWidth);
-                        context.font = "900 " + textSize.toFixed(0) + "px Inter-bold, sans-serif";
-
-                        if (textSize >= settings.map.text.minSize) {
-                           context.textAlign = "center";
-                           context.translate(center[0], center[1]);
-                           context.rotate(angle * Math.PI / 180);
-                           context.translate(((mag > 90 && mag <= 180) || (mag >= 270)) ? -settings.map.markerSize * 0.25 : settings.map.markerSize * 0.25, -settings.map.text.borderSize * 0.25 - 5);
-
-                           context.strokeText(text, 0, 0);
-
-                           context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
-                           context.fillText(text, 0, 0);
-                        }
-                        context.restore();
+                     if (mag < 0) {
+                        mag += 360;
                      }
+
+                     if (angle < -90 || angle > 90) {
+                        angle = angle - 180;
+                     }
+
+                     const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
+
+                     const text = Math.round(CH).toString() + "\u00b0 "
+                        + Math.round(dist).toString() + " nm  "
+                        + (days ? days.toString() + 'd ' : '')
+                        + ((days || hours) ? ((days && (hours < 10) ? '0' : '') + hours.toString() + ":") : "")
+                        + ((days || hours || minutes) ? ((minutes < 10 ? "0" : '') + minutes.toString() + ":") : "")
+                        + (seconds < 10 ? '0' : '') + seconds.toString();
+
+                     const maxSize = settings.map.text.maxSize;
+
+                     const center = [(coord[0] + nextCoord[0]) >> 1, (coord[1] + nextCoord[1]) >> 1];
+
+                     context.save();
+                     context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
+                     context.lineWidth = Math.floor(settings.map.text.borderSize);
+                     context.font = "900 " + maxSize.toFixed(0) + "px Inter-bold, sans-serif";
+                     const textWidth = context.measureText(text).width;
+                     const textSize = Math.min(maxSize, maxSize * (distance - settings.map.markerSize * 1.5) / textWidth);
+                     context.font = "900 " + textSize.toFixed(0) + "px Inter-bold, sans-serif";
+
+                     if (textSize >= settings.map.text.minSize) {
+                        context.textAlign = "center";
+                        context.translate(center[0], center[1]);
+                        context.rotate(angle * Math.PI / 180);
+                        context.translate(((mag > 90 && mag <= 180) || (mag >= 270)) ? -settings.map.markerSize * 0.25 : settings.map.markerSize * 0.25, -settings.map.text.borderSize * 0.25 - 5);
+
+                        context.strokeText(text, 0, 0);
+
+                        context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
+                        context.fillText(text, 0, 0);
+                     }
+                     context.restore();
                   });
 
                   // Draw lines Background
@@ -421,7 +424,7 @@ export const OlRouteLayer = ({
       }
 
       return [];
-   }, [navData, settings.map.markerSize, settings.map.text.borderColor.alpha, settings.map.text.borderColor.blue, settings.map.text.borderColor.green, settings.map.text.borderColor.red, settings.map.text.borderSize, settings.map.text.color.alpha, settings.map.text.color.blue, settings.map.text.color.green, settings.map.text.color.red, settings.map.text.maxSize, settings.map.text.minSize]);
+   }, [map, navData, settings.map.markerSize, settings.map.text.borderColor.alpha, settings.map.text.borderColor.blue, settings.map.text.borderColor.green, settings.map.text.borderColor.red, settings.map.text.borderSize, settings.map.text.color.alpha, settings.map.text.color.blue, settings.map.text.color.green, settings.map.text.color.red, settings.map.text.maxSize, settings.map.text.minSize, updateNavProps]);
 
    useEffect(() => {
       layer?.setZIndex(zIndex);
