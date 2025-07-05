@@ -65,14 +65,6 @@ export class Manager {
       }
       this.socketTimeout = undefined;
 
-      if (!this.GetSettings().serverPort) {
-         if (this.socket) {
-            this.socket.close();
-         }
-         this.socket = undefined;
-         return;
-      }
-
       if (this.socket) {
          this.socket.close();
 
@@ -80,143 +72,148 @@ export class Manager {
          this.socketTimeout = setTimeout(this.connectToServer.bind(this), 1000);
          return;
       }
-      this.socket = new WebSocket("ws://localhost:" + this.GetSettings().serverPort);
 
-      const messageHandlers = new Map<number, (_: MessageType) => void>();
+      const serverPort = SimVar.GetSimVarValue('L:VFRNAV_SET_PORT', 'number');
 
-      const onClose = () => {
-         if (!state.done) {
-            this.serverConnected = false;
-            this.subscribers.forEach(messageHandler => messageHandler({
-               "__SERVER_STATE__": true,
+      if (serverPort) {
+         this.socket = new WebSocket("ws://localhost:" + serverPort);
 
-               state: false
-            }));
-            state.done = true;
+         const messageHandlers = new Map<number, (_: MessageType) => void>();
 
-            messageHandlers.forEach((messageHandler, id) => this.unsubscribe(id, messageHandler))
-            this.socket = undefined;
-            if (this.socketTimeout) {
-               clearTimeout(this.socketTimeout)
-            }
-            this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
-         }
-      }
-
-      const state = {
-         done: false
-      };
-      const canSendMessage = (message: MessageType) => !isMessage("__SETTINGS__", message) && !isMessage("__GET_SETTINGS__", message) && !isMessage("__SERVER_STATE__", message);
-      this.socket.onmessage = (event) => {
-         const data = (JSON.parse(event.data) as {
-            id: number,
-            content: MessageType
-         });
-
-         if (isMessage("__HELLO_WORLD__", data.content)) {
-            if (data.id === 1) {
-               // EFB Server used to relay message between EFB app (id:0) / server
-
-               const messageHandler = (message: MessageType) => {
-                  if (state.done) {
-                     console.assert(false)
-                     this.unsubscribe(data.id, messageHandler);
-                     return;
-                  }
-                  if (canSendMessage(message)) {
-                     this.socket?.send(JSON.stringify({
-                        id: 0,
-                        content: message
-                     }))
-                  }
-               };
-
-               messageHandlers.set(data.id, messageHandler);
-               this.subscribe(data.id, messageHandler);
-
-               this.serverConnected = true;
+         const onClose = () => {
+            if (!state.done) {
+               this.serverConnected = false;
                this.subscribers.forEach(messageHandler => messageHandler({
                   "__SERVER_STATE__": true,
 
-                  state: true
+                  state: false
                }));
-            } else {
-               const messageHandler = (message: MessageType) => {
-                  if (state.done) {
-                     console.assert(false)
-                     this.unsubscribe(data.id, messageHandler);
-                     return;
-                  }
-                  if (canSendMessage(message)) {
-                     this.socket?.send(JSON.stringify({
-                        id: data.id,
-                        content: message
-                     }))
-                  }
-               };
+               state.done = true;
 
-               messageHandlers.set(data.id, messageHandler);
-               this.subscribe(data.id, messageHandler);
-            }
-         } else if (isMessage("__BYE_BYE__", data.content)) {
-            if (data.content.__BYE_BYE__ === "EFB") {
-               this.socket?.close();
-            } else {
-               const handler = messageHandlers.get(data.id);
-
-               if (handler) {
-                  this.unsubscribe(data.id, handler)
-                  messageHandlers.delete(data.id);
-               } else {
-                  console.assert(false)
+               messageHandlers.forEach((messageHandler, id) => this.unsubscribe(id, messageHandler))
+               this.socket = undefined;
+               if (this.socketTimeout) {
+                  clearTimeout(this.socketTimeout)
                }
-            }
-         } else if (isMessage("__SETTINGS__", data.content)) {
-            console.assert(false);
-            // this.onSharedSettings(data.content);
-         } else if (isMessage("__GET_SETTINGS__", data.content)) {
-            console.assert(false);
-            // this.onGetSettings(messageHandlers.get(data.id) as (_: unknown) => void);
-         } else if (isMessage("__GET_RECORDS__", data.content)) {
-            this.onGetPlaneRecords(messageHandlers.get(data.id) as (_: unknown) => void);
-         } else if (isMessage("__GET_FACILITIES__", data.content)) {
-            this.onGetFacilities(data.id, messageHandlers.get(data.id) as (_: unknown) => void, data.content);
-         } else if (isMessage("__GET_METAR__", data.content)) {
-            this.onGetMetar(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
-         } else if (isMessage("__REMOVE_RECORD__", data.content)) {
-            this.onRemoveRecord(data.content);
-         } else if (isMessage("__EDIT_RECORD__", data.content)) {
-            this.onEditRecord(data.content);
-         } else if (isMessage("__GET_RECORD__", data.content)) {
-            this.onGetRecord(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
-         } else if (isMessage("__EXPORT_NAV__", data.content)) {
-            this.onExportNav(data.content);
-         } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
-            || isMessage("__OPEN_FILE_RESPONSE__", data.content)
-            || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
-            if (data.id === 0) {
-               this.subscribers.get(0)!(data.content);
-            } else {
-               console.assert(false);
+               this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
             }
          }
-      };
 
-      this.socket.onclose = () => {
-         onClose()
-      };
+         const state = {
+            done: false
+         };
+         const canSendMessage = (message: MessageType) => !isMessage("__SETTINGS__", message) && !isMessage("__GET_SETTINGS__", message) && !isMessage("__SERVER_STATE__", message);
+         this.socket.onmessage = (event) => {
+            const data = (JSON.parse(event.data) as {
+               id: number,
+               content: MessageType
+            });
 
-      this.socket.onerror = () => {
-         onClose();
+            if (isMessage("__HELLO_WORLD__", data.content)) {
+               if (data.id === 1) {
+                  // EFB Server used to relay message between EFB app (id:0) / server
+
+                  const messageHandler = (message: MessageType) => {
+                     if (state.done) {
+                        console.assert(false)
+                        this.unsubscribe(data.id, messageHandler);
+                        return;
+                     }
+                     if (canSendMessage(message)) {
+                        this.socket?.send(JSON.stringify({
+                           id: 0,
+                           content: message
+                        }))
+                     }
+                  };
+
+                  messageHandlers.set(data.id, messageHandler);
+                  this.subscribe(data.id, messageHandler);
+
+                  this.serverConnected = true;
+                  this.subscribers.forEach(messageHandler => messageHandler({
+                     "__SERVER_STATE__": true,
+
+                     state: true
+                  }));
+               } else {
+                  const messageHandler = (message: MessageType) => {
+                     if (state.done) {
+                        console.assert(false)
+                        this.unsubscribe(data.id, messageHandler);
+                        return;
+                     }
+                     if (canSendMessage(message)) {
+                        this.socket?.send(JSON.stringify({
+                           id: data.id,
+                           content: message
+                        }))
+                     }
+                  };
+
+                  messageHandlers.set(data.id, messageHandler);
+                  this.subscribe(data.id, messageHandler);
+               }
+            } else if (isMessage("__BYE_BYE__", data.content)) {
+               if (data.content.__BYE_BYE__ === "EFB") {
+                  this.socket?.close();
+               } else {
+                  const handler = messageHandlers.get(data.id);
+
+                  if (handler) {
+                     this.unsubscribe(data.id, handler)
+                     messageHandlers.delete(data.id);
+                  } else {
+                     console.assert(false)
+                  }
+               }
+            } else if (isMessage("__SETTINGS__", data.content)) {
+               console.assert(false);
+            } else if (isMessage("__GET_SETTINGS__", data.content)) {
+               console.assert(false);
+            } else if (isMessage("__GET_RECORDS__", data.content)) {
+               this.onGetPlaneRecords(messageHandlers.get(data.id) as (_: unknown) => void);
+            } else if (isMessage("__GET_FACILITIES__", data.content)) {
+               this.onGetFacilities(data.id, messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+            } else if (isMessage("__GET_METAR__", data.content)) {
+               this.onGetMetar(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+            } else if (isMessage("__REMOVE_RECORD__", data.content)) {
+               this.onRemoveRecord(data.content);
+            } else if (isMessage("__EDIT_RECORD__", data.content)) {
+               this.onEditRecord(data.content);
+            } else if (isMessage("__GET_RECORD__", data.content)) {
+               this.onGetRecord(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+            } else if (isMessage("__EXPORT_NAV__", data.content)) {
+               this.onExportNav(data.content);
+            } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
+               || isMessage("__OPEN_FILE_RESPONSE__", data.content)
+               || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
+               if (data.id === 0) {
+                  this.subscribers.get(0)!(data.content);
+               } else {
+                  console.assert(false);
+               }
+            }
+         };
+
+         this.socket.onclose = () => {
+            onClose()
+         };
+
+         this.socket.onerror = () => {
+            onClose();
+         }
+
+         this.socket.onopen = () => {
+            // console.log('[open] Socket open')
+
+            this.socket?.send(JSON.stringify({
+               __HELLO_WORLD__: "EFB"
+            }));
+         };
+      } else {
+         this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
       }
-
-      this.socket.onopen = () => {
-         // console.log('[open] Socket open')
-
-         this.socket?.send(JSON.stringify({
-            __HELLO_WORLD__: "EFB"
-         }));
-      };
    }
 
    private fetchPosition() {

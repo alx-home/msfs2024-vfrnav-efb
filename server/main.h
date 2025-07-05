@@ -17,6 +17,7 @@
 
 #include "Server/Server.h"
 #include "Server/WebSockets/Messages/Messages.h"
+#include "SimConnect/SimConnect.h"
 #include "promise/promise.h"
 #include "Window/template/Window.h"
 
@@ -64,6 +65,8 @@ public:
    static void Terminate();
    static bool Running();
 
+   void SendServerPortToEFB(uint32_t port);
+
 private:
    std::jthread mouse_watcher_;
    LRESULT      OnTrayNotification(WPARAM wParam, LPARAM lParam) override;
@@ -83,6 +86,7 @@ private:
    using EFBPtr = std::unique_ptr<Window<WIN::EFB>>;
    std::unordered_map<std::size_t, EFBPtr> efbs_{};
 
+   std::unique_ptr<SimConnect> sim_connect_{};
    // Must be afters windows to resolve every promises
    std::unique_ptr<Server> server_{};
 

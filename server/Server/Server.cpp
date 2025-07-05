@@ -137,8 +137,9 @@ Server::Start() {
 Server::Tcp::Tcp(tcp::endpoint endpoint)
    : acceptor_(ioc_, std::move(endpoint)) {}
 
-Server::Server()
+Server::Server(Main& main)
    : MessageQueue("Server Message queue")
+   , main_{&main}
    , thread_{[this]() {
       SetThreadDescription(GetCurrentThread(), L"Server");
       ScopeExit _{[this]() constexpr { FlushState(); }};
@@ -178,7 +179,11 @@ Server::Server()
                Notify("running", lock);
 
                lock.unlock();
-               tcp_->ioc_.run();
+               {
+                  main_->SendServerPortToEFB(port);
+                  tcp_->ioc_.run();
+                  main_->SendServerPortToEFB(0);
+               }
                lock.lock();
             }
             efb_socket_ = nullptr;

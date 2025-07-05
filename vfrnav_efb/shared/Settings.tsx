@@ -40,8 +40,6 @@ export type Color = {
 export type SharedSettings = {
   __SETTINGS__: true
 
-  serverPort: number,
-
   defaultSpeed: number,
   SIAAuth: string,
   SIAAddr: string,
@@ -93,8 +91,6 @@ const LayerRecord = GenRecord<LayerSetting>({
 
 export const SharedSettingsRecord = GenRecord<SharedSettings>({
   __SETTINGS__: true,
-
-  serverPort: 48578,
 
   defaultSpeed: 95,
   SIAAuth: __SIA_AUTH__,

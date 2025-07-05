@@ -62,8 +62,9 @@ public:
 
 #include "Resolvers.inl"
 
+class Main;
 struct Server : public MessageQueue {
-   Server();
+   Server(Main& main);
    ~Server() override;
 
    using Lock = std::variant<
@@ -97,6 +98,7 @@ struct Server : public MessageQueue {
    void WatchServerState(Resolve<ServerState> const& resolve, Reject const& reject);
    void WatchEFBState(Resolve<bool> const& resolve, Reject const& reject, bool currentState);
 
+   Main*                       main_   = nullptr;
    bool                        runing_ = false;
    std::shared_mutex           mutex_{};
    std::condition_variable_any cv_{};

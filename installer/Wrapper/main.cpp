@@ -14,9 +14,9 @@
  */
 
 #include "Resources.h"
-#include "utils/Scoped.h"
 #include "windows/Process.h"
 
+#include <utils/Scoped.h>
 #include <windows/Lock.h>
 #include <Windows.h>
 #include <synchapi.h>
