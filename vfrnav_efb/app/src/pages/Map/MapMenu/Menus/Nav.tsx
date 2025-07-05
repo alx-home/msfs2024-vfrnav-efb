@@ -33,7 +33,27 @@ import { Coordinate } from 'ol/coordinate';
 
 export class NavData {
   // eslint-disable-next-line no-unused-vars
-  constructor(public id: number, public order: number, public name: string, public active: boolean, public shortName: string, public coords: Coordinate[], public properties: Properties[], public waypoints: string[], public layer: VectorLayer) { }
+  constructor(public id: number,
+    // eslint-disable-next-line no-unused-vars
+    public order: number,
+    // eslint-disable-next-line no-unused-vars
+    public name: string,
+    // eslint-disable-next-line no-unused-vars
+    public active: boolean,
+    // eslint-disable-next-line no-unused-vars
+    public shortName: string,
+    // eslint-disable-next-line no-unused-vars
+    public coords: Coordinate[],
+    // eslint-disable-next-line no-unused-vars
+    public loadedFuel: number,
+    // eslint-disable-next-line no-unused-vars
+    public departureTime: number,
+    // eslint-disable-next-line no-unused-vars
+    public properties: Properties[],
+    // eslint-disable-next-line no-unused-vars
+    public waypoints: string[],
+    // eslint-disable-next-line no-unused-vars
+    public layer: VectorLayer) { }
 };
 
 const Label = ({ name, shortName, editMode }: {
@@ -212,7 +232,7 @@ export const Nav = ({ closeMenu, className, style }: {
 }) => {
   const efbConnected = useEFBServer();
 
-  const { addNav, navData, reorderNav } = useContext(MapContext)!;
+  const { addNav, navData, deviations, fuelUnit, fuelConsumption, reorderNav } = useContext(MapContext)!;
   const key = useMemo(() => navData.reduce((prev, elem) => { return prev + ";" + elem.name; }, ""), [navData]);
   const [draggable, setDraggable] = useState(true);
   const childs = useMemo(() => navData.map((item, index) => {
@@ -238,10 +258,15 @@ export const Nav = ({ closeMenu, className, style }: {
         shortName: data.shortName,
         coords: data.coords,
         properties: data.properties,
-        waypoints: data.waypoints
-      }))
+        waypoints: data.waypoints,
+        loadedFuel: data.loadedFuel,
+        departureTime: data.departureTime,
+      })),
+      deviations: deviations,
+      fuelUnit: fuelUnit,
+      fuelConsumption: fuelConsumption
     })
-  }, [navData]);
+  }, [deviations, fuelConsumption, fuelUnit, navData]);
 
   const onOrdersChange = useMemo(() => (orders: number[]) => {
     reorderNav(orders);

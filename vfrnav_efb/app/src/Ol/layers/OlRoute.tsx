@@ -93,6 +93,7 @@ const useMap = () => {
             if (initFeature(feature)) {
                const coords = feature.getGeometry()!.getCoordinates()[0].map(coords => ([...coords]));
                const id = feature.getId() as number;
+               const date = new Date();
 
                hasChanges = true;
                newData.push({
@@ -104,6 +105,8 @@ const useMap = () => {
                   coords: coords,
                   layer: layer!,
                   waypoints: coords.map(() => ""),
+                  loadedFuel: 300,
+                  departureTime: date.getHours() * 60 + date.getMinutes(),
                   properties: coords.filter((_, index) => index).map((value, index) => {
                      const props = { ...PropertiesRecord.defaultValues, ias: defaultSpeed };
                      return updateNavProps(props, coords[index], value)
@@ -278,7 +281,7 @@ export const OlRouteLayer = ({
 }: {
    zIndex: number
 } & OlLayerProp) => {
-   const { setNavData, counter, map, setCancel, navData, updateNavProps } = useContext(MapContext)!;
+   const { setNavData, counter, map, setCancel, navData, updateNavProps, setFuelConsumption, setFuelUnit, setDeviations } = useContext(MapContext)!;
    const settings = useContext(SettingsContext)!;
 
    const { source, layer, initFeature } = useMap();
@@ -463,17 +466,18 @@ export const OlRouteLayer = ({
                initFeature(feature);
 
                features.push(feature)
-               const result = {
+               const result: NavData = {
                   id: feature.getId() as number,
                   order: data.order,
-                  featureId: feature.getId()!,
                   active: true,
                   name: data.name,
                   shortName: data.shortName,
                   coords: data.coords.map(coords => ([...coords])),
                   layer: layer!,
+                  departureTime: data.departureTime,
+                  loadedFuel: data.loadedFuel,
                   waypoints: data.waypoints,
-                  properties: data.properties
+                  properties: data.properties,
                }
 
                return result;
@@ -481,12 +485,15 @@ export const OlRouteLayer = ({
 
             source.addFeatures(features);
             setNavData(data);
+            setFuelConsumption(message.fuelConsumption)
+            setFuelUnit(message.fuelUnit)
+            setDeviations(message.deviations)
          };
 
          messageHandler.subscribe("__EXPORT_NAV__", onExportNav)
          return () => messageHandler.unsubscribe("__EXPORT_NAV__", onExportNav);
       }
-   }, [counter, initFeature, layer, navData, setNavData, source])
+   }, [counter, initFeature, layer, navData, setDeviations, setFuelConsumption, setFuelUnit, setNavData, source])
 
    return <div className="hidden">
       <img ref={greenMarkerImg} src={greenMarker} alt='start marker' />

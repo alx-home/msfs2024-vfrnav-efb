@@ -28,7 +28,7 @@ import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
 import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
 import { messageHandler } from '@Settings/SettingsProvider';
-import { Deviation, Properties } from '@shared/NavData';
+import { Deviation, FuelUnit, Properties } from '@shared/NavData';
 import { getLength } from 'ol/sphere';
 
 export type Interactive = {
@@ -41,8 +41,6 @@ export type Interactive = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onMoveEnd?: (_pixel: MapBrowserEvent<any>, _features: FeatureLike[]) => boolean
 }
-
-export type FuelUnit = 'gal' | 'liter';
 
 export const MapContext = createContext<{
   map: olMap,
@@ -69,6 +67,8 @@ export const MapContext = createContext<{
   removeNav: (_id: number) => void,
   activeNav: (_id: number, _active: boolean) => void,
   editNav: (_id: number, _newName: string) => void,
+  setLoadedFuel: (_id: number, _value: number) => void,
+  setDepartureTime: (_id: number, _value: number) => void,
   editNavProperties: (_id: number, _properties: Properties[]) => void,
   updateWaypoints: (_id: number, _names: string[]) => void,
   removeRecord: (_id: number) => void,
@@ -82,8 +82,6 @@ export const MapContext = createContext<{
   setDeviations: Dispatch<SetStateAction<Deviation[]>>,
 
   fuelConsumption: number,
-  loadedFuel: number,
-  setLoadedFuel: Dispatch<SetStateAction<number>>,
   setFuelConsumption: Dispatch<SetStateAction<number>>,
   fuelUnit: FuelUnit,
   setFuelUnit: Dispatch<SetStateAction<FuelUnit>>,
@@ -123,20 +121,11 @@ const updateFuel = (fuelConsumption: number, props: Properties): Properties => {
   return {
     ...props, vor: { ...props.vor }, wind: { ...props.wind },
     dur: { ...props.dur },
-    coords: props.coords.map(coord => ([...coord])),
-    deviations: [...props.deviations],
-    conso: fuelConsumption / 3600 * props.dur.full
+    conso: fuelConsumption / 3600 * props.dur.full,
   }
 }
 
 const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props: Properties, prevCoords: Coordinate, coords: Coordinate): Properties => {
-  if (props.coords.length
-    && props.coords[0][0] === prevCoords[0] && props.coords[0][1] === prevCoords[1]
-    && props.coords[1][0] === coords[0] && props.coords[1][1] === coords[1]
-    && deviations === props.deviations) {
-    return updateFuel(fuelConsumption, props);
-  }
-
   const { ias, oat, altitude, wind, magVar } = props;
   const { direction, speed: windVel } = wind;
   const windDir = direction > 180 ? direction - 180 : direction + 180;
@@ -204,11 +193,7 @@ const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props:
       minutes: minutes,
       seconds: seconds,
       full: dur
-    }, tas: tas, GS: GS, dist: dist, coords: [
-      [...prevCoords],
-      [...coords]
-    ],
-    deviations: deviations
+    }, tas: tas, GS: GS, dist: dist
   })
 }
 
@@ -340,7 +325,6 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   ])
 
   const [fuelConsumption, setFuelConsumption] = useState(8);
-  const [loadedFuel, setLoadedFuel] = useState(255);
   const [fuelUnit, setFuelUnit] = useState<FuelUnit>('gal')
 
   const updateNavPropsCB = useCallback((props: Properties, prevCoords: Coordinate, coords: Coordinate) =>
@@ -448,6 +432,26 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         return newItems;
       })
     },
+    setLoadedFuel: (id: number, value: number) => {
+      setNavData(items => {
+        const newItems = items.map(item => ({ ...item }));
+        const item = newItems.find((item) => item.id === id);
+        if (item) {
+          item.loadedFuel = value;
+        }
+        return newItems;
+      })
+    },
+    setDepartureTime: (id: number, value: number) => {
+      setNavData(items => {
+        const newItems = items.map(item => ({ ...item }));
+        const item = newItems.find((item) => item.id === id);
+        if (item) {
+          item.departureTime = value;
+        }
+        return newItems;
+      })
+    },
     editNavProperties: (id: number, properties: Properties[]) => {
       setNavData(items => {
         const newItems = items.map(item => ({ ...item }));
@@ -507,13 +511,11 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     setDeviations: setDeviations,
     updateNavProps: updateNavPropsCB,
 
-    loadedFuel: loadedFuel,
-    setLoadedFuel: setLoadedFuel,
     fuelConsumption: fuelConsumption,
     setFuelConsumption: setFuelConsumption,
     fuelUnit: fuelUnit,
     setFuelUnit: setFuelUnit,
-  }), [map, navData, records, flash, flashKey, profileScale, touchdown, ground, deviations, updateNavPropsCB, loadedFuel, fuelConsumption, fuelUnit, activeRecords]);
+  }), [map, navData, records, flash, flashKey, profileScale, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
 
   return (
     <MapContext.Provider

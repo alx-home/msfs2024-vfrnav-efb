@@ -73,26 +73,24 @@ struct Duration {
 struct NavProperties {
    bool active_{};
 
-   double                             altitude_{};
-   VorProperty                        vor_{};
-   WindProperty                       wind_{};
-   double                             ias_{};
-   double                             oat_{};
-   double                             dist_{};
-   Duration                           dur_{};
-   double                             tc_{};
-   double                             ch_{};
-   double                             mh_{};
-   double                             dev_{};
-   std::vector<std::array<double, 2>> coords_{};
-   std::vector<Deviation>             deviations_{};
-   double                             gs_{};
-   double                             tas_{};
-   double                             ata_{};
-   double                             conso_{};
-   double                             cur_fuel_{};
-   double                             mag_var_{};
-   std::string                        remark_{};
+   double       altitude_{};
+   VorProperty  vor_{};
+   WindProperty wind_{};
+   double       ias_{};
+   double       oat_{};
+   double       dist_{};
+   Duration     dur_{};
+   double       tc_{};
+   double       ch_{};
+   double       mh_{};
+   double       dev_{};
+   double       gs_{};
+   double       tas_{};
+   double       ata_{};
+   double       conso_{};
+   double       cur_fuel_{};
+   double       mag_var_{};
+   std::string  remark_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"active", &NavProperties::active_},
@@ -107,8 +105,6 @@ struct NavProperties {
      js::_{"CH", &NavProperties::ch_},
      js::_{"MH", &NavProperties::mh_},
      js::_{"dev", &NavProperties::dev_},
-     js::_{"coords", &NavProperties::coords_},
-     js::_{"deviations", &NavProperties::deviations_},
      js::_{"GS", &NavProperties::gs_},
      js::_{"tas", &NavProperties::tas_},
      js::_{"ata", &NavProperties::ata_},
@@ -126,6 +122,8 @@ struct NavData {
    std::vector<std::array<double, 2>> coords_{};
    std::vector<NavProperties>         properties_{};
    std::vector<std::string>           waypoints_{};
+   double                             loaded_fuel_{};
+   double                             departure_time_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"name", &NavData::name_},
@@ -134,17 +132,25 @@ struct NavData {
      js::_{"coords", &NavData::coords_},
      js::_{"properties", &NavData::properties_},
      js::_{"waypoints", &NavData::waypoints_},
+     js::_{"loadedFuel", &NavData::loaded_fuel_},
+     js::_{"departureTime", &NavData::departure_time_},
    };
 };
 
 struct ExportNav {
    bool header_{true};
 
-   std::vector<NavData> data_{};
+   std::vector<NavData>     data_{};
+   std::vector<Deviation>   deviations_{};
+   js::Enum<"gal", "liter"> fuel_unit_{"gal"};
+   double                   fuel_consumption_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__EXPORT_NAV__", &ExportNav::header_},
      js::_{"data", &ExportNav::data_},
+     js::_{"deviations", &ExportNav::deviations_},
+     js::_{"fuelUnit", &ExportNav::fuel_unit_},
+     js::_{"fuelConsumption", &ExportNav::fuel_consumption_},
    };
 };
 

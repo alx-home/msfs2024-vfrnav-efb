@@ -163,8 +163,8 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
    edit: boolean,
    navData: NavData
 }) => {
-   const { editNavProperties, updateWaypoints, fuelUnit } = useContext(MapContext)!;
-   const { properties, waypoints, id } = navData;
+   const { editNavProperties, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime } = useContext(MapContext)!;
+   const { properties, waypoints, departureTime, loadedFuel, id } = navData;
    const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);
    const toUnit = useCallback((value: number) =>
       fuelUnit === 'gal' ? value : value / 3.785411784
@@ -174,8 +174,6 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       , [fuelUnit])
 
    const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gal' : 'l', [fuelUnit])
-   const [loadedFuel, setLoadedFuel] = useState(200);
-   const [departureTime, setDepartureTime] = useState(15 * 60 + 30);
    const departureTimeStr = useMemo(() => {
       const hours = Math.floor(departureTime / 60);
       const minutes = Math.round(departureTime - 60 * hours);
@@ -596,7 +594,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                         <div className="flex flex-row [&_.invalid]:text-red-500 w-24">
                            <Input active={true} className="my-1 w-full" value={loadedFuelStr} inputMode="decimal"
                               onChange={(value) => {
-                                 setLoadedFuel(fromUnit(+value));
+                                 setLoadedFuel(id, fromUnit(+value));
                               }} validate={async (value) => {
                                  return /^\d*(\.\d*)?$/.test(value);
                               }} >
@@ -610,7 +608,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                            <Input active={true} className="my-1 w-full" value={departureTimeStr}
                               onChange={(value) => {
                                  const data = value.split('h');
-                                 setDepartureTime(+data[0] * 60 + +data[1]);
+                                 setDepartureTime(id, +data[0] * 60 + +data[1]);
                               }} validate={async (value) => {
                                  if (/^\d+h\d*$/.test(value)) {
                                     const data = value.split('h');

@@ -15,6 +15,7 @@
 
 import { GenRecord } from './Types';
 
+export type FuelUnit = 'gal' | 'liter';
 export type Deviation = {
    x: number;
    y: number;
@@ -50,9 +51,6 @@ export type Properties = {
    dev: number,
    MH: number,
 
-   coords: number[][],
-   deviations: Deviation[]
-
    GS: number
    tas: number
 
@@ -74,8 +72,13 @@ export type ExportNav = {
       order: number,
       coords: number[][],
       properties: Properties[],
-      waypoints: string[]
+      waypoints: string[],
+      loadedFuel: number,
+      departureTime: number,
    }[]
+   deviations: Deviation[],
+   fuelUnit: FuelUnit,
+   fuelConsumption: number,
 };
 
 export const PropertiesRecord = GenRecord<Properties>({
@@ -107,9 +110,6 @@ export const PropertiesRecord = GenRecord<Properties>({
    MH: 0,
    dev: 0,
 
-   coords: [],
-   deviations: [],
-
    GS: 0,
    tas: 0,
 
@@ -121,25 +121,18 @@ export const PropertiesRecord = GenRecord<Properties>({
    magVar: 0,
    remark: "",
 }, {
-   coords: {
-      array: true,
-      record: {
-         array: true, record: "number"
-      }
-   },
-   deviations: {
-      array: true,
-      record: {
-         x: "number",
-         y: "number"
-      }
-   }
 });
 
 export const ExportNavRecord = GenRecord<ExportNav>({
    __EXPORT_NAV__: true,
 
-   data: []
+   data: [],
+   deviations: [
+      { x: 0, y: 0 },
+      { x: 360, y: 0 }
+   ],
+   fuelConsumption: 380,
+   fuelUnit: 'liter'
 }, {
    data: {
       array: true, record: {
@@ -156,9 +149,20 @@ export const ExportNavRecord = GenRecord<ExportNav>({
          },
          waypoints: {
             array: true, record: "string"
-         }
+         },
+         loadedFuel: 'number',
+         departureTime: 'number',
       }
-   }
+   },
+   deviations: {
+      array: true,
+      record: {
+         x: "number",
+         y: "number"
+      }
+   },
+   fuelConsumption: 'number',
+   fuelUnit: 'string'
 })
 
 

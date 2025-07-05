@@ -27,7 +27,7 @@ import { useEFBServer } from "@Utils/useServer";
 export const NavLogPage = ({ active }: {
   active: boolean
 }) => {
-  const { navData } = useContext(MapContext)!;
+  const { navData, deviations, fuelUnit, fuelConsumption } = useContext(MapContext)!;
 
   const [opacity, setOpacity] = useState(' opacity-0');
   const [tab, setTab] = useState<string>('Settings');
@@ -93,10 +93,15 @@ export const NavLogPage = ({ active }: {
         shortName: data.shortName,
         coords: data.coords,
         properties: data.properties,
-        waypoints: data.waypoints
-      }))
+        waypoints: data.waypoints,
+        loadedFuel: data.loadedFuel,
+        departureTime: data.departureTime,
+      })),
+      deviations: deviations,
+      fuelUnit: fuelUnit,
+      fuelConsumption: fuelConsumption
     })
-  }, [navData]);
+  }, [deviations, fuelConsumption, fuelUnit, navData]);
 
   useEffect(() => {
     if (!tabs.find(value => value === tab)) {
