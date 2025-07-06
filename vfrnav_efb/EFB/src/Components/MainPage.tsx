@@ -15,7 +15,7 @@
 
 import { GamepadUiView, RequiredProps, TVNode, UiViewProps } from "@alx-home/efb-api";
 import { FSComponent } from "@microsoft/msfs-sdk";
-import { GetFacilities, GetMetar } from "@shared/Facilities";
+import { GetFacilities, GetICAOS as GetIcaos, GetLatLon, GetMetar } from "@shared/Facilities";
 import { MessageHandler, MessageType } from "@shared/MessageHandler";
 import { EditRecord, GetRecord, RemoveRecord } from "@shared/PlanPos";
 import { Manager } from "../Manager";
@@ -63,6 +63,14 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onGetMetar(this.messageHandle, message);
   }
 
+  onGetLatLon(message: GetLatLon) {
+    this.props.manager.onGetLatLon(this.messageHandle, message);
+  }
+
+  onGetIcaos(message: GetIcaos) {
+    this.props.manager.onGetIcaos(this.messageHandle, message);
+  }
+
   onEditRecord(message: EditRecord) {
     this.props.manager.onEditRecord(message);
   }
@@ -98,6 +106,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("__GET_RECORDS__", this.onGetPlaneRecords)
       messageHandler.unsubscribe("__GET_FACILITIES__", this.onGetFacilities)
       messageHandler.unsubscribe("__GET_METAR__", this.onGetMetar)
+      messageHandler.unsubscribe("__GET_LAT_LON__", this.onGetLatLon)
+      messageHandler.unsubscribe("__GET_ICAOS__", this.onGetIcaos)
       messageHandler.unsubscribe("__REMOVE_RECORD__", this.onRemoveRecord)
       messageHandler.unsubscribe("__EDIT_RECORD__", this.onEditRecord)
       messageHandler.unsubscribe("__GET_RECORD__", this.onGetRecord)
@@ -130,6 +140,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__GET_RECORDS__", this.onGetPlaneRecords.bind(this))
       messageHandler.subscribe("__GET_FACILITIES__", this.onGetFacilities.bind(this))
       messageHandler.subscribe("__GET_METAR__", this.onGetMetar.bind(this))
+      messageHandler.subscribe("__GET_LAT_LON__", this.onGetLatLon.bind(this))
+      messageHandler.subscribe("__GET_ICAOS__", this.onGetIcaos.bind(this))
       messageHandler.subscribe("__EDIT_RECORD__", this.onEditRecord.bind(this))
       messageHandler.subscribe("__REMOVE_RECORD__", this.onRemoveRecord.bind(this))
       messageHandler.subscribe("__GET_RECORD__", this.onGetRecord.bind(this))

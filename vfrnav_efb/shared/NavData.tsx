@@ -131,7 +131,7 @@ export const ExportNavRecord = GenRecord<ExportNav>({
       { x: 0, y: 0 },
       { x: 360, y: 0 }
    ],
-   fuelConsumption: 380,
+   fuelConsumption: 145,
    fuelUnit: 'liter'
 }, {
    data: {

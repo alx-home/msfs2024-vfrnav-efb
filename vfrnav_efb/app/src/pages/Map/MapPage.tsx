@@ -20,12 +20,12 @@ import { OlWMTSLayer } from "@Ol/layers/OlWMTSLayer";
 import { OlMap } from "@Ol/OlMap";
 import { getTopLeft, getWidth } from 'ol/extent';
 import { fromLonLat, get as getProjection } from 'ol/proj';
-import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { Dispatch, KeyboardEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { OnLayerChange } from './MapMenu/Menus/Layers';
 import { GlobalSettings } from "@Settings/Settings";
 import { AZBALayer } from "@Ol/layers/AZBALayer";
-import { SettingsContext } from "@Settings/SettingsProvider";
+import { SettingsContext, messageHandler } from "@Settings/SettingsProvider";
 import { AirportsLayer } from "@Ol/layers/AirportsLayer";
 import { PlaneLayer } from "@Ol/layers/PlaneLayer";
 import { RecordsLayer } from "@Ol/layers/RecordsLayer";
@@ -51,6 +51,8 @@ import ifrLowImg from '@efb-images/ifr_low.jpg';
 import ifrHighImg from '@efb-images/ifr_high.jpg';
 import sectionalImg from '@efb-images/sectional.jpg';
 import osmImg from '@efb-images/osm.jpg';
+import { Input } from "@alx-home/Utils";
+import { Icaos, LatLon } from "@shared/Facilities";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -117,6 +119,7 @@ const OACIBoundaries = [[-430238.11752151186, 6642123.685482322], [-389883.69648
 export const MapPage = ({ active }: {
   active: boolean
 }) => {
+  const { map } = useContext(MapContext)!;
   const settings = useContext(SettingsContext)!;
   const [opacity, setOpacity] = useState(' opacity-0');
   const [open, setOpen] = useState(false);
@@ -235,6 +238,9 @@ export const MapPage = ({ active }: {
     order: index
   })));
 
+  const [icaos, setIcaos] = useState<string[]>([]);
+  const [suggestIndex, setSuggestIndex] = useState(0);
+
   const onLayerChange = useCallback<OnLayerChange>((values) =>
     setLayers(layers => {
       const newLayers = [...layers];
@@ -248,6 +254,45 @@ export const MapPage = ({ active }: {
       return newLayers;
     }), []);
 
+  const olLayers = useMemo(() =>
+    layers.map(layer => {
+      const layerSettings = layer.getSettings(settings);
+      return { ...layer.olLayer, props: { ...layer.olLayer.props, order: layers.length - 1 - layer.order, active: layerSettings.active, enabled: layerSettings.enabled, minZoom: layerSettings.minZoom, maxZoom: layerSettings.maxZoom } }
+    }),
+    [layers, settings]);
+
+  const [icao, setIcao] = useState("");
+  const [refreshIcao, setRefreshIcao] = useState(false);
+  const updateIcao = useCallback((icao?: string) => {
+    if (icao) {
+      setIcao(icao);
+      setSuggestIndex(0);
+      setRefreshIcao(true);
+    }
+  }, [])
+  const searchIcao = useCallback((icao: string) => {
+    updateIcao(icao);
+
+    messageHandler.send({
+      __GET_ICAOS__: true,
+      icao: icao.toUpperCase()
+    });
+  }, [updateIcao]);
+
+
+  const filteredIcaos = useMemo(() => icaos.filter(value => value !== icao.toUpperCase()), [icao, icaos]);
+  const icaoValid = useMemo(() => filteredIcaos.length !== icaos.length, [filteredIcaos, icaos]);
+
+  const onIcaoSearchKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown') {
+      setSuggestIndex(index => (index + 1) % filteredIcaos.length)
+    } else if (event.key === 'ArrowUp') {
+      setSuggestIndex(index => index === 0 ? filteredIcaos.length - 1 : (index - 1))
+    } else if (event.key === 'Enter' || event.key === 'Tab') {
+      updateIcao(filteredIcaos[suggestIndex])
+    }
+  }, [filteredIcaos, suggestIndex, updateIcao]);
+
   useEffect(() => {
     if (active) {
       setOpacity(' opacity-100');
@@ -256,12 +301,38 @@ export const MapPage = ({ active }: {
     }
   }, [active]);
 
-  const olLayers = useMemo(() =>
-    layers.map(layer => {
-      const layerSettings = layer.getSettings(settings);
-      return { ...layer.olLayer, props: { ...layer.olLayer.props, order: layers.length - 1 - layer.order, active: layerSettings.active, enabled: layerSettings.enabled, minZoom: layerSettings.minZoom, maxZoom: layerSettings.maxZoom } }
-    }),
-    [layers, settings]);
+  useEffect(() => {
+    const callback = (message: Icaos) => {
+      setIcaos(message.icaos.map(value => value.toUpperCase()));
+    }
+
+    messageHandler.subscribe('__ICAOS__', callback);
+    return () => messageHandler.unsubscribe('__ICAOS__', callback);
+  }, [icao, icaos]);
+
+  useEffect(() => {
+    const callback = (message: LatLon) => {
+      map.getView().animate({ center: fromLonLat([message.lon, message.lat]) })
+    }
+
+    messageHandler.subscribe('__LAT_LON__', callback);
+    return () => messageHandler.unsubscribe('__LAT_LON__', callback);
+  }, [map]);
+
+  useEffect(() => {
+    if (refreshIcao) {
+      setRefreshIcao(false);
+    }
+  }, [refreshIcao])
+
+  useEffect(() => {
+    if (icaoValid) {
+      messageHandler.send({
+        __GET_LAT_LON__: true,
+        icao: icao.toUpperCase()
+      });
+    }
+  }, [icao, icaoValid])
 
   return <div className={'z-0 transition transition-std relative grow h-full' + opacity} style={active ? {} : { display: 'none' }}>
     <OlMap id='map' className='absolute w-full h-full top-0 left-0'>
@@ -277,6 +348,42 @@ export const MapPage = ({ active }: {
         <div className="relative flex flex-row h-full grow transition-all overflow-hidden">
           <div className={"relative flex grow justify-end h-full overflow-hidden"} >
             <SpinAnimation />
+            <div className={"absolute transition-all right-0 top-0 m-5 max-w-20 text-2xl pointer-events-auto"
+              + " [&_*]:uppercase p-2 rounded-md opacity-40 bg-slate-800 "
+              + " hocus-within:max-w-80 hocus-within:opacity-100 [&:focus-within_.suggests]:max-h-[8000px] [&:focus-within_.suggests]:opacity-100 [&:hover_.hide]:opacity-100 [&:focus-within_.hide]:opacity-100"
+            }>
+              <div className="relative flex flex-row grow">
+                <div className="flex flex-col grow justify-center mr-4">ICAO: </div>
+                <div className="hide flex flex-col w-full opacity-0">
+                  <div className="flex flex-row w-32 overflow-hidden">
+                    <Input active={true} inputMode="text" onChange={searchIcao}
+                      onKeyDown={onIcaoSearchKeyDown} value={icao}
+                      reload={refreshIcao} className={(icaoValid ? '' : ' !text-red-500')}
+                    />
+                  </div>
+                  <div className={"flex relative w-full"
+                    + (filteredIcaos.length ? '' : ' hidden')
+                  }>
+                    <div className="transition-all suggests flex absolute flex-col left-0 right-0 max-h-0 overflow-hidden opacity-0">
+                      <div className="transition-all flex flex-col bg-gray-700 hocus:bg-gray-800 p-2 rounded-sm border-x-2 border-b-2 border-msfs ">
+                        {filteredIcaos.map((icao, index) => <button key={icao} className={
+                          "flex flex-row border-2 border-transparent hover:border-msfs p-2 cursor-pointer h-max"
+                          + (suggestIndex === index ? ' border-msfs' : '')
+                        }
+                          // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
+                          onMouseOver={() => { setSuggestIndex(index) }}
+                          onClick={() => {
+                            if (filteredIcaos.length) {
+                              updateIcao(filteredIcaos[suggestIndex]);
+                            }
+                          }}
+                        >{icao}</button>)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <Overlay menu={menu} setMenu={setMenu} setOpen={setOpen} />
           </div>
           <div className="flex flex-row pointer-events-auto">

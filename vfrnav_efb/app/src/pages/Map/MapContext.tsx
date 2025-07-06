@@ -28,7 +28,7 @@ import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
 import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
 import { messageHandler } from '@Settings/SettingsProvider';
-import { Deviation, FuelUnit, Properties } from '@shared/NavData';
+import { Deviation, ExportNavRecord, FuelUnit, Properties } from '@shared/NavData';
 import { getLength } from 'ol/sphere';
 
 export type Interactive = {
@@ -324,8 +324,8 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     }
   ])
 
-  const [fuelConsumption, setFuelConsumption] = useState(8);
-  const [fuelUnit, setFuelUnit] = useState<FuelUnit>('gal')
+  const [fuelConsumption, setFuelConsumption] = useState(ExportNavRecord.defaultValues.fuelConsumption);
+  const [fuelUnit, setFuelUnit] = useState<FuelUnit>(ExportNavRecord.defaultValues.fuelUnit)
 
   const updateNavPropsCB = useCallback((props: Properties, prevCoords: Coordinate, coords: Coordinate) =>
     updateNavProps(fuelConsumption, deviations, props, prevCoords, coords)

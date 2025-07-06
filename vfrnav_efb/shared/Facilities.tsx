@@ -239,6 +239,20 @@ export const FacilitiesRecord = GenRecord<Facilities>({
   facilities: { array: true, record: AirportFacilityRecord }
 })
 
+export type Icaos = {
+  __ICAOS__: true,
+
+  icaos: string[]
+}
+
+export const IcaosRecord = GenRecord<Icaos>({
+  __ICAOS__: true,
+
+  icaos: []
+}, {
+  icaos: { array: true, record: "string" }
+})
+
 export type Metar = {
   __METAR__: true,
 
@@ -276,6 +290,43 @@ export const GetFacilitiesRecord = GenRecord<GetFacilities>({
   lon: -1
 }, {})
 
+export type GetICAOS = {
+  __GET_ICAOS__: true,
+
+  icao: string
+};
+
+export const GetICAOSRecord = GenRecord<GetICAOS>({
+  __GET_ICAOS__: true,
+
+  icao: ""
+}, {})
+
+export type GetLatLon = {
+  __GET_LAT_LON__: true,
+  icao: string
+};
+
+export const GetLatLonRecord = GenRecord<GetLatLon>({
+  __GET_LAT_LON__: true,
+
+  icao: ""
+}, {})
+
+export type LatLon = {
+  __LAT_LON__: true,
+  icao: string,
+  lat: number,
+  lon: number,
+};
+
+export const LatLonRecord = GenRecord<LatLon>({
+  __LAT_LON__: true,
+
+  icao: "",
+  lat: 0,
+  lon: 0,
+}, {})
 
 export type GetMetar = {
   __GET_METAR__: true,
