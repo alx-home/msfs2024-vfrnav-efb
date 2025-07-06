@@ -14,8 +14,9 @@
  */
 
 import { Input, Select, SelectOption } from "@alx-home/Utils";
-import { FuelUnit, MapContext } from "@pages/Map/MapContext";
+import { MapContext } from "@pages/Map/MapContext";
 import { Point } from "@polyfills/drag-events";
+import { FuelUnit } from "@shared/NavData";
 import { Chart, ChartOptions } from "chart.js";
 import { getRelativePosition } from "chart.js/helpers";
 import { ChartJSOrUndefined } from "node_modules/react-chartjs-2/dist/types";
@@ -26,10 +27,10 @@ export const Settings = () => {
    const { deviations, setDeviations, fuelConsumption, setFuelConsumption, fuelUnit, setFuelUnit } = useContext(MapContext)!;
    const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gal' : 'l', [fuelUnit])
    const toUnit = useCallback((value: number) =>
-      fuelUnit === 'gal' ? value : value / 3.785411784
+      fuelUnit === 'gal' ? value * 3.785411784 : value
       , [fuelUnit])
    const fromUnit = useCallback((value: number) =>
-      fuelUnit === 'gal' ? value : value * 3.785411784
+      fuelUnit === 'gal' ? value / 3.785411784 : value
       , [fuelUnit])
 
    const fuelConsumptionStr = useMemo(() => toUnit(fuelConsumption).toString(), [fuelConsumption, toUnit])

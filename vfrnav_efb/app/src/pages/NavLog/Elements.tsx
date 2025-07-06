@@ -167,10 +167,10 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
    const { properties, waypoints, departureTime, loadedFuel, id } = navData;
    const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);
    const toUnit = useCallback((value: number) =>
-      fuelUnit === 'gal' ? value : value / 3.785411784
+      fuelUnit === 'gal' ? value * 3.785411784 : value
       , [fuelUnit])
    const fromUnit = useCallback((value: number) =>
-      fuelUnit === 'gal' ? value : value * 3.785411784
+      fuelUnit === 'gal' ? value / 3.785411784 : value
       , [fuelUnit])
 
    const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gal' : 'l', [fuelUnit])

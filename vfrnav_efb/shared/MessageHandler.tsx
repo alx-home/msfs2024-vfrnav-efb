@@ -14,7 +14,7 @@
  */
 
 import { GenRecord, reduce, TypeRecord } from './Types';
-import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetMetar, GetMetarRecord, Metar, MetarRecord } from './Facilities';
+import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetICAOS, GetICAOSRecord as GetIcaosRecord, GetLatLon, GetLatLonRecord, GetMetar, GetMetarRecord, Icaos, IcaosRecord, LatLon, LatLonRecord, Metar, MetarRecord } from './Facilities';
 import { SharedSettingsRecord, SharedSettings } from './Settings';
 import { EditRecord, EditRecordRecord, GetRecord, GetRecordRecord, PlanePos, PlanePoses, PlanePosesRecord, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
 import { ByeBye, ByeByeRecord, HelloWorld, HelloWorldRecord } from './HelloWorld';
@@ -22,8 +22,9 @@ import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord,
 import { GetServerState, GetServerStateRecord, ServerState, ServerStateRecord } from './Server';
 import { ExportNav, ExportNavRecord, ImportNav, ImportNavRecord } from './NavData';
 
-const MessageIdValues = ["__SERVER_STATE__", "__GET_SERVER_STATE__", "__HELLO_WORLD__", "__BYE_BYE__", "__FILE_EXISTS__", "__FILE_EXISTS_RESPONSE__", "__OPEN_FILE__", "__OPEN_FILE_RESPONSE__", "__GET_FILE__", "__GET_FILE_RESPONSE__", "__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__", "__GET_FACILITIES__",
-   "__FACILITIES__", "__GET_METAR__", "__METAR__", "__PLANE_POS__", "__PLANE_POSES__", "__RECORDS__",
+const MessageIdValues = ["__SERVER_STATE__", "__GET_SERVER_STATE__", "__HELLO_WORLD__", "__BYE_BYE__", "__FILE_EXISTS__", "__FILE_EXISTS_RESPONSE__", "__OPEN_FILE__", "__OPEN_FILE_RESPONSE__", "__GET_FILE__", "__GET_FILE_RESPONSE__", "__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__",
+   "__GET_FACILITIES__", "__FACILITIES__", "__GET_ICAOS__", "__ICAOS__", "__GET_METAR__", "__METAR__", "__PLANE_POS__", "__PLANE_POSES__", "__RECORDS__",
+   "__GET_LAT_LON__", "__LAT_LON__",
    "__REMOVE_RECORD__", "__EDIT_RECORD__", '__GET_RECORD__', '__EXPORT_NAV__', '__IMPORT_NAV__'] as const;
 type MessageId = (typeof MessageIdValues)[number];
 
@@ -53,6 +54,10 @@ type MessageTypes = {
    "__GET_RECORDS__": GetRecords,
    "__GET_FACILITIES__": GetFacilities,
    "__FACILITIES__": Facilities,
+   "__GET_ICAOS__": GetICAOS,
+   "__ICAOS__": Icaos,
+   "__GET_LAT_LON__": GetLatLon,
+   "__LAT_LON__": LatLon,
    "__GET_METAR__": GetMetar,
    "__METAR__": Metar,
    "__PLANE_POS__": PlanePos,
@@ -82,6 +87,10 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__GET_RECORDS__": GetRecordsRecord,
    "__GET_FACILITIES__": GetFacilitiesRecord,
    "__FACILITIES__": FacilitiesRecord,
+   "__GET_ICAOS__": GetIcaosRecord,
+   "__ICAOS__": IcaosRecord,
+   "__GET_LAT_LON__": GetLatLonRecord,
+   "__LAT_LON__": LatLonRecord,
    "__GET_METAR__": GetMetarRecord,
    "__METAR__": MetarRecord,
    "__PLANE_POS__": PlanePosRecord,

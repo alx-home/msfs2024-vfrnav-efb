@@ -33,6 +33,43 @@ struct GetFacilities {
    };
 };
 
+struct GetIcaos {
+   bool header_{true};
+
+   std::string icao_{};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__GET_ICAOS__", &GetIcaos::header_},
+     js::_{"icao", &GetIcaos::icao_},
+   };
+};
+
+struct GetLatLon {
+   bool header_{true};
+
+   std::string icao_{};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__GET_LAT_LON__", &GetLatLon::header_},
+     js::_{"icao", &GetLatLon::icao_},
+   };
+};
+
+struct LatLon {
+   bool header_{true};
+
+   std::string icao_{};
+   double      lat_{};
+   double      lon_{};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__LAT_LON__", &LatLon::header_},
+     js::_{"icao", &LatLon::icao_},
+     js::_{"lat", &LatLon::lat_},
+     js::_{"lon", &LatLon::lon_},
+   };
+};
+
 struct Frequency {
    std::string name_{};
    std::string icao_{};
@@ -113,6 +150,18 @@ struct Facilities {
      js::_{"__FACILITIES__", &Facilities::header_},
 
      js::_{"facilities", &Facilities::facilities_},
+   };
+};
+
+struct Icaos {
+   bool header_{true};
+
+   std::vector<std::string> icaos_{};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__ICAOS__", &Icaos::header_},
+
+     js::_{"icaos", &Icaos::icaos_},
    };
 };
 

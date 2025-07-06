@@ -1,5 +1,5 @@
 import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
-import { AirportFacility, FrequencyType, GetFacilities, GetMetar, Metar } from "@shared/Facilities";
+import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
 import { FileExist, GetFile, OpenFile } from "@shared/Files";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { ExportNav } from "@shared/NavData";
@@ -175,6 +175,10 @@ export class Manager {
                this.onGetPlaneRecords(messageHandlers.get(data.id) as (_: unknown) => void);
             } else if (isMessage("__GET_FACILITIES__", data.content)) {
                this.onGetFacilities(data.id, messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+            } else if (isMessage("__GET_ICAOS__", data.content)) {
+               this.onGetIcaos(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+            } else if (isMessage("__GET_LAT_LON__", data.content)) {
+               this.onGetLatLon(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
             } else if (isMessage("__GET_METAR__", data.content)) {
                this.onGetMetar(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
             } else if (isMessage("__REMOVE_RECORD__", data.content)) {
@@ -294,6 +298,17 @@ export class Manager {
       })]).catch(e => {
          console.log(e)
       }).then(() => result);
+   }
+
+   async getIcaos(name: string): Promise<string[]> {
+      const result = [...new Set((await this.facilityLoader.searchByIdent(FacilitySearchType.Airport, name.toUpperCase(), 10)).map(value => value.substring(7)))];
+      result.sort((a, b) => a.localeCompare(b));
+      return result.map(value => value.replace(' ', ''));
+   }
+
+   async getLatLon(name: string): Promise<{ lat: number, lon: number }> {
+      const result = await this.facilityLoader.getFacility(FacilityType.Airport, ('A      ' + name).padEnd(12, ' '));
+      return { lat: result.lat, lon: result.lon };
    }
 
    async getFacilitiesList(id: number, lat: number, lon: number): Promise<Map<string, AirportFacility>> {
@@ -423,6 +438,16 @@ export class Manager {
       } else {
          console.assert(false);
       }
+   }
+
+   async onGetIcaos(messageHandler: (_: MessageType) => void, message: GetICAOS) {
+      const list = await this.getIcaos(message.icao);
+      messageHandler({ __ICAOS__: true, icaos: [...list.values()] });
+   }
+
+   async onGetLatLon(messageHandler: (_: MessageType) => void, message: GetLatLon) {
+      const result = await this.getLatLon(message.icao);
+      messageHandler({ __LAT_LON__: true, icao: message.icao, ...result });
    }
 
    async onGetMetar(messageHandler: (_: Metar) => void, message: GetMetar) {
