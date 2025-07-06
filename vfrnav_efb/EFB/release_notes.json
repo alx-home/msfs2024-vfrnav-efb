@@ -183,6 +183,22 @@
             "  Improvements / améliorations:",
             "     - Add OpenAPI Layer (preview; performance is not optimized, there are some glitches) / Ajout du layer OpenAPI (aperçu; les performances ne sont pas optimisées, possède quelques glitches)."
          ]
+      },
+      {
+         "version": "1.3.0",
+         "date": "JUL 6, 2025",
+         "notes": [
+            "**EFB**",
+            "  Improvements / améliorations:",
+            "     - Move \"Record settings\" to a new bottom toolbar / Paramètres de records déplacés dans une nouvelle barre d’outils en bas de l'EFB.",
+            "     - Enable mouse wheel interaction for sliders / Interaction avec la molette de la souris ajoutée pour les curseurs.",
+            "     - Added Navlog / Ajout d'un Navlog.",
+            "     - Port now sent to EFB via SimConnect / Le port est désormais transmis à l’EFB via SimConnect.",
+            "     - Added a search bar to locate airports / Ajout d’une barre de recherche pour localiser les aéroports.",
+            "**Installer/Server (new)**",
+            "  Fixes:",
+            "     - Memory leak resolved — Segfault fix / Fuite de mémoire corrigée — Résolution d'un Segfault."
+         ]
       }
    ]
 }
