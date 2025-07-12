@@ -78,7 +78,6 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
     emptyPopup: emptyPopup
   }), [emptyPopup]);
 
-  const setServerPort = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, serverPort: value })), []);
   const setDefaultSpeed = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, defaultSpeed: value })), []);
   const setAdjustHeading = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, adjustHeading: value })), []);
   const setAdjustTime = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, adjustTime: value })), []);
@@ -175,7 +174,6 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
     getSIAPDF: getSIAPDF,
     getSIAAZBA: getSIAAZBA,
 
-    setServerPort: setServerPort,
     setDefaultSpeed: setDefaultSpeed,
     setAdjustHeading: setAdjustHeading,
     setAdjustTime: setAdjustTime,
@@ -218,7 +216,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
     getSIAAZBA, getSIAPDF,
     setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor, setAZBARange,
     setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setDefaultSpeed,
-    setServerPort, setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize, setTextMinSize,
+    setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize, setTextMinSize,
     globalSettings,
     sharedSettings
   ]);
