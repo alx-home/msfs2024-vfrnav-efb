@@ -207,6 +207,7 @@ const useMap = () => {
                   if (oldCoords.length < newCoords.length) {
                      const prevProps = properties[index - 1];
                      properties.splice(index - 1, 0, { ...prevProps, wind: { ...prevProps.wind }, vor: { ...prevProps.vor } })
+                     data.waypoints.splice(index, 0, "");
 
                      if (index + 1 === properties.length) {
                         properties[index].active = true
@@ -214,7 +215,8 @@ const useMap = () => {
                         properties[index].active = properties[index + 1].active
                      }
                   } else {
-                     properties.splice(index, 1)
+                     properties.splice(Math.min(index, properties.length - 1), 1)
+                     data.waypoints.splice(index, 1);
                   }
                }
 
