@@ -176,7 +176,20 @@ const useMap = () => {
                const oldCoords = data.coords;
                const newCoords = (feature.getGeometry() as MultiLineString).getCoordinates()[0];
 
-               const index = oldCoords.findIndex((coord, index) => (coord[0] !== newCoords[index][0]) || (coord[1] !== newCoords[index][1]))
+               const index = (() => {
+                  const index = oldCoords.slice(0, newCoords.length).findIndex((coord, index) => (coord[0] !== newCoords[index][0]) || (coord[1] !== newCoords[index][1]))
+
+                  if (index === -1) {
+                     if (oldCoords.length > newCoords.length) {
+                        // Last Coord deletion
+                        return oldCoords.length - 1;
+                     } else {
+                        return -1
+                     }
+                  }
+
+                  return index;
+               })()
 
                if (index === -1) {
                   return;
@@ -206,10 +219,11 @@ const useMap = () => {
                }
 
                if (index < properties.length) {
+                  console.assert(index < newCoords.length - 1)
                   properties[index] = updateNavProps(properties[index], newCoords[index], newCoords[index + 1])
                }
 
-               if (index > 0) {
+               if (index > 0 && (index < newCoords.length)) {
                   properties[index - 1] = updateNavProps(properties[index - 1], newCoords[index - 1], newCoords[index])
                }
 
