@@ -50,9 +50,9 @@ const Edit = ({ onClick, image, alt, background }: {
   alt: string,
   background: string
 }) => {
-  return <button className={'flex w-11 h-11 hover:brightness-125 focus:border-2 focus:border-with ' + ' ' + background}
+  return <button className={'flex w-8 h-8 hover:brightness-125 focus:border-2 focus:border-with ' + ' ' + background}
     onClick={onClick}>
-    <img className='w-8 h-8 min-h-8 max-h-8 grow mt-auto mb-auto justify-center cursor-pointer' src={image} alt={alt} />
+    <img className='w-6 h-6 min-h-6 max-h-6 grow mt-auto mb-auto justify-center cursor-pointer' src={image} alt={alt} />
   </button>;
 };
 
@@ -100,7 +100,7 @@ const Input = ({ editMode, setEditMode, name, id }: {
     }
   }, [editRecord, id, setEditMode])
 
-  return <input className={'bg-transparent h-8 pt-[2px] pointer-events-auto'} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
+  return <input className={'bg-transparent h-6 pt-[2px] pointer-events-auto'} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
     onBlur={onBlur}
     onFocus={onFocus}
     onChange={onChange}
@@ -128,7 +128,7 @@ const RecordItem = ({ name, shortName, active, id }: {
       <Label name={name} shortName={shortName} editMode={editMode} />
       <Input editMode={editMode} setEditMode={setEditMode} name={name} id={id} />
     </Button>
-    <div className={'transition duration-std flex flex-row [&>*:not(:first-child)]:ml-[5px] overflow-hidden max-w-24 h-11 mt-auto mb-auto w-0 group-hocus:w-full'}
+    <div className={'transition duration-std flex flex-row [&>*:not(:first-child)]:ml-[5px] overflow-hidden max-w-[4.5rem] h-8 mt-auto mb-auto w-0 group-hocus:w-full'}
       style={{ display: (editMode ? 'none' : ''), transitionProperty: 'width' }}
     >
       <Edit onClick={onEdit} image={editImg} alt='edit' background='bg-msfs' />
@@ -150,7 +150,7 @@ export const Records = ({ className, style }: {
   }), [records]);
 
   return <div className={'flex flex-col h-full overflow-hidden p-2 pt-8'}>
-    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
+    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl ">
       Record&apos;s
     </div>
     <div className='flex flex-col grow overflow-hidden'>
@@ -169,21 +169,21 @@ export const RecordsToolbar = () => {
 
   return <div className='flex flex-col grow'>
     <div className='flex flex-col'>
-      <div className='flex flex-row grow mt-4'>
+      <div className='flex flex-row grow mt-2'>
         <div className='flex flex-row mr-4'>
-          <CheckBox className="w-8" value={withTouchdown} onChange={enableTouchdown} />
+          <CheckBox value={withTouchdown} onChange={enableTouchdown} />
         </div>
-        <div className='text-left text-xl grow'>Touchdown</div>
+        <div className='text-left text-base grow'>Touchdown</div>
       </div>
       <div className='flex flex-row grow mt-4'>
         <div className='flex flex-row mr-4'>
-          <CheckBox className="w-8" value={withGround} onChange={enableGround} />
+          <CheckBox value={withGround} onChange={enableGround} />
         </div>
-        <div className='text-left text-xl grow'>Ground Layer</div>
+        <div className='text-left text-base grow'>Ground Layer</div>
       </div>
       <div className='flex flex-col grow mb-4 mt-2'>
         <div className='flex flex-row grow'>
-          <div className='flex flex-row text-xl ml-12 mr-4 min-w-36'>Scale 1:{profileScale.toFixed(3)}</div>
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-30'>Scale 1:{profileScale.toFixed(3)}</div>
           <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
         </div>
       </div>

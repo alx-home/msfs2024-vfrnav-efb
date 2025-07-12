@@ -45,7 +45,7 @@ export const InputItem = ({ children, name, category, placeholder, pattern, clas
       <Input reset={reset} defaultValue={defaultValue} value={value} className={"max-w-3xl peer " + (className ?? '')} validate={validate}
          onChange={onChange} inputMode={inputMode} type={type} active={true} placeholder={placeholder} pattern={pattern} />
       <div className="no-margin hidden h-0 peer-[.invalid]:flex">
-         <p className="pl-8 pt-1 text-red-500 text-base">
+         <p className="pl-8 pt-1 text-red-500 text-sm">
             {childs.filter(child => isValidElement<{ type: string }>(child) && child.props.type === 'Error')}
          </p>
       </div>

@@ -268,10 +268,10 @@ export const Settings = () => {
       <div className="flex w-full grow justify-center overflow-hidden min-h-0">
          <Line ref={chartRef} options={options} data={data} />
       </div>
-      <div className="flex flex-col shrink text-xl justify-center m-auto pt-10 mb-8">
-         <div className="flex flex-row text-xl justify-center">
-            <div className="flex mr-4 m-auto grow">Unit : </div>
-            <div className="flex flex-row w-36">
+      <div className="flex flex-col shrink text-sm justify-center m-auto pt-10 mb-8">
+         <div className="flex flex-row text-sm justify-center">
+            <div className="flex m-auto grow">Unit : </div>
+            <div className="flex flex-row">
                <Select active={true} value={fuelUnit} onChange={(value) => {
                   setFuelUnit(value)
                }}>
@@ -279,12 +279,12 @@ export const Settings = () => {
                   <SelectOption<FuelUnit> id={'liter'}>Liter</SelectOption>
                </Select>
             </div>
-            <div className="flex ml-4 m-auto w-12 shrink"></div>
+            <div className="flex ml-1 m-auto w-12 shrink"></div>
          </div>
-         <div className="flex flex-row text-xl justify-center">
-            <div className="flex mr-4 m-auto grow">Fuel Consumption : </div>
-            <div className="flex flex-row [&_.invalid]:text-red-500 w-36">
-               <Input active={true} className="my-1 w-full" value={fuelConsumptionStr} reload={reload} inputMode="decimal"
+         <div className="flex flex-row text-sm justify-center">
+            <div className="flex mr-3 m-auto grow">Fuel Consumption : </div>
+            <div className="flex flex-row [&_.invalid]:text-red-500 w-[6.35rem]">
+               <Input active={true} className="my-1" value={fuelConsumptionStr} reload={reload} inputMode="decimal"
                   onChange={(value) => {
                      setFuelConsumption(fromUnit(+value));
                   }} validate={async (value) => {
@@ -292,7 +292,7 @@ export const Settings = () => {
                   }} >
                </Input>
             </div>
-            <div className="flex ml-4 m-auto w-12 shrink">{fuelUnitStr}/h</div>
+            <div className="flex ml-1 m-auto w-12 shrink">{fuelUnitStr}/h</div>
          </div>
       </div>
    </div>

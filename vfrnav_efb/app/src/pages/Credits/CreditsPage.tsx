@@ -21,8 +21,11 @@ import { PropsWithChildren, useEffect, useState } from "react";
 const Section = ({ children, title }: PropsWithChildren<{
   title: string
 }>) => {
-  return <ul className="group [&>*:not(:first-child)]:inter-light transition transition-std flex flex-col [&>*:not(:first-child)]:mt-[6px] [&>*]:text-center hover:bg-item-hocus hover:text-slate-700 p-8 px-20 first:pt-20 last:pb-20 [&>*:not(:first-child)]:flex [&>*:not(:first-child)]:flex-row [&>*:not(:first-child)]:justify-center">
-    <h1 className="mb-4 text-3xl">{title}</h1>
+  return <ul className={"group [&>*:not(:first-child)]:inter-light transition transition-std"
+    + ' flex flex-col p-5 px-20 first:pt-16 last:pb-16 text-sm hover:bg-item-hocus hover:text-slate-700'
+    + ' [&>*:not(:first-child)]:mt-[0.5rem] [&>*]:text-center [&>*:not(:first-child)]:flex [&>*:not(:first-child)]:flex-row [&>*:not(:first-child)]:justify-center'
+  }>
+    <h1 className="mb-4 text-xl">{title}</h1>
     {children}
   </ul>;
 };

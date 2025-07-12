@@ -55,8 +55,10 @@ const GridElem = ({ children, className, index, active, edit, mode, currentMode 
             return 3
          } else if ((col === 6) || edit) {
             return 4
-         } else {
+         } else if (col === 13) {
             return 5
+         } else {
+            return 6
          }
       } else if (currentMode === "Enroute") {
          if (edit) {
@@ -86,8 +88,10 @@ const GridElem = ({ children, className, index, active, edit, mode, currentMode 
                return 5
             } else if (col === 12) {
                return 6
-            } else {
+            } else if (col === 13) {
                return 7
+            } else {
+               return 8
             }
          }
       } else if (currentMode === "Weather") {
@@ -99,8 +103,10 @@ const GridElem = ({ children, className, index, active, edit, mode, currentMode 
             return 3
          } else if (col == 6) {
             return 4
-         } else {
+         } else if (col === 10) {
             return 5
+         } else {
+            return 6
          }
       }
 
@@ -137,11 +143,11 @@ const GridElem = ({ children, className, index, active, edit, mode, currentMode 
 
 
    if (!mode || currentMode === mode || currentMode === 'Full') {
-      return <div className={"flex border-slate-700 p-2 grow h-16"
+      return <div className={"flex border-slate-700 p-2 grow h-14"
          + (col < gridSize2 - 1 ? ' border-r-2 border-b-2 [--tw-shadow-opacity:0.2] shadow-xl' : '')
          + ((col > 1) ? ((row > 1) ? ' -translate-y-1/2' : ' translate-y-1/2') : '')
          + ((col === 1) ? ' border-l-2' : '')
-         + (sep.find(index => index === col) ? " ml-2 border-l-2" : "")
+         + (sep.find(index => index === col) ? " ml-1 border-l-2" : "")
          + ((index < gridSize2) ? ' border-t-2' : '')
          + (className ?? "")}
          style={{ gridColumn: column, gridRow: row }}>
@@ -230,7 +236,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
          if (index > 0) {
             const active = actives[index - 1];
             const navProps = properties[index - 1];
-            const { altitude, dist, vor, wind, remark, CH, MH, GS, tas, ias, magVar, oat, conso, curFuel, ata } = navProps;
+            const { altitude, dist, vor, wind, remark, CH, MH, GS, ias, magVar, oat, conso, curFuel, ata } = navProps;
             const { ident: vorIndent, freq: vorFreq, obs: vorObs } = vor;
             const { direction: windDir, speed: windVel } = wind;
 
@@ -291,33 +297,33 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
             result.push(<GridElem key={"Altitude"} index={index_} active={active} edit={edit} mode="Enroute" currentMode={mode}>
                <div className="flex flex-row grow h-full">
-                  {(mode === 'Full' || mode === 'Enroute') ? <Arrow className="rotate-180 h-full -ml-8" height={30} width={20} /> : <></>}
+                  {(mode === 'Full' || mode === 'Enroute') ? <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} /> : <></>}
                   <div className="flex grow [&_.invalid]:text-red-500">
                      {
                         edit ?
-                           <Input active={true} className="w-24" value={altitude.toFixed(0)} validate={async (value) => {
+                           <Input active={true} className="w-16" value={altitude.toFixed(0)} validate={async (value) => {
                               return /^\d+$/.test(value);
                            }} onChange={(value) => {
                               navProps.altitude = +value;
                               editNavProperties(id, properties);
                            }} inputMode="decimal" />
-                           : <div className="w-24 m-auto text-center">{altitude}</div>
+                           : <div className="w-16 m-auto text-center">{altitude}</div>
                      }
                   </div>
                </div>
             </GridElem>)
             ++index_;
             result.push(<GridElem key={"VOR"} index={index_} active={active} edit={edit} mode="Vor" currentMode={mode}>
-               <div className="flex flex-row grow h-full">
-                  {mode === 'Vor' ? <Arrow className="rotate-180 h-full -ml-8" height={30} width={20} /> : <></>}
+               <div className="flex flex-row grow">
+                  {mode === 'Vor' ? <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} /> : <></>}
                   {
                      edit ?
                         <div className="flex flex-row [&_.invalid]:text-red-500">
-                           <Input active={true} className="w-16" value={vorIndent} onChange={(value) => {
+                           <Input active={true} className="w-14" value={vorIndent} onChange={(value) => {
                               navProps.vor.ident = value;
                               editNavProperties(id, properties);
                            }} />
-                           <Input active={true} className="w-16" value={vorFreq.toString()} onChange={(value) => {
+                           <Input active={true} className="w-14" value={vorFreq.toString()} onChange={(value) => {
                               navProps.vor.freq = +value;
                               editNavProperties(id, properties);
                            }} validate={async (value) => {
@@ -325,9 +331,9 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                            }} inputMode='decimal' />
                         </div>
                         :
-                        <div className="flex flex-col">
-                           <div className="w-32 m-auto text-center">{vorIndent}</div>
-                           <div className="w-32 m-auto text-center">{vorFreq}</div>
+                        <div className="flex flex-col w-full">
+                           <div className="w-full m-auto text-center">{vorIndent}</div>
+                           <div className="w-full m-auto text-center">{vorFreq}</div>
                         </div>
                   }
                </div>
@@ -338,13 +344,13 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                <div className="[&_.invalid]:text-red-500">
                   {
                      edit ?
-                        <Input active={true} className="w-16" value={vorObs.toFixed(0)} onChange={(value) => {
+                        <Input active={true} className="w-11" value={vorObs.toFixed(0)} onChange={(value) => {
                            navProps.vor.obs = +value;
                            editNavProperties(id, properties);
                         }} validate={async (value) => {
                            return /^[-+]?\d*$/.test(value);
                         }} inputMode='decimal' />
-                        : <div className="w-16 m-auto text-center">{vorObs}</div>
+                        : <div className="w-11 m-auto text-center">{vorObs}</div>
                   }
                </div>
             </GridElem>)
@@ -352,15 +358,15 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
             if (edit) {
                result.push(<GridElem key={"Wind"} index={index_} active={active} edit={edit} mode="Weather" currentMode={mode}>
-                  {mode === 'Weather' ? <Arrow className="rotate-180 h-full -ml-8" height={30} width={20} /> : <></>}
+                  {mode === 'Weather' ? <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} /> : <></>}
                   <div className="flex flex-row [&_.invalid]:text-red-500">
-                     <Input active={true} className="w-16" value={windDir.toString()} onChange={(value) => {
+                     <Input active={true} className="w-12" value={windDir.toString()} onChange={(value) => {
                         navProps.wind.direction = +value;
                         editNavProperties(id, properties);
                      }} validate={async (value) => {
                         return /^[-+]?\d*$/.test(value);
                      }} inputMode='decimal' />
-                     <Input active={true} className="w-16" value={windVel.toString()} onChange={(value) => {
+                     <Input active={true} className="w-12" value={windVel.toString()} onChange={(value) => {
                         navProps.wind.speed = +value;
                         editNavProperties(id, properties);
                      }} validate={async (value) => {
@@ -371,7 +377,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                ++index_;
                result.push(<GridElem key={"VAR"} index={index_} active={active} edit={edit} mode="Weather" currentMode={mode}>
                   <div className="flex flex-row [&_.invalid]:text-red-500">
-                     <Input active={true} className="w-16" value={magVar.toString()} onChange={(value) => {
+                     <Input active={true} className="w-12" value={magVar.toString()} onChange={(value) => {
                         navProps.magVar = +value;
                         editNavProperties(id, properties);
                      }} validate={async (value) => {
@@ -382,7 +388,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                ++index_;
                result.push(<GridElem key={"IAS"} index={index_} active={active} edit={edit} mode="Enroute" currentMode={mode}>
                   <div className="[&_.invalid]:text-red-500">
-                     <Input active={true} className="w-16" onChange={(value) => {
+                     <Input active={true} className="w-12" onChange={(value) => {
                         navProps.ias = +value;
                         editNavProperties(id, properties);
                      }} value={ias.toString()} validate={async (value) => {
@@ -393,7 +399,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                ++index_;
                result.push(<GridElem key={"OAT"} index={index_} active={active} edit={edit} mode="Weather" currentMode={mode}>
                   <div className="[&_.invalid]:text-red-500">
-                     <Input active={true} className="w-16" onChange={(value) => {
+                     <Input active={true} className="w-10" onChange={(value) => {
                         navProps.oat = +value;
                         editNavProperties(id, properties);
                      }} value={oat.toString()} validate={async (value) => {
@@ -404,7 +410,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                ++index_;
                result.push(<GridElem key={"ATA"} index={index_} active={active} edit={edit} mode="Enroute" currentMode={mode}>
                   <div className="[&_.invalid]:text-red-500">
-                     <Input active={true} className="w-24" onChange={(value) => {
+                     <Input active={true} className="w-16" onChange={(value) => {
                         if (value.length) {
                            const data = value.split('h');
                            navProps.ata = +data[0] * 60 + +data[1]
@@ -432,7 +438,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             } else if (mode === 'Weather') {
                result.push(<GridElem key={"Wind"} index={index_} active={active} edit={edit} mode="Weather" currentMode={mode}>
                   <div className="flex flex-row grow h-full">
-                     <Arrow className="rotate-180 h-full -ml-8" height={30} width={20} />
+                     <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} />
                      <div className="flex flex-row grow justify-center m-auto">{windDir} / {windVel}</div>
                   </div>
                </GridElem>)
@@ -448,23 +454,23 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                ++index_;
             } else {
                result.push(<GridElem key={"CH"} index={index_} active={active} edit={edit} mode="Full" currentMode={mode}>
-                  <div className="w-16 m-auto text-center">{Math.round(CH).toString() + "\u00b0 "}</div>
+                  <div className="w-10 m-auto text-center">{Math.round(CH).toString() + "\u00b0 "}</div>
                </GridElem>)
                ++index_;
                result.push(<GridElem key={"MH"} index={index_} active={active} edit={edit} mode="Vor" currentMode={mode}>
-                  <div className="w-16 m-auto text-center">{Math.round(MH).toString() + "\u00b0 "}</div>
+                  <div className="w-10 m-auto text-center">{Math.round(MH).toString() + "\u00b0 "}</div>
                </GridElem>)
                ++index_;
                result.push(<GridElem key={"Dist"} index={index_} active={active} edit={edit} mode="Full" currentMode={mode}>
-                  <div className="w-16 m-auto text-center">{Math.round(dist).toString()}</div>
+                  <div className="w-10 m-auto text-center">{Math.round(dist).toString()}</div>
                </GridElem>)
                ++index_;
-               result.push(<GridElem key={"TAS"} index={index_} active={active} edit={edit} mode="Enroute" currentMode={mode}>
-                  <div className="w-16 m-auto text-center">{Math.round(tas)}</div>
+               result.push(<GridElem key={"IAS"} index={index_} active={active} edit={edit} mode="Full" currentMode={mode}>
+                  <div className="w-10 m-auto text-center">{Math.round(ias)}</div>
                </GridElem>)
                ++index_;
                result.push(<GridElem key={"GS"} index={index_} active={active} edit={edit} mode="Full" currentMode={mode}>
-                  <div className="w-16 m-auto text-center">{Math.round(GS).toString()}</div>
+                  <div className="w-10 m-auto text-center">{Math.round(GS).toString()}</div>
                </GridElem>)
                ++index_;
                result.push(<GridElem key={"ETE"} index={index_} active={active} edit={edit} mode="Full" currentMode={mode}>
@@ -492,7 +498,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                {
                   edit ?
                      <div className="[&_.invalid]:text-red-500">
-                        <Input active={true} className="w-20" onChange={(value) => {
+                        <Input active={true} className="w-12" onChange={(value) => {
                            navProps.curFuel = fromUnit(+value);
                            editNavProperties(id, properties);
                         }} value={toUnit(curFuel).toString()} validate={async (value) => {
@@ -503,7 +509,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                         {
                            deltaFuel === 0 ? <></>
                               : <>
-                                 <div className={"ml-2 w-8 justify-end flex shrink" + (deltaFuel > 0 ? ' text-green-600' : ' text-red-600')}>
+                                 <div className={"ml-2 w-3 justify-end flex shrink" + (deltaFuel > 0 ? ' text-green-600' : ' text-red-600')}>
                                     {Math.round(toUnit(estFuel + deltaFuel))}
                                  </div>
                                  <div className="flex flex-shrink mx-1">/</div>
@@ -516,21 +522,20 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             ++index_;
             result.push(<GridElem key={"Remarks"} index={index_} active={active} edit={edit} currentMode={mode}>
                <div className="flex flex-row grow h-full">
-                  {(mode === 'Remarks') ? <Arrow className="rotate-180 h-full -ml-8" height={30} width={20} /> : <></>}
+                  {(mode === 'Remarks') ? <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} /> : <></>}
                   {
                      edit ?
-                        <Input active={true} className="w-52" value={remark} onChange={(value) => {
+                        <Input active={true} className="w-32" value={remark} onChange={(value) => {
                            navProps.remark = value;
                            editNavProperties(id, properties);
                         }} />
-                        : <div className="min-w-52 m-auto text-center">{remark}</div>
+                        : <div className="min-w-32 m-auto text-center">{remark}</div>
                   }
                </div>
             </GridElem>)
 
             if (!edit) {
-               ++index_;
-               result.push(<GridElem key={"checkbox"} index={index_} active={active} edit={edit} mode="Remarks" currentMode={mode}>
+               result.push(<GridElem key={"checkbox"} index={(index + 2) * gridSize - 1} active={active} edit={edit} currentMode={mode}>
                   <CheckBox value={!active} onChange={() => setActive(index - 1)} />
                </GridElem>)
             }
@@ -540,7 +545,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       })
    }, [actives, coords, departureTime, edit, editNavProperties, fromUnit, id, loadedFuel, mode, properties, setActive, toUnit, updateWaypoints, waypoints])
 
-   return <div className={'flex flex-col text-xl [grid-row:1] [grid-column:1] overflow-hidden'
+   return <div className={'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden'
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
       <div className="flex flex-row pl-4 pt-2">
@@ -574,7 +579,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                            <GridElem index={4} active={true} edit={edit} mode="Full" currentMode={mode}>CH</GridElem>
                            <GridElem index={5} active={true} edit={edit} mode="Vor" currentMode={mode}>MH</GridElem>
                            <GridElem index={6} active={true} edit={edit} mode="Full" currentMode={mode}>Dist</GridElem>
-                           <GridElem index={7} active={true} edit={edit} mode="Enroute" currentMode={mode}>TAS</GridElem>
+                           <GridElem index={7} active={true} edit={edit} mode="Full" currentMode={mode}>IAS</GridElem>
                            <GridElem index={8} active={true} edit={edit} mode="Full" currentMode={mode}>GS</GridElem>
                            <GridElem index={9} active={true} edit={edit} mode="Full" currentMode={mode}>ETE</GridElem>
                            <GridElem index={10} active={true} edit={edit} mode="Enroute" currentMode={mode}>ETA</GridElem>
@@ -589,9 +594,9 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             {
                edit ?
                   <div className="flex flex-col m-auto shrink">
-                     <div className="flex flex-row text-xl justify-center">
-                        <div className="flex mr-4 m-auto grow">Loaded Fuel : </div>
-                        <div className="flex flex-row [&_.invalid]:text-red-500 w-24">
+                     <div className="flex flex-row text-sm justify-center">
+                        <div className="flex m-auto grow">Loaded Fuel : </div>
+                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
                            <Input active={true} className="my-1 w-full" value={loadedFuelStr} inputMode="decimal"
                               onChange={(value) => {
                                  setLoadedFuel(id, fromUnit(+value));
@@ -600,11 +605,11 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                               }} >
                            </Input>
                         </div>
-                        <div className="flex ml-4 m-auto w-8 shrink">{fuelUnitStr}</div>
+                        <div className="flex ml-1 m-auto w-8 shrink">{fuelUnitStr}</div>
                      </div>
-                     <div className="flex flex-row text-xl justify-center">
-                        <div className="flex mr-4 m-auto grow">Departure Time : </div>
-                        <div className="flex flex-row [&_.invalid]:text-red-500 w-24">
+                     <div className="flex flex-row text-sm justify-center">
+                        <div className="flex mr-2 m-auto grow">Departure Time : </div>
+                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
                            <Input active={true} className="my-1 w-full" value={departureTimeStr}
                               onChange={(value) => {
                                  const data = value.split('h');
@@ -619,14 +624,14 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                               }} >
                            </Input>
                         </div>
-                        <div className="flex flex-col ml-4 m-auto w-8 shrink">
+                        <div className="flex flex-col ml-1 m-auto w-8 shrink">
                         </div>
                      </div>
                   </div>
                   : <></>
             }
-            <div className="flex flex-row p-4 pt-12">
-               <div className="flex flex-col mx-auto text-lg border-2 border-slate-700 shadow-lg py-4 px-14 whitespace-nowrap">
+            <div className="flex flex-row p-4 pt-4">
+               <div className="flex flex-col mx-auto text-sm border-2 border-slate-700 shadow-lg py-4 px-14 whitespace-nowrap">
                   {edit ? <>
                      <div className="flex flex-row"><div className="w-32">OBS: </div>Omni Beer Selector</div>
                      <div className="flex flex-row"><div className="w-32">VAR: </div>Variation</div>
@@ -638,7 +643,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                      <div className="flex flex-row"><div className="w-32">OBS: </div>Omni Beer Selector</div>
                      <div className="flex flex-row"><div className="w-32">CH: </div>Compass Heading</div>
                      <div className="flex flex-row"><div className="w-32">MH: </div>Magnetic Heading</div>
-                     <div className="flex flex-row mt-2"><div className="w-32">TAS: </div>True Air Speed</div>
+                     <div className="flex flex-row mt-2"><div className="w-32">IAS: </div>Indicated Air Speed</div>
                      <div className="flex flex-row"><div className="w-32">GS: </div>Ground Speed</div>
                      <div className="flex flex-row mt-2"><div className="w-32">ETE: </div>Estimated Time Enroute</div>
                      <div className="flex flex-row"><div className="w-32">ETA: </div>Estimated Time of Arrival</div>

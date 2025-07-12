@@ -80,9 +80,9 @@ const Edit = ({ onClick, image, alt, background }: {
   alt: string,
   background: string
 }) => {
-  return <button className={'flex w-11 h-11 hover:brightness-125 focus:border-2 focus:border-with ' + ' ' + background}
+  return <button className={'flex w-8 h-8 hover:brightness-125 focus:border-2 focus:border-with ' + ' ' + background}
     onClick={onClick}>
-    <img className='w-8 h-8 min-w-8 min-h-8 grow mt-auto mb-auto justify-center cursor-pointer' src={image} alt={alt} />
+    <img className='w-6 h-6 min-w-6 min-h-6 grow mt-auto mb-auto justify-center cursor-pointer' src={image} alt={alt} />
   </button>;
 };
 
@@ -130,7 +130,7 @@ const Input = ({ editMode, setEditMode, name, id }: {
     }
   }, [editNav, id, setEditMode])
 
-  return <input className={'bg-transparent h-8 pt-[2px] pointer-events-auto'} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
+  return <input className={'bg-transparent h-6 pt-[2px] pointer-events-auto'} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
     onBlur={onBlur}
     onFocus={onFocus}
     onChange={onChange}
@@ -178,7 +178,7 @@ const NavItem = ({ name, shortName, active, id, setDraggable }: {
       <Label name={name} shortName={shortName} editMode={editMode} />
       <Input editMode={editMode} setEditMode={setEditMode} id={id} name={name} />
     </Button>
-    <div className={'transition duration-std flex flex-row [&>*:not(:first-child)]:ml-[5px] overflow-hidden max-w-24 h-11 mt-auto mb-auto w-0 group-hocus:w-full'}
+    <div className={'transition duration-std flex flex-row [&>*:not(:first-child)]:ml-[5px] overflow-hidden max-w-[4.4rem] h-8 mt-auto mb-auto w-0 group-hocus:w-full'}
       style={{ display: (editMode ? 'none' : ''), transitionProperty: 'width' }}
     >
       <Edit onClick={onEdit} image={editImg} alt='edit' background='bg-msfs' />
@@ -196,7 +196,7 @@ const Add = ({ name, image, onClick, disabled, active }: PropsWithChildren<{
 }>) => {
   const isActive = useMemo(() => active ?? true, [active]);
   const isDisabled = useMemo(() => disabled ?? false, [disabled]);
-  return <Button onClick={onClick} active={isActive} disabled={isDisabled} className='px-2 min-h-8 pt-[2px] flex flex-row grow @container'>
+  return <Button onClick={onClick} active={isActive} disabled={isDisabled} className='px-2 min-h-6 pt-[2px] flex flex-row grow @container'>
     <div className='hidden @[47px]:flex justify-center w-full'>{name}</div>
     <div className='flex grow justify-center @[47px]:hidden'>
       <img src={image} alt={name} className='invert' />
@@ -273,7 +273,7 @@ export const Nav = ({ closeMenu, className, style }: {
   }, [reorderNav]);
 
   return <div className={'flex flex-col h-full overflow-hidden p-2 pt-8'}>
-    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
+    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl ">
       Nav&apos;s
     </div>
     <Scroll style={style} className={className}>

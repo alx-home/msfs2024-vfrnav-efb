@@ -34,11 +34,11 @@ export const Item = ({ children, name, category, className, onReset }: PropsWith
 
    return <div className="group flex flex-row py-4 pl-6 hover:bg-menu [&>*:not(:first-child)]:ml-[22px] pr-4">
       <div className="flex flex-col grow basis-0">
-         <div className="flex text-2xl font-semibold">
+         <div className="flex text-base ">
             {(category ? <div className="flex text-slate-500">{category}:&nbsp;</div> : <></>)}
             {name}
          </div>
-         <div className={"flex flex-col my-auto [&>*:not(:first-child,.no-margin)]:mt-[11px] p-2 pl-0 text-xl text-slate-500 font-semibold pb-5 "
+         <div className={"flex flex-col my-auto [&>*:not(:first-child,.no-margin)]:mt-[11px] p-2 pl-0 text-sm text-slate-500 pb-5 "
             + (className ?? '')
          }>
             {children}

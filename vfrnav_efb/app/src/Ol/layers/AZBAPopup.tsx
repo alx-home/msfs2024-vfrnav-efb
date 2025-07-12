@@ -27,7 +27,7 @@ const Category = ({ title, children }: PropsWithChildren<{
   title: string
 }>) => {
   return <div className='[&>:not(:first-child)]:ml-5 shadow-xl border-slate-700 border-1 p-6 grow'>
-    <div className='text-3xl font-semibold mb-3'>{title}</div>
+    <div className='text-lg mb-3'>{title}</div>
     {children}
   </div>
 };
@@ -36,7 +36,7 @@ const SubCategory = ({ children, title }: PropsWithChildren<{
   title: string
 }>) => {
   return <div className='mb-3 [&>:not(:first-child)]:ml-8'>
-    <div className='text-2xl font-semibold mb-3 capitalize'>{title}</div>
+    <div className='text-base mb-3 capitalize'>{title}</div>
     <div>
       {children}
     </div>
@@ -112,7 +112,7 @@ export const AZBAPopup = ({ data }: {
   const parseAlt = useCallback((value: number) => Math.floor(value / 100) * 100 === value ? (value >= 10000 ? 'FL' + value / 1000 : value) : 'FL' + value, []);
 
   return <div className='relative flex flex-col p-2 w-full max-h-full overflow-hidden'>
-    <div className='text-4xl font-semibold mt-4 mb-10'>
+    <div className='text-2xl mt-4 mb-10'>
       {data.name}
     </div>
     <div className='flex flex-col grow overflow-hidden'>

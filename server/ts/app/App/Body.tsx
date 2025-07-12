@@ -18,7 +18,7 @@ import { StartupOption } from "@server-common/env";
 import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 
 const Elem = ({ children }: PropsWithChildren) => {
-   return <div className='flex flex-row bg-slate-800 p-5 text-left h-20'>
+   return <div className='flex flex-row bg-slate-800 p-3 text-left h-14'>
       {children}
    </div>
 }
@@ -95,8 +95,8 @@ export const Body = () => {
 
    return <div className='flex flex-row grow min-h-0 overflow-hidden'>
       <Scroll className='flex-col grow'>
-         <div className='flex flex-col grow mx-auto min-w-[80%] justify-center p-5 gap-3 py-10'>
-            <h2 className='mt-6 text-3xl'>Startup</h2>
+         <div className='flex flex-col grow mx-auto min-w-[80%] justify-center p-5 gap-3 py-6'>
+            <h2 className='mt-1 text-lg'>Startup</h2>
             <Elem>
                <div className='m-auto mr-5 grow min-w-0'>Auto start MSFS2024 VFRNav&apos; Server :</div>
                <div className='shrink'>
@@ -107,7 +107,7 @@ export const Body = () => {
                   </Select>
                </div>
             </Elem>
-            <h2 className='mt-6 text-3xl'>Settings</h2>
+            <h2 className='mt-2 text-lg'>Settings</h2>
             <Elem>
                <div className='m-auto mr-5 grow min-w-0'>Language :</div>
                <div className='shrink'>
@@ -116,9 +116,9 @@ export const Body = () => {
                   </Select>
                </div>
             </Elem>
-            <h2 className='mt-6 text-3xl'>Embed server</h2>
+            <h2 className='mt-2 text-lg'>Embed server</h2>
             <blockquote className="p-4  border-s-4 border-gray-500 bg-gray-800">
-               <p className="text-xl italic font-medium leading-relaxed text-white">
+               <p className="text-sm italic font-medium leading-relaxed text-white">
                   The embed server is required when opening the EFB via an external device or web browser.<br />
                   Additionally, even when accessing the EFB directly within the app, it must be launched to ensure synchronization with the simulator.
                </p>
@@ -140,7 +140,7 @@ export const Body = () => {
                            validate={validatePort} onChange={_setPort} />
                      </div>
                      <div className="flex flex-row grow opacity-0 transition-all justify-end">
-                        <p className="pt-1 text-red-500 text-base h-0">
+                        <p className="pt-1 text-red-500 text-xs h-0">
                            Invalid port (999 {'<'} value {'<'} 65&apos;536) !
                         </p>
                      </div>

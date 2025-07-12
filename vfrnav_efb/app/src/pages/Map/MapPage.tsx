@@ -348,8 +348,8 @@ export const MapPage = ({ active }: {
         <div className="relative flex flex-row h-full grow transition-all overflow-hidden">
           <div className={"relative flex grow justify-end h-full overflow-hidden"} >
             <SpinAnimation />
-            <div className={"absolute transition-all right-0 top-0 m-5 max-w-20 text-2xl pointer-events-auto"
-              + " [&_*]:uppercase p-2 rounded-md opacity-40 bg-slate-800 "
+            <div className={"absolute transition-all right-0 top-0 m-5 max-w-20 text-base pointer-events-auto"
+              + " [&_*]:uppercase p-2 rounded-md opacity-40 bg-slate-800 overflow-hidden "
               + " hocus-within:max-w-80 hocus-within:opacity-100 [&:focus-within_.suggests]:max-h-[8000px] [&:focus-within_.suggests]:opacity-100 [&:hover_.hide]:opacity-100 [&:focus-within_.hide]:opacity-100"
             }>
               <div className="relative flex flex-row grow">

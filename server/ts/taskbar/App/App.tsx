@@ -22,7 +22,7 @@ export const Element = ({ label, onClick, disabled, hideTaskbar }: {
   hideTaskbar?: boolean,
   onClick?: () => void
 }) => {
-  return <button className="flex flex-row p-2 transition-all hocus:bg-gray-800 hocus:shadow-xl rounded-sm  hocus:pl-6 disabled:opacity-20"
+  return <button className="flex flex-row p-1 transition-all hocus:bg-gray-800 hocus:shadow-xl rounded-sm  hocus:pl-6 disabled:opacity-20"
     disabled={disabled}
     onClick={e => {
       e.currentTarget.blur()
@@ -39,7 +39,7 @@ export const Element = ({ label, onClick, disabled, hideTaskbar }: {
 };
 
 export const Separator = () => {
-  return <div className="flex flex-row w-full h-[2px] bg-slate-500 bg-opacity-30 shadow-black shadow-opacity-1/4 shadow-sm my-2"></div>
+  return <div className="flex flex-row w-full h-[2px] bg-slate-200 bg-opacity-30 shadow-black shadow-opacity-1/4 shadow-sm my-2"></div>
 }
 
 export const App = () => {
@@ -47,8 +47,8 @@ export const App = () => {
   const showSettings = useCallback(() => { window.showSettings() }, []);
   const { serverState, serverStateStr, switchServer, serverLock } = useServer();
 
-  return <div className='flex flex-col h-full text-xl '>
-    <div className='relative flex flex-col h-full w-full border-2 overflow-hidden p-4'>
+  return <div className='flex flex-col h-full text-sm '>
+    <div className='relative flex flex-col h-full w-full border-2 overflow-hidden px-4 pt-2'>
       <Element onClick={window.openEFB} label="Open In App" />
       <Element disabled={serverState != 'running'} label="Open In Browser" onClick={window.openWebEFB} />
       {/* todo */}

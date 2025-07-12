@@ -25,18 +25,18 @@ export const App = () => {
     window.hideTaskbarToolTip();
   }, []);
 
-  return <div className='flex flex-col h-full text-xl'>
-    <div className="relative flex flex-col grow min-h-0 border-x-2 rounded-t-xl bg-[var(--background)] [&>:not(:last-child)]:p-4 z-50 overflow-hidden">
+  return <div className='flex flex-col h-full text-sm'>
+    <div className="relative flex flex-col grow min-h-0 border-x-2 rounded-t-xl bg-[var(--background)] [&>:not(:last-child)]:p-4 [&>:last-child)]:pt-2 z-50 overflow-hidden">
       <div className="flex flex-row bg-msfs shadow-color-default/80 shadow-md [&>*]:drop-shadow-xl rounded-t-xl border-t-2 overflow-hidden">
-        <Logo height={"2.5rem"} width={"2.5rem"} />
-        <h1 className="text-3xl ml-2">VFR Nav&apos; server</h1>
+        <Logo height={"2rem"} width={"2rem"} />
+        <h1 className="text-xl ml-2">VFR Nav&apos; server</h1>
       </div>
       <blockquote className="flex flex-col p-2 grow text-center justify-center">
-        <p className="text-xl italic font-medium leading-relaxed text-white">
+        <p className="text-sm italic font-medium leading-relaxed text-white">
           App will stays minimized
         </p>
       </blockquote>
-      <div className="flex flex-row grow bg-slate-800 p-3 px-5 pb-0 h-14 max-h-14">
+      <div className="flex flex-row grow bg-slate-800 p-3 px-5 pb-0 h-12 max-h-12">
         <Button active={true} onClick={close}>Got it</Button>
       </div>
     </div>
@@ -47,7 +47,7 @@ export const App = () => {
       <div className="flex grow border-b-2 border-r-2 rounded-br-md"></div>
     </div>
     <div className="m-auto [&_#inner-arrow]:!fill-slate-800 [&_#inner-arrow]:[fill-opacity:1!important] drop-shadow-md h-4">
-      <Arrow className="-rotate-90 -my-5 overflow-hidden" width={30} height={30} title="arrow" />
+      <Arrow className="-rotate-90 -my-3 overflow-hidden" width={30} height={30} title="arrow" />
     </div>
   </div>
 }

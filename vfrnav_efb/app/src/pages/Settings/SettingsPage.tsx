@@ -147,7 +147,7 @@ export const SettingsPage = ({ active }: {
          + opacity
       }>
          <div className="flex flex-row pl-4 pb-[32px]">
-            <div className="flex flex-row grow min-h-12 items-center justify-between p-4 text-4xl font-semibold border-b-2 border-gray-700 mb-4">
+            <div className="flex flex-row grow min-h-12 items-center justify-between p-4 text-2xl border-b-2 border-gray-700 mb-4">
                Settings
             </div>
          </div>

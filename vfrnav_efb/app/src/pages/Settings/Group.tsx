@@ -20,7 +20,7 @@ export const Group = ({ children, name, className }: PropsWithChildren<{
    className?: string
 }>) => {
    return <div className={"flex-col pl-0 " + className}>
-      <div className="flex text-4xl font-semibold p-2 pl-6 hover:bg-white hover:text-slate-700">{name}</div>
+      <div className="flex text-2xl p-2 pl-6 hover:bg-white hover:text-slate-700">{name}</div>
       <div className="content flex-col">
          {children}
       </div>

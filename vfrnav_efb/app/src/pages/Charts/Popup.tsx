@@ -182,7 +182,7 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
       </Input>
     </div>
     <div className={"flex flex-row grow transition-all pl-4" + (partialValid ? " opacity-0" : " opacity-100")}>
-      <p className="pt-1 text-red-500 text-base h-0 [text-shadow:1px_2px_8px_rgba(0_0_0_0.2)]">
+      <p className="pt-1 text-red-500 text-sm h-0 [text-shadow:1px_2px_8px_rgba(0_0_0_0.2)]">
         {errorMessage}
       </p>
     </div>
@@ -325,7 +325,7 @@ export const ChartsPopup = ({ setSrcs }: {
   return <div className='relative flex flex-col p-2 [&>:not(:first-child_.no-margin)]:mt-8 w-full'>
     <img src={loadingImg} alt='loading' className={"absolute w-72 right-[-5rem] top-[-4rem] z-50" + (loading ? '' : ' hidden')} />
     <div className="flex flex-col [&>:not(:first-child)]:mt-3">
-      <div className='text-2xl font-semibold'>
+      <div className='text-base '>
         Source
       </div>
       <div className='flex flex-col [&>:not(:first-child)]:ml-2 shadow-xl border-slate-700 border-1 pb-4'>
@@ -338,7 +338,7 @@ export const ChartsPopup = ({ setSrcs }: {
       </div>
     </div>
     <div className="flex flex-col [&>:not(:first-child)]:mt-3">
-      <div className='text-2xl font-semibold'>
+      <div className='text-base '>
         Name
       </div>
       <div className='flex'>
@@ -356,7 +356,7 @@ export const ChartsPopup = ({ setSrcs }: {
     </div>
     <div className={"px-8 absolute -top-4 flex h-full w-full pointer-events-none" + ((error || (sourceType !== 'SIA' && sourceType != 'Local')) ? '' : ' hidden')}>
       <div className="w-full flex flex-row m-auto justify-center">
-        <div className={"flex flex-row grow text-xl font-bold justify-center shrink p-2"
+        <div className={"flex flex-row grow text-sm justify-center shrink p-2"
           + " text-rose-600 border-slate-900 border-1 shadow-smd bg-slate-800"
           + (error ? '' : ' hidden')}>
           {error}

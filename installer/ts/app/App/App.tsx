@@ -24,7 +24,7 @@ import { Body } from './Body';
 const Header = () => {
   return <div className='flex flex-row shrink bg-msfs px-5 pb-5 shadow-color-default/80 shadow-md [&>*]:drop-shadow-xl'>
     <Logo height={"2.5rem"} width={"2.5rem"} />
-    <h1 className='text-3xl ml-2'>MSFS2024 VFRNav&apos; Server</h1>
+    <h1 className='text-2xl ml-2'>MSFS2024 VFRNav&apos; Server</h1>
   </div>
 }
 
@@ -50,7 +50,7 @@ export const App = () => {
   }, []);
 
   return <PopupContextProvider>
-    <div className='flex flex-col h-full text-xl '>
+    <div className='flex flex-col h-full text-sm '>
       <Header />
       <div className='relative flex flex-col h-full w-full overflow-hidden'>
         <Popup />

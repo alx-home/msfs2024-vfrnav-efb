@@ -86,7 +86,7 @@ export const Layers = ({ layers, onLayerChange, className, style }: {
   }, [onLayerChange]);
 
   return <div className={'flex flex-col h-full overflow-hidden p-2 pt-8'}>
-    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl font-semibold">
+    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl ">
       Layers
     </div>
     <Scroll className={className} style={style}>
