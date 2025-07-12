@@ -243,6 +243,55 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
     }
   }, []);
 
+  useEffect(() => {
+    if (__MSFS_EMBEDED__) {
+      const obj = parent.document.getElementsByClassName("efb")[0];
+      const observer = new ResizeObserver(() => {
+        const [width, height, baseWidth, baseHeight] = [
+          window.getComputedStyle(obj).getPropertyValue('--panel-width'),
+          window.getComputedStyle(obj).getPropertyValue('--panel-height'),
+          window.getComputedStyle(obj).getPropertyValue('--base-width'),
+          window.getComputedStyle(obj).getPropertyValue('--base-height')
+        ];
+
+        document.body.style.setProperty('--panel-width', width)
+        document.body.style.setProperty('--panel-height', height)
+        document.body.style.setProperty('--base-width', baseWidth)
+        document.body.style.setProperty('--base-height', baseHeight)
+
+        console.log(height)
+        if (+height < 790) {
+          document.body.style.setProperty('--menu-padding', '35px')
+        } else {
+          document.body.style.setProperty('--menu-padding', 'calc(35px*var(--panel-height)/var(--base-height))')
+        }
+
+        if (+baseWidth === 516) {
+          document.body.style.setProperty('--button-height', 'calc(1.75rem*var(--panel-width)/var(--base-width,516))')
+        } else {
+          document.body.style.setProperty('--button-height', 'calc(1.5rem*var(--panel-width)/var(--base-width,516))')
+        }
+      });
+
+      observer.observe(obj);
+      return () => observer?.unobserve(obj);
+    } else {
+      const obj = document.documentElement;
+
+      const observer = new ResizeObserver(() => {
+        document.body.style.setProperty('--menu-padding', '35px')
+        document.body.style.setProperty('--panel-height', '714')
+        document.body.style.setProperty('--panel-width', '714')
+        document.body.style.setProperty('--base-width', '517')
+        document.body.style.setProperty('--base-height', '714')
+        document.body.style.setProperty('--button-height', 'calc(1.75rem*var(--panel-width)/var(--base-width,516))')
+      });
+
+      observer.observe(obj);
+      return () => observer?.unobserve(obj);
+    }
+  }, []);
+
   return (
     <SettingsContext.Provider
       value={provider}

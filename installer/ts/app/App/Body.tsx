@@ -18,7 +18,7 @@ import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, u
 import { addPopup, LoadingPopup, PopupContext } from "@common/Popup";
 
 const Elem = ({ children }: PropsWithChildren) => {
-   return <div className='flex flex-row bg-slate-800 p-5 text-left h-20'>
+   return <div className='flex flex-row bg-slate-800 px-5 py-4 mt-1 text-left h-16'>
       {children}
    </div>
 }
@@ -58,7 +58,7 @@ const Path = ({ onClick, path, defaultValue, placeholder, onChange, reload, vali
             </Input>
          </div>
          <div className="flex flex-row grow opacity-0 transition-all">
-            <p className="pt-1 text-red-500 text-base h-0">
+            <p className="pt-1 text-red-500 text-sm h-0">
                Invalid path !
             </p>
          </div>
@@ -154,20 +154,20 @@ export const Body = ({ setCanContinue, validate }: {
 
    return <div className='flex flex-row grow min-h-0 overflow-hidden'>
       <Scroll className='flex-col grow'>
-         <div className='flex flex-col grow mx-auto min-w-[80%] max-w-6xl justify-center px-5 pb-10 gap-3'>
-            <h2 className='mt-6 text-3xl'>Info</h2>
-            <blockquote className="p-4 my-4 border-s-4 border-gray-500 bg-gray-800">
+         <div className='flex flex-col grow mx-auto min-w-[80%] max-w-6xl justify-center px-5 pb-4 gap-1'>
+            <h2 className='mt-6 text-lg'>Info</h2>
+            <blockquote className="p-4 border-s-4 border-gray-500 bg-gray-800">
                <div className='flex flex-col gap-y-3'>
-                  <p className="text-xl italic font-medium leading-relaxed text-white">
+                  <p className="text-sm italic font-medium leading-relaxed text-white">
                      This program is designed to proxy file browsing requests to the operating system and serve the app through a web server.
                   </p>
-                  <p className="text-xl italic font-medium leading-relaxed text-white">
+                  <p className="text-sm italic font-medium leading-relaxed text-white">
                      Please note that MSFS2024 VFRNav&apos; can function without this program by simply dragging the plugin into the community folder.<br />
                      However, doing so does not allow you to open PDF files from the computer or access the UI via a web browser or an external device.
                   </p>
                </div>
             </blockquote>
-            <h2 className='mt-6 text-3xl'>Startup</h2>
+            <h2 className='mt-4 text-lg'>Startup</h2>
             <Elem>
                <div className='m-auto mr-5 grow min-w-0'>Auto start MSFS2024 VFRNav&apos; Server :</div>
                <div className='shrink'>
@@ -178,13 +178,13 @@ export const Body = ({ setCanContinue, validate }: {
                   </Select>
                </div>
             </Elem>
-            <h2 className='mt-6 text-3xl'>Install Path</h2>
+            <h2 className='mt-4 text-lg'>Install Path</h2>
             <Elem>
-               <div className='m-auto mr-5'>Community :</div>
+               <div className='m-auto mr-4'>Community :</div>
                {communityElem}
             </Elem>
             <Elem>
-               <div className='m-auto mr-5'>Destination :</div>
+               <div className='m-auto mr-4'>Destination :</div>
                {installPathElem}
             </Elem>
          </div>
@@ -203,8 +203,8 @@ const RunClosePopup = ({ resolve }: {
    }, [resolve]);
 
    return <div className='flex flex-col gap-y-6 grow'>
-      <div className='text-3xl text-blue-400'>Info</div>
-      <div className='text-xl gap-y-2 overflow-hidden'>
+      <div className='text-lg text-blue-400'>Info</div>
+      <div className='text-sm gap-y-2 overflow-hidden'>
          <Scroll>
             <div className="mb-4">
                MSFS2024 VFRNav&apos; Server Successfully installed !

@@ -23,7 +23,7 @@ export const ToolBar = ({ menu }: {
    }, [content])
 
    return <div className={"flex flex-col pointer-events-auto transition-all min-h-max overflow-hidden" + (content ? '' : ' hidden')}>
-      <button className="flex bg-slate-900 h-6 hocus:bg-msfs shadow-smd select-none transition-all cursor-pointer justify-center text-center"
+      <button className="flex bg-slate-900 h-4 hocus:bg-msfs shadow-smd select-none transition-all cursor-pointer justify-center text-center"
          onClick={(e) => {
             setOpen(open => !open)
             e.currentTarget.blur()

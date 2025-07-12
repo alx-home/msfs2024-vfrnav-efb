@@ -29,7 +29,7 @@ const Category = ({ title, children }: PropsWithChildren<{
    title: string
 }>) => {
    return <div className='[&>:not(:first-child)]:ml-5 shadow-xl border-slate-700 border-1 p-6 grow'>
-      <div className='text-3xl font-semibold mb-3'>{title}</div>
+      <div className='text-lg mb-3'>{title}</div>
       {children}
    </div>
 };
@@ -38,7 +38,7 @@ const SubCategory = ({ children, title }: PropsWithChildren<{
    title: string
 }>) => {
    return <div className='mb-3 [&>:not(:first-child)]:ml-8'>
-      <div className='text-2xl font-semibold mb-3 capitalize'>{title}</div>
+      <div className='text-base mb-3 capitalize'>{title}</div>
       <div>
          {children}
       </div>
@@ -163,7 +163,7 @@ const Fuels = ({ data }: {
    const body = useMemo(() => <Category title="">
       {data.fuel1 ?
          <Category title='Fuel1'>
-            <div className='!ml-5 text-2xl'>
+            <div className='!ml-5 text-base'>
                {data.fuel1}
             </div>
          </Category> :
@@ -171,7 +171,7 @@ const Fuels = ({ data }: {
       }
       {data.fuel2 ?
          <Category title='Fuel2'>
-            <div className='!ml-5 text-2xl'>
+            <div className='!ml-5 text-base'>
                {data.fuel2}
             </div>
          </Category>
@@ -190,7 +190,7 @@ const Transitions = ({ data }: {
       {
          data.transitionAlt !== 0 ?
             <Category title="Altitude">
-               <div className='!ml-5 text-2xl'>
+               <div className='!ml-5 text-base'>
                   {data.transitionAlt.toFixed(0)}
                </div>
             </Category>
@@ -199,7 +199,7 @@ const Transitions = ({ data }: {
       {
          data.transitionLevel !== 0 ?
             <Category title="Level">
-               <div className='!ml-5 text-2xl'>
+               <div className='!ml-5 text-base'>
                   {data.transitionLevel.toFixed(0)}
                </div>
             </Category>
@@ -267,7 +267,7 @@ const Metar = ({ data }: {
             : <></>
          }
       </ >
-         : <h2 className='text-3xl'>Loading...</h2>)
+         : <h2 className='text-lg'>Loading...</h2>)
    }</>
 };
 
@@ -358,7 +358,7 @@ export const AirportPopup = ({ data }: {
    }, [tab, tabs]);
 
    return <div className='flex flex-col p-2 w-full max-h-full'>
-      <div className='text-4xl font-semibold mt-4 mb-10 flex flex-row'>
+      <div className='text-2xl mt-4 mb-10 flex flex-row'>
          <div><img src={data.towered ? toweredImg : notToweredImg} alt={data.towered ? 'towered' : 'not towered'} width={20} className='invert' /></div>
          <div className='ml-2'>{data.icao}{airportClass}</div>
       </div>

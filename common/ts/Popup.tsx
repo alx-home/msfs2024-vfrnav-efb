@@ -136,7 +136,7 @@ export const MessagePopup = ({ messages, close, title }: {
 
    return <div className='flex flex-col [&>:not(:first-child)]:my-6 grow'>
       {title}
-      <div className='text-xl [&>:not(:first-child)]:my-2 overflow-hidden ml-2'>
+      <div className='text-lg [&>:not(:first-child)]:my-2 overflow-hidden ml-2'>
          <Scroll>
             <div className="flex flex-col m-auto mb-4">
                {message}
@@ -161,8 +161,8 @@ export const LoadingPopup = ({ message, close, title }: {
    }, [close, installing])
 
    return <div className='flex flex-col [&>:not(:first-child)]:my-6 grow'>
-      <div className='text-3xl text-blue-400'>{title}</div>
-      <div className='text-xl [&>:not(:first-child)]:my-2 overflow-hidden'>
+      <div className='text-lg text-blue-400'>{title}</div>
+      <div className='text-lg [&>:not(:first-child)]:my-2 overflow-hidden'>
          <Scroll>
             <div className="mb-4" dangerouslySetInnerHTML={{ __html: message }}></div>
          </Scroll>
@@ -172,28 +172,28 @@ export const LoadingPopup = ({ message, close, title }: {
 
 window.display_warning = (messages: string[]) => {
    addPopup(<MessagePopup
-      title={<div className='text-3xl text-yellow-500'>Warning !</div>}
+      title={<div className='text-lg text-yellow-500'>Warning !</div>}
       messages={messages}
    />, 1)
 };
 
 window.display_error = (messages: string[]) => {
    addPopup(<MessagePopup
-      title={<div className='text-3xl text-red-700'>Error !</div>}
+      title={<div className='text-lg text-red-700'>Error !</div>}
       messages={messages}
    />, 2)
 };
 
 window.display_fatal = (messages: string[]) => {
    addPopup(<MessagePopup
-      title={<div className='text-3xl text-red-700'>Fatal Error !</div>}
+      title={<div className='text-lg text-red-700'>Fatal Error !</div>}
       messages={messages}
    />, 3)
 };
 
 window.display_info = (messages: string[]) => {
    addPopup(<MessagePopup
-      title={<div className='text-3xl text-blue-400'>Info</div>}
+      title={<div className='text-lg text-blue-400'>Info</div>}
       messages={messages}
    />, 0)
 };

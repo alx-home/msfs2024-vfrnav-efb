@@ -41,7 +41,7 @@ window.addEventListener('unhandledrejection', function (e) {
 
 window.display_appstopping = () => {
   addPopup(<MessagePopup
-    title={<div className='text-3xl text-blue-400'>Info</div>}
+    title={<div className='text-lg text-blue-400'>Info</div>}
     messages="App is stopping !"
     close="steady"
   />, 3)
