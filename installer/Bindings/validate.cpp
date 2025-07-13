@@ -160,7 +160,7 @@ Main::Validate(
 ) {
    auto const lock = win32::CreateLock("MSFS_VFR_NAV_SERVER");
    if (!lock) {
-      co_return Fatal(
+      co_return Error(
         "MSFS2024 VFRNav' Server is already running.",
         "Please close the program before retrying the installation process!"
       );

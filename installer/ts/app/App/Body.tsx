@@ -202,11 +202,11 @@ const RunClosePopup = ({ resolve }: {
       resolve(true);
    }, [resolve]);
 
-   return <div className='flex flex-col gap-y-6 grow'>
-      <div className='text-lg text-blue-400'>Info</div>
+   return <div className='flex flex-col gap-y-5 grow'>
+      <div className='text-2xl text-blue-400'>Info</div>
       <div className='text-sm gap-y-2 overflow-hidden'>
          <Scroll>
-            <div className="mb-4">
+            <div>
                MSFS2024 VFRNav&apos; Server Successfully installed !
             </div>
          </Scroll>

@@ -134,11 +134,11 @@ export const MessagePopup = ({ messages, close, title }: {
          </div>)
       , [messages]);
 
-   return <div className='flex flex-col [&>:not(:first-child)]:my-6 grow'>
+   return <div className='flex flex-col grow'>
       {title}
-      <div className='text-lg [&>:not(:first-child)]:my-2 overflow-hidden ml-2'>
+      <div className='text-sm overflow-hidden my-5'>
          <Scroll>
-            <div className="flex flex-col m-auto mb-4">
+            <div className="flex flex-col m-auto">
                {message}
             </div>
          </Scroll>
@@ -160,11 +160,11 @@ export const LoadingPopup = ({ message, close, title }: {
       }
    }, [close, installing])
 
-   return <div className='flex flex-col [&>:not(:first-child)]:my-6 grow'>
-      <div className='text-lg text-blue-400'>{title}</div>
-      <div className='text-lg [&>:not(:first-child)]:my-2 overflow-hidden'>
+   return <div className='flex flex-col grow'>
+      <div className='text-2xl text-blue-400'>{title}</div>
+      <div className='text-sm overflow-hidden my-5'>
          <Scroll>
-            <div className="mb-4" dangerouslySetInnerHTML={{ __html: message }}></div>
+            <div dangerouslySetInnerHTML={{ __html: message }}></div>
          </Scroll>
       </div>
    </div>
@@ -172,28 +172,28 @@ export const LoadingPopup = ({ message, close, title }: {
 
 window.display_warning = (messages: string[]) => {
    addPopup(<MessagePopup
-      title={<div className='text-lg text-yellow-500'>Warning !</div>}
+      title={<div className='text-2xl text-yellow-500'>Warning !</div>}
       messages={messages}
    />, 1)
 };
 
 window.display_error = (messages: string[]) => {
    addPopup(<MessagePopup
-      title={<div className='text-lg text-red-700'>Error !</div>}
+      title={<div className='text-2xl text-red-700'>Error !</div>}
       messages={messages}
    />, 2)
 };
 
 window.display_fatal = (messages: string[]) => {
    addPopup(<MessagePopup
-      title={<div className='text-lg text-red-700'>Fatal Error !</div>}
+      title={<div className='text-2xl text-red-700'>Fatal Error !</div>}
       messages={messages}
    />, 3)
 };
 
 window.display_info = (messages: string[]) => {
    addPopup(<MessagePopup
-      title={<div className='text-lg text-blue-400'>Info</div>}
+      title={<div className='text-2xl text-blue-400'>Info</div>}
       messages={messages}
    />, 0)
 };
@@ -209,7 +209,7 @@ export const Popup = () => {
    return <div className={'absolute flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center'
       + (popup === undefined ? ' hidden' : '')
    }>
-      <div className='flex flex-row box-border relative m-auto w-full max-w-4xl max-h-full'>
+      <div className='flex flex-row box-border relative m-auto w-full max-w-2xl max-h-full'>
          <div className='flex flex-row grow bg-menu border-2 hover:border-msfs px-8 py-5 shadow-slate-950 shadow-md m-8 max-h-full'>
             <div className='flex flex-row grow overflow-hidden'>
                {popup ?? <></>}
