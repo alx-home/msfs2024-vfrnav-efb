@@ -17,10 +17,11 @@ import { Scroll, Button } from "@alx-home/Utils";
 
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-import { Pdf } from "@Utils/Pdf";
 import { ChartsPopup } from "./Popup";
 import { ExportPdfs } from "@shared/Pdfs";
 import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
+import { Pdf } from "@Utils/Pdf";
+import { useEFBServer } from "@Utils/useServer";
 
 import deleteImg from '@alx-home/images/delete.svg';
 import ExportIcon from '@alx-home/images/export.svg?react';
@@ -37,6 +38,7 @@ export const ChartsPage = ({ active }: {
   const { setPopup } = useContext(SettingsContext)!;
   const [opacity, setOpacity] = useState(' opacity-0');
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const efbConnected = useEFBServer();
 
   useEffect(() => {
     if (active) {
@@ -155,14 +157,17 @@ export const ChartsPage = ({ active }: {
                       : <>Open</>
                   }
                 </Button>
-                <Button active={(pdfs.length > 0) && !__MSFS_EMBEDED__} disabled={(pdfs.length === 0) || __MSFS_EMBEDED__} className="flex flex-row px-5 text-nowrap justify-center shrink"
-                  onClick={exportAll}>
-                  {
-                    pdfs.length ?
-                      <ExportIcon className="invert m-auto" />
-                      : <>Export</>
-                  }
-                </Button>
+                {
+                  __MSFS_EMBEDED__ ? <></>
+                    : <Button active={pdfs.length > 0} disabled={(pdfs.length === 0) || !efbConnected} className="flex flex-row px-5 text-nowrap justify-center shrink"
+                      onClick={exportAll}>
+                      {
+                        pdfs.length ?
+                          <ExportIcon className="invert m-auto" />
+                          : <>Export</>
+                      }
+                    </Button>
+                }
               </div>
             </div>
           </Scroll>
