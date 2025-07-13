@@ -3,6 +3,7 @@ import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, Get
 import { FileExist, GetFile, OpenFile } from "@shared/Files";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { ExportNav } from "@shared/NavData";
+import { ExportPdfs } from "@shared/Pdfs";
 import { EditRecord, GetRecord, PlanePos, PlanePoses, PlaneRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord } from "@shared/PlanPos";
 import { ServerState } from "@shared/Server";
 import { SharedSettings, SharedSettingsRecord } from "@shared/Settings";
@@ -189,6 +190,8 @@ export class Manager {
                this.onGetRecord(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
             } else if (isMessage("__EXPORT_NAV__", data.content)) {
                this.onExportNav(data.content);
+            } else if (isMessage("__EXPORT_PDFS__", data.content)) {
+               this.onExportPdfs(data.content);
             } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
                || isMessage("__OPEN_FILE_RESPONSE__", data.content)
                || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
@@ -478,6 +481,10 @@ export class Manager {
    }
 
    onExportNav(message: ExportNav) {
+      this.subscribers.get(0)?.(message);
+   }
+
+   onExportPdfs(message: ExportPdfs) {
       this.subscribers.get(0)?.(message);
    }
 

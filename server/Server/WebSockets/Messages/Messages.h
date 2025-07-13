@@ -37,43 +37,45 @@ struct ByeBye {
 }  // namespace ws::msg
 
 #include "Facilities.h"
+#include "Files.h"
 #include "GetMetar.h"
+#include "NavData.h"
+#include "Pdfs.h"
+#include "PlanePos.h"
 #include "Records.h"
 #include "Settings.h"
-#include "PlanePos.h"
-#include "Files.h"
-#include "NavData.h"
 
 namespace ws {
 
 using Message = std::variant<
-  msg::PlanePoses,
-  msg::PlanePos,
-  msg::Facilities,
-  msg::GetFacilities,
-  msg::Icaos,
-  msg::GetIcaos,
-  msg::LatLon,
-  msg::GetLatLon,
-  msg::GetMetar,
-  msg::Metar,
-  msg::GetRecords,
-  msg::Records,
-  msg::GetSettings,
-  msg::Settings,
-  msg::GetRecord,
+  msg::ByeBye,
   msg::EditRecord,
-  msg::RemoveRecord,
+  msg::ExportNav,
+  msg::ExportPdfs,
+  msg::Facilities,
   msg::FileExists,
   msg::FileExistsResponse,
-  msg::OpenFile,
-  msg::OpenFileResponse,
+  msg::GetFacilities,
   msg::GetFile,
   msg::GetFileResponse,
-  msg::ImportNav,
-  msg::ExportNav,
+  msg::GetIcaos,
+  msg::GetLatLon,
+  msg::GetMetar,
+  msg::GetRecord,
+  msg::GetRecords,
+  msg::GetSettings,
   msg::HelloWorld,
-  msg::ByeBye>;
+  msg::Icaos,
+  msg::ImportNav,
+  msg::LatLon,
+  msg::Metar,
+  msg::OpenFile,
+  msg::OpenFileResponse,
+  msg::PlanePos,
+  msg::PlanePoses,
+  msg::Records,
+  msg::RemoveRecord,
+  msg::Settings>;
 
 struct Proxy {
    std::size_t id_{};
