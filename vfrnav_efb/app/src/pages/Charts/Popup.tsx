@@ -23,6 +23,7 @@ import { Src } from "./ChartsPage";
 
 import loadingImg from '@alx-home/images/loading.svg';
 import { useServer } from "@Utils/useServer";
+import { sha256 } from "js-sha256";
 
 const sources = ['Local', 'SIA', 'TEMSI', 'Weather Fronts'] as const;
 type Source = typeof sources[number];
@@ -300,7 +301,7 @@ export const ChartsPopup = ({ setSrcs }: {
       setPopup(emptyPopup);
       setSrcs(srcs => {
         const newSrcs = new Map<string, Src>(srcs);
-        newSrcs.set(icao_or_name, { src: pdf, name: name.length ? name : icao_or_name });
+        newSrcs.set(icao_or_name, { src: pdf, name: name.length ? name : icao_or_name, id: sha256(pdf) });
         return newSrcs;
       });
     }

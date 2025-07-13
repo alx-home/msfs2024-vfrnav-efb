@@ -39,7 +39,7 @@ const getDocument = (async () => {
 
 type Refs = { canvas: RefObject<HTMLCanvasElement | null>, text: RefObject<HTMLDivElement | null>, container: RefObject<HTMLDivElement | null> };
 
-const usePdf = (src: string | Uint8Array) => {
+const usePdf = (src: Uint8Array, id: string) => {
   const [canvas, setCanvas] = useState<JSX.Element[]>([]);
   const timeouts = useRef<NodeJS.Timeout[]>([]);
   const [renderers, setRenderers] = useState<((_scale: number) => Promise<void>)[]>([]);
@@ -72,7 +72,7 @@ const usePdf = (src: string | Uint8Array) => {
           setCanvas(Array.from({ length: pdf.numPages }, (_v, index) => {
             const { canvas, container } = refs[index];
 
-            return <div ref={container} key={"pdf-" + src + "@" + index} className="relative pdfViewer overflow-hidden">
+            return <div ref={container} key={"pdf-" + id} className="relative pdfViewer overflow-hidden">
               <canvas ref={canvas} className="select-none" />
               {/* <div className="absolute left-0 right-0 bottom-0 top-0 overflow-hidden"> */}
               {/* <div ref={text} className="textLayer"></div> */}
@@ -82,7 +82,7 @@ const usePdf = (src: string | Uint8Array) => {
           ));
         }
       }))();
-  }, [src]);
+  }, [src, id]);
 
 
   useEffect(() => {
@@ -284,13 +284,14 @@ const Page = ({ hidden, children, renderer }: PropsWithChildren<{
   </div>;
 };
 
-export const Pdf = ({ src, alt, className }: {
-  src: string | Uint8Array,
+export const Pdf = ({ src, alt, id, className }: {
+  src: Uint8Array,
+  id: string,
   alt: string,
   className: string
 }) => {
   const [currentPage, setCurrentPage] = useState(0);
-  const { pages, renderers } = usePdf(src);
+  const { pages, renderers } = usePdf(src, id);
 
   const childs = useMemo(() => pages.map((canvas, index) =>
     <Page key={"scroll-" + alt + "@" + index} hidden={currentPage !== index} renderer={renderers[index]}>

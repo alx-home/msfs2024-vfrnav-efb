@@ -19,12 +19,15 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 
 import { Pdf } from "@Utils/Pdf";
 import { ChartsPopup } from "./Popup";
-import { SettingsContext } from "@Settings/SettingsProvider";
+import { ExportPdfs } from "@shared/Pdfs";
+import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 
 import deleteImg from '@alx-home/images/delete.svg';
+import ExportIcon from '@alx-home/images/export.svg?react';
 
 export type Src = {
-  src: string | Uint8Array,
+  src: Uint8Array,
+  id: string,
   name: string
 };
 
@@ -48,7 +51,7 @@ export const ChartsPage = ({ active }: {
   const [srcs, setSrcs] = useState(new Map<string, Src>());
   const pdfs = useMemo(() =>
     [...srcs.values().map((src, index) =>
-      <Pdf key={src.name} alt="pdf" className={activeDocument === index ? "" : "hidden"} src={src.src} />)],
+      <Pdf key={src.name} alt="pdf" className={activeDocument === index ? "" : "hidden"} src={src.src} id={src.id} />)],
     [activeDocument, srcs]);
   const buttons = useMemo(() =>
     [...srcs.values().map((src, index) => <Button key={src.name} active={true}
@@ -78,6 +81,50 @@ export const ChartsPage = ({ active }: {
   }, [activeDocument, srcs]);
 
   const loadDocument = useCallback(() => setPopup(<ChartsPopup setSrcs={setSrcs} />), [setPopup]);
+  const exportAll = useCallback(() => {
+    if (!__MSFS_EMBEDED__) {
+      messageHandler.send({
+        __EXPORT_PDFS__: true,
+
+        pdfs: Array.from(srcs.values()).map((src) => {
+          const { name, id, src: data } = src;
+
+          return {
+            name: name,
+            id: id,
+            data: btoa(data.reduce((result, value) => result + String.fromCharCode(value), ""))
+          }
+        })
+      })
+    }
+  }, [srcs]);
+
+  useEffect(() => {
+    if (__MSFS_EMBEDED__) {
+      const callback = (message: ExportPdfs) => {
+        const newSrcs = new Map<string, Src>();
+        message.pdfs.forEach(pdf => {
+          const binaryString = atob(pdf.data);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; ++i) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+
+          setActiveDocument(0)
+          newSrcs.set(pdf.name, {
+            id: pdf.id,
+            name: pdf.name,
+            src: bytes
+          })
+        })
+
+        setSrcs(newSrcs);
+      }
+
+      messageHandler.subscribe('__EXPORT_PDFS__', callback)
+      return () => messageHandler.unsubscribe('__EXPORT_PDFS__', callback)
+    }
+  }, []);
 
   return <div className="flex grow justify-center overflow-hidden max-w-full" style={active ? {} : { display: 'none' }}>
     <div className="flex flex-row grow justify-center max-w-full">
@@ -100,9 +147,21 @@ export const ChartsPage = ({ active }: {
             <div className="flex flex-row grow justify-center w-max pb-2">
               {buttons}
               <div className={"flex flex-row " + (pdfs.length ? 'shrink' : 'grow')}>
-                <Button active={true} className="flex flex-row h-[22px] px-5 overflow-visible text-nowrap justify-center"
+                <Button active={true} className="flex flex-row px-5 text-nowrap justify-center"
                   onClick={loadDocument}>
-                  ...
+                  {
+                    pdfs.length ?
+                      <>...</>
+                      : <>Open</>
+                  }
+                </Button>
+                <Button active={(pdfs.length > 0) && !__MSFS_EMBEDED__} disabled={(pdfs.length === 0) || __MSFS_EMBEDED__} className="flex flex-row px-5 text-nowrap justify-center shrink"
+                  onClick={exportAll}>
+                  {
+                    pdfs.length ?
+                      <ExportIcon className="invert m-auto" />
+                      : <>Export</>
+                  }
                 </Button>
               </div>
             </div>
