@@ -200,6 +200,21 @@
             "  Fixes:",
             "     - Memory leak resolved — Segfault fix / Fuite de mémoire corrigée — Résolution d'un Segfault."
          ]
+      },
+      {
+         "version": "1.3.1",
+         "date": "JUL 13, 2025",
+         "notes": [
+            "**EFB**",
+            "  Improvements / améliorations:",
+            "     - Automatically adjust font and icon sizes based on DPI changes / Ajuste dynamiquement la taille des polices et des icônes selon les changements de DPI.",
+            "  Fixes:",
+            "     - Correct label positioning when adding a waypoint—new labels are now inserted at the correct index instead of appended at the end / Correction de la position des labels lors de l’ajout d’un point de navigation : les nouveaux labels sont maintenant insérés à l’index courant, et non ajoutés à la fin.",
+            "     - Fixed crash when deleting the final waypoint / Correction du crash survenant lors de la suppression du dernier point de navigation.",
+            "**Installer/Server (new)**",
+            "  Improvements / améliorations:",
+            "     - Added support for exporting PDF charts from the app to the embedded EFB / Ajout de la possibilité d’exporter des cartes PDF depuis l’application vers l’EFB intégré."
+         ]
       }
    ]
 }
