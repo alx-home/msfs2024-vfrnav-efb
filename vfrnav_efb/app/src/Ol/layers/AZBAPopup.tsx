@@ -26,8 +26,8 @@ import { SettingsContext } from "@Settings/SettingsProvider";
 const Category = ({ title, children }: PropsWithChildren<{
   title: string
 }>) => {
-  return <div className='[&>:not(:first-child)]:ml-5 shadow-xl border-slate-700 border-1 p-6 grow'>
-    <div className='text-lg mb-3'>{title}</div>
+  return <div className='[&>:not(:first-child)]:ml-4 shadow-xl border-slate-700 border-1 p-6 grow'>
+    <div className='text-2xl mb-3'>{title}</div>
     {children}
   </div>
 };
@@ -35,8 +35,8 @@ const Category = ({ title, children }: PropsWithChildren<{
 const SubCategory = ({ children, title }: PropsWithChildren<{
   title: string
 }>) => {
-  return <div className='mb-3 [&>:not(:first-child)]:ml-8'>
-    <div className='text-base mb-3 capitalize'>{title}</div>
+  return <div className='mb-3 [&>:not(:first-child)]:ml-4'>
+    <div className='text-xl mb-3 capitalize'>{title}</div>
     <div>
       {children}
     </div>
@@ -112,13 +112,13 @@ export const AZBAPopup = ({ data }: {
   const parseAlt = useCallback((value: number) => Math.floor(value / 100) * 100 === value ? (value >= 10000 ? 'FL' + value / 1000 : value) : 'FL' + value, []);
 
   return <div className='relative flex flex-col p-2 w-full max-h-full overflow-hidden'>
-    <div className='text-2xl mt-4 mb-10'>
+    <div className='text-2xl mt-4 mb-6'>
       {data.name}
     </div>
     <div className='flex flex-col grow overflow-hidden'>
       <Scroll className='flex flex-row justify-center'>
         <div className='flex flex-col mx-5 shadow-sm w-full'>
-          <div className='flex flex-col [&>:not(:first-child)]:my-7 pb-8'>
+          <div className='flex flex-col [&>*]:mb-4'>
             {Activation}
             <Category title='Altitude'>
               <SubCategory title={"Upper: " + parseAlt(data.upper)}>
@@ -136,7 +136,7 @@ export const AZBAPopup = ({ data }: {
         </div>
       </Scroll>
     </div>
-    <div className='flex flex-row grow shrink-0 w-full min-h-0 [&>:not(:first-child)]:ml-2 pt-10 justify-end' >
+    <div className='flex flex-row grow shrink-0 w-full min-h-0 pt-4 justify-end' >
       <Button active={true} className='px-2'
         onClick={() => {
           setPopup(emptyPopup);

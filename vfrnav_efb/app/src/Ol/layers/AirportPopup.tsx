@@ -28,8 +28,8 @@ import notToweredImg from '@efb-images/nottowered.svg';
 const Category = ({ title, children }: PropsWithChildren<{
    title: string
 }>) => {
-   return <div className='[&>:not(:first-child)]:ml-5 shadow-xl border-slate-700 border-1 p-6 grow'>
-      <div className='text-lg mb-3'>{title}</div>
+   return <div className='[&>:not(:first-child)]:ml-4 shadow-xl border-slate-700 border-1 p-5 grow'>
+      <div className='text-2xl mb-3'>{title}</div>
       {children}
    </div>
 };
@@ -37,8 +37,8 @@ const Category = ({ title, children }: PropsWithChildren<{
 const SubCategory = ({ children, title }: PropsWithChildren<{
    title: string
 }>) => {
-   return <div className='mb-3 [&>:not(:first-child)]:ml-8'>
-      <div className='text-base mb-3 capitalize'>{title}</div>
+   return <div className='mb-3 [&>:not(:first-child)]:ml-5'>
+      <div className='text-lg capitalize'>{title}</div>
       <div>
          {children}
       </div>
@@ -154,7 +154,7 @@ const Runways = ({ data }: {
       </Category>
    }), [groups]);
 
-   return <div className='flex flex-col [&>:not(:first-child)]:my-8'>{child}</div>
+   return <div className='flex flex-col [&>*]:mb-4'>{child}</div>
 }
 
 const Fuels = ({ data }: {
@@ -291,10 +291,10 @@ const TabElem = ({ tab, currentTab, children }: PropsWithChildren<{
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none')
    }>
       <Scroll className={
-         'block ml-5 [&>:not(:first-child)]:mt-8'
+         'block ml-2'
       }>
          <div className='flex flex-col mx-5 shadow-sm w-full'>
-            <div className='flex flex-col [&>:not(:first-child)]:my-7 pb-8'>
+            <div className='flex flex-col [&>*]:mb-4'>
                {children}
             </div>
          </div>
@@ -358,7 +358,7 @@ export const AirportPopup = ({ data }: {
    }, [tab, tabs]);
 
    return <div className='flex flex-col p-2 w-full max-h-full'>
-      <div className='text-2xl mt-4 mb-10 flex flex-row'>
+      <div className='text-2xl mt-4 mb-6 flex flex-row'>
          <div><img src={data.towered ? toweredImg : notToweredImg} alt={data.towered ? 'towered' : 'not towered'} width={20} className='invert' /></div>
          <div className='ml-2'>{data.icao}{airportClass}</div>
       </div>
@@ -368,7 +368,7 @@ export const AirportPopup = ({ data }: {
             {tabElems}
          </div>
       </div>
-      <div className='flex flex-row w-full min-h-0 shrink-0 [&>:not(:first-child)]:ml-2 pt-10 justify-end' >
+      <div className='flex flex-row w-full min-h-0 shrink-0 pt-4 justify-end' >
          <Button active={true} className='px-2'
             onClick={() => {
                setPopup(emptyPopup);
