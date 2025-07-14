@@ -215,6 +215,21 @@
             "  Improvements / améliorations:",
             "     - Added support for exporting PDF charts from the app to the embedded EFB / Ajout de la possibilité d’exporter des cartes PDF depuis l’application vers l’EFB intégré."
          ]
+      },
+      {
+         "version": "1.3.2",
+         "date": "JUL 14, 2025",
+         "notes": [
+            "**EFB**",
+            "  🔧 Improvements / Améliorations:",
+            "     - Enhanced display of SIA/airport information pop-ups for better readability and user interaction.",
+            "       Amélioration de l'affichage des fenêtres contextuelles d'information SIA/aéroport pour une meilleure lisibilité et interaction utilisateur.",
+            "     - Integrated option to download chart PDFs directly from the SIA source within airport information pages.",
+            "       Ajout de l'option permettant de télécharger les cartes PDF directement depuis la source SIA via les pages d'information aéroport.",
+            "  🐞 Fixes / Corrections:",
+            "     - Resolved issue with incorrect timezone and summer time settings for AZBA.",
+            "       Correction du problème lié au fuseau horaire et à l'heure d'été incorrects pour AZBA."
+         ]
       }
    ]
 }
