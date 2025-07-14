@@ -13,9 +13,10 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Dispatch, JSXElementConstructor, ReactElement, SetStateAction } from "react";
+import { Dispatch, JSXElementConstructor, ReactElement, SetStateAction, RefObject } from 'react';
 import { SharedSettings, Color } from '@shared/Settings';
 import { Azba } from "./SIAAZBA";
+import { Src } from "@pages/Charts/ChartsPage";
 
 export type LayerSettingSetter = {
   setActive: (_value: boolean) => void,
@@ -48,6 +49,9 @@ export type GlobalSettings = Settings & SharedSettings & {
   getSIAPDF: (_icao: string) => Promise<Uint8Array>,
   getSIAAZBA: () => Promise<Azba[]>,
   setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>
+  setPage: Dispatch<SetStateAction<string>>
+
+  addPdf: RefObject<((_name: string, _pdf: Src) => void) | undefined>,
 
   azba: LayerSettingSetter & SharedSettings['azba'],
   airports: AirportLayerSettingSetter & LayerSettingSetter & SharedSettings['airports'],

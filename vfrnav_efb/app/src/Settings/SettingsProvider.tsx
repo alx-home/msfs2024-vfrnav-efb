@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { GlobalSettings, Settings } from "./Settings";
 import { useSIAZBA } from "./SIAAZBA";
 import { useSIAPDF } from "./SiaPDF";
@@ -21,6 +21,7 @@ import { useSIAPDF } from "./SiaPDF";
 import { AirportLayerOptions, Color, LayerSetting, SharedSettings, SharedSettingsRecord } from "@shared/Settings";
 import { deepEquals } from "@shared/Types";
 import { MessageHandler } from "@shared/MessageHandler";
+import { Src } from '@pages/Charts/ChartsPage';
 
 export const messageHandler = new MessageHandler();
 export const SettingsContext = createContext<GlobalSettings | undefined>(undefined);
@@ -65,9 +66,10 @@ const useAirportLayer = (sharedSettings: SharedSettings, setSharedSettings: Disp
   return layerSetting;
 };
 
-const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithChildren<{
+const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: PropsWithChildren<{
   setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>,
-  emptyPopup: ReactElement
+  emptyPopup: ReactElement,
+  setPage: Dispatch<SetStateAction<string>>
 }>) => {
   const [sharedSettings, setSharedSettings] = useState(SharedSettingsRecord.defaultValues);
 
@@ -150,6 +152,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
   const mapforfreeSetting = useLayer('mapforfree', sharedSettings, setSharedSettings);
   const googlemapSetting = useLayer('googlemap', sharedSettings, setSharedSettings);
   const openstreetSetting = useLayer('openstreet', sharedSettings, setSharedSettings);
+  const addPdf = useRef<((_name: string, _pdf: Src) => void) | undefined>(undefined);
 
   const provider = useMemo((): GlobalSettings => ({
     ...globalSettings,
@@ -182,6 +185,8 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
     setSIAAZBAAddr: setSIAAZBAAddr,
     setSIAAZBADateAddr: setSIAAZBADateAddr,
     setPopup: setPopup,
+    addPdf: addPdf,
+    setPage: setPage,
 
     map: {
       ...sharedSettings.map,
@@ -213,7 +218,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup }: PropsWithCh
     airportsSetting, googlemapSetting, mapforfreeSetting, openstreetSetting, opentopoSetting, OACISetting,
     USIFRHighSetting, USIFRLowSetting, USSectionalSetting, azbaSetting, germanySetting, openflightmapsSettings,
     openaipmapsSettings, openflightmapsBaseSettings, planeSetting,
-    getSIAAZBA, getSIAPDF,
+    getSIAAZBA, getSIAPDF, setPage,
     setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor, setAZBARange,
     setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setDefaultSpeed,
     setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize, setTextMinSize,
