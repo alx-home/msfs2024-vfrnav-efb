@@ -100,7 +100,7 @@ export const Body = () => {
             <Elem>
                <div className='m-auto mr-5 grow min-w-0'>Auto start MSFS2024 VFRNav&apos; Server :</div>
                <div className='shrink'>
-                  <Select value={startupOption} active={true} onChange={_setStartupOption} className='min-w-60'>
+                  <Select value={startupOption} active={true} onChange={_setStartupOption} className='min-w-40'>
                      <SelectOption<StartupOption> id={'Login'}>Windows login</SelectOption>
                      <SelectOption<StartupOption> id={'Startup'}>MSFS startup</SelectOption>
                      <SelectOption<StartupOption> id={'Never'}>Never</SelectOption>
@@ -111,7 +111,7 @@ export const Body = () => {
             <Elem>
                <div className='m-auto mr-5 grow min-w-0'>Language :</div>
                <div className='shrink'>
-                  <Select value={'English'} disabled={true} active={false} className='min-w-60' onChange={() => { }}>
+                  <Select value={'English'} disabled={true} active={false} className='min-w-40' onChange={() => { }}>
                      <SelectOption<Language> id={'English'}>English</SelectOption>
                   </Select>
                </div>
@@ -133,7 +133,7 @@ export const Body = () => {
                   {/* peer-[.invalid]:flex peer-[.invalid]:opacity-100 */}
                   <div className="flex flex-col grow [&:has(.invalid)_:last-child]:opacity-100">
                      <div className="flex flex-row transition-all [&>.invalid]:mt-[-10px] justify-end">
-                        <Input className='peer transition-all max-w-60 px-2' inputClass='text-right' value={port?.toString()}
+                        <Input className='peer transition-all max-w-40 px-2' inputClass='text-right' value={port?.toString()}
                            active={true} placeholder={
                               "Server listening port"
                            } inputMode={'decimal'} reload={reloadPort}
