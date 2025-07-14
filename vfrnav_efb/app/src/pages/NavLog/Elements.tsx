@@ -209,7 +209,44 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       editNavProperties(id, properties);
    }, [actives, editNavProperties, id, properties]);
 
-   const legs = useMemo(() => {
+   const getHeader = useCallback((mode: Modes, edit: boolean) => {
+      return <>
+         <GridElem index={0} active={true} edit={edit} currentMode={mode}>Waypoint</GridElem>
+         <GridElem index={1} active={true} edit={edit} mode="Enroute" currentMode={mode}>Altitude</GridElem>
+         <GridElem index={2} active={true} edit={edit} mode="Vor" currentMode={mode}>VOR Ind/Freq</GridElem>
+         <GridElem index={3} active={true} edit={edit} mode="Vor" currentMode={mode}>OBS</GridElem>
+
+         {edit ?
+            <>
+               <GridElem index={4} active={true} edit={edit} mode="Weather" currentMode={mode}>Wind Dir/Vel</GridElem>
+               <GridElem index={5} active={true} edit={edit} mode="Weather" currentMode={mode}>VAR</GridElem>
+               <GridElem index={6} active={true} edit={edit} mode="Enroute" currentMode={mode}>IAS</GridElem>
+               <GridElem index={7} active={true} edit={edit} mode="Weather" currentMode={mode}>OAT</GridElem>
+               <GridElem index={8} active={true} edit={edit} mode="Enroute" currentMode={mode}>ATA</GridElem>
+            </>
+            : mode === 'Weather' ? <>
+               <GridElem index={4} active={true} edit={edit} mode="Weather" currentMode={mode}>Wind Dir/Vel</GridElem>
+               <GridElem index={5} active={true} edit={edit} mode="Weather" currentMode={mode}>VAR</GridElem>
+               <GridElem index={7} active={true} edit={edit} mode="Weather" currentMode={mode}>OAT</GridElem>
+            </> : <>
+               <GridElem index={4} active={true} edit={edit} mode="Full" currentMode={mode}>CH</GridElem>
+               <GridElem index={5} active={true} edit={edit} mode="Vor" currentMode={mode}>MH</GridElem>
+               <GridElem index={6} active={true} edit={edit} mode="Full" currentMode={mode}>Dist</GridElem>
+               <GridElem index={7} active={true} edit={edit} mode="Enroute" currentMode={mode}>IAS</GridElem>
+               <GridElem index={8} active={true} edit={edit} mode="Full" currentMode={mode}>GS</GridElem>
+               <GridElem index={9} active={true} edit={edit} mode="Full" currentMode={mode}>ETE</GridElem>
+               <GridElem index={10} active={true} edit={edit} mode="Enroute" currentMode={mode}>ETA</GridElem>
+            </>
+         }
+         <GridElem index={1 + (edit ? 8 : mode === 'Weather' ? 7 : 10)} active={true} edit={edit} mode="Enroute" currentMode={mode}>Fuel ({fuelUnit === 'gal' ? 'gal' : 'l'})</GridElem>
+         <GridElem index={2 + (edit ? 8 : mode === 'Weather' ? 7 : 10)} active={true} edit={edit} currentMode={mode}>Remarks</GridElem>
+      </>
+   }, [fuelUnit]);
+
+   const header = useMemo(() => getHeader(mode, edit), [edit, getHeader, mode]);
+   const fullHeader = useMemo(() => getHeader("Full", false), [getHeader]);
+
+   const getLegs = useCallback((mode: Modes, edit: boolean) => {
       let time = departureTime * 60;
       let fuel = loadedFuel;
       let deltaFuel = 0;
@@ -465,7 +502,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                   <div className="w-10 m-auto text-center">{Math.round(dist).toString()}</div>
                </GridElem>)
                ++index_;
-               result.push(<GridElem key={"IAS"} index={index_} active={active} edit={edit} mode="Full" currentMode={mode}>
+               result.push(<GridElem key={"IAS"} index={index_} active={active} edit={edit} mode="Enroute" currentMode={mode}>
                   <div className="w-10 m-auto text-center">{Math.round(ias)}</div>
                </GridElem>)
                ++index_;
@@ -543,9 +580,12 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
          return result;
       })
-   }, [actives, coords, departureTime, edit, editNavProperties, fromUnit, id, loadedFuel, mode, properties, setActive, toUnit, updateWaypoints, waypoints])
+   }, [actives, coords, departureTime, editNavProperties, fromUnit, id, loadedFuel, properties, setActive, toUnit, updateWaypoints, waypoints])
 
-   return <div className={'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden'
+   const legs = useMemo(() => getLegs(mode, edit), [edit, getLegs, mode]);
+   const fullLegs = useMemo(() => getLegs("Full", false), [getLegs]);
+
+   return <div className={'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden [&>:last-child]:h-full'
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
       <div className="flex flex-row pl-4 pt-2">
@@ -558,36 +598,18 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             <div className="flex flex-row w-full">
                <div className='flex flex-col mx-5 shadow-sm min-h-max ml-5 min-w-max'>
                   <div className={"grid pb-8"}>
-                     <GridElem index={0} active={true} edit={edit} currentMode={mode}>Waypoint</GridElem>
-                     <GridElem index={1} active={true} edit={edit} mode="Enroute" currentMode={mode}>Altitude</GridElem>
-                     <GridElem index={2} active={true} edit={edit} mode="Vor" currentMode={mode}>VOR Ind/Freq</GridElem>
-                     <GridElem index={3} active={true} edit={edit} mode="Vor" currentMode={mode}>OBS</GridElem>
-
-                     {edit ?
-                        <>
-                           <GridElem index={4} active={true} edit={edit} mode="Weather" currentMode={mode}>Wind Dir/Vel</GridElem>
-                           <GridElem index={5} active={true} edit={edit} mode="Weather" currentMode={mode}>VAR</GridElem>
-                           <GridElem index={6} active={true} edit={edit} mode="Enroute" currentMode={mode}>IAS</GridElem>
-                           <GridElem index={7} active={true} edit={edit} mode="Weather" currentMode={mode}>OAT</GridElem>
-                           <GridElem index={8} active={true} edit={edit} mode="Enroute" currentMode={mode}>ATA</GridElem>
-                        </>
-                        : mode === 'Weather' ? <>
-                           <GridElem index={4} active={true} edit={edit} mode="Weather" currentMode={mode}>Wind Dir/Vel</GridElem>
-                           <GridElem index={5} active={true} edit={edit} mode="Weather" currentMode={mode}>VAR</GridElem>
-                           <GridElem index={7} active={true} edit={edit} mode="Weather" currentMode={mode}>OAT</GridElem>
-                        </> : <>
-                           <GridElem index={4} active={true} edit={edit} mode="Full" currentMode={mode}>CH</GridElem>
-                           <GridElem index={5} active={true} edit={edit} mode="Vor" currentMode={mode}>MH</GridElem>
-                           <GridElem index={6} active={true} edit={edit} mode="Full" currentMode={mode}>Dist</GridElem>
-                           <GridElem index={7} active={true} edit={edit} mode="Full" currentMode={mode}>IAS</GridElem>
-                           <GridElem index={8} active={true} edit={edit} mode="Full" currentMode={mode}>GS</GridElem>
-                           <GridElem index={9} active={true} edit={edit} mode="Full" currentMode={mode}>ETE</GridElem>
-                           <GridElem index={10} active={true} edit={edit} mode="Enroute" currentMode={mode}>ETA</GridElem>
-                        </>
-                     }
-                     <GridElem index={1 + (edit ? 8 : mode === 'Weather' ? 7 : 10)} active={true} edit={edit} mode="Enroute" currentMode={mode}>Fuel ({fuelUnit === 'gal' ? 'gal' : 'l'})</GridElem>
-                     <GridElem index={2 + (edit ? 8 : mode === 'Weather' ? 7 : 10)} active={true} edit={edit} currentMode={mode}>Remarks</GridElem>
-                     {legs}
+                     <div className="relative [grid-row:1] [grid-column:1] opacity-0 pointer-events-none select-none" inert={true}>
+                        <div className="grid">
+                           {fullHeader}
+                           {fullLegs}
+                        </div>
+                     </div>
+                     <div className={"relative [grid-row:1] [grid-column:1] max-w-min"}>
+                        <div className="grid">
+                           {header}
+                           {legs}
+                        </div>
+                     </div>
                   </div>
                </div>
             </div >

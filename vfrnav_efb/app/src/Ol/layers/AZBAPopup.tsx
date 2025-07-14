@@ -93,11 +93,11 @@ export const AZBAPopup = ({ data }: {
           <div className="grid [grid-template-columns:repeat(3,minmax(max-content,1fr))]">
             {slots.get(date)!.map(time =>
               <>
-                <div className='px-3'>
+                <div className='m-auto'>
                   {time[0]}
                 </div>
-                <div className='flex flex-row shrink-0 justify-center'>-</div>
-                <div className='px-3'>
+                <div className='flex flex-row shrink justify-center'>-</div>
+                <div className='m-auto'>
                   {time[1]}
                 </div>
               </>
