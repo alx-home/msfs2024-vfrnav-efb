@@ -54,7 +54,7 @@ export const NavLogPage = ({ active }: {
       setEdit(false);
 
       elems.push(<div key="empty" className="flex text-sm overflow-hidden">
-        <div className="flex w-full -mt-20">
+        <div className="flex w-full -mt-10">
           <div className="flex flex-col justify-center m-auto text-center">
             <div className="flex m-auto">
               Navigation path is empty.
@@ -123,7 +123,7 @@ export const NavLogPage = ({ active }: {
       <div className={"flex flex-col shrink transition transition-std py-1 h-full text-left"
         + " justify-start overflow-hidden bg-menu rounded-sm shadow-md"
         + " hocus:border-msfs"
-        + opacity + " min-w-[70%]"
+        + opacity + " max-w-full" + (empty ? ' w-[800px]' : '')
       }>
         <div className={"relative flex flex-col grow overflow-hidden"}>
           <div className="flex text-2xl pt-6 px-8">Nav Log</div>

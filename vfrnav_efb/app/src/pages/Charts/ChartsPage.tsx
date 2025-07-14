@@ -170,14 +170,10 @@ export const ChartsPage = ({ active }: {
                   }
                 </Button>
                 {
-                  __MSFS_EMBEDED__ ? <></>
+                  __MSFS_EMBEDED__ || (pdfs.length === 0) ? <></>
                     : <Button active={pdfs.length > 0} disabled={(pdfs.length === 0) || !efbConnected} className="flex flex-row px-5 text-nowrap justify-center shrink"
                       onClick={exportAll}>
-                      {
-                        pdfs.length ?
-                          <ExportIcon className="invert m-auto" />
-                          : <>Export</>
-                      }
+                      <ExportIcon className="invert m-auto" />
                     </Button>
                 }
               </div>
