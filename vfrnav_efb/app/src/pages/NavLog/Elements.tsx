@@ -515,17 +515,17 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                </GridElem>)
                ++index_;
                result.push(<GridElem key={"ETA"} index={index_} active={active} edit={edit} mode="Enroute" currentMode={mode}>
-                  <div className="flex flex-row shrink m-auto justify-center">
+                  <div className="flex flex-col shrink m-auto justify-center">
+                     <div className="flex grow justify-center">{eta}</div>
                      {
                         deltaEta === 0 ? <></>
-                           : <>
-                              <div className={"ml-2 justify-end flex shrink" + (deltaEta > 0 ? ' text-green-600' : ' text-red-600')}>
+                           :
+                           <div className="flex flex-col grow">
+                              <div className={"text-center justify-center" + (deltaEta > 0 ? ' text-green-600' : ' text-red-600')}>
                                  {eta2}
                               </div>
-                              <div className="flex flex-shrink mx-1">/</div>
-                           </>
+                           </div>
                      }
-                     <div className="flex grow justify-center">{eta}</div>
                   </div>
                </GridElem>)
                ++index_;
@@ -542,17 +542,17 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                            return /^[+]?\d*$/.test(value);
                         }} inputMode='decimal' />
                      </div>
-                     : <div className="flex flex-row shrink m-auto justify-center">
+                     : <div className="flex flex-col shrink m-auto justify-center">
+                        <div className="flex grow justify-center">{Math.round(toUnit(estFuel)) + ''}</div>
                         {
                            deltaFuel === 0 ? <></>
-                              : <>
-                                 <div className={"ml-2 w-3 justify-end flex shrink" + (deltaFuel > 0 ? ' text-green-600' : ' text-red-600')}>
+                              :
+                              <div className="flex flex-col grow">
+                                 <div className={"text-center justify-center" + (deltaFuel > 0 ? ' text-green-600' : ' text-red-600')}>
                                     {Math.round(toUnit(estFuel + deltaFuel))}
                                  </div>
-                                 <div className="flex flex-shrink mx-1">/</div>
-                              </>
+                              </div>
                         }
-                        <div className="flex grow justify-center">{Math.round(toUnit(estFuel)) + ''}</div>
                      </div>
                }
             </GridElem>)
