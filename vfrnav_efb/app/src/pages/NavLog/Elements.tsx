@@ -615,7 +615,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             </div >
             {
                edit ?
-                  <div className="flex flex-col m-auto shrink">
+                  <div className="flex flex-col mx-auto shrink">
                      <div className="flex flex-row text-sm justify-center">
                         <div className="flex m-auto grow">Loaded Fuel : </div>
                         <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
