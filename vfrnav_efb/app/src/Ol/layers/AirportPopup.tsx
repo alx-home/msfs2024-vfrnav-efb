@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { PropsWithChildren, useContext, useEffect, useMemo, useState, ReactElement } from 'react';
+import { PropsWithChildren, useContext, useEffect, useMemo, useState, ReactElement, useCallback, useRef } from 'react';
 import { messageHandler, SettingsContext } from "@Settings/SettingsProvider.jsx";
 
 import { Tabs, Button, Scroll } from '@alx-home/Utils';
@@ -23,6 +23,7 @@ import { AirportFacility, Frequency, FrequencyTypeStr, Metar as MetarT, Runway, 
 
 import toweredImg from '@efb-images/towered.svg';
 import notToweredImg from '@efb-images/nottowered.svg';
+import { sha256 } from 'js-sha256';
 
 
 const Category = ({ title, children }: PropsWithChildren<{
@@ -183,6 +184,62 @@ const Fuels = ({ data }: {
    return body
 }
 
+const Charts = ({ data }: {
+   data: AirportFacility
+}) => {
+   const { getSIAPDF, addPdf, setPopup, emptyPopup, setPage } = useContext(SettingsContext)!;
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState<boolean>(false);
+   const [errorMsg, setErrorMsg] = useState<string | undefined>();
+   const timeout = useRef<NodeJS.Timeout>(undefined);
+
+   const download = useCallback(() => {
+      setLoading(true);
+
+      getSIAPDF(data.icao).then(src => {
+         addPdf.current?.(data.icao.toUpperCase(), { src: src, name: data.icao.toUpperCase(), id: sha256(src) });
+         setPopup(emptyPopup);
+         setPage('charts')
+      }).catch((e) => {
+         setError(true)
+         setErrorMsg(e.message);
+      });
+   }, [addPdf, data.icao, emptyPopup, getSIAPDF, setPage, setPopup])
+
+   useEffect(() => {
+      if (error) {
+         if (timeout.current) {
+            clearTimeout(timeout.current)
+         }
+         timeout.current = setTimeout(() => {
+            setLoading(false);
+            setError(false);
+
+            timeout.current = undefined;
+         }, 3000)
+      }
+   }, [error])
+
+   return <Category title='SIA Pdf'>
+      <div className='flex flex-col grow !ml-5 text-base transition-all'>
+         <div className='flex mb-4'>
+            Retrieve charts from the SIA database and integrate them into the PDF page
+         </div>
+         <div className={"transition-all flex w-full pointer-events-none " + (error ? 'max-h-[2000px] opacity-100' : ' opacity-0 max-h-0')}>
+            <div className="w-full flex flex-row m-auto justify-center">
+               <div className={"flex flex-row grow text-sm justify-center shrink pb-2 text-rose-600"}>
+                  {errorMsg}
+               </div>
+            </div>
+         </div>
+         <Button active={true} disabled={loading}
+            onClick={download}>
+            Download
+         </Button>
+      </div>
+   </Category>
+}
+
 const Transitions = ({ data }: {
    data: AirportFacility
 }) => {
@@ -273,7 +330,7 @@ const Metar = ({ data }: {
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const tabs = ['Frequencies', 'Transitions', 'Runways', 'Fuels', 'Metar'] as const;
+const tabs = ['Frequencies', 'Transitions', 'Runways', 'Fuels', 'Metar', 'Charts'] as const;
 type Tab = typeof tabs[number];
 const TabStr: Record<Tab, string> = {
    'Frequencies': 'Frequencies',
@@ -281,6 +338,7 @@ const TabStr: Record<Tab, string> = {
    'Runways': 'Runways',
    'Fuels': 'Fuels',
    'Metar': 'Metar / Taf',
+   'Charts': 'Charts',
 }
 
 const TabElem = ({ tab, currentTab, children }: PropsWithChildren<{
@@ -346,6 +404,10 @@ export const AirportPopup = ({ data }: {
 
       if (data.fuel1 !== '' || data.fuel2 !== '') {
          addTab(Fuels, 'Fuels')
+      }
+
+      if (data.icao.startsWith('LF')) {
+         addTab(Charts, 'Charts')
       }
 
       return [tabs, elems]

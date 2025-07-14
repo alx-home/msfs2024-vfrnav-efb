@@ -35,7 +35,7 @@ export type Src = {
 export const ChartsPage = ({ active }: {
   active: boolean
 }) => {
-  const { setPopup } = useContext(SettingsContext)!;
+  const { setPopup, addPdf } = useContext(SettingsContext)!;
   const [opacity, setOpacity] = useState(' opacity-0');
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const efbConnected = useEFBServer();
@@ -73,7 +73,6 @@ export const ChartsPage = ({ active }: {
 
   const removeDocument = useCallback(() => {
     const src = srcs.entries().find((_src, index) => index === activeDocument)!;
-    setActiveDocument(Math.max(Math.min(srcs.size - 2, activeDocument), 0));
 
     setSrcs(srcs => {
       const newSrcs = new Map<string, Src>(srcs);
@@ -112,7 +111,6 @@ export const ChartsPage = ({ active }: {
             bytes[i] = binaryString.charCodeAt(i);
           }
 
-          setActiveDocument(0)
           newSrcs.set(pdf.name, {
             id: pdf.id,
             name: pdf.name,
@@ -127,6 +125,20 @@ export const ChartsPage = ({ active }: {
       return () => messageHandler.unsubscribe('__EXPORT_PDFS__', callback)
     }
   }, []);
+
+  useEffect(() => {
+    addPdf.current = (name: string, pdf: Src) => {
+      setSrcs(srcs => {
+        const newSrcs = new Map<string, Src>(srcs);
+        newSrcs.set(name, pdf);
+        return newSrcs;
+      })
+    }
+  }, [addPdf]);
+
+  useEffect(() => {
+    setActiveDocument(Math.max(0, srcs.size - 1, 0));
+  }, [srcs]);
 
   return <div className="flex grow justify-center overflow-hidden max-w-full" style={active ? {} : { display: 'none' }}>
     <div className="flex flex-row grow justify-center max-w-full">

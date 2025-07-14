@@ -101,7 +101,7 @@ export const App = () => {
 
   return (
     <MouseContextProvider>
-      <SettingsContextProvider setPopup={setPopup} emptyPopup={empty}>
+      <SettingsContextProvider setPopup={setPopup} emptyPopup={empty} setPage={setPage}>
         <MapContextProvider>
           <div className={'fixed flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center text-sm'
             + (popup === empty ? ' hidden' : '')
