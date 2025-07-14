@@ -60,10 +60,10 @@ export const AZBAPopup = ({ data }: {
     const result = new Map<string, string[][]>();
 
     slots.forEach(slot => {
-      const startTime = slot.startTime.toLocaleTimeString("en-US", { timeZoneName: 'short' });
+      const startTime = slot.startTime.getHours().toString().padStart(2, '0') + ":" + slot.startTime.getMinutes().toString().padStart(2, '0');
+      const endTime = slot.endTime.getHours().toString().padStart(2, '0') + ":" + slot.endTime.getMinutes().toString().padStart(2, '0');
       const startDate = slot.startTime.toLocaleDateString("en-US", { month: 'long', year: 'numeric', day: 'numeric' });
       const endDate = slot.endTime.toLocaleDateString("en-US", { month: 'long', year: 'numeric', day: 'numeric' });
-      const endTime = slot.endTime.toLocaleTimeString("en-US", { timeZoneName: 'short' });
 
       if (!result.has(startDate)) {
         result.set(startDate, []);

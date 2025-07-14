@@ -95,6 +95,60 @@ export const useSIAZBA = (SIAAZBAAddr: string, SIAAZBADateAddr: string, SIAAuth:
                     endTime: string,
                   }[]
                 }) => {
+                  const toDate = (raw_date: string) => {
+                    const [date, time] = raw_date.substring(0, raw_date.length - 9).split('T');
+
+                    const [year, month, day] = date.split('-');
+                    const [hour, minutes] = time.split(':');
+
+                    if (+month > 3 && +month < 10) {
+                      // Summer
+                      return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+02:00');
+                    } else if (+month === 3) {
+                      const lastDay = new Date(year + '-03-31T00:00:00+00:00').getUTCDay();
+                      const lastSunday = 31 + lastDay - 6;
+
+                      if (+day === lastSunday) {
+                        if (+hour > 2) {
+                          //Summer
+                          return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+02:00');
+                        } else {
+                          console.assert(+hour < 2);
+                          // Winter
+                          return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+01:00');
+                        }
+                      } else if (+day > lastSunday) {
+                        //Summer
+                        return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+02:00');
+                      } else {
+                        //Winter
+                        return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+01:00');
+                      }
+                    } else if (+month === 10) {
+                      const lastDay = new Date(year + '-10-31T00:00:00+00:00').getUTCDay();
+                      const lastSunday = 31 + lastDay - 6;
+
+
+                      if (+day === lastSunday) {
+                        if (+hour > 2) {
+                          //Winter
+                          return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+01:00');
+                        } else {
+                          // Summer
+                          return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+02:00');
+                        }
+                      } else if (+day < lastSunday) {
+                        //Summer
+                        return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+02:00');
+                      } else {
+                        //Winter
+                        return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+01:00');
+                      }
+                    }
+
+                    // Winter
+                    return new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minutes + ':00+01:00');
+                  }
                   result.push({
                     id: elem.codeId,
                     remark: elem.txtRmk,
@@ -108,8 +162,8 @@ export const useSIAZBA = (SIAAZBAAddr: string, SIAAZBADateAddr: string, SIAAuth:
                       }
                     }),
                     timeslots: elem.timeSlots.map(slot => ({
-                      startTime: new Date(new Date(slot.startTime.substring(0, slot.startTime.length - 6)).getTime() - 3600000),
-                      endTime: new Date(new Date(slot.endTime.substring(0, slot.endTime.length - 6)).getTime() - 3600000),
+                      startTime: toDate(slot.startTime),
+                      endTime: toDate(slot.endTime),
                     }))
                   });
                 });
