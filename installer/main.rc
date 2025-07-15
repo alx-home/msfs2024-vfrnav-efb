@@ -45,7 +45,7 @@ BEGIN
             VALUE "InternalName",     VER_PRODUCTNAME_STR
             VALUE "LegalCopyright",   VER_COPYRIGHT_STR
             VALUE "LegalTrademarks",  "\0"
-            VALUE "OriginalFilename", "msfs2024-vfrnav_installer-int.exe\0"
+            VALUE "OriginalFilename", "msfs2024-vfrnav_installer.exe\0"
             VALUE "PrivateBuild",     "\0"
             VALUE "ProductName",      VER_PRODUCTNAME_STR
             VALUE "ProductVersion",   VER_PRODUCTVERSION_STR
