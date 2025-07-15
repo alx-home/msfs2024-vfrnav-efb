@@ -10,7 +10,7 @@ if(WATCH_MODE)
     )
 endif()
 
-win32_executable(TARGET_NAME installer_int
+win32_executable(TARGET_NAME installer
     FILES
         main.cpp main.rc
         Bindings/abort.cpp
@@ -27,7 +27,7 @@ win32_executable(TARGET_NAME installer_int
         "${COMPILE_OPTIONS}"
 )
 
-target_link_libraries(installer_int PRIVATE
+target_link_libraries(installer PRIVATE
         alx-home::webview
         alx-home::json
         alx-home::promise
@@ -44,11 +44,11 @@ set(REVISION 0)
 
 set(VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${REVISION})
 
-set_target_properties(installer_int PROPERTIES VERSION ${MAJOR_VERSION})
-set_target_properties(installer_int PROPERTIES SOVERSION ${MAJOR_VERSION}.${MINOR_VERSION})
-set_target_properties(installer_int PROPERTIES OUTPUT_NAME "msfs2024-vfrnav_installer-int")
+set_target_properties(installer PROPERTIES VERSION ${MAJOR_VERSION})
+set_target_properties(installer PROPERTIES SOVERSION ${MAJOR_VERSION}.${MINOR_VERSION})
+set_target_properties(installer PROPERTIES OUTPUT_NAME "msfs2024-vfrnav_installer")
 
-target_link_libraries(installer_int PRIVATE
+target_link_libraries(installer PRIVATE
     alx-home::windows
 )
 
@@ -71,4 +71,4 @@ else()
     )
 endif()
 
-add_subdirectory(Wrapper/)
+# add_subdirectory(Wrapper/)
