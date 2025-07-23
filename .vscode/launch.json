@@ -5,7 +5,7 @@
          "name": "(Windows) Launch Installer",
          "type": "cppvsdbg",
          "request": "launch",
-         "program": "${workspaceFolder}/build/installer/msfs2024-vfrnav_installer-int.exe",
+         "program": "${workspaceFolder}/build/installer/msfs2024-vfrnav_installer.exe",
          "args": [],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",

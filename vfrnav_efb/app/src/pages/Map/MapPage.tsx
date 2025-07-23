@@ -349,7 +349,7 @@ export const MapPage = ({ active }: {
           <div className={"relative flex grow justify-end h-full overflow-hidden"} >
             <SpinAnimation />
             <div className={"absolute transition-all right-0 top-0 m-5 max-w-20 text-base pointer-events-auto"
-              + " [&_*]:uppercase p-2 rounded-md opacity-40 bg-slate-800 overflow-hidden "
+              + " [&_*]:uppercase p-2 rounded-md opacity-40 bg-slate-800 overflow-hidden hocus-within:overflow-visible "
               + " hocus-within:max-w-80 hocus-within:opacity-100 [&:focus-within_.suggests]:max-h-[8000px] [&:focus-within_.suggests]:opacity-100 [&:hover_.hide]:opacity-100 [&:focus-within_.hide]:opacity-100"
             }>
               <div className="relative flex flex-row grow">
@@ -364,7 +364,7 @@ export const MapPage = ({ active }: {
                   <div className={"flex relative w-full"
                     + (filteredIcaos.length ? '' : ' hidden')
                   }>
-                    <div className="transition-all suggests flex absolute flex-col left-0 right-0 max-h-0 overflow-hidden opacity-0">
+                    <div className="transition-all suggests flex absolute flex-col left-0 right-0 max-h-0 overflow-hidden hocus-within:overflow-visible opacity-0">
                       <div className="transition-all flex flex-col bg-gray-700 hocus:bg-gray-800 p-2 rounded-sm border-x-2 border-b-2 border-msfs ">
                         {filteredIcaos.map((icao, index) => <button key={icao} className={
                           "flex flex-row border-2 border-transparent hover:border-msfs p-2 cursor-pointer h-max"
