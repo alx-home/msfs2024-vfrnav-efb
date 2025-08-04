@@ -15,12 +15,12 @@
 
 :root,
 :host {
-   --ol-background-color: white;
+   --ol-background-color: var(--overlay-bg);
    --ol-accent-background-color: #f5f5f5;
-   --ol-subtle-background-color: rgba(128, 128, 128, 0.25);
+   --ol-subtle-background-color: rgba(255, 255, 255, 0.);
    --ol-partial-background-color: rgba(255, 255, 255, 0.75);
-   --ol-foreground-color: #333333;
-   --ol-subtle-foreground-color: #666666;
+   --ol-foreground-color: white;
+   --ol-subtle-foreground-color: white;
    --ol-brand-color: #00aaff;
 }
 
@@ -168,8 +168,8 @@
 }
 
 .ol-rotate {
-   top: 0.5em;
-   right: 0.5em;
+   top: 4em;
+   left: 0.5em;
    transition: opacity 0.25s linear, visibility 0s linear;
 }
 

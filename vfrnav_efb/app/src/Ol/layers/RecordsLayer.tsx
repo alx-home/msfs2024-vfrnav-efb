@@ -58,16 +58,19 @@ export const RecordsLayer = ({
 }: OlLayerProp & {
   opacity?: number
 }) => {
-  const { profileScale, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
+  const { map, profileScale, profileOffset, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
   const records = useMemo(() => records_.filter(record => record.active), [records_]);
   const [mapSize, setMapSize] = useState<number[] | undefined>(undefined);
   const center = useMemo(() => {
     if (mapSize) {
-      return [mapSize[0] + recordsCenter.x * (mapSize[2] - mapSize[0]), mapSize[1] + recordsCenter.y * (mapSize[3] - mapSize[1])]
+      const xPos = mapSize[0] * recordsCenter.x;
+      const yPos = mapSize[1] * recordsCenter.y;
+
+      return map.getCoordinateFromPixel([xPos, yPos]);
     } else {
       return undefined;
     }
-  }, [mapSize, recordsCenter.x, recordsCenter.y])
+  }, [map, mapSize, recordsCenter.x, recordsCenter.y])
 
   const navData = useMemo(() => records.map(record => fetchRecord(record.id)), [records]);
 
@@ -104,7 +107,9 @@ export const RecordsLayer = ({
       const features = (async () => {
         const res = 0.30480 / profileScale;
 
-        const coords = (await data).value.map(elem => [...fromLonLat([elem.lon, elem.lat]), (withGround ? elem.altitude : elem.altitude - elem.ground) * res, elem.ground * res]);
+        const coords = (await data).value.map(elem => [...fromLonLat([elem.lon, elem.lat]),
+        Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res),
+        Math.max(0, (elem.ground - profileOffset) * res)]);
         const features: Feature[] = [];
         const polygonStyle = new Style({
           fill: new Fill({
@@ -157,9 +162,9 @@ export const RecordsLayer = ({
               segment = [last.toSpliced(2)];
               begIndex = i - 1;
               sign = 0;
+            } else {
+              sign = signB;
             }
-
-            sign = signB;
 
             segment.push([coord[0] + vecB[0], coord[1] + vecB[1]])
             vecA = vecB;
@@ -183,8 +188,8 @@ export const RecordsLayer = ({
 
           // Draw bounds
           segment = []
-          for (let i = 0; i < coords.length; ++i) {
-            const coord = coords[i] as Coordinate
+          for (const element of coords) {
+            const coord = element as Coordinate
             const vec = getVec(coord, coord[j + 2]);
 
             segment.push([coord[0] + vec[0], coord[1] + vec[1]])
@@ -203,9 +208,9 @@ export const RecordsLayer = ({
         // Draw rule 1
         {
           const segment: Coordinate[] = [];
-          for (let i = 0; i < coords.length; ++i) {
-            const coord = coords[i] as Coordinate
-            const vec = getVec(coord, res * profileRule1);
+          for (const element of coords) {
+            const coord = element as Coordinate
+            const vec = getVec(coord, res * Math.max(0, profileRule1 - profileOffset));
 
             segment.push([coord[0] + vec[0], coord[1] + vec[1]])
           }
@@ -223,9 +228,9 @@ export const RecordsLayer = ({
         // Draw rule 2
         {
           const segment: Coordinate[] = [];
-          for (let i = 0; i < coords.length; ++i) {
-            const coord = coords[i] as Coordinate
-            const vec = getVec(coord, res * profileRule2);
+          for (const element of coords) {
+            const coord = element as Coordinate
+            const vec = getVec(coord, res * Math.max(0, profileRule2 - profileOffset));
 
             segment.push([coord[0] + vec[0], coord[1] + vec[1]])
           }
@@ -244,7 +249,7 @@ export const RecordsLayer = ({
       })();
 
       return [...result, features] as Promise<Feature[]>[];
-    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, withGround, profileRule1, profileRule2]);
+    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, withGround, profileOffset, profileRule1, profileRule2]);
 
   const touchDowns = useMemo(() => records
     .map(async (record, index) => {
@@ -269,9 +274,12 @@ export const RecordsLayer = ({
     const vector = new VectorLayer() as VectorLayer & Interactive;
 
     vector.onDrag = (event) => {
-      const size = event.map.getSize()!;
-      setMapSize([...event.map.getCoordinateFromPixel([0, 0]), ...event.map.getCoordinateFromPixel([size[0], size[1]])]);
-
+      const size = event.map.getSize();
+      if (size) {
+        setMapSize([size[0], size[1]]);
+      } else {
+        setMapSize(undefined);
+      }
       return true;
     }
     return vector
