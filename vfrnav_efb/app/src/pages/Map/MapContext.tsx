@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Collection, Map as olMap, MapBrowserEvent, getUid } from 'ol';
+import { Collection, Map as olMap, MapBrowserEvent, getUid, MapEvent } from 'ol';
 import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NavData } from './MapMenu/Menus/Nav';
 import BaseLayer from "ol/layer/Base";
@@ -40,6 +40,8 @@ export type Interactive = {
   onBlur?: (_pixel: MapBrowserEvent<any>, _features: FeatureLike[]) => boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onMoveEnd?: (_pixel: MapBrowserEvent<any>, _features: FeatureLike[]) => boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onDrag?: (_pixel: MapBrowserEvent<any> | MapEvent, _features: FeatureLike[]) => boolean
 }
 
 export const MapContext = createContext<{
@@ -47,6 +49,13 @@ export const MapContext = createContext<{
   navData: NavData[],
   records: PlaneRecord[],
   profileScale: number,
+
+  setRecordsCenter: (_value: { x: number, y: number }) => void,
+  recordsCenter: { x: number, y: number },
+  setProfileRule1: (_value: number) => void,
+  profileRule1: number,
+  setProfileRule2: (_value: number) => void,
+  profileRule2: number,
   setProfileScale: (_value: number) => void,
   withTouchdown: boolean,
   enableTouchdown: (_value: boolean) => void,
@@ -200,6 +209,8 @@ const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props:
 
 const MapContextProvider = ({ children }: PropsWithChildren) => {
   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
+  const dragging = useRef(false);
+
   const map = useMemo<olMap>(() => {
     const layers = new Collection<BaseLayer>();
     const focused: {
@@ -215,7 +226,42 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       interactions: defaults({ doubleClickZoom: false })
     });
 
+    const handleDrag = (event: MapBrowserEvent<KeyboardEvent | WheelEvent | PointerEvent> | MapEvent) => {
+      map.getAllLayers().forEach(async (layer) => {
+        if (!layer.isVisible?.()) {
+          return false;
+        }
+
+        if (layer instanceof VectorLayer) {
+          const source = layer.getSource();
+          if (source instanceof VectorSource || source instanceof Cluster) {
+            const features = source.getFeatures()
+
+
+            const iLayer = (layer as unknown as Interactive);
+
+            if (iLayer.onDrag) {
+              iLayer.onDrag(event, features)
+            }
+
+            features.forEach(feature => {
+              const iFeature = (feature as unknown as Interactive);
+              iFeature.onDrag?.(event, features)
+            })
+          }
+        }
+      })
+    }
+
+    map.on('movestart', () => {
+      dragging.current = true;
+    })
+
     map.on('moveend', (event) => {
+      dragging.current = true;
+      handleDrag(event)
+      dragging.current = false;
+
       const coord = event.map.getView().getCenter()!;
       mouseEndCallbacks.current.forEach(callback => callback(coord));
     });
@@ -224,6 +270,10 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       const coords = event.coordinate;
 
       map.getTargetElement().style.cursor = '';
+
+      if (dragging.current) {
+        handleDrag(event);
+      }
 
       const setFocused = (iElem: Interactive | undefined, features: FeatureLike[]) => {
         focused.feature?.onBlur?.(event, focused.args);
@@ -311,6 +361,9 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [addNavRequest, setAddNavRequest] = useState(false);
 
   const [profileScale, setProfileScale] = useState(1);
+  const [profileRule1, setProfileRule1] = useState(1000);
+  const [profileRule2, setProfileRule2] = useState(1500);
+  const [recordsCenter, setRecordsCenter] = useState({ x: 0.5, y: 0.5 });
   const [touchdown, setTouchdown] = useState(false);
   const [ground, setGround] = useState(true);
   const [deviations, setDeviations] = useState<Deviation[]>([
@@ -502,6 +555,12 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     },
     setProfileScale: setProfileScale,
     profileScale: profileScale,
+    recordsCenter: recordsCenter,
+    setRecordsCenter: setRecordsCenter,
+    setProfileRule1: setProfileRule1,
+    profileRule1: profileRule1,
+    setProfileRule2: setProfileRule2,
+    profileRule2: profileRule2,
     enableTouchdown: setTouchdown,
     withTouchdown: touchdown,
     enableGround: setGround,
@@ -515,7 +574,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     setFuelConsumption: setFuelConsumption,
     fuelUnit: fuelUnit,
     setFuelUnit: setFuelUnit,
-  }), [map, navData, records, flash, flashKey, profileScale, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
+  }), [map, navData, records, flash, flashKey, profileScale, recordsCenter, profileRule1, profileRule2, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
 
   return (
     <MapContext.Provider
