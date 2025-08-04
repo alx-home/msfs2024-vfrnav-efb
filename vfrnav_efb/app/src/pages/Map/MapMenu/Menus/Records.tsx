@@ -18,7 +18,7 @@ import { ChangeEvent, CSSProperties, Dispatch, FocusEvent, KeyboardEvent, MouseE
 import { Feature } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
 
-import { Slider, Button, CheckBox, Scroll } from '@alx-home/Utils';
+import { Slider, Button, CheckBox, Scroll, DualSlider } from '@alx-home/Utils';
 
 import { MapContext } from '@pages/Map/MapContext';
 
@@ -164,8 +164,18 @@ export const Records = ({ className, style }: {
 };
 
 export const RecordsToolbar = () => {
-  const { profileScale, setProfileScale, enableTouchdown, withTouchdown, enableGround, withGround } = useContext(MapContext)!;
-  const reset = useCallback(() => setProfileScale(1), [setProfileScale]);
+  const { profileScale, setProfileScale, profileRule1, profileRule2, setProfileRule1, setProfileRule2, enableTouchdown, withTouchdown, enableGround, withGround } = useContext(MapContext)!;
+
+  const setProfileRules = useCallback((min: number, max: number) => {
+    setProfileRule1(min)
+    setProfileRule2(max)
+  }, [setProfileRule1, setProfileRule2]);
+
+  const reset = useCallback(() => {
+    setProfileScale(1)
+    setProfileRules(1000, 1500)
+  }, [setProfileRules, setProfileScale]);
+
 
   return <div className='flex flex-col grow'>
     <div className='flex flex-col'>
@@ -181,10 +191,16 @@ export const RecordsToolbar = () => {
         </div>
         <div className='text-left text-base grow'>Ground Layer</div>
       </div>
-      <div className='flex flex-col grow mb-4 mt-2'>
+      <div className='flex flex-col grow mb-2 mt-2'>
         <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-30'>Scale 1:{profileScale.toFixed(3)}</div>
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Scale 1:{profileScale.toFixed(3)}</div>
           <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
+        </div>
+      </div>
+      <div className='flex flex-col grow mb-4'>
+        <div className='flex flex-row grow'>
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Rules {profileRule1.toFixed(0)}/{profileRule2.toFixed(0)}</div>
+          <DualSlider className="flex flex-row grow justify-end" value={{ min: profileRule1, max: profileRule2 }} range={{ min: 0, max: 40000 }} onChange={setProfileRules} />
         </div>
       </div>
       <div className='flex'>

@@ -14,7 +14,7 @@
  */
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { Geometry, LineString, Point, Polygon, SimpleGeometry } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import VectorSource from "ol/source/Vector";
@@ -22,7 +22,7 @@ import { Feature } from 'ol';
 
 import VectorLayer from "ol/layer/Vector";
 
-import { MapContext } from "@pages/Map/MapContext";
+import { Interactive, MapContext } from "@pages/Map/MapContext";
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
@@ -31,15 +31,6 @@ import { toContext } from "ol/render";
 import { messageHandler } from "@Settings/SettingsProvider";
 import { PlanePoses } from "@shared/PlanPos";
 import LayerGroup from "ol/layer/Group";
-
-const getNorm = (a: Coordinate, b: Coordinate) => {
-  const ab = [b[0] - a[0], b[1] - a[1]];
-  const nab = Math.sqrt(ab[0] * ab[0] + ab[1] * ab[1]);
-
-  const norm = [-ab[1] / nab, ab[0] / nab];
-
-  return norm;
-}
 
 const fetchRecord = async (id: number) => new Promise<PlanePoses>(resolve => {
   const callback = (poses: PlanePoses) => {
@@ -67,63 +58,193 @@ export const RecordsLayer = ({
 }: OlLayerProp & {
   opacity?: number
 }) => {
-  const { profileScale, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
+  const { profileScale, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
   const records = useMemo(() => records_.filter(record => record.active), [records_]);
+  const [mapSize, setMapSize] = useState<number[] | undefined>(undefined);
+  const center = useMemo(() => {
+    if (mapSize) {
+      return [mapSize[0] + recordsCenter.x * (mapSize[2] - mapSize[0]), mapSize[1] + recordsCenter.y * (mapSize[3] - mapSize[1])]
+    } else {
+      return undefined;
+    }
+  }, [mapSize, recordsCenter.x, recordsCenter.y])
 
   const navData = useMemo(() => records.map(record => fetchRecord(record.id)), [records]);
 
   const navPath = useMemo(() => navData
-    .map(async data => new Feature(new LineString((await data).value.map(pos => fromLonLat([pos.lon, pos.lat]))))), [navData]);
+    .map(async data => {
+      const feature = new Feature(new LineString((await data).value.map(pos => fromLonLat([pos.lon, pos.lat]))))
+      feature.setStyle(new Style({
+        renderer(coords_, state) {
+          const ctx = state.context;
+          const geometry = state.geometry.clone() as SimpleGeometry;
+          geometry.setCoordinates(coords_);
+
+          const renderContext = toContext(ctx, {
+            pixelRatio: 1,
+          });
+
+          renderContext.setFillStrokeStyle(new Fill(), new Stroke({
+            color: '#FFFFFF',
+            width: 6,
+          }));
+          renderContext.drawGeometry(geometry);
+          renderContext.setFillStrokeStyle(new Fill({}), new Stroke({
+            color: 'rgba(0, 153, 255, 1)',
+            width: 4,
+          }));
+          renderContext.drawGeometry(geometry);
+        }
+      }))
+      return feature;
+    }), [navData]);
 
   const profile = useMemo(() => navData
     .reduce((result, data) => {
-      const elems = (async () => {
+      const features = (async () => {
         const res = 0.30480 / profileScale;
 
-        const coords = (await data).value.map(elem => [...fromLonLat([elem.lon, elem.lat]), elem.altitude, elem.ground]);
-        const elems: Coordinate[][][] = [[], []];
-        for (let j = 0; j < (withGround ? 2 : 1); ++j) {
-          let start: Coordinate | undefined;
+        const coords = (await data).value.map(elem => [...fromLonLat([elem.lon, elem.lat]), (withGround ? elem.altitude : elem.altitude - elem.ground) * res, elem.ground * res]);
+        const features: Feature[] = [];
+        const polygonStyle = new Style({
+          fill: new Fill({
+            color: 'rgba(0, 153, 255, 0.4)',
+          }), stroke: new Stroke({
+            color: 'transparent',
+          })
+        });
 
-          for (let i = 1; i < coords.length; ++i) {
-            const a = coords[i - 1] as Coordinate
-            const b = coords[i] as Coordinate
-
-            const segment: Coordinate[] = [];
-
-            segment.push(a.toSpliced(2))
-
-            let norm = getNorm(a, b);
-
-            start ??= norm;
-
-            const na = a[j + 2] - (withGround ? 0 : a[j + 3]);
-            segment.push([a[0] + start[0] * na * res, a[1] + start[1] * na * res])
-
-            if (i < coords.length - 1) {
-              const c = coords[i + 1] as Coordinate
-              const norm2 = getNorm(b, c);
-
-              norm = [norm2[0] + norm[0], norm2[1] + norm[1]];
-              const d = Math.sqrt(norm[0] * norm[0] + norm[1] * norm[1]);
-              norm = [norm[0] / d, norm[1] / d];
-            }
-
-            start = norm;
-            const nb = b[j + 2] - (withGround ? 0 : b[j + 3]);
-            segment.push([b[0] + start[0] * nb * res, b[1] + start[1] * nb * res])
-            segment.push(b.toSpliced(2))
-            segment.push(a.toSpliced(2))
-
-            elems[j].push(segment)
-          }
+        if (!center || (coords.length === 0)) {
+          return features;
         }
 
-        return elems.reduce((result, profile) => [...result, ...profile.map(elem => new Feature(new Polygon([elem])))], [] as Feature[]);
+        const getVec = (coord: Coordinate, height: number) => {
+          const vec = [coord[0] - center[0], coord[1] - center[1]]
+
+          vec[0] *= height / Math.max(0.0000001, 3000 - height);
+          vec[1] *= height / Math.max(0.0000001, 3000 - height);
+
+          return vec;
+        }
+
+        for (let j = 0; j < (withGround ? 2 : 1); ++j) {
+          let vecA: Coordinate = getVec(coords[0], coords[0][j + 2]);
+
+          let begIndex = 0;
+          let segment: Coordinate[] = [];
+          let sign = 0;
+
+          for (let i = 0; i < coords.length; ++i) {
+            const coord = coords[i] as Coordinate
+            const vecB = getVec(coord, coord[j + 2]);
+            const signB = vecB[0] * vecA[1] - vecB[1] * vecA[0];
+
+            if (signB * sign < 0) {
+              // Curvature change => Close Polygon
+
+              console.assert(i > 0);
+              console.assert(segment.length);
+
+              const last = segment[segment.length - 1];
+              for (let k = i; k >= begIndex; --k) {
+                segment.push([coords[k][0], coords[k][1]])
+              }
+              segment.push(segment[0].toSpliced(2))
+              const feature = new Feature(new Polygon([segment]))
+              feature.setStyle(polygonStyle);
+              features.push(feature)
+
+              segment = [last.toSpliced(2)];
+              begIndex = i - 1;
+              sign = 0;
+            }
+
+            sign = signB;
+
+            segment.push([coord[0] + vecB[0], coord[1] + vecB[1]])
+            vecA = vecB;
+          }
+
+          if (segment.length) {
+            // Close last Polygon
+
+            const i = coords.length - 1;
+            console.assert(i > 0);
+
+            for (let k = i; k >= begIndex; --k) {
+              segment.push([coords[k][0], coords[k][1]])
+            }
+            segment.push(segment[0].toSpliced(2))
+
+            const feature = new Feature(new Polygon([segment]))
+            feature.setStyle(polygonStyle);
+            features.push(feature)
+          }
+
+          // Draw bounds
+          segment = []
+          for (let i = 0; i < coords.length; ++i) {
+            const coord = coords[i] as Coordinate
+            const vec = getVec(coord, coord[j + 2]);
+
+            segment.push([coord[0] + vec[0], coord[1] + vec[1]])
+          }
+
+          const feature = new Feature(new LineString(segment));
+          feature.setStyle(new Style({
+            fill: new Fill(), stroke: new Stroke({
+              color: 'rgba(255, 255, 255, ' + (j === 0 ? '1' : '0.4') + ')',
+              width: 1,
+            })
+          }))
+          features.push(feature)
+        }
+
+        // Draw rule 1
+        {
+          const segment: Coordinate[] = [];
+          for (let i = 0; i < coords.length; ++i) {
+            const coord = coords[i] as Coordinate
+            const vec = getVec(coord, res * profileRule1);
+
+            segment.push([coord[0] + vec[0], coord[1] + vec[1]])
+          }
+
+          const feature = new Feature(new LineString(segment));
+          feature.setStyle(new Style({
+            fill: new Fill(), stroke: new Stroke({
+              color: 'rgba(255, 0, 0, 1)',
+              width: 2,
+            })
+          }))
+          features.push(feature)
+        }
+
+        // Draw rule 2
+        {
+          const segment: Coordinate[] = [];
+          for (let i = 0; i < coords.length; ++i) {
+            const coord = coords[i] as Coordinate
+            const vec = getVec(coord, res * profileRule2);
+
+            segment.push([coord[0] + vec[0], coord[1] + vec[1]])
+          }
+
+          const feature = new Feature(new LineString(segment));
+          feature.setStyle(new Style({
+            fill: new Fill(), stroke: new Stroke({
+              color: 'rgba(0, 255, 0, 1)',
+              width: 2,
+            })
+          }))
+          features.push(feature)
+        }
+
+        return features;
       })();
 
-      return [...result, elems] as Promise<Feature[]>[];
-    }, [] as Promise<Feature[]>[]), [navData, profileScale, withGround]);
+      return [...result, features] as Promise<Feature[]>[];
+    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, withGround, profileRule1, profileRule2]);
 
   const touchDowns = useMemo(() => records
     .map(async (record, index) => {
@@ -136,49 +257,26 @@ export const RecordsLayer = ({
       return feature;
     }), [navData, records]);
 
-  const vectorSource = useMemo(async () => new VectorSource<Feature<Geometry>>({
-    features: [
-      ...await Promise.all(navPath),
-      ...(await Promise.all(profile)).reduce((result, elem) => [...result, ...elem], []),
-    ],
-  }), [navPath, profile]);
+  const projectionSource = useMemo(() => new VectorSource<Feature<Geometry>>({}), []);
+  const pathSource = useMemo(() => new VectorSource<Feature<Geometry>>({}), []);
   const touchDownSource = useMemo(async () => new VectorSource<Feature<Geometry>>({
     features: [...await Promise.all(touchDowns)],
   }), [touchDowns]);
 
-  const vectorLayer = useMemo(() => new VectorLayer({
-    style: new Style({
-      renderer(coords_, state) {
-        const ctx = state.context;
-        const geometry = state.geometry.clone() as SimpleGeometry;
-        geometry.setCoordinates(coords_);
+  const projectionLayer = useMemo(() => new VectorLayer(), []);
 
-        const renderContext = toContext(ctx, {
-          pixelRatio: 1,
-        });
+  const pathLayer = useMemo(() => {
+    const vector = new VectorLayer() as VectorLayer & Interactive;
 
-        if (geometry instanceof Polygon) {
-          renderContext.setFillStrokeStyle(new Fill({
-            color: 'rgba(0, 153, 255, 0.4)',
-          }), new Stroke({
-            color: 'transparent',
-          }));
-          renderContext.drawGeometry(geometry);
-        } else {
-          renderContext.setFillStrokeStyle(new Fill(), new Stroke({
-            color: '#FFFFFF',
-            width: 6,
-          }));
-          renderContext.drawGeometry(geometry);
-          renderContext.setFillStrokeStyle(new Fill({}), new Stroke({
-            color: 'rgba(0, 153, 255, 1)',
-            width: 4,
-          }));
-          renderContext.drawGeometry(geometry);
-        }
-      }
-    }),
-  }), []);
+    vector.onDrag = (event) => {
+      const size = event.map.getSize()!;
+      setMapSize([...event.map.getCoordinateFromPixel([0, 0]), ...event.map.getCoordinateFromPixel([size[0], size[1]])]);
+
+      return true;
+    }
+    return vector
+  }, []);
+
 
   const touchdownLayer = useMemo(() => new VectorLayer({
     style: new Style({
@@ -209,16 +307,33 @@ export const RecordsLayer = ({
 
   const group = useMemo(() => new LayerGroup({
     layers: [
-      vectorLayer,
+      pathLayer,
+      projectionLayer,
       touchdownLayer
     ]
-  }), [touchdownLayer, vectorLayer])
+  }), [touchdownLayer, projectionLayer, pathLayer])
+
+  useEffect(() => {
+    projectionLayer.setSource(projectionSource)
+  }, [projectionLayer, projectionSource])
+
+  useEffect(() => {
+    pathLayer.setSource(pathSource)
+  }, [pathLayer, pathSource])
 
   useEffect(() => {
     (async () => {
-      vectorLayer.setSource(await vectorSource)
+      projectionSource.clear();
+      projectionSource.addFeatures([...(await Promise.all(profile)).reduce((result, elem) => [...result, ...elem], [])])
     })()
-  }, [vectorLayer, vectorSource])
+  }, [profile, projectionSource])
+
+  useEffect(() => {
+    (async () => {
+      pathSource.clear();
+      pathSource.addFeatures(await Promise.all(navPath))
+    })()
+  }, [navPath, pathSource])
 
   useEffect(() => {
     (async () => {
@@ -228,7 +343,8 @@ export const RecordsLayer = ({
         touchdownLayer.setSource(new VectorSource());
       }
     })()
-  }, [touchDownSource, touchdownLayer, vectorLayer, vectorSource, withTouchdown])
+  }, [touchDownSource, touchdownLayer, withTouchdown])
+
 
   return <OlLayer key={"airports"} source={group} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />
 };
