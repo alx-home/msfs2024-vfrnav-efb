@@ -249,13 +249,6 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
   }, []);
 
   useEffect(() => {
-    document.body.style.setProperty('--menu-padding', '35px')
-    document.body.style.setProperty('--panel-height', '714')
-    document.body.style.setProperty('--panel-width', '714')
-    document.body.style.setProperty('--base-width', '517')
-    document.body.style.setProperty('--base-height', '714')
-    document.body.style.setProperty('--button-height', 'calc(1.75rem*var(--panel-width)/var(--base-width,516))')
-
     if (__MSFS_EMBEDED__) {
       const obj = parent.document.getElementsByClassName("efb")[0];
       const observer = new ResizeObserver(() => {
@@ -271,7 +264,6 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
         document.body.style.setProperty('--base-width', baseWidth)
         document.body.style.setProperty('--base-height', baseHeight)
 
-        console.log(height)
         if (+height < 790) {
           document.body.style.setProperty('--menu-padding', '35px')
         } else {

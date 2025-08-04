@@ -42,5 +42,11 @@ html,
 #root>*,
 body {
    height: 100%;
+   --menu-padding: 35px;
+   --panel-height: 714;
+   --panel-width: 714;
+   --base-width: 517;
+   --base-height: 714;
+   --button-height: calc(1.75rem*var(--panel-width)/var(--base-width, 516));
 }
 
