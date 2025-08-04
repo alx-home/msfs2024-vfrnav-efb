@@ -247,6 +247,18 @@
             "     - Restore ICAO search bar suggestions.",
             "       Restore les suggestion de la bar de recherche ICAO."
          ]
+      },
+      {
+         "version": "1.4.1",
+         "date": "AUG 04, 2025",
+         "notes": [
+            "**EFB**",
+            "  🔧 Improvements / Améliorations:",
+            "     - Add map rotation support to records layer (alt+shift+drag for rotation).",
+            "       Ajout du support de la rotation de la map au layer d'enregistrement de vols (alt+shift+drag pour la rotation).",
+            "     - Add the option to offset records on records layer.",
+            "       Ajout de la possibilité de shifter les records sur le layer d'enregistrement de vols."
+         ]
       }
    ]
 }
