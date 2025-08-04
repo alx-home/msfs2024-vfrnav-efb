@@ -164,7 +164,7 @@ export const Records = ({ className, style }: {
 };
 
 export const RecordsToolbar = () => {
-  const { profileScale, setProfileScale, profileRule1, profileRule2, setProfileRule1, setProfileRule2, enableTouchdown, withTouchdown, enableGround, withGround } = useContext(MapContext)!;
+  const { profileOffset, setProfileOffset, profileScale, setProfileScale, profileRule1, profileRule2, setProfileRule1, setProfileRule2, enableTouchdown, withTouchdown, enableGround, withGround } = useContext(MapContext)!;
 
   const setProfileRules = useCallback((min: number, max: number) => {
     setProfileRule1(min)
@@ -197,9 +197,15 @@ export const RecordsToolbar = () => {
           <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
         </div>
       </div>
+      <div className='flex flex-col grow mb-2 mt-2'>
+        <div className='flex flex-row grow'>
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Offset ({profileOffset >= 10000 ? "FL" + (profileOffset / 1000).toFixed(0) : profileOffset.toFixed(0)})</div>
+          <Slider className="flex flex-row grow justify-end" value={profileOffset} range={{ min: 0, max: 10000 }} onChange={setProfileOffset} />
+        </div>
+      </div>
       <div className='flex flex-col grow mb-4'>
         <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Rules {profileRule1.toFixed(0)}/{profileRule2.toFixed(0)}</div>
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Rules {profileRule1 >= 10000 ? "FL" + (profileRule1 / 1000).toFixed(0) : profileRule1.toFixed(0)} - {profileRule2 >= 10000 ? "FL" + (profileRule2 / 1000).toFixed(0) : profileRule2.toFixed(0)}</div>
           <DualSlider className="flex flex-row grow justify-end" value={{ min: profileRule1, max: profileRule2 }} range={{ min: 0, max: 40000 }} onChange={setProfileRules} />
         </div>
       </div>

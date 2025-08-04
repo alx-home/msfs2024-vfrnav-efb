@@ -48,7 +48,11 @@ export const MapContext = createContext<{
   map: olMap,
   navData: NavData[],
   records: PlaneRecord[],
+
+  setProfileScale: (_value: number) => void,
   profileScale: number,
+  setProfileOffset: (_value: number) => void,
+  profileOffset: number,
 
   setRecordsCenter: (_value: { x: number, y: number }) => void,
   recordsCenter: { x: number, y: number },
@@ -56,7 +60,7 @@ export const MapContext = createContext<{
   profileRule1: number,
   setProfileRule2: (_value: number) => void,
   profileRule2: number,
-  setProfileScale: (_value: number) => void,
+
   withTouchdown: boolean,
   enableTouchdown: (_value: boolean) => void,
   withGround: boolean,
@@ -271,10 +275,6 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
       map.getTargetElement().style.cursor = '';
 
-      if (dragging.current) {
-        handleDrag(event);
-      }
-
       const setFocused = (iElem: Interactive | undefined, features: FeatureLike[]) => {
         focused.feature?.onBlur?.(event, focused.args);
 
@@ -361,6 +361,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [addNavRequest, setAddNavRequest] = useState(false);
 
   const [profileScale, setProfileScale] = useState(1);
+  const [profileOffset, setProfileOffset] = useState(0);
   const [profileRule1, setProfileRule1] = useState(1000);
   const [profileRule2, setProfileRule2] = useState(1500);
   const [recordsCenter, setRecordsCenter] = useState({ x: 0.5, y: 0.5 });
@@ -553,6 +554,8 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         name: newName
       })
     },
+    setProfileOffset: setProfileOffset,
+    profileOffset: profileOffset,
     setProfileScale: setProfileScale,
     profileScale: profileScale,
     recordsCenter: recordsCenter,
@@ -574,7 +577,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     setFuelConsumption: setFuelConsumption,
     fuelUnit: fuelUnit,
     setFuelUnit: setFuelUnit,
-  }), [map, navData, records, flash, flashKey, profileScale, recordsCenter, profileRule1, profileRule2, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
+  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRule1, profileRule2, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
 
   return (
     <MapContext.Provider
