@@ -139,6 +139,7 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
 
       case SIMCONNECT_RECV_ID_QUIT: {
          connected_ = false;
+         SetEvent(event_);
          break;
       }
    }
