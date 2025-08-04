@@ -230,6 +230,23 @@
             "     - Resolved issue with incorrect timezone and summer time settings for AZBA.",
             "       Correction du problème lié au fuseau horaire et à l'heure d'été incorrects pour AZBA."
          ]
+      },
+      {
+         "version": "1.4.0",
+         "date": "AUG 04, 2025",
+         "notes": [
+            "**EFB**",
+            "  🔧 Improvements / Améliorations:",
+            "     - Enhanced display of Records layer (now in 3D).",
+            "       Amélioration de l'affichage des enregistrement de vols (maintenant en 3D).",
+            "     - Optimize Records layer performance.",
+            "       Amélioration des performances du layer d'enregistrement de vols.",
+            "     - Add measurement rules to Records layer.",
+            "       Ajout de règles de mesure pour le layer des enregistrement de vols.",
+            "  🐞 Fixes / Corrections:",
+            "     - Restore ICAO search bar suggestions.",
+            "       Restore les suggestion de la bar de recherche ICAO."
+         ]
       }
    ]
 }
