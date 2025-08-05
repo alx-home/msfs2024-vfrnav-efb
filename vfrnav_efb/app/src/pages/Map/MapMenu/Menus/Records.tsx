@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeEvent, CSSProperties, Dispatch, FocusEvent, KeyboardEvent, MouseEventHandler, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, CSSProperties, Dispatch, FocusEvent, KeyboardEvent, MouseEventHandler, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState, PropsWithChildren } from 'react';
 
 import { Feature } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
@@ -24,6 +24,7 @@ import { MapContext } from '@pages/Map/MapContext';
 
 import editImg from "@alx-home/images/edit.svg";
 import deleteImg from "@alx-home/images/delete.svg";
+import undoImg from '@alx-home/images/undo.svg';
 
 
 export class RecordData {
@@ -163,6 +164,52 @@ export const Records = ({ className, style }: {
   </div>
 };
 
+const SliderItem = ({ children, title }: PropsWithChildren<{
+  title: string
+}>) => {
+  return <div className='flex flex-col grow mb-1 mt-1'>
+    <div className='flex flex-row grow'>
+      <div className='flex flex-row text-base ml-4 mr-4 min-w-40'>{title}</div>
+      {children}
+    </div>
+  </div>
+}
+
+const CheckboxItem = ({ children, title }: PropsWithChildren<{
+  title: string
+}>) => {
+  return <div className='flex flex-row ml-4'>
+    <div className='flex flex-row mr-4'>
+      {children}
+    </div>
+    <div className='text-left text-base grow'>{title}</div>
+  </div>
+}
+
+const Reset = ({ onReset, children, className }: PropsWithChildren<{
+  className?: string,
+  onReset?: () => void
+}>) => {
+  const [reset, setReset] = useState(false);
+
+  useEffect(() => {
+    if (reset) {
+      onReset?.();
+      setReset(false);
+    }
+  }, [onReset, reset, setReset]);
+
+  return <div className={'relative flex flex-row grow mr-6 ' + className}>
+    {children}
+    <div className="absolute right-0 top-0 -mt-3 -mr-6 w-7">
+      <button className="p-1 bg-transparent" tabIndex={-1}
+        onClick={() => { setReset(true) }} >
+        <img className="invert hover:filter-msfs cursor-pointer" src={undoImg} alt='undo' />
+      </button>
+    </div>
+  </div>
+}
+
 export const RecordsToolbar = () => {
   const { profileOffset, setProfileOffset, profileScale, setProfileScale, profileRange, setProfileRange,
     profileRule1, profileRule2, setProfileRule1, setProfileRule2,
@@ -173,78 +220,55 @@ export const RecordsToolbar = () => {
   const setProfileRanges = useCallback((min: number, max: number) => {
     setProfileRange({ min: min, max: max })
   }, [setProfileRange]);
-  const setProfileRules = useCallback((min: number, max: number) => {
-    setProfileRule1(min)
-    setProfileRule2(max)
-  }, [setProfileRule1, setProfileRule2]);
-
-  const setProfileSlopes = useCallback((min: number, max: number) => {
-    setProfileSlope1(min)
-    setProfileSlope2(max)
-  }, [setProfileSlope1, setProfileSlope2]);
-
-  const setProfileSlopesOffset = useCallback((min: number, max: number) => {
-    setProfileSlopeOffset1(min)
-    setProfileSlopeOffset2(max)
-  }, [setProfileSlopeOffset1, setProfileSlopeOffset2]);
-
-  const reset = useCallback(() => {
-    setProfileScale(1)
-    setProfileRules(1000, 1500)
-    setProfileSlopes(0, 0);
-    setProfileRange({ min: 0, max: 1 })
-  }, [setProfileRange, setProfileRules, setProfileScale, setProfileSlopes]);
-
 
   return <div className='flex flex-col grow'>
     <div className='flex flex-col'>
-      <div className='flex flex-row grow mt-2'>
-        <div className='flex flex-row mr-4'>
-          <CheckBox value={withTouchdown} onChange={enableTouchdown} />
-        </div>
-        <div className='text-left text-base grow'>Touchdown</div>
-      </div>
-      <div className='flex flex-row grow mt-2'>
-        <div className='flex flex-row mr-4'>
-          <CheckBox value={withGround} onChange={enableGround} />
-        </div>
-        <div className='text-left text-base grow'>Ground Layer</div>
-      </div>
-      <div className='flex flex-col grow mb-1 mt-1'>
-        <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Scale 1:{profileScale.toFixed(3)}</div>
+      <SliderItem title={"Scale 1:" + profileScale.toFixed(3)}>
+        <Reset onReset={() => setProfileScale(1)}>
           <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
-        </div>
-      </div>
-      <div className='flex flex-col grow mb-1 mt-1'>
-        <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Range {(profileRange.min * 100).toFixed(0)}% - {(profileRange.max * 100).toFixed(0)}%</div>
+        </Reset>
+      </SliderItem>
+      <SliderItem title={`Range ${(profileRange.min * 100).toFixed(0)}% - ${(profileRange.max * 100).toFixed(0)}%`}>
+        <Reset onReset={() => setProfileRanges(0, 1)}>
           <DualSlider className="flex flex-row grow justify-end" value={profileRange} range={{ min: 0, max: 1 }} onChange={setProfileRanges} />
-        </div>
-      </div>
-      <div className='flex flex-col grow mb-1 mt-1'>
-        <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Offset ({profileOffset >= 10000 ? "FL" + (profileOffset / 100).toFixed(0) : profileOffset.toFixed(0)})</div>
+        </Reset>
+      </SliderItem>
+      <SliderItem title={`Offset (${profileOffset >= 10000 ? "FL" + (profileOffset / 100).toFixed(0) : profileOffset.toFixed(0)})`}>
+        <Reset onReset={() => setProfileOffset(0)}>
           <Slider className="flex flex-row grow justify-end" value={profileOffset} range={{ min: 0, max: 10000 }} onChange={setProfileOffset} />
-        </div>
-      </div>
-      <div className='flex flex-col grow mb-1 mt-1'>
-        <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Rules {profileRule1 >= 10000 ? "FL" + (profileRule1 / 100).toFixed(0) : profileRule1.toFixed(0)} {profileRule2 >= 10000 ? "FL" + (profileRule2 / 100).toFixed(0) : profileRule2.toFixed(0)}</div>
-          <DualSlider className="flex flex-row grow justify-end" value={{ min: profileRule1, max: profileRule2 }} range={{ min: 0, max: 40000 }} onChange={setProfileRules} />
-        </div>
-      </div>
-      <div className='flex flex-col grow mb-4'>
-        <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Slopes {profileSlope1.toFixed(0)}° {profileSlope2.toFixed(0)}°</div>
-          <DualSlider className="flex flex-row grow" value={{ min: profileSlopeOffset1, max: profileSlopeOffset2 }} range={{ min: 0, max: 100 }} onChange={setProfileSlopesOffset} />
-          <DualSlider className="flex flex-row grow justify-end" value={{ min: profileSlope1, max: profileSlope2 }} range={{ min: -45, max: 45 }} onChange={setProfileSlopes} />
-        </div>
-      </div>
-      <div className='flex'>
-        <Button className="flex flex-row grow justify-center min-h-0" active={true} onClick={reset}>
-          Reset
-        </Button>
+        </Reset>
+      </SliderItem>
+      <SliderItem title={`Rules ${profileRule1 >= 10000 ? "FL" + (profileRule1 / 100).toFixed(0) : profileRule1.toFixed(0)} ${profileRule2 >= 10000 ? "FL" + (profileRule2 / 100).toFixed(0) : profileRule2.toFixed(0)}`}>
+        <Reset onReset={() => setProfileRule1(1000)}>
+          <Slider className="flex flex-row grow" value={profileRule1} range={{ min: 0, max: 40000 }} onChange={setProfileRule1} />
+        </Reset>
+        <Reset onReset={() => setProfileRule2(1500)}>
+          <Slider className="flex flex-row grow" value={profileRule2} range={{ min: 0, max: 40000 }} onChange={setProfileRule2} />
+        </Reset>
+      </SliderItem>
+      <SliderItem title={`Slopes ${profileSlope1.toFixed(0)}° ${profileSlope2.toFixed(0)}°`}>
+        <Reset onReset={() => {
+          setProfileSlopeOffset1(0)
+          setProfileSlope1(0)
+        }}>
+          <Slider className="flex flex-row grow" value={profileSlopeOffset1} range={{ min: 0, max: 100 }} onChange={setProfileSlopeOffset1} />
+          <Slider className="flex flex-row grow" value={profileSlope1} range={{ min: -45, max: 45 }} onChange={setProfileSlope1} />
+        </Reset>
+        <Reset onReset={() => {
+          setProfileSlopeOffset2(0)
+          setProfileSlope2(0)
+        }}>
+          <Slider className="flex flex-row grow" value={profileSlopeOffset2} range={{ min: 0, max: 100 }} onChange={setProfileSlopeOffset2} />
+          <Slider className="flex flex-row grow" value={profileSlope2} range={{ min: -45, max: 45 }} onChange={setProfileSlope2} />
+        </Reset>
+      </SliderItem>
+      <div className="flex flex-row shrink mt-2">
+        <CheckboxItem title={`Touchdown`}>
+          <CheckBox value={withTouchdown} onChange={enableTouchdown} />
+        </CheckboxItem>
+        <CheckboxItem title={`Ground Layer`}>
+          <CheckBox value={withGround} onChange={enableGround} />
+        </CheckboxItem>
       </div>
     </div>
   </div>
