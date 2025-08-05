@@ -56,8 +56,6 @@ export const MapContext = createContext<{
 
   setRecordsCenter: (_value: { x: number, y: number }) => void,
   recordsCenter: { x: number, y: number },
-  profileRange: { min: number, max: number },
-  setProfileRange: (_value: { min: number, max: number }) => void,
   setProfileRule1: (_value: number) => void,
   profileRule1: number,
   setProfileRule2: (_value: number) => void,
@@ -374,7 +372,6 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [profileOffset, setProfileOffset] = useState(0);
   const [profileRule1, setProfileRule1] = useState(1000);
   const [profileRule2, setProfileRule2] = useState(1500);
-  const [profileRange, setProfileRange] = useState({ min: 0, max: 1 });
   const [profileSlope1, setProfileSlope1] = useState(0);
   const [profileSlope2, setProfileSlope2] = useState(0);
   const [profileSlopeOffset1, setProfileSlopeOffset1] = useState(0);
@@ -575,8 +572,6 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     profileScale: profileScale,
     recordsCenter: recordsCenter,
     setRecordsCenter: setRecordsCenter,
-    setProfileRange: setProfileRange,
-    profileRange: profileRange,
     setProfileRule1: setProfileRule1,
     profileRule1: profileRule1,
     setProfileRule2: setProfileRule2,
@@ -605,7 +600,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     setFuelConsumption: setFuelConsumption,
     fuelUnit: fuelUnit,
     setFuelUnit: setFuelUnit,
-  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
+  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
 
   return (
     <MapContext.Provider
