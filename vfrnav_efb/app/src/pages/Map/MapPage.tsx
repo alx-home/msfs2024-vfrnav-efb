@@ -340,7 +340,7 @@ export const MapPage = ({ active }: {
 
   useEffect(() => {
     if (menu !== Menu.records) {
-      setRecordsCenter({ x: 0.5, y: 0.5 });
+      setRecordsCenter({ x: 0.75, y: 0.75 });
     }
   }, [setRecordsCenter, menu])
 

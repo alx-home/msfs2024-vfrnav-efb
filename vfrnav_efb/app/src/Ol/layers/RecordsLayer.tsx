@@ -69,7 +69,7 @@ export const RecordsLayer = ({
       const zoom = getLength(new LineString([map.getCoordinateFromPixel([0, 0]), map.getCoordinateFromPixel([mapSize[0], mapSize[1]])])) * 4;
       setZoom(zoom);
 
-      return map.getCoordinateFromPixel([mapSize[0] * (recordsCenter.x * 20 - 9.5), mapSize[1] * (recordsCenter.y * 20 - 9.5)]);
+      return map.getCoordinateFromPixel([mapSize[0] * (0.5 + (recordsCenter.x - 0.5) * 200), mapSize[1] * (0.5 + (recordsCenter.y - 0.5) * 200)]);
     } else {
       return undefined;
     }
