@@ -60,6 +60,14 @@ export const MapContext = createContext<{
   profileRule1: number,
   setProfileRule2: (_value: number) => void,
   profileRule2: number,
+  setProfileSlope1: (_value: number) => void,
+  profileSlope1: number,
+  setProfileSlope2: (_value: number) => void,
+  profileSlope2: number,
+  setProfileSlopeOffset1: (_value: number) => void,
+  profileSlopeOffset1: number,
+  setProfileSlopeOffset2: (_value: number) => void,
+  profileSlopeOffset2: number,
 
   withTouchdown: boolean,
   enableTouchdown: (_value: boolean) => void,
@@ -364,6 +372,10 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [profileOffset, setProfileOffset] = useState(0);
   const [profileRule1, setProfileRule1] = useState(1000);
   const [profileRule2, setProfileRule2] = useState(1500);
+  const [profileSlope1, setProfileSlope1] = useState(0);
+  const [profileSlope2, setProfileSlope2] = useState(0);
+  const [profileSlopeOffset1, setProfileSlopeOffset1] = useState(0);
+  const [profileSlopeOffset2, setProfileSlopeOffset2] = useState(0);
   const [recordsCenter, setRecordsCenter] = useState({ x: 0.65, y: 0.65 });
   const [touchdown, setTouchdown] = useState(false);
   const [ground, setGround] = useState(true);
@@ -564,6 +576,17 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     profileRule1: profileRule1,
     setProfileRule2: setProfileRule2,
     profileRule2: profileRule2,
+
+    setProfileSlope1: setProfileSlope1,
+    profileSlope1: profileSlope1,
+    setProfileSlope2: setProfileSlope2,
+    profileSlope2: profileSlope2,
+
+    setProfileSlopeOffset1: setProfileSlopeOffset1,
+    profileSlopeOffset1: profileSlopeOffset1,
+    setProfileSlopeOffset2: setProfileSlopeOffset2,
+    profileSlopeOffset2: profileSlopeOffset2,
+
     enableTouchdown: setTouchdown,
     withTouchdown: touchdown,
     enableGround: setGround,
@@ -577,7 +600,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     setFuelConsumption: setFuelConsumption,
     fuelUnit: fuelUnit,
     setFuelUnit: setFuelUnit,
-  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRule1, profileRule2, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
+  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
 
   return (
     <MapContext.Provider

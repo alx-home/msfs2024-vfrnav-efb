@@ -59,7 +59,7 @@ export const RecordsLayer = ({
 }: OlLayerProp & {
   opacity?: number
 }) => {
-  const { map, profileScale, profileOffset, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
+  const { map, profileScale, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, profileOffset, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
   const records = useMemo(() => records_.filter(record => record.active), [records_]);
   const [mapSize, setMapSize] = useState<number[] | undefined>(undefined);
   const [zoom, setZoom] = useState(1);
@@ -208,12 +208,26 @@ export const RecordsLayer = ({
           features.push(feature)
         }
 
+        const fullDistance = coords.reduce((result, coord, index) =>
+          result + (
+            index === 0
+              ? 0
+              : Math.sqrt(Math.pow(coords[index - 1][0] - coord[0], 2) + Math.pow(coords[index - 1][1] - coord[1], 2))
+          ), 0)
         // Draw rule 1
         {
           const segment: Coordinate[] = [];
+          let dist = -fullDistance * profileSlopeOffset1 / 100;
+          let lastCoord: Coordinate | undefined = undefined;
+          const slope = Math.atan(profileSlope1 * Math.PI / 180);
           for (const element of coords) {
+            if (lastCoord) {
+              dist += Math.sqrt(Math.pow(element[0] - lastCoord[0], 2) + Math.pow(element[1] - lastCoord[1], 2))
+            }
+            lastCoord = element;
+
             const coord = element as Coordinate
-            const vec = getVec(coord, res * Math.max(0, profileRule1 - profileOffset));
+            const vec = getVec(coord, res * Math.max(0, profileRule1 + slope * dist - profileOffset));
 
             segment.push([coord[0] + vec[0], coord[1] + vec[1]])
           }
@@ -231,9 +245,17 @@ export const RecordsLayer = ({
         // Draw rule 2
         {
           const segment: Coordinate[] = [];
+          let dist = -fullDistance * profileSlopeOffset2 / 100;
+          let lastCoord: Coordinate | undefined = undefined;
+          const slope = Math.atan(profileSlope2 * Math.PI / 180);
           for (const element of coords) {
+            if (lastCoord) {
+              dist += Math.sqrt(Math.pow(element[0] - lastCoord[0], 2) + Math.pow(element[1] - lastCoord[1], 2))
+            }
+            lastCoord = element;
+
             const coord = element as Coordinate
-            const vec = getVec(coord, res * Math.max(0, profileRule2 - profileOffset));
+            const vec = getVec(coord, res * Math.max(0, profileRule2 + slope * dist - profileOffset));
 
             segment.push([coord[0] + vec[0], coord[1] + vec[1]])
           }
@@ -252,7 +274,7 @@ export const RecordsLayer = ({
       })();
 
       return [...result, features] as Promise<Feature[]>[];
-    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, withGround, profileOffset, zoom, profileRule1, profileRule2]);
+    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, withGround, profileOffset, zoom, profileSlopeOffset1, profileSlope1, profileRule1, profileSlopeOffset2, profileSlope2, profileRule2]);
 
   const touchDowns = useMemo(() => records
     .map(async (record, index) => {
