@@ -230,7 +230,7 @@ export const RecordsLayer = ({
             lastCoord = element;
 
             const coord = element as Coordinate
-            const vec = getVec(coord, res * Math.max(0, profileRule1 + slope * dist - profileOffset));
+            const vec = getVec(coord, res * Math.max(0, profileRule1 + profileOffset + slope * dist - profileOffset));
 
             segment.push([coord[0] + vec[0], coord[1] + vec[1]])
           }
@@ -258,7 +258,7 @@ export const RecordsLayer = ({
             lastCoord = element;
 
             const coord = element as Coordinate
-            const vec = getVec(coord, res * Math.max(0, profileRule2 + slope * dist - profileOffset));
+            const vec = getVec(coord, res * Math.max(0, profileRule2 + profileOffset + slope * dist - profileOffset));
 
             segment.push([coord[0] + vec[0], coord[1] + vec[1]])
           }
