@@ -69,7 +69,6 @@ export const RecordsLayer = ({
       const zoom = getLength(new LineString([map.getCoordinateFromPixel([0, 0]), map.getCoordinateFromPixel([mapSize[0], mapSize[1]])])) * 4;
       setZoom(zoom);
 
-      console.log(recordsCenter.x)
       return map.getCoordinateFromPixel([mapSize[0] * (recordsCenter.x * 20 - 9.5), mapSize[1] * (recordsCenter.y * 20 - 9.5)]);
     } else {
       return undefined;
@@ -300,22 +299,29 @@ export const RecordsLayer = ({
         const x = (coords_ as Coordinate)[0];
         const y = (coords_ as Coordinate)[1];
 
-        ctx.beginPath();
-        ctx.fillStyle = "rgba(0, 153, 255, 0.4)"
-        ctx.strokeStyle = "#FFFFFF"
-        ctx.lineWidth = 2
-        ctx.arc(x, y, 50, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.stroke();
+        ctx.save()
+        {
+          ctx.beginPath();
+          ctx.fillStyle = "rgba(0, 153, 255, 0.4)"
+          ctx.strokeStyle = "#FFFFFF"
+          ctx.lineWidth = 2
+          ctx.arc(x, y, 50, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.stroke();
 
-        const speed = state.feature.get("speed") as number;
-        ctx.font = "15px Inter-bold, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillStyle = "#FFFFFF"
-        ctx.fillText(speed.toFixed(0) + "ft/min", x, y + 4)// @todo parameters
+          const speed = state.feature.get("speed") as number;
+          ctx.font = "15px Inter-bold, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillStyle = "#FFFFFF"
+
+          ctx.translate(x, y);
+          ctx.rotate(-map.getView().getRotation())
+          ctx.fillText(speed.toFixed(0) + "ft/min", 0, 4)// @todo parameters
+        }
+        ctx.restore()
       }
     }),
-  }), []);
+  }), [map]);
 
   const group = useMemo(() => new LayerGroup({
     layers: [
