@@ -347,9 +347,24 @@ export const OlRouteLayer = ({
                         mag += 360;
                      }
 
+                     const mapAngle = map.getView().getRotation() * 180 / Math.PI;
+
+                     angle += 2 * mapAngle
+
+                     angle %= 360;
+                     if (angle < -180) {
+                        angle += 360;
+                     } else if (angle > 180) {
+                        angle -= 360;
+                     }
+
+                     const offset = ((angle < 0 && angle < -90) || (angle > 0 && angle < 90)) ? -settings.map.markerSize * 0.25 : settings.map.markerSize * 0.25;
+
                      if (angle < -90 || angle > 90) {
                         angle = angle - 180;
                      }
+                     angle -= mapAngle
+
 
                      const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
 
@@ -365,23 +380,25 @@ export const OlRouteLayer = ({
                      const center = [(coord[0] + nextCoord[0]) >> 1, (coord[1] + nextCoord[1]) >> 1];
 
                      context.save();
-                     context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
-                     context.lineWidth = Math.floor(settings.map.text.borderSize);
-                     context.font = "900 " + maxSize.toFixed(0) + "px Inter-bold, sans-serif";
-                     const textWidth = context.measureText(text).width;
-                     const textSize = Math.min(maxSize, maxSize * (distance - settings.map.markerSize * 1.5) / textWidth);
-                     context.font = "900 " + textSize.toFixed(0) + "px Inter-bold, sans-serif";
+                     {
+                        context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
+                        context.lineWidth = Math.floor(settings.map.text.borderSize);
+                        context.font = "900 " + maxSize.toFixed(0) + "px Inter-bold, sans-serif";
+                        const textWidth = context.measureText(text).width;
+                        const textSize = Math.min(maxSize, maxSize * (distance - settings.map.markerSize * 1.5) / textWidth);
+                        context.font = "900 " + textSize.toFixed(0) + "px Inter-bold, sans-serif";
 
-                     if (textSize >= settings.map.text.minSize) {
-                        context.textAlign = "center";
-                        context.translate(center[0], center[1]);
-                        context.rotate(angle * Math.PI / 180);
-                        context.translate(((mag > 90 && mag <= 180) || (mag >= 270)) ? -settings.map.markerSize * 0.25 : settings.map.markerSize * 0.25, -settings.map.text.borderSize * 0.25 - 5);
+                        if (textSize >= settings.map.text.minSize) {
+                           context.textAlign = "center";
+                           context.translate(center[0], center[1]);
+                           context.rotate(angle * Math.PI / 180);
+                           context.translate(offset, -settings.map.text.borderSize * 0.25 - 5);
 
-                        context.strokeText(text, 0, 0);
+                           context.strokeText(text, 0, 0);
 
-                        context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
-                        context.fillText(text, 0, 0);
+                           context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
+                           context.fillText(text, 0, 0);
+                        }
                      }
                      context.restore();
                   });
@@ -427,16 +444,22 @@ export const OlRouteLayer = ({
                   coords_.forEach((coord, index) => {
                      const size = settings.map.markerSize;
 
-                     if (index === 0) {
-                        // First Coord
-                        context.drawImage(greenMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
-                     } else if (index === coords_.length - 1) {
-                        // Last Coord
-                        context.drawImage(redMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
-                     } else {
-                        // Coord in between
-                        context.drawImage(blueMarkerImg.current!, coord[0] - size / 2, coord[1] - size, size, size);
+                     context.save();
+                     {
+                        context.translate(coord[0], coord[1]);
+                        context.rotate(-map.getView().getRotation())
+                        if (index === 0) {
+                           // First Coord
+                           context.drawImage(greenMarkerImg.current!, -size / 2, -size, size, size);
+                        } else if (index === coords_.length - 1) {
+                           // Last Coord
+                           context.drawImage(redMarkerImg.current!, -size / 2, -size, size, size);
+                        } else {
+                           // Coord in between
+                           context.drawImage(blueMarkerImg.current!, -size / 2, -size, size, size);
+                        }
                      }
+                     context.restore()
                   });
                }
             }
