@@ -164,12 +164,15 @@ export const Records = ({ className, style }: {
 };
 
 export const RecordsToolbar = () => {
-  const { profileOffset, setProfileOffset, profileScale, setProfileScale,
+  const { profileOffset, setProfileOffset, profileScale, setProfileScale, profileRange, setProfileRange,
     profileRule1, profileRule2, setProfileRule1, setProfileRule2,
     profileSlope1, profileSlope2, setProfileSlope1, setProfileSlope2,
     profileSlopeOffset1, profileSlopeOffset2, setProfileSlopeOffset1, setProfileSlopeOffset2,
     enableTouchdown, withTouchdown, enableGround, withGround } = useContext(MapContext)!;
 
+  const setProfileRanges = useCallback((min: number, max: number) => {
+    setProfileRange({ min: min, max: max })
+  }, [setProfileRange]);
   const setProfileRules = useCallback((min: number, max: number) => {
     setProfileRule1(min)
     setProfileRule2(max)
@@ -189,7 +192,8 @@ export const RecordsToolbar = () => {
     setProfileScale(1)
     setProfileRules(1000, 1500)
     setProfileSlopes(0, 0);
-  }, [setProfileRules, setProfileScale, setProfileSlopes]);
+    setProfileRange({ min: 0, max: 1 })
+  }, [setProfileRange, setProfileRules, setProfileScale, setProfileSlopes]);
 
 
   return <div className='flex flex-col grow'>
@@ -210,6 +214,12 @@ export const RecordsToolbar = () => {
         <div className='flex flex-row grow'>
           <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Scale 1:{profileScale.toFixed(3)}</div>
           <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
+        </div>
+      </div>
+      <div className='flex flex-col grow mb-1 mt-1'>
+        <div className='flex flex-row grow'>
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Range {(profileRange.min * 100).toFixed(0)}% - {(profileRange.max * 100).toFixed(0)}%</div>
+          <DualSlider className="flex flex-row grow justify-end" value={profileRange} range={{ min: 0, max: 1 }} onChange={setProfileRanges} />
         </div>
       </div>
       <div className='flex flex-col grow mb-1 mt-1'>
