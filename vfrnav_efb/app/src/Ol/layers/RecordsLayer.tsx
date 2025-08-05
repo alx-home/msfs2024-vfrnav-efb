@@ -59,7 +59,7 @@ export const RecordsLayer = ({
 }: OlLayerProp & {
   opacity?: number
 }) => {
-  const { map, profileScale, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, profileOffset, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
+  const { map, profileScale, profileRange, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, profileOffset, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
   const records = useMemo(() => records_.filter(record => record.active), [records_]);
   const [mapSize, setMapSize] = useState<number[] | undefined>(undefined);
   const [zoom, setZoom] = useState(1);
@@ -110,7 +110,10 @@ export const RecordsLayer = ({
       const features = (async () => {
         const res = 0.30480 / profileScale;
 
-        const coords = (await data).value.map(elem => [...fromLonLat([elem.lon, elem.lat]),
+        const coords = (await (async () => {
+          const coords = (await data).value;
+          return coords.filter((_coord, index) => (index >= profileRange.min * coords.length) && (index < profileRange.max * coords.length))
+        })()).map(elem => [...fromLonLat([elem.lon, elem.lat]),
         Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res),
         Math.max(0, (elem.ground - profileOffset) * res)]);
         const features: Feature[] = [];
@@ -274,7 +277,7 @@ export const RecordsLayer = ({
       })();
 
       return [...result, features] as Promise<Feature[]>[];
-    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, withGround, profileOffset, zoom, profileSlopeOffset1, profileSlope1, profileRule1, profileSlopeOffset2, profileSlope2, profileRule2]);
+    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, profileRange.min, profileRange.max, withGround, profileOffset, zoom, profileSlopeOffset1, profileSlope1, profileRule1, profileSlopeOffset2, profileSlope2, profileRule2]);
 
   const touchDowns = useMemo(() => records
     .map(async (record, index) => {
