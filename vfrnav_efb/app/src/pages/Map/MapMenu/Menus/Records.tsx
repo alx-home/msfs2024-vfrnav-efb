@@ -164,17 +164,32 @@ export const Records = ({ className, style }: {
 };
 
 export const RecordsToolbar = () => {
-  const { profileOffset, setProfileOffset, profileScale, setProfileScale, profileRule1, profileRule2, setProfileRule1, setProfileRule2, enableTouchdown, withTouchdown, enableGround, withGround } = useContext(MapContext)!;
+  const { profileOffset, setProfileOffset, profileScale, setProfileScale,
+    profileRule1, profileRule2, setProfileRule1, setProfileRule2,
+    profileSlope1, profileSlope2, setProfileSlope1, setProfileSlope2,
+    profileSlopeOffset1, profileSlopeOffset2, setProfileSlopeOffset1, setProfileSlopeOffset2,
+    enableTouchdown, withTouchdown, enableGround, withGround } = useContext(MapContext)!;
 
   const setProfileRules = useCallback((min: number, max: number) => {
     setProfileRule1(min)
     setProfileRule2(max)
   }, [setProfileRule1, setProfileRule2]);
 
+  const setProfileSlopes = useCallback((min: number, max: number) => {
+    setProfileSlope1(min)
+    setProfileSlope2(max)
+  }, [setProfileSlope1, setProfileSlope2]);
+
+  const setProfileSlopesOffset = useCallback((min: number, max: number) => {
+    setProfileSlopeOffset1(min)
+    setProfileSlopeOffset2(max)
+  }, [setProfileSlopeOffset1, setProfileSlopeOffset2]);
+
   const reset = useCallback(() => {
     setProfileScale(1)
     setProfileRules(1000, 1500)
-  }, [setProfileRules, setProfileScale]);
+    setProfileSlopes(0, 0);
+  }, [setProfileRules, setProfileScale, setProfileSlopes]);
 
 
   return <div className='flex flex-col grow'>
@@ -185,28 +200,35 @@ export const RecordsToolbar = () => {
         </div>
         <div className='text-left text-base grow'>Touchdown</div>
       </div>
-      <div className='flex flex-row grow mt-4'>
+      <div className='flex flex-row grow mt-2'>
         <div className='flex flex-row mr-4'>
           <CheckBox value={withGround} onChange={enableGround} />
         </div>
         <div className='text-left text-base grow'>Ground Layer</div>
       </div>
-      <div className='flex flex-col grow mb-2 mt-2'>
+      <div className='flex flex-col grow mb-1 mt-1'>
         <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-44'>Scale 1:{profileScale.toFixed(3)}</div>
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Scale 1:{profileScale.toFixed(3)}</div>
           <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
         </div>
       </div>
-      <div className='flex flex-col grow mb-2 mt-2'>
+      <div className='flex flex-col grow mb-1 mt-1'>
         <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-44'>Offset ({profileOffset >= 10000 ? "FL" + (profileOffset / 100).toFixed(0) : profileOffset.toFixed(0)})</div>
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Offset ({profileOffset >= 10000 ? "FL" + (profileOffset / 100).toFixed(0) : profileOffset.toFixed(0)})</div>
           <Slider className="flex flex-row grow justify-end" value={profileOffset} range={{ min: 0, max: 10000 }} onChange={setProfileOffset} />
+        </div>
+      </div>
+      <div className='flex flex-col grow mb-1 mt-1'>
+        <div className='flex flex-row grow'>
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Rules {profileRule1 >= 10000 ? "FL" + (profileRule1 / 100).toFixed(0) : profileRule1.toFixed(0)} {profileRule2 >= 10000 ? "FL" + (profileRule2 / 100).toFixed(0) : profileRule2.toFixed(0)}</div>
+          <DualSlider className="flex flex-row grow justify-end" value={{ min: profileRule1, max: profileRule2 }} range={{ min: 0, max: 40000 }} onChange={setProfileRules} />
         </div>
       </div>
       <div className='flex flex-col grow mb-4'>
         <div className='flex flex-row grow'>
-          <div className='flex flex-row text-base ml-10 mr-4 min-w-44'>Rules {profileRule1 >= 10000 ? "FL" + (profileRule1 / 100).toFixed(0) : profileRule1.toFixed(0)} - {profileRule2 >= 10000 ? "FL" + (profileRule2 / 100).toFixed(0) : profileRule2.toFixed(0)}</div>
-          <DualSlider className="flex flex-row grow justify-end" value={{ min: profileRule1, max: profileRule2 }} range={{ min: 0, max: 40000 }} onChange={setProfileRules} />
+          <div className='flex flex-row text-base ml-10 mr-4 min-w-40'>Slopes {profileSlope1.toFixed(0)}° {profileSlope2.toFixed(0)}°</div>
+          <DualSlider className="flex flex-row grow" value={{ min: profileSlopeOffset1, max: profileSlopeOffset2 }} range={{ min: 0, max: 100 }} onChange={setProfileSlopesOffset} />
+          <DualSlider className="flex flex-row grow justify-end" value={{ min: profileSlope1, max: profileSlope2 }} range={{ min: -45, max: 45 }} onChange={setProfileSlopes} />
         </div>
       </div>
       <div className='flex'>
