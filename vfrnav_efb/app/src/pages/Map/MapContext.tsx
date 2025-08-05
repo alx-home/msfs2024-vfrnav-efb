@@ -364,7 +364,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [profileOffset, setProfileOffset] = useState(0);
   const [profileRule1, setProfileRule1] = useState(1000);
   const [profileRule2, setProfileRule2] = useState(1500);
-  const [recordsCenter, setRecordsCenter] = useState({ x: 0.5, y: 0.5 });
+  const [recordsCenter, setRecordsCenter] = useState({ x: 0.65, y: 0.65 });
   const [touchdown, setTouchdown] = useState(false);
   const [ground, setGround] = useState(true);
   const [deviations, setDeviations] = useState<Deviation[]>([
