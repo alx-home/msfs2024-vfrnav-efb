@@ -259,6 +259,18 @@
             "     - Add the option to offset records on records layer.",
             "       Ajout de la possibilité de shifter les records sur le layer d'enregistrement de vols."
          ]
+      },
+      {
+         "version": "1.4.2",
+         "date": "AUG 05, 2025",
+         "notes": [
+            "**EFB**",
+            "  🔧 Improvements / Améliorations:",
+            "     - Add map rotation support to navigation layer (alt+shift+drag for rotation).",
+            "       Ajout du support de la rotation de la map au layer de navigation (alt+shift+drag pour la rotation).",
+            "     - Improve flight recording layer display.",
+            "       Amélioration de l'affichage du layer d'enregistrement de vols."
+         ]
       }
    ]
 }
