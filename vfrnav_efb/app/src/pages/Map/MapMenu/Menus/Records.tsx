@@ -221,6 +221,9 @@ export const RecordsToolbar = () => {
     setProfileRange({ min: min, max: max })
   }, [setProfileRange]);
 
+  const rule1 = useMemo(() => profileRule1 + profileOffset, [profileOffset, profileRule1]);
+  const rule2 = useMemo(() => profileRule2 + profileOffset, [profileOffset, profileRule2]);
+
   return <div className='flex flex-col grow'>
     <div className='flex flex-col'>
       <SliderItem title={"Scale 1:" + profileScale.toFixed(3)}>
@@ -238,7 +241,7 @@ export const RecordsToolbar = () => {
           <Slider className="flex flex-row grow justify-end" value={profileOffset} range={{ min: 0, max: 10000 }} onChange={setProfileOffset} />
         </Reset>
       </SliderItem>
-      <SliderItem title={`Rules ${profileRule1 >= 10000 ? "FL" + (profileRule1 / 100).toFixed(0) : profileRule1.toFixed(0)} ${profileRule2 >= 10000 ? "FL" + (profileRule2 / 100).toFixed(0) : profileRule2.toFixed(0)}`}>
+      <SliderItem title={`Rules ${rule1 >= 10000 ? "FL" + (rule1 / 100).toFixed(0) : rule1.toFixed(0)} ${rule2 >= 10000 ? "FL" + (rule2 / 100).toFixed(0) : rule2.toFixed(0)}`}>
         <Reset onReset={() => setProfileRule1(1000)}>
           <Slider className="flex flex-row grow" value={profileRule1} range={{ min: 0, max: 40000 }} onChange={setProfileRule1} />
         </Reset>
