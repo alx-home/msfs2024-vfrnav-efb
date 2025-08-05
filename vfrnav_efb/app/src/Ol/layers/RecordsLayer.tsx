@@ -31,6 +31,7 @@ import { toContext } from "ol/render";
 import { messageHandler } from "@Settings/SettingsProvider";
 import { PlanePoses } from "@shared/PlanPos";
 import LayerGroup from "ol/layer/Group";
+import { getLength } from "ol/sphere";
 
 const fetchRecord = async (id: number) => new Promise<PlanePoses>(resolve => {
   const callback = (poses: PlanePoses) => {
@@ -61,12 +62,15 @@ export const RecordsLayer = ({
   const { map, profileScale, profileOffset, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
   const records = useMemo(() => records_.filter(record => record.active), [records_]);
   const [mapSize, setMapSize] = useState<number[] | undefined>(undefined);
+  const [zoom, setZoom] = useState(1);
+
   const center = useMemo(() => {
     if (mapSize) {
-      const xPos = mapSize[0] * recordsCenter.x;
-      const yPos = mapSize[1] * recordsCenter.y;
+      const zoom = getLength(new LineString([map.getCoordinateFromPixel([0, 0]), map.getCoordinateFromPixel([mapSize[0], mapSize[1]])])) * 4;
+      setZoom(zoom);
 
-      return map.getCoordinateFromPixel([xPos, yPos]);
+      console.log(recordsCenter.x)
+      return map.getCoordinateFromPixel([mapSize[0] * (recordsCenter.x * 20 - 9.5), mapSize[1] * (recordsCenter.y * 20 - 9.5)]);
     } else {
       return undefined;
     }
@@ -126,8 +130,8 @@ export const RecordsLayer = ({
         const getVec = (coord: Coordinate, height: number) => {
           const vec = [coord[0] - center[0], coord[1] - center[1]]
 
-          vec[0] *= height / Math.max(0.0000001, 3000 - height);
-          vec[1] *= height / Math.max(0.0000001, 3000 - height);
+          vec[0] *= height / (Math.max(0.0000001, zoom - height));
+          vec[1] *= height / (Math.max(0.0000001, zoom - height));
 
           return vec;
         }
@@ -249,7 +253,7 @@ export const RecordsLayer = ({
       })();
 
       return [...result, features] as Promise<Feature[]>[];
-    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, withGround, profileOffset, profileRule1, profileRule2]);
+    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, withGround, profileOffset, zoom, profileRule1, profileRule2]);
 
   const touchDowns = useMemo(() => records
     .map(async (record, index) => {
