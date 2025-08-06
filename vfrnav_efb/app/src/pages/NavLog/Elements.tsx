@@ -153,7 +153,6 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             properties[i].active = value;
          }
 
-         console.log(properties[index].ata)
          if (properties[index].ata === -1) {
             const now = new Date();
             properties[index].ata = now.getHours() * 60 + now.getMinutes()
@@ -280,9 +279,15 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                return (h < 10 ? '0' : '') + h + "h" + ((h || m) ? (m < 10 ? '0' : '') + m : '')
             })()
 
-            const lastAta = (row > 1 ? properties[row - 2].ata : -1)
-            if (lastAta !== -1) {
-               deltaEta = Math.round(time - (lastAta * 60 + navProps.dur.full));
+            if (ata !== -1) {
+               deltaEta = Math.round(time - ata * 60);
+
+               //Past Midnight
+               if (deltaEta > 43200) {
+                  deltaEta = deltaEta - 86400
+               } else if (deltaEta < -43200) {
+                  deltaEta = deltaEta + 86400
+               }
             }
 
             const eta2 = (() => {
@@ -491,7 +496,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                         deltaEta === 0 ? <></>
                            :
                            <div className="flex flex-col grow">
-                              <div className={"text-center justify-center" + (deltaEta > 0 ? ' text-green-600' : ' text-red-600')}>
+                              <div className={"text-center justify-center" + (deltaEta < 0 ? ' text-red-600' : ' text-green-600')}>
                                  {eta2}
                               </div>
                            </div>
