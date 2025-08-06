@@ -132,6 +132,19 @@ const useMap = () => {
       map.addLayer(layer);
       setLayer(layer);
 
+      const features: Feature[] = [];
+
+      navData.forEach(data => {
+         const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
+         initFeature(feature);
+         features.push(feature)
+
+         data.id = feature.getId() as number;
+      })
+
+      source.addFeatures(features);
+      setNavData(navData);
+
       return () => { map.removeLayer(layer) };
    }, [source, map]);
 
@@ -322,6 +335,7 @@ export const OlRouteLayer = ({
                }
 
                const properties = data.properties;
+               const waypoints = data.waypoints;
 
                const geometry = state.geometry.clone() as SimpleGeometry;
                geometry.setCoordinates(coords);
@@ -337,7 +351,9 @@ export const OlRouteLayer = ({
                      const vector = [nextCoord[0] - coord[0], nextCoord[1] - coord[1]];
 
                      const props = updateNavProps(properties[index], map.getCoordinateFromPixel(coord), map.getCoordinateFromPixel(nextCoord));
-                     const { CH, TC, dist, dur } = props;
+                     const { CH, TC, dist, dur, remark } = props;
+                     const waypoint = waypoints[index];
+                     const nextWaypoint = waypoints[index + 1];
                      const { days, hours, minutes, seconds } = dur;
 
                      let angle = TC - 90;
@@ -368,19 +384,16 @@ export const OlRouteLayer = ({
 
                      const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
 
-                     const text = Math.round(CH).toString() + "\u00b0 "
-                        + Math.round(dist).toString() + " nm  "
-                        + (days ? days.toString() + 'd ' : '')
-                        + ((days || hours) ? ((days && (hours < 10) ? '0' : '') + hours.toString() + ":") : "")
-                        + ((days || hours || minutes) ? ((minutes < 10 ? "0" : '') + minutes.toString() + ":") : "")
-                        + (seconds < 10 ? '0' : '') + seconds.toString();
+                     const ch = Math.round(CH);
+                     const cDelta = Math.round(CH - TC);
 
                      const maxSize = settings.map.text.maxSize;
 
                      const center = [(coord[0] + nextCoord[0]) >> 1, (coord[1] + nextCoord[1]) >> 1];
 
-                     context.save();
-                     {
+                     const drawText = (text: string, bottom?: boolean) => {
+                        context.save();
+
                         context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
                         context.lineWidth = Math.floor(settings.map.text.borderSize);
                         context.font = "900 " + maxSize.toFixed(0) + "px Inter-bold, sans-serif";
@@ -392,15 +405,26 @@ export const OlRouteLayer = ({
                            context.textAlign = "center";
                            context.translate(center[0], center[1]);
                            context.rotate(angle * Math.PI / 180);
-                           context.translate(offset, -settings.map.text.borderSize * 0.25 - 5);
+                           context.translate(offset, ((bottom ?? false) ? textSize * 0.5 + 7 + settings.map.text.borderSize * 0.25 : -settings.map.text.borderSize * 0.25 - 5));
 
                            context.strokeText(text, 0, 0);
 
                            context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
                            context.fillText(text, 0, 0);
                         }
+
+                        context.restore();
                      }
-                     context.restore();
+
+                     drawText(ch.toString() + (cDelta === 0 ? '' : (cDelta > 0 ? ' +' : ' ') + cDelta.toFixed() + '') + "\u00b0 "
+                        + Math.round(dist).toString() + " nm  "
+                        + (days ? days.toString() + 'd ' : '')
+                        + ((days || hours) ? ((days && (hours < 10) ? '0' : '') + hours.toString() + ":") : "")
+                        + ((days || hours || minutes) ? ((minutes < 10 ? "0" : '') + minutes.toString() + ":") : "")
+                        + (seconds < 10 ? '0' : '') + seconds.toString());
+
+                     drawText(waypoint + (waypoint.length || nextWaypoint.length ? " -> " : '') + nextWaypoint
+                        + (remark.length ? " @" + remark : ""), true)
                   });
 
                   // Draw lines Background
@@ -467,16 +491,14 @@ export const OlRouteLayer = ({
       }
 
       return [];
-   }, [map, navData, settings.map.markerSize, settings.map.text.borderColor.alpha, settings.map.text.borderColor.blue, settings.map.text.borderColor.green, settings.map.text.borderColor.red, settings.map.text.borderSize, settings.map.text.color.alpha, settings.map.text.color.blue, settings.map.text.color.green, settings.map.text.color.red, settings.map.text.maxSize, settings.map.text.minSize, updateNavProps]);
+   }, [map, navData, settings, updateNavProps]);
 
    useEffect(() => {
       layer?.setZIndex(zIndex);
    }, [zIndex, layer]);
 
    useEffect(() => {
-      if (layer) {
-         layer.setStyle(navRenderer);
-      }
+      layer?.setStyle(navRenderer);
    }, [navRenderer, layer]);
 
    useEffect(() => {
