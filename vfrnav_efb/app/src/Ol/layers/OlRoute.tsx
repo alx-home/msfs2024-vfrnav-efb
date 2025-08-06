@@ -349,8 +349,13 @@ export const OlRouteLayer = ({
                      const nextCoord = coords_[index + 1];
 
                      const vector = [nextCoord[0] - coord[0], nextCoord[1] - coord[1]];
+                     const mapRotation = map.getView().getRotation();
 
-                     const props = updateNavProps(properties[index], map.getCoordinateFromPixel(coord), map.getCoordinateFromPixel(nextCoord));
+                     const getCoordinateFromPixel = (coord: Coordinate) => {
+                        return map.getCoordinateFromPixel([coord[0] * Math.cos(mapRotation) - coord[1] * Math.sin(mapRotation), coord[0] * Math.sin(mapRotation) + coord[1] * Math.cos(mapRotation)])
+                     };
+
+                     const props = updateNavProps(properties[index], getCoordinateFromPixel(coord), getCoordinateFromPixel(nextCoord));
                      const { CH, TC, dist, dur, remark } = props;
                      const waypoint = waypoints[index];
                      const nextWaypoint = waypoints[index + 1];
@@ -363,9 +368,9 @@ export const OlRouteLayer = ({
                         mag += 360;
                      }
 
-                     const mapAngle = map.getView().getRotation() * 180 / Math.PI;
+                     const mapAngle = mapRotation * 180 / Math.PI;
 
-                     angle += 2 * mapAngle
+                     angle += mapAngle
 
                      angle %= 360;
                      if (angle < -180) {
