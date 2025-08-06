@@ -16,11 +16,15 @@
 import { MapContext } from "@pages/Map/MapContext";
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 import { Coordinate } from "ol/coordinate";
-import { PropsWithChildren, useCallback, useContext, useMemo, useState } from "react";
+import { PropsWithChildren, useCallback, useContext, useMemo, useState, useEffect } from 'react';
 
 import Arrow from '@alx-home/images/arrow.svg?react';
 import { CheckBox, Input, Scroll, Tabs } from "@alx-home/Utils";
 import { JSX } from "react/jsx-runtime";
+
+import UndoImg from '@alx-home/images/undo.svg?react';
+import { messageHandler } from "@Settings/SettingsProvider";
+import { Fuel } from "@shared/Fuel";
 
 const modes = ['Enroute', 'Vor', 'Weather', 'Remarks', 'Full'] as const;
 type Modes = typeof modes[number];
@@ -80,6 +84,31 @@ const GridElem = ({ children, className, col: col_, row: row_, size, active, edi
    </div>
 }
 
+const Reset = ({ onReset, children, className }: PropsWithChildren<{
+   className?: string,
+   onReset?: () => void
+}>) => {
+   const [reset, setReset] = useState(false);
+
+   useEffect(() => {
+      if (reset) {
+         onReset?.();
+         setReset(false);
+      }
+   }, [onReset, reset, setReset]);
+
+   return <div className={'relative flex flex-row grow ' + className}>
+      {children}
+      <div className="absolute right-0 top-0 -mt-2 -mr-3">
+         <button className="p-1 bg-transparent" tabIndex={-1}
+            onClick={() => { setReset(true) }} >
+            <UndoImg className="w-5 h-5 invert hover:filter-msfs cursor-pointer" />
+         </button>
+      </div>
+   </div>
+}
+
+
 export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
    currentTab: string,
    tab: string,
@@ -108,6 +137,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
    const loadedFuelStr = useMemo(() => toUnit(loadedFuel).toString(), [loadedFuel, toUnit])
 
    const [mode, setMode] = useState<Modes>('Enroute');
+   const [reset, setReset] = useState(false);
 
    const setActive = useCallback((index: number) => {
       const value = !actives[index];
@@ -116,6 +146,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
          for (let i = index; i < properties.length; ++i) {
             properties[i].active = value;
             properties[i].ata = -1;
+            properties[i].curFuel = 0;
          }
       } else {
          for (let i = 0; i <= index; ++i) {
@@ -126,11 +157,26 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
          if (properties[index].ata === -1) {
             const now = new Date();
             properties[index].ata = now.getHours() * 60 + now.getMinutes()
+
+         }
+
+         if (properties[index].curFuel === 0) {
+            messageHandler.send({ __GET_FUEL__: true });
+
+            const onFuel = (fuel: Fuel) => {
+               properties[index].curFuel = fromUnit(fuel.tanks.reduce((result, tank) => result + tank.value, 0) * 3.785411784);
+               editNavProperties(id, properties);
+               setReset(true)
+
+               messageHandler.unsubscribe("__FUEL__", onFuel)
+            }
+
+            messageHandler.subscribe("__FUEL__", onFuel);
          }
       }
 
       editNavProperties(id, properties);
-   }, [actives, editNavProperties, id, properties]);
+   }, [actives, editNavProperties, id, properties, fromUnit]);
 
    const getHeader = useCallback((mode: Modes, edit: boolean) => {
       return [
@@ -371,28 +417,34 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
                result.push(<GridElem key={"ATA"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
                   <div className="[&_.invalid]:text-red-500">
-                     <Input active={true} className="w-16" onChange={(value) => {
-                        if (value.length) {
-                           const data = value.split('h');
-                           navProps.ata = +data[0] * 60 + +data[1]
-                        } else {
-                           navProps.ata = -1
-                        }
 
-                        editNavProperties(id, properties);
-                     }} value={ataStr}
-                        validate={async (value) => {
-                           if (!value.length) {
-                              return true
-                           }
-
-                           if (/^\d+h\d*$/.test(value)) {
+                     <Reset className="flex-row justify-end" onReset={() => {
+                        navProps.ata = -1;
+                        setReset(true)
+                     }}>
+                        <Input active={true} className="w-16" onChange={(value) => {
+                           if (value.length) {
                               const data = value.split('h');
-                              return (+data[0] < 24) && (+data[1] < 60);
+                              navProps.ata = +data[0] * 60 + +data[1]
+                           } else {
+                              navProps.ata = -1
                            }
 
-                           return false;
-                        }} />
+                           editNavProperties(id, properties);
+                        }} reload={reset} value={ataStr}
+                           validate={async (value) => {
+                              if (!value.length) {
+                                 return true
+                              }
+
+                              if (/^\d+h\d*$/.test(value)) {
+                                 const data = value.split('h');
+                                 return (+data[0] < 24) && (+data[1] < 60);
+                              }
+
+                              return false;
+                           }} />
+                     </Reset>
                   </div>
                </GridElem>)
 
@@ -452,12 +504,18 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                {
                   edit ?
                      <div className="[&_.invalid]:text-red-500">
-                        <Input active={true} className="w-12" onChange={(value) => {
-                           navProps.curFuel = fromUnit(+value);
+                        <Reset className="flex-row justify-end" onReset={() => {
+                           navProps.curFuel = 0;
                            editNavProperties(id, properties);
-                        }} value={toUnit(curFuel).toString()} validate={async (value) => {
-                           return /^[+]?\d*$/.test(value);
-                        }} inputMode='decimal' />
+                           setReset(true)
+                        }}>
+                           <Input active={true} className="w-12" onChange={(value) => {
+                              navProps.curFuel = fromUnit(+value);
+                              editNavProperties(id, properties);
+                           }} value={toUnit(curFuel).toString()} reload={reset} validate={async (value) => {
+                              return /^[+]?\d*$/.test(value);
+                           }} inputMode='decimal' />
+                        </Reset>
                      </div>
                      : <div className="flex flex-col shrink m-auto justify-center">
                         <div className="flex grow justify-center">{Math.round(toUnit(estFuel)) + ''}</div>
@@ -499,10 +557,30 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             .filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full')
             .map((elem, index, all) => <elem.type key={elem.key} {...elem.props} row={row + 1} col={index} size={all.length} />);
       })
-   }, [actives, coords, departureTime, editNavProperties, fromUnit, id, loadedFuel, properties, setActive, toUnit, updateWaypoints, waypoints])
+   }, [actives, coords, departureTime, editNavProperties, fromUnit, id, loadedFuel, properties, setActive, toUnit, updateWaypoints, waypoints, reset])
 
    const legs = useMemo(() => getLegs(mode, edit), [edit, getLegs, mode]);
    const fullLegs = useMemo(() => getLegs("Full", false), [getLegs]);
+
+   useEffect(() => {
+      setReset(true)
+   }, [fuelUnit])
+
+   useEffect(() => {
+      if (reset) {
+         setReset(false)
+      }
+   }, [reset])
+
+   useEffect(() => {
+      const onFuel = (fuel: Fuel) => {
+         setLoadedFuel(id, fuel.tanks.reduce((result, tank) => result + tank.value, 0) * 3.785411784);
+         setReset(true)
+      }
+
+      messageHandler.subscribe("__FUEL__", onFuel);
+      return () => messageHandler.unsubscribe("__FUEL__", onFuel)
+   }, [id, setLoadedFuel])
 
    return <div className={'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden [&>:last-child]:h-full'
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
@@ -537,36 +615,43 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                   <div className="flex flex-col mx-auto shrink">
                      <div className="flex flex-row text-sm justify-center">
                         <div className="flex m-auto grow">Loaded Fuel : </div>
-                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                           <Input active={true} className="my-1 w-full" value={loadedFuelStr} inputMode="decimal"
-                              onChange={(value) => {
-                                 setLoadedFuel(id, fromUnit(+value));
-                              }} validate={async (value) => {
-                                 return /^\d*(\.\d*)?$/.test(value);
-                              }} >
-                           </Input>
-                        </div>
-                        <div className="flex ml-1 m-auto w-8 shrink">{fuelUnitStr}</div>
+                        <Reset className="flex-row justify-end min-w-20" onReset={() => {
+                           messageHandler.send({ __GET_FUEL__: true });
+                        }}>
+                           <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-16">
+                              <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset} inputMode="decimal"
+                                 onChange={(value) => {
+                                    setLoadedFuel(id, fromUnit(+value));
+                                 }} validate={async (value) => {
+                                    return /^\d*(\.\d*)?$/.test(value);
+                                 }} />
+                           </div>
+                        </Reset>
+                        <div className="flex shrink ml-1 my-auto w-3">{fuelUnitStr}</div>
                      </div>
                      <div className="flex flex-row text-sm justify-center">
                         <div className="flex mr-2 m-auto grow">Departure Time : </div>
-                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                           <Input active={true} className="my-1 w-full" value={departureTimeStr}
-                              onChange={(value) => {
-                                 const data = value.split('h');
-                                 setDepartureTime(id, +data[0] * 60 + +data[1]);
-                              }} validate={async (value) => {
-                                 if (/^\d+h\d*$/.test(value)) {
+                        <Reset className="justify-end min-w-20" onReset={() => {
+                           const date = new Date();
+                           setDepartureTime(id, date.getHours() * 60 + date.getMinutes());
+                           setReset(true)
+                        }}>
+                           <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
+                              <Input active={true} className="my-1 max-w-16" reload={reset} value={departureTimeStr}
+                                 onChange={(value) => {
                                     const data = value.split('h');
-                                    return (+data[0] < 24) && (+data[1] < 60);
-                                 }
+                                    setDepartureTime(id, +data[0] * 60 + +data[1]);
+                                 }} validate={async (value) => {
+                                    if (/^\d+h\d*$/.test(value)) {
+                                       const data = value.split('h');
+                                       return (+data[0] < 24) && (+data[1] < 60);
+                                    }
 
-                                 return false;
-                              }} >
-                           </Input>
-                        </div>
-                        <div className="flex flex-col ml-1 m-auto w-8 shrink">
-                        </div>
+                                    return false;
+                                 }} />
+                           </div>
+                        </Reset>
+                        <div className="flex ml-1 m-auto w-3"></div>
                      </div>
                   </div>
                   : <></>
@@ -600,5 +685,5 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             </div>
          </div>
       </Scroll >
-   </div>
+   </div >
 }

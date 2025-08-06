@@ -83,6 +83,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onGetRecord(this.messageHandle, message);
   }
 
+  onGetFuel() {
+    this.props.manager.onGetFuel(this.messageHandle);
+  }
+
   onGetFile(message: GetFile) {
     this.props.manager.onGetFile(message);
   }
@@ -111,6 +115,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("__REMOVE_RECORD__", this.onRemoveRecord)
       messageHandler.unsubscribe("__EDIT_RECORD__", this.onEditRecord)
       messageHandler.unsubscribe("__GET_RECORD__", this.onGetRecord)
+      messageHandler.unsubscribe("__GET_FUEL__", this.onGetFuel)
       messageHandler.unsubscribe("__GET_FILE__", this.onGetFile)
       messageHandler.unsubscribe("__OPEN_FILE__", this.onOpenFile)
       messageHandler.unsubscribe("__FILE_EXISTS__", this.onFileExists)
@@ -145,6 +150,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__EDIT_RECORD__", this.onEditRecord.bind(this))
       messageHandler.subscribe("__REMOVE_RECORD__", this.onRemoveRecord.bind(this))
       messageHandler.subscribe("__GET_RECORD__", this.onGetRecord.bind(this))
+      messageHandler.subscribe("__GET_FUEL__", this.onGetFuel.bind(this))
       messageHandler.subscribe("__GET_FILE__", this.onGetFile.bind(this))
       messageHandler.subscribe("__OPEN_FILE__", this.onOpenFile.bind(this))
       messageHandler.subscribe("__FILE_EXISTS__", this.onFileExists.bind(this))
