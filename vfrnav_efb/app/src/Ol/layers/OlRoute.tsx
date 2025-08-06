@@ -429,7 +429,7 @@ export const OlRouteLayer = ({
                            context.textAlign = "center";
                            context.translate(center[0], center[1]);
                            context.rotate(angle * Math.PI / 180);
-                           context.translate(offset, ((bottom ?? false) ? textSize * 0.5 + 7 + settings.map.text.borderSize * 0.25 : -settings.map.text.borderSize * 0.25 - 5));
+                           context.translate(offset, ((bottom ?? false) ? textSize + settings.map.text.borderSize * 0.25 : -settings.map.text.borderSize * 0.25 - 5));
 
                            if (background) {
                               context.strokeText(text, 0, 0);
