@@ -285,6 +285,27 @@
             "     - New option to display partial records in the record layer.",
             "       Ajout de la possibilité d'afficher uniquement une partie du record dans le layer d'enregistrement de vols."
          ]
+      },
+      {
+         "version": "1.4.4",
+         "date": "AUG 06, 2025",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Record rules are now relative to profile offset.",
+            "       Les règles du layer d'enregistrement de vols sont désormais relatives à l'offset du profil.",
+            "     - ATA is now auto-filled during leg validation.",
+            "       Le champ ATA est désormais automatiquement rempli lors de la validation d'une étape de navigation.",
+            "     - Option to populate fuel/departure time from aircraft, current system time.",
+            "       Ajout de la possibilité de remplir les champs fuel/heure de départ à partir des valeurs actuelles de l'avion, de l'heure système.",
+            "     - Scrollbar accessibility enhanced.",
+            "       Amélioration de l'accessibilité des barres de défilement.",
+            "     - Option to hide waypoint labels in navlog for better readability.",
+            "       Ajout de la possibilité de masquer les labels de waypoints dans la page de navlog pour améliorer la lisibilité.",
+            "🐞 Fixes / Corrections:",
+            "     - ATA color (red/green) now displays correctly around midnight.",
+            "       Correction de l'affichage de la couleur du champ ATA (rouge/vert) aux alentours de minuit."
+         ]
       }
    ]
 }
