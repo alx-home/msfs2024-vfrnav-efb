@@ -79,7 +79,10 @@ const GridElem = ({ children, className, col: col_, row: row_, size, active, edi
       <div className={
          "flex justify-center m-auto w-full whitespace-nowrap"
          + ((edit || active || col === (size ?? 0) - 1) ? '' : ' opacity-20')}>
-         {children}
+         {(col === 1 && row > 1) ? <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} /> : <></>}
+         <div className={"flex flex-row justify-center m-auto grow" + (edit ? "" : " [&_*]:overflow-hidden [&_*]:text-ellipsis")}>
+            {children}
+         </div>
       </div>
    </div>
 }
@@ -138,6 +141,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
    const [mode, setMode] = useState<Modes>('Enroute');
    const [reset, setReset] = useState(false);
+   const [collapseWaypoints, setCollapseWaypoints] = useState(false);
 
    const setActive = useCallback((index: number) => {
       const value = !actives[index];
@@ -179,7 +183,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
    const getHeader = useCallback((mode: Modes, edit: boolean) => {
       return [
-         <GridElem key="Waypoint" active={true} edit={edit} currentMode={mode}>Waypoint</GridElem>,
+         <GridElem key="Waypoint" active={true} edit={edit} currentMode={mode}>{collapseWaypoints ? "" : "Waypoint"}</GridElem>,
          <GridElem key="Altitude" active={true} edit={edit} mode="Enroute" currentMode={mode}>Altitude</GridElem>,
          ...(edit ? [] : [<GridElem key="Dist" active={true} edit={edit} mode="Enroute" currentMode={mode}>Dist</GridElem>]),
          <GridElem key="VOR Ind/Freq" active={true} edit={edit} mode="Vor" currentMode={mode}>VOR Ind/Freq</GridElem>,
@@ -209,7 +213,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
          <GridElem key="Fuel" active={true} edit={edit} mode="Enroute" currentMode={mode}>Fuel ({fuelUnit === 'gal' ? 'gal' : 'l'})</GridElem>,
          <GridElem key="Remarks" active={true} edit={edit} mode="Remarks" currentMode={mode}>Remarks</GridElem>
       ].filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full').map((elem, index, all) => <elem.type key={elem.key} {...elem.props} col={index} size={all.length} />)
-   }, [fuelUnit]);
+   }, [fuelUnit, collapseWaypoints]);
 
    const header = useMemo(() => getHeader(mode, edit), [edit, getHeader, mode]);
    const fullHeader = useMemo(() => getHeader("Full", false), [getHeader]);
@@ -231,7 +235,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                      waypoints[row] = value
                      updateWaypoints(id, waypoints);
                   }} />
-                  : <div className="w-36 m-auto text-center">{name}</div>
+                  : <div className={"m-auto text-center transition-all " + (collapseWaypoints ? "w-0" : "w-36")}>{name}</div>
             }
          </GridElem>)
 
@@ -305,7 +309,6 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
             result.push(<GridElem key={"Altitude"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
                <div className="flex flex-row grow h-full">
-                  {(mode === 'Full' || mode === 'Enroute') ? <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} /> : <></>}
                   <div className="flex grow [&_.invalid]:text-red-500">
                      {
                         edit ?
@@ -329,7 +332,6 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
             result.push(<GridElem key={"VOR"} active={active} edit={edit} mode="Vor" currentMode={mode}>
                <div className="flex flex-row grow">
-                  {mode === 'Vor' ? <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} /> : <></>}
                   {
                      edit ?
                         <div className="flex flex-row [&_.invalid]:text-red-500">
@@ -345,7 +347,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                            }} inputMode='decimal' />
                         </div>
                         :
-                        <div className="flex flex-col w-full">
+                        <div className="flex flex-col grow">
                            <div className="w-full m-auto text-center">{vorIndent}</div>
                            <div className="w-full m-auto text-center">{vorFreq}</div>
                         </div>
@@ -370,7 +372,6 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
             if (edit) {
                result.push(<GridElem key={"Wind"} active={active} edit={edit} mode="Weather" currentMode={mode}>
-                  {mode === 'Weather' ? <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} /> : <></>}
                   <div className="flex flex-row [&_.invalid]:text-red-500">
                      <Input active={true} className="w-12" value={windDir.toString()} onChange={(value) => {
                         navProps.wind.direction = +value;
@@ -456,7 +457,6 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             } else if (mode === 'Weather') {
                result.push(<GridElem key={"Wind"} active={active} edit={edit} mode="Weather" currentMode={mode}>
                   <div className="flex flex-row grow h-full">
-                     <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} />
                      <div className="flex flex-row grow justify-center m-auto">{windDir} / {windVel}</div>
                   </div>
                </GridElem>)
@@ -539,7 +539,6 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
             result.push(<GridElem key={"Remarks"} active={active} edit={edit} mode="Remarks" currentMode={mode}>
                <div className="flex flex-row grow h-full">
-                  {(mode === 'Remarks') ? <Arrow className="rotate-180 h-8 -ml-5" height={30} width={20} /> : <></>}
                   {
                      edit ?
                         <Input active={true} className="w-32" value={remark} onChange={(value) => {
@@ -562,7 +561,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             .filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full')
             .map((elem, index, all) => <elem.type key={elem.key} {...elem.props} row={row + 1} col={index} size={all.length} />);
       })
-   }, [actives, coords, departureTime, editNavProperties, fromUnit, id, loadedFuel, properties, setActive, toUnit, updateWaypoints, waypoints, reset])
+   }, [actives, coords, departureTime, editNavProperties, fromUnit, id, loadedFuel, properties, setActive, toUnit, updateWaypoints, waypoints, reset, collapseWaypoints])
 
    const legs = useMemo(() => getLegs(mode, edit), [edit, getLegs, mode]);
    const fullLegs = useMemo(() => getLegs("Full", false), [getLegs]);
@@ -607,6 +606,18 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                         </div>
                      </div>
                      <div className={"relative [grid-row:1] [grid-column:1] max-w-min"}>
+                        <div className={"absolute top-0 bottom-0 left-0 w-4 bg-slate-900 hocus:bg-msfs shadow-md m-[0.1rem] "
+                           + (edit ? "hidden " : '')
+                           + "select-none transition-all cursor-pointer opacity-40 hocus:opacity-100"}>
+                           <button className="flex bg-slate-900 w-4 h-full hocus:bg-msfs select-none transition-all cursor-pointer justify-center text-center"
+                              onClick={(e) => {
+                                 setCollapseWaypoints(value => !value)
+                                 e.currentTarget.blur()
+                              }}
+                           >
+                              <Arrow width={20} height={15} className={'transition-all m-auto' + (collapseWaypoints ? ' rotate-180' : ' ')} />
+                           </button>
+                        </div>
                         <div className="grid">
                            {header}
                            {legs}
