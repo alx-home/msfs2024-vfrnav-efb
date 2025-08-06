@@ -131,7 +131,7 @@
             "***🐞 Fixes / Corrections:***",
             "  - Ensured touchdown labels are always displayed above recorded flight paths / Affichage forcé des labels de touchdown au-dessus des chemins d'enregistrement de vol.",
             "  - Optimized memory usage for flight recording / Optimisation de l'utilisation de la mémoire pour l'enregistrement des vols.",
-            "  - Fixed encoding issues in tab labels on the airport info popup / Correction des problèmes d'encodage des labels des onglets de la popup d'information des aéroports.",
+            "  - Fixed encoding issues in tab labels on the airport info popup / Correction des problèmes d'encodage des labels des onglets de la popup d'information des aéroports."
          ]
       },
       {
@@ -317,6 +317,20 @@
             "***🐞 Fixes / Corrections:***",
             "     - ATA color (red/green) now displays correctly around midnight.",
             "       Correction de l'affichage de la couleur du champ ATA (rouge/vert) aux alentours de minuit."
+         ]
+      },
+      {
+         "version": "1.4.5",
+         "date": "AUG 07, 2025",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Display Navlog waypoints and remarks directly on the map.",
+            "       Affichage des waypoints et remarques du Navlog directement sur la carte.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Correct heading and distance calculations that were affected by map rotation.",
+            "       Correction des calculs de cap et de distance influencés par la rotation de la carte."
          ]
       }
    ]
