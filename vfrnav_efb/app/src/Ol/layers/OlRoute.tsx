@@ -452,7 +452,7 @@ export const OlRouteLayer = ({
                            + (seconds < 10 ? '0' : '') + seconds.toString(), background);
 
                         drawText(waypoint + (waypoint.length ? " " : "") + (waypoint.length || nextWaypoint.length ? "→ " : '') + nextWaypoint + (nextWaypoint.length ? ' ' : '')
-                           + "↑" + altitude
+                           + "↑" + (altitude < 10000 ? altitude : "FL" + (altitude / 100).toFixed(0))
                            + (remark.length ? " @" + remark : ""), background, true)
                      }
                   });
