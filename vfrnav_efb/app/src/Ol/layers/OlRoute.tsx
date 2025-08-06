@@ -108,7 +108,7 @@ const useMap = () => {
                   loadedFuel: 300,
                   departureTime: date.getHours() * 60 + date.getMinutes(),
                   properties: coords.filter((_, index) => index).map((value, index) => {
-                     const props = { ...PropertiesRecord.defaultValues, ias: defaultSpeed };
+                     const props = { ...PropertiesRecord.defaultValues, ias: defaultSpeed, ata: -1 };
                      return updateNavProps(props, coords[index], value)
                   })
                })
