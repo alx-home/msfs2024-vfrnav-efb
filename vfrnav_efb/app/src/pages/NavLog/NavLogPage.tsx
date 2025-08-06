@@ -68,7 +68,7 @@ export const NavLogPage = ({ active }: {
     } else {
       setEmpty(false);
 
-      elems.push(<div key="aircraft" className={"absolute top-0 bottom-0 right-0 left-0 overflow-hidden" + (tab === 'Settings' ? "" : " opacity-0 h-0")}>
+      elems.push(<div key="aircraft" className={"flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden" + (tab === 'Settings' ? "" : " opacity-0 select-none pointer-events-none max-h-0")}>
         <Settings />
       </div>)
       tabs.push('Settings')

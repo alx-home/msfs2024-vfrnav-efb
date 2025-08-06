@@ -22,10 +22,12 @@ import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord,
 import { GetServerState, GetServerStateRecord, ServerState, ServerStateRecord } from './Server';
 import { ExportNav, ExportNavRecord, ImportNav, ImportNavRecord } from './NavData';
 import { ExportPdfs, ExportPdfsRecord } from './Pdfs';
+import { Fuel, FuelRecord, GetFuel, GetFuelRecord } from './Fuel';
 
-const MessageIdValues = ["__SERVER_STATE__", "__GET_SERVER_STATE__", "__HELLO_WORLD__", "__BYE_BYE__", "__FILE_EXISTS__", "__FILE_EXISTS_RESPONSE__", "__OPEN_FILE__", "__OPEN_FILE_RESPONSE__", "__GET_FILE__", "__GET_FILE_RESPONSE__", "__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__",
+const MessageIdValues = ["__SERVER_STATE__", "__GET_SERVER_STATE__", "__HELLO_WORLD__", "__BYE_BYE__", "__FILE_EXISTS__", "__FILE_EXISTS_RESPONSE__",
+   "__OPEN_FILE__", "__OPEN_FILE_RESPONSE__", "__GET_FILE__", "__GET_FILE_RESPONSE__", "__SETTINGS__", "__GET_SETTINGS__", "__GET_RECORDS__",
    "__GET_FACILITIES__", "__FACILITIES__", "__GET_ICAOS__", "__ICAOS__", "__GET_METAR__", "__METAR__", "__PLANE_POS__", "__PLANE_POSES__", "__RECORDS__",
-   "__GET_LAT_LON__", "__LAT_LON__", "__EXPORT_PDFS__",
+   "__GET_LAT_LON__", "__LAT_LON__", "__EXPORT_PDFS__", "__GET_FUEL__", "__FUEL__",
    "__REMOVE_RECORD__", "__EDIT_RECORD__", '__GET_RECORD__', '__EXPORT_NAV__', '__IMPORT_NAV__'] as const;
 type MessageId = (typeof MessageIdValues)[number];
 
@@ -60,6 +62,8 @@ type MessageTypes = {
    "__GET_LAT_LON__": GetLatLon,
    "__LAT_LON__": LatLon,
    "__EXPORT_PDFS__": ExportPdfs,
+   "__GET_FUEL__": GetFuel,
+   "__FUEL__": Fuel,
    "__GET_METAR__": GetMetar,
    "__METAR__": Metar,
    "__PLANE_POS__": PlanePos,
@@ -94,6 +98,8 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__GET_LAT_LON__": GetLatLonRecord,
    "__LAT_LON__": LatLonRecord,
    "__EXPORT_PDFS__": ExportPdfsRecord,
+   "__GET_FUEL__": GetFuelRecord,
+   "__FUEL__": FuelRecord,
    "__GET_METAR__": GetMetarRecord,
    "__METAR__": MetarRecord,
    "__PLANE_POS__": PlanePosRecord,

@@ -289,8 +289,7 @@ export const Settings = () => {
                      setFuelConsumption(fromUnit(+value));
                   }} validate={async (value) => {
                      return /^\d*(\.\d*)?$/.test(value);
-                  }} >
-               </Input>
+                  }} />
             </div>
             <div className="flex ml-1 m-auto w-12 shrink">{fuelUnitStr}/h</div>
          </div>

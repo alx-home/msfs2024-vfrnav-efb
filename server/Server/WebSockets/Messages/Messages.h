@@ -38,6 +38,7 @@ struct ByeBye {
 
 #include "Facilities.h"
 #include "Files.h"
+#include "Fuel.h"
 #include "GetMetar.h"
 #include "NavData.h"
 #include "Pdfs.h"
@@ -55,9 +56,11 @@ using Message = std::variant<
   msg::Facilities,
   msg::FileExists,
   msg::FileExistsResponse,
+  msg::Fuel,
   msg::GetFacilities,
   msg::GetFile,
   msg::GetFileResponse,
+  msg::GetFuel,
   msg::GetIcaos,
   msg::GetLatLon,
   msg::GetMetar,

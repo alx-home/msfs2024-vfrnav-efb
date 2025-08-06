@@ -1,6 +1,7 @@
 import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
 import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
 import { FileExist, GetFile, OpenFile } from "@shared/Files";
+import { Fuel, Tank } from "@shared/Fuel";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { ExportNav } from "@shared/NavData";
 import { ExportPdfs } from "@shared/Pdfs";
@@ -172,6 +173,8 @@ export class Manager {
                console.assert(false);
             } else if (isMessage("__GET_SETTINGS__", data.content)) {
                console.assert(false);
+            } else if (isMessage("__GET_FUEL__", data.content)) {
+               this.onGetFuel(messageHandlers.get(data.id) as (_: unknown) => void);
             } else if (isMessage("__GET_RECORDS__", data.content)) {
                this.onGetPlaneRecords(messageHandlers.get(data.id) as (_: unknown) => void);
             } else if (isMessage("__GET_FACILITIES__", data.content)) {
@@ -221,6 +224,23 @@ export class Manager {
       } else {
          this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
       }
+   }
+
+   private getFuel() {
+      const result: Tank[] = [];
+
+      for (let index = 1; ; ++index) {
+         const capacity = SimVar.GetSimVarValue(`FUELSYSTEM TANK CAPACITY:${index}`, 'gallons');
+         if (capacity === 0) {
+            break;
+         }
+
+         result[result.length] = {
+            capacity: capacity,
+            value: SimVar.GetSimVarValue(`FUELSYSTEM TANK TOTAL QUANTITY:${index}`, 'gallons')
+         };
+      }
+      return result
    }
 
    private fetchPosition() {
@@ -423,6 +443,14 @@ export class Manager {
       if (settings) {
          messageHandler(settings);
       }
+   }
+
+   onGetFuel(messageHandler: (_: Fuel) => void) {
+      messageHandler({
+         __FUEL__: true,
+
+         tanks: this.getFuel()
+      });
    }
 
    onGetServerState(messageHandler: (_: ServerState) => void) {
