@@ -24,7 +24,7 @@ import Snap from "ol/interaction/Snap";
 import { doubleClick } from 'ol/events/condition';
 import { FeatureLike } from "ol/Feature";
 import Style from "ol/style/Style";
-import { Coordinate } from "ol/coordinate";
+import { Coordinate, rotate } from "ol/coordinate";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 import { MapContext } from "@pages/Map/MapContext";
@@ -349,14 +349,25 @@ export const OlRouteLayer = ({
                      const nextCoord = coords_[index + 1];
 
                      const vector = [nextCoord[0] - coord[0], nextCoord[1] - coord[1]];
-                     const mapRotation = map.getView().getRotation();
+                     const mapRotation = state.rotation;
+                     const mapSize = map.getSize()!;
+
+                     const mapCenter = [mapSize[0] * 0.5, mapSize[1] * 0.5];
+                     const mapCenter2 = ((coord: Coordinate) => {
+                        const mrCos = Math.abs(Math.cos(mapRotation));
+                        const mrSin = Math.abs(Math.sin(mapRotation));
+                        return [coord[0] * mrCos + coord[1] * mrSin, coord[0] * mrSin + coord[1] * mrCos]
+                     })(mapCenter)
 
                      const getCoordinateFromPixel = (coord: Coordinate) => {
-                        return map.getCoordinateFromPixel([coord[0] * Math.cos(mapRotation) - coord[1] * Math.sin(mapRotation), coord[0] * Math.sin(mapRotation) + coord[1] * Math.cos(mapRotation)])
+                        const rotated = rotate([coord[0] - mapCenter2[0], coord[1] - mapCenter2[1]], mapRotation)
+                           .map((elem, index) => mapCenter[index] + elem);
+
+                        return map.getCoordinateFromPixel(rotated)
                      };
 
                      const props = updateNavProps(properties[index], getCoordinateFromPixel(coord), getCoordinateFromPixel(nextCoord));
-                     const { CH, TC, dist, dur, remark } = props;
+                     const { CH, TC, MH, dist, dur, remark } = props;
                      const waypoint = waypoints[index];
                      const nextWaypoint = waypoints[index + 1];
                      const { days, hours, minutes, seconds } = dur;
@@ -390,7 +401,7 @@ export const OlRouteLayer = ({
                      const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
 
                      const ch = Math.round(CH);
-                     const cDelta = Math.round(CH - TC);
+                     const cDelta = Math.round(MH - CH);
 
                      const maxSize = settings.map.text.maxSize;
 
