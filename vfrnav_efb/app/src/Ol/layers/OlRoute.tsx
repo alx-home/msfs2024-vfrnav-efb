@@ -43,6 +43,7 @@ const useMap = () => {
    const [snap, setSnap] = useState<Snap>();
    const [layer, setLayer] = useState<VectorLayer>();
    const [modified, setModified] = useState<Feature<MultiLineString>[] | undefined>(undefined);
+   const [resetLayer, setResetLayer] = useState(false);
 
    const initFeature = useCallback((feature: Feature<MultiLineString>) => {
       if (!feature.getProperties()['initialized']) {
@@ -131,22 +132,29 @@ const useMap = () => {
       });
       map.addLayer(layer);
       setLayer(layer);
-
-      const features: Feature[] = [];
-
-      navData.forEach(data => {
-         const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
-         initFeature(feature);
-         features.push(feature)
-
-         data.id = feature.getId() as number;
-      })
-
-      source.addFeatures(features);
-      setNavData(navData);
+      setResetLayer(true);
 
       return () => { map.removeLayer(layer) };
    }, [source, map]);
+
+   useEffect(() => {
+      if (resetLayer) {
+         const features: Feature[] = [];
+
+         navData.forEach(data => {
+            const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
+            initFeature(feature);
+            features.push(feature)
+
+            data.id = feature.getId() as number;
+         })
+
+         source.addFeatures(features);
+         setNavData(navData);
+
+         setResetLayer(false);
+      }
+   }, [resetLayer, layer, source, navData, initFeature, setNavData]);
 
    useEffect(() => {
       const modify = new Modify({
@@ -367,7 +375,7 @@ export const OlRouteLayer = ({
                      };
 
                      const props = updateNavProps(properties[index], getCoordinateFromPixel(coord), getCoordinateFromPixel(nextCoord));
-                     const { CH, TC, MH, dist, dur, remark } = props;
+                     const { CH, TC, MH, dist, altitude, dur, remark } = props;
                      const waypoint = waypoints[index];
                      const nextWaypoint = waypoints[index + 1];
                      const { days, hours, minutes, seconds } = dur;
@@ -407,7 +415,7 @@ export const OlRouteLayer = ({
 
                      const center = [(coord[0] + nextCoord[0]) >> 1, (coord[1] + nextCoord[1]) >> 1];
 
-                     const drawText = (text: string, bottom?: boolean) => {
+                     const drawText = (text: string, background: boolean, bottom?: boolean) => {
                         context.save();
 
                         context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
@@ -423,24 +431,30 @@ export const OlRouteLayer = ({
                            context.rotate(angle * Math.PI / 180);
                            context.translate(offset, ((bottom ?? false) ? textSize * 0.5 + 7 + settings.map.text.borderSize * 0.25 : -settings.map.text.borderSize * 0.25 - 5));
 
-                           context.strokeText(text, 0, 0);
-
-                           context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
-                           context.fillText(text, 0, 0);
+                           if (background) {
+                              context.strokeText(text, 0, 0);
+                           } else {
+                              context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
+                              context.fillText(text, 0, 0);
+                           }
                         }
 
                         context.restore();
                      }
 
-                     drawText(ch.toString() + (cDelta === 0 ? '' : (cDelta > 0 ? ' +' : ' ') + cDelta.toFixed() + '') + "\u00b0 "
-                        + Math.round(dist).toString() + " nm  "
-                        + (days ? days.toString() + 'd ' : '')
-                        + ((days || hours) ? ((days && (hours < 10) ? '0' : '') + hours.toString() + ":") : "")
-                        + ((days || hours || minutes) ? ((minutes < 10 ? "0" : '') + minutes.toString() + ":") : "")
-                        + (seconds < 10 ? '0' : '') + seconds.toString());
 
-                     drawText(waypoint + (waypoint.length || nextWaypoint.length ? " -> " : '') + nextWaypoint
-                        + (remark.length ? " @" + remark : ""), true)
+                     for (const background of [true, false]) {
+                        drawText(ch.toString() + (cDelta === 0 ? '' : (cDelta > 0 ? ' +' : ' ') + cDelta.toFixed() + '') + "\u00b0 "
+                           + Math.round(dist).toString() + " nm  "
+                           + (days ? days.toString() + 'd ' : '')
+                           + ((days || hours) ? ((days && (hours < 10) ? '0' : '') + hours.toString() + ":") : "")
+                           + ((days || hours || minutes) ? ((minutes < 10 ? "0" : '') + minutes.toString() + ":") : "")
+                           + (seconds < 10 ? '0' : '') + seconds.toString(), background);
+
+                        drawText(waypoint + (waypoint.length ? " " : "") + (waypoint.length || nextWaypoint.length ? "→ " : '') + nextWaypoint + (nextWaypoint.length ? ' ' : '')
+                           + "↑" + altitude
+                           + (remark.length ? " @" + remark : ""), background, true)
+                     }
                   });
 
                   // Draw lines Background

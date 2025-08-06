@@ -325,8 +325,8 @@
          "notes": [
             "### EFB ###",
             "***🔧 Improvements / Améliorations:***",
-            "     - Display Navlog waypoints and remarks directly on the map.",
-            "       Affichage des waypoints et remarques du Navlog directement sur la carte.",
+            "     - Display Navlog waypoints, remarks & altitude directly on the map.",
+            "       Affichage des waypoints, remarques & altitudes du Navlog directement sur la carte.",
             "",
             "***🐞 Fixes / Corrections:***",
             "     - Correct heading and distance calculations that were affected by map rotation.",
