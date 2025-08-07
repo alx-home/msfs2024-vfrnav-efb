@@ -32,7 +32,7 @@ import { MapContext } from "@pages/Map/MapContext";
 import greenMarker from '@efb-images/marker-icon-green.svg';
 import redMarker from '@efb-images/marker-icon-red.svg';
 import blueMarker from '@efb-images/marker-icon-blue.svg';
-import { ExportNav, PropertiesRecord } from "@shared/NavData";
+import { ExportNav, Properties, PropertiesRecord } from "@shared/NavData";
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
 
@@ -342,38 +342,63 @@ export const OlRouteLayer = ({
                   return;
                }
 
-               const properties = data.properties;
-               const waypoints = data.waypoints;
-
                const geometry = state.geometry.clone() as SimpleGeometry;
                geometry.setCoordinates(coords);
 
                if (geometry.getType() === 'MultiLineString') {
                   const coords_ = (coords as Coordinate[][])[0];
 
+                  const mapRotation = state.rotation;
+                  const mapSize = map.getSize()!;
+
+                  const mapCenter = [mapSize[0] * 0.5, mapSize[1] * 0.5];
+                  const mapCenter2 = ((coord: Coordinate) => {
+                     const mrCos = Math.abs(Math.cos(mapRotation));
+                     const mrSin = Math.abs(Math.sin(mapRotation));
+                     return [coord[0] * mrCos + coord[1] * mrSin, coord[0] * mrSin + coord[1] * mrCos]
+                  })(mapCenter)
+
+                  const toCanvas = (coord: Coordinate) =>
+                     rotate([coord[0] - mapCenter[0], coord[1] - mapCenter[1]], -mapRotation)
+                        .map((elem, index) => mapCenter2[index] + elem);
+
+                  const fromCanvas = (coord: Coordinate) =>
+                     rotate([coord[0] - mapCenter2[0], coord[1] - mapCenter2[1]], mapRotation)
+                        .map((elem, index) => mapCenter[index] + elem);
+
+                  const getCoordinateFromPixel = (coord: Coordinate) => map.getCoordinateFromPixel(fromCanvas(coord));
+
+                  const { properties, waypoints } = (() => {
+                     const { properties, waypoints } = data;
+                     const result: { waypoints: string[], properties: Properties[] } = { waypoints: [], properties: [] };
+                     const fullCoords = (geom as MultiLineString).getCoordinates()[0];
+
+                     let index2 = 0;
+                     for (let index = 0; (index < fullCoords.length) && (index2 < coords_.length); ++index) {
+                        const coord = getCoordinateFromPixel(coords_[index2]);
+
+                        if ((Math.abs(fullCoords[index][0] - coord[0]) < 1)
+                           && (Math.abs(fullCoords[index][1] - coord[1]) < 1)) {
+                           if (index2 < properties.length) {
+                              result.properties.push(properties[index2])
+                           } else {
+                              result.properties.push(PropertiesRecord.defaultValues)
+                           }
+
+                           result.waypoints.push(waypoints[index2])
+                           ++index2;
+                        }
+                     }
+
+                     console.assert(result.waypoints.length === coords_.length);
+                     console.assert(result.properties.length >= coords_.length - 1);
+
+                     return result;
+                  })();
+
                   // Draw Distance/cap
                   //------------------------------
                   coords_.filter((_, index) => index !== coords_.length - 1).forEach((coord, index) => {
-                     const mapRotation = state.rotation;
-                     const mapSize = map.getSize()!;
-
-                     const mapCenter = [mapSize[0] * 0.5, mapSize[1] * 0.5];
-                     const mapCenter2 = ((coord: Coordinate) => {
-                        const mrCos = Math.abs(Math.cos(mapRotation));
-                        const mrSin = Math.abs(Math.sin(mapRotation));
-                        return [coord[0] * mrCos + coord[1] * mrSin, coord[0] * mrSin + coord[1] * mrCos]
-                     })(mapCenter)
-
-                     const toCanvas = (coord: Coordinate) =>
-                        rotate([coord[0] - mapCenter[0], coord[1] - mapCenter[1]], -mapRotation)
-                           .map((elem, index) => mapCenter2[index] + elem);
-
-                     const fromCanvas = (coord: Coordinate) =>
-                        rotate([coord[0] - mapCenter2[0], coord[1] - mapCenter2[1]], mapRotation)
-                           .map((elem, index) => mapCenter[index] + elem);
-
-                     const getCoordinateFromPixel = (coord: Coordinate) => map.getCoordinateFromPixel(fromCanvas(coord));
-
                      const nextCoord = coords_[index + 1];
 
 
