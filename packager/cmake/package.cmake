@@ -64,7 +64,7 @@ function(package)
 
     foreach(ELEM IN LISTS arg_Z_RESOURCES)
         if(DEFINED RESOURCE_NAME)
-            set(ARGS ${ARGS} --resource ${RESOURCE_NAME} --option zip ${ELEM})
+            set(ARGS ${ARGS} --resource ${RESOURCE_NAME} ${ELEM}) # --option zip ${ELEM})
             unset(RESOURCE_NAME)
             list(APPEND arg_DEPENDS ${ELEM})
         else()
