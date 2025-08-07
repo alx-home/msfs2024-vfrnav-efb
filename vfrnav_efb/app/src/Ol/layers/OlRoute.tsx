@@ -381,13 +381,13 @@ export const OlRouteLayer = ({
 
                         if ((Math.abs(coord[0] - coord2[0]) < 1)
                            && (Math.abs(coord[1] - coord2[1]) < 1)) {
-                           if (index2 < properties.length) {
-                              result.properties.push(properties[index2])
+                           if (index < properties.length) {
+                              result.properties.push(properties[index])
                            } else {
                               result.properties.push(PropertiesRecord.defaultValues)
                            }
 
-                           result.waypoints.push(waypoints[index2])
+                           result.waypoints.push(waypoints[index])
                            ++index2;
                         }
                      }
