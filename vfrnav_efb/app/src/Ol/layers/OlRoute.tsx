@@ -367,6 +367,7 @@ export const OlRouteLayer = ({
                         .map((elem, index) => mapCenter[index] + elem);
 
                   const getCoordinateFromPixel = (coord: Coordinate) => map.getCoordinateFromPixel(fromCanvas(coord));
+                  const getPixelFromCoordinate = (coord: Coordinate) => toCanvas(map.getPixelFromCoordinate(coord));
 
                   const { properties, waypoints } = (() => {
                      const { properties, waypoints } = data;
@@ -375,10 +376,11 @@ export const OlRouteLayer = ({
 
                      let index2 = 0;
                      for (let index = 0; (index < fullCoords.length) && (index2 < coords_.length); ++index) {
-                        const coord = getCoordinateFromPixel(coords_[index2]);
+                        const coord = getPixelFromCoordinate(fullCoords[index]);
+                        const coord2 = coords_[index2];
 
-                        if ((Math.abs(fullCoords[index][0] - coord[0]) < 1)
-                           && (Math.abs(fullCoords[index][1] - coord[1]) < 1)) {
+                        if ((Math.abs(coord[0] - coord2[0]) < 1)
+                           && (Math.abs(coord[1] - coord2[1]) < 1)) {
                            if (index2 < properties.length) {
                               result.properties.push(properties[index2])
                            } else {
