@@ -332,6 +332,22 @@
             "     - Correct heading and distance calculations that were affected by map rotation.",
             "       Correction des calculs de cap et de distance influencés par la rotation de la carte."
          ]
+      },
+      {
+         "version": "1.4.6",
+         "date": "AUG 07, 2025",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Leg labels now remain within the visible viewport.",
+            "       Les libellés des segments restent désormais visibles dans la zone d’affichage.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Installer modified to prevent false Antivirus alerts.",
+            "       Installateur modifié pour éviter les fausses alertes d'antivirus.",
+            "     - Fixed data mismatch between Navlog and legs when path coordinates extend beyond the visible screen.",
+            "       Correction du décalage entre les données du Navlog et celles des segments lorsque certaines coordonnées dépassent la zone d'affichage."
+         ]
       }
    ]
 }
