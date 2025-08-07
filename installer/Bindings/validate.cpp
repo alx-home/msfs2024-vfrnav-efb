@@ -186,13 +186,15 @@ Main::Validate(
         installPath + "\\msfs2024-vfrnav_server.exe", std::ios::ate | std::ios::binary
       );
 
-      using namespace boost::iostreams;
+      // using namespace boost::iostreams;
 
-      filtering_istreambuf in;
-      in.push(zlib_decompressor());
-      in.push(array_source{reinterpret_cast<char const*>(SERVER_BIN.data()), SERVER_BIN.size()});
+      // filtering_istreambuf in;
+      // in.push(zlib_decompressor());
+      // in.push(array_source{reinterpret_cast<char const*>(SERVER_BIN.data()), SERVER_BIN.size()});
 
-      copy(in, file);
+      // copy(in, file);
+
+      file.write(reinterpret_cast<char const*>(SERVER_BIN.data()), SERVER_BIN.size());
    }
 
    auto const shortcutPath =
