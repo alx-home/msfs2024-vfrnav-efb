@@ -40,7 +40,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName",      VER_COMPANYNAME_STR
-            VALUE "FileDescription",  VER_FILEDESCRIPTION_STR
+            VALUE "FileDescription",  "MSFS2024 VFRNav' EFB plugin Installer\0"
             VALUE "FileVersion",      VER_FILEVERSION_STR
             VALUE "InternalName",     VER_PRODUCTNAME_STR
             VALUE "LegalCopyright",   VER_COPYRIGHT_STR

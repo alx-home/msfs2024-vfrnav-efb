@@ -52,7 +52,7 @@ set_target_properties(installer PROPERTIES OUTPUT_NAME "msfs2024-vfrnav_installe
 
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_custom_command(TARGET installer POST_BUILD
-        COMMAND $<TARGET_FILE:upx> --brute $<TARGET_FILE:installer>
+        COMMAND $<TARGET_FILE:upx> --best --lzma $<TARGET_FILE:installer>
         COMMENT "Zipping executable (may takes some times...)"
         VERBATIM
     )
