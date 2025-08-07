@@ -83,6 +83,7 @@ function(package)
             packager
             ${arg_DEPENDS}
         COMMENT "Generating ${arg_TARGET_NAME}"
+        VERBATIM
     )
 
     add_custom_command(
@@ -90,6 +91,7 @@ function(package)
         OUTPUT ${ASM_OBJ}
         COMMAND ${NASM_EXECUTABLE} -f win64 ${ASM_FILE} -o ${ASM_OBJ}
         COMMENT "Assembling ${ASM_FILE}"
+        VERBATIM
     )
 
     add_library(${arg_TARGET_NAME} ${ASM_CPP} ${ASM_OBJ})
