@@ -354,9 +354,6 @@ export const OlRouteLayer = ({
                   // Draw Distance/cap
                   //------------------------------
                   coords_.filter((_, index) => index !== coords_.length - 1).forEach((coord, index) => {
-                     const nextCoord = coords_[index + 1];
-
-                     const vector = [nextCoord[0] - coord[0], nextCoord[1] - coord[1]];
                      const mapRotation = state.rotation;
                      const mapSize = map.getSize()!;
 
@@ -367,12 +364,18 @@ export const OlRouteLayer = ({
                         return [coord[0] * mrCos + coord[1] * mrSin, coord[0] * mrSin + coord[1] * mrCos]
                      })(mapCenter)
 
-                     const getCoordinateFromPixel = (coord: Coordinate) => {
-                        const rotated = rotate([coord[0] - mapCenter2[0], coord[1] - mapCenter2[1]], mapRotation)
+                     const toCanvas = (coord: Coordinate) =>
+                        rotate([coord[0] - mapCenter[0], coord[1] - mapCenter[1]], -mapRotation)
+                           .map((elem, index) => mapCenter2[index] + elem);
+
+                     const fromCanvas = (coord: Coordinate) =>
+                        rotate([coord[0] - mapCenter2[0], coord[1] - mapCenter2[1]], mapRotation)
                            .map((elem, index) => mapCenter[index] + elem);
 
-                        return map.getCoordinateFromPixel(rotated)
-                     };
+                     const getCoordinateFromPixel = (coord: Coordinate) => map.getCoordinateFromPixel(fromCanvas(coord));
+
+                     const nextCoord = coords_[index + 1];
+
 
                      const props = updateNavProps(properties[index], getCoordinateFromPixel(coord), getCoordinateFromPixel(nextCoord));
                      const { CH, TC, MH, dist, altitude, dur, remark } = props;
@@ -405,15 +408,76 @@ export const OlRouteLayer = ({
                      }
                      angle -= mapAngle
 
-
-                     const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
-
                      const ch = Math.round(CH);
                      const cDelta = Math.round(MH - CH);
 
                      const maxSize = settings.map.text.maxSize;
 
-                     const center = [(coord[0] + nextCoord[0]) >> 1, (coord[1] + nextCoord[1]) >> 1];
+                     const topLeft = toCanvas([0, 0])
+                     const topRight = toCanvas([mapSize[0], 0])
+                     const bottomRight = toCanvas([mapSize[0], mapSize[1]])
+                     const bottomLeft = toCanvas([0, mapSize[1]])
+
+                     const getIntersection = (a: Coordinate, b: Coordinate, c: Coordinate, d: Coordinate) => {
+                        const t = ((a[0] - c[0]) * (c[1] - d[1]) - (a[1] - c[1]) * (c[0] - d[0]))
+                           / ((a[0] - b[0]) * (c[1] - d[1]) - (a[1] - b[1]) * (c[0] - d[0]))
+
+                        if (t >= 1 || t <= 0) {
+                           return undefined
+                        }
+
+                        return [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]
+                     }
+
+
+                     const clippedCoords = (() => {
+                        let result = [coord, nextCoord];
+                        let int = getIntersection(result[0], result[1], topLeft, topRight)
+
+                        if (int) {
+                           if (fromCanvas(result[0])[1] <= 0) {
+                              result = [int, result[1]]
+                           } else {
+                              result = [result[0], int]
+                           }
+                        }
+
+                        int = getIntersection(result[0], result[1], topRight, bottomRight)
+
+                        if (int) {
+                           if (fromCanvas(result[0])[0] >= mapSize[0]) {
+                              result = [int, result[1]]
+                           } else {
+                              result = [result[0], int]
+                           }
+                        }
+
+                        int = getIntersection(result[0], result[1], bottomLeft, bottomRight)
+
+                        if (int) {
+                           if (fromCanvas(result[0])[1] >= mapSize[1]) {
+                              result = [int, result[1]]
+                           } else {
+                              result = [result[0], int]
+                           }
+                        }
+
+                        int = getIntersection(result[0], result[1], topLeft, bottomLeft)
+
+                        if (int) {
+                           if (fromCanvas(result[0])[0] <= 0) {
+                              result = [int, result[1]]
+                           } else {
+                              result = [result[0], int]
+                           }
+                        }
+
+                        return result;
+                     })()
+
+                     const vector = [clippedCoords[1][0] - clippedCoords[0][0], clippedCoords[1][1] - clippedCoords[0][1]];
+                     const center = [(clippedCoords[0][0] + clippedCoords[1][0]) >> 1, (clippedCoords[0][1] + clippedCoords[1][1]) >> 1];
+                     const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
 
                      const drawText = (text: string, background: boolean, bottom?: boolean) => {
                         context.save();
