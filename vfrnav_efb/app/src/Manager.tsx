@@ -56,9 +56,7 @@ export class Manager {
          return;
       }
 
-
-      const serverPort = location.port;
-      this.socket = new WebSocket("ws://localhost:" + serverPort);
+      this.socket = new WebSocket("ws://" + location.host);
       this.id = 2;
 
       const onClose = () => {
