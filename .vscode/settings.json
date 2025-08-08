@@ -6,26 +6,26 @@
       "projectKey": "alx-home_msfs2024-vfrnav-efb_4b2e913f-5043-4cb2-b198-30de43fbba1a"
    },
    "eslint.enable": true,
-   // "eslint.workingDirectories": [
-   //    "./",
+   "eslint.workingDirectories": [
+      "./",
 
-   //    "./common/ts",
+      "./common/ts",
 
-   //    "./vfrnav_efb",
-   //    "./vfrnav_efb/shared",
-   //    "./vfrnav_efb/app",
-   //    "./vfrnav_efb/EFB",
+      "./vfrnav_efb",
+      "./vfrnav_efb/shared",
+      "./vfrnav_efb/app",
+      "./vfrnav_efb/EFB",
 
-   //    "./installer/ts/app",
+      "./installer/ts/app",
 
-   //    "./packages/ts-utils",
+      "./packages/ts-utils",
 
-   //    "./server/ts",
-   //    "./server/ts/app",
-   //    "./server/ts/common",
-   //    "./server/ts/taskbar",
-   //    "./server/ts/taskbar_tooltip"
-   // ],
+      "./server/ts",
+      "./server/ts/app",
+      "./server/ts/common",
+      "./server/ts/taskbar",
+      "./server/ts/taskbar_tooltip"
+   ],
    "maptz.regionfolder": {
       "[cpp]": {
          "foldEndRegex": "[\\s]*#endregion",

@@ -32,7 +32,7 @@ let file: File | undefined = undefined;
 
 const useFileDialog = () => {
   const resolver = useRef<{
-    resolve: (value: string) => void,
+    resolve: (_value: string) => void,
     reject: () => void
   } | undefined>(undefined);
 
@@ -73,7 +73,7 @@ const useFileDialog = () => {
     input!.click();
 
     return await promise;
-  }, []);
+  }, [input]);
 
   return openDialog
 }
@@ -140,7 +140,7 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
 
       inputRef.current?.focus();
     }
-  }, [path, setValid]);
+  }, [path, setValid, openDialog]);
 
   const validator = useMemo(() => {
     switch (sourceType) {
