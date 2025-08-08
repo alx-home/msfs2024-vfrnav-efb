@@ -35,10 +35,25 @@ import "@alx-home/global.css";
 import './global.css';
 import "./ol.css";
 
+import icon from '@vfrnav/images/app-icon.svg'
+
 import '@polyfills/drag-events/default.css';
 
 
 import 'chartjs-plugin-dragdata';
+
+
+const updateFavicon = () => {
+  const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+  if (favicon) {
+    favicon.href = icon;
+  } else {
+    const newFavicon = document.createElement('link');
+    newFavicon.rel = 'icon';
+    newFavicon.href = icon;
+    document.head.appendChild(newFavicon);
+  }
+}
 
 Chart.register(...registerables);
 
@@ -66,6 +81,8 @@ Chart.register(...registerables);
     await import('@alx-home/pdfjs-dist/build/pdf.worker.min.mjs');
   } else {
     await import("pdfjs-dist/build/pdf.worker.min.mjs");
+
+    updateFavicon()
   }
 
   console.assert((typeof PointerEvent !== "undefined"));
