@@ -99,14 +99,3 @@ Window<WINDOW>::SwitchServer() {
    auto main = Main::Get();
    co_return main->SwitchServer();
 }
-
-template <WIN WINDOW>
-Promise<bool, true>
-Window<WINDOW>::WatchEfbState(
-  promise::Resolve<bool> const& resolve,
-  promise::Reject const&        reject,
-  bool                          currentState
-) {
-   auto main = Main::Get();
-   co_return main->WatchEFBState(resolve, reject, currentState);
-}

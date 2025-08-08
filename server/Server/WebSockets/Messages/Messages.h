@@ -19,7 +19,7 @@
 
 namespace ws::msg {
 struct HelloWorld {
-   js::Enum<"EFB", "Web"> type_{"EFB"};
+   js::Enum<"EFB", "Web", "Server"> type_{"Server"};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__HELLO_WORLD__", &HelloWorld::type_},
@@ -27,10 +27,56 @@ struct HelloWorld {
 };
 
 struct ByeBye {
-   js::Enum<"EFB", "Web"> type_{"EFB"};
+   bool header_{true};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__BYE_BYE__", &ByeBye::type_},
+     js::_{"__BYE_BYE__", &ByeBye::header_},
+   };
+};
+
+struct SetId {
+   std::size_t id_{};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__SET_ID__", &SetId::id_},
+   };
+};
+
+struct ServerState {
+   bool header_{true};
+
+   bool state_{false};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__SERVER_STATE__", &ServerState::header_},
+     js::_{"state", &ServerState::state_},
+   };
+};
+
+struct GetServerState {
+   bool header_{true};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__GET_SERVER_STATE__", &GetServerState::header_},
+   };
+};
+
+struct EFBState {
+   bool header_{true};
+
+   bool state_{false};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__EFB_STATE__", &EFBState::header_},
+     js::_{"state", &EFBState::state_},
+   };
+};
+
+struct GetEFBState {
+   bool header_{true};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__GET_EFB_STATE__", &GetEFBState::header_},
    };
 };
 
@@ -51,12 +97,14 @@ namespace ws {
 using Message = std::variant<
   msg::ByeBye,
   msg::EditRecord,
+  msg::EFBState,
   msg::ExportNav,
   msg::ExportPdfs,
   msg::Facilities,
   msg::FileExists,
   msg::FileExistsResponse,
   msg::Fuel,
+  msg::GetEFBState,
   msg::GetFacilities,
   msg::GetFile,
   msg::GetFileResponse,
@@ -66,6 +114,7 @@ using Message = std::variant<
   msg::GetMetar,
   msg::GetRecord,
   msg::GetRecords,
+  msg::GetServerState,
   msg::GetSettings,
   msg::HelloWorld,
   msg::Icaos,
@@ -78,6 +127,8 @@ using Message = std::variant<
   msg::PlanePoses,
   msg::Records,
   msg::RemoveRecord,
+  msg::ServerState,
+  msg::SetId,
   msg::Settings>;
 
 struct Proxy {

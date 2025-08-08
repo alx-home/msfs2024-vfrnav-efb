@@ -27,6 +27,10 @@
 template <WIN WINDOW>
 void
 Window<WINDOW>::InstallBindings() {
+   webview_->Dispatch([this]() {
+      webview_->AddUserScript("(()=>{window.__WEB_SERVER__ = false;})()");
+   });
+
    Bind("abort", &Window::Abort);
 
    Bind("exists", &Window::Exists);
@@ -59,5 +63,4 @@ Window<WINDOW>::InstallBindings() {
    Bind("switchServer", &Window::SwitchServer);
 
    Bind("vfrnav_postMessage", &Window::VDispatchMessage);
-   Bind("efbStateChanged", &Window::WatchEfbState);
 }

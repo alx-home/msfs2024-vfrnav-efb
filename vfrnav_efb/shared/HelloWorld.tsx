@@ -16,7 +16,7 @@
 import { GenRecord } from './Types';
 
 export type HelloWorld = {
-   __HELLO_WORLD__: "EFB" | "Web",
+   __HELLO_WORLD__: "EFB" | "Web" | "Server",
 };
 
 export const HelloWorldRecord = GenRecord<HelloWorld>({
@@ -24,9 +24,17 @@ export const HelloWorldRecord = GenRecord<HelloWorld>({
 }, {})
 
 export type ByeBye = {
-   __BYE_BYE__: "EFB" | "Web",
+   __BYE_BYE__: true,
 };
 
 export const ByeByeRecord = GenRecord<ByeBye>({
-   __BYE_BYE__: "EFB",
+   __BYE_BYE__: true,
 }, {})
+
+export type SetId = {
+   "__SET_ID__": number
+}
+
+export const SetIdRecord = GenRecord<SetId>({
+   "__SET_ID__": 2
+}, {});

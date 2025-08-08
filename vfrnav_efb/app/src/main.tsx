@@ -41,6 +41,8 @@ import '@polyfills/drag-events/default.css';
 
 
 import 'chartjs-plugin-dragdata';
+import { Manager } from './Manager';
+import { MessageType } from '@shared/MessageHandler';
 
 
 const updateFavicon = () => {
@@ -80,6 +82,10 @@ Chart.register(...registerables);
 
     await import('@alx-home/pdfjs-dist/build/pdf.worker.min.mjs');
   } else {
+    if (window.__WEB_SERVER__ === undefined) {
+      window.__WEB_SERVER__ = true;
+    }
+
     await import("pdfjs-dist/build/pdf.worker.min.mjs");
 
     updateFavicon()
@@ -115,7 +121,14 @@ Chart.register(...registerables);
     </StrictMode>
   )
 
-  if (__MSFS_EMBEDED__) {
+  if (window.__WEB_SERVER__) {
+    window.manager = new Manager();
+    window.vfrnav_postMessage = (message: MessageType) => {
+      (window.manager as Manager).postMessage(message);
+    };
+  }
+
+  if (__MSFS_EMBEDED__ || window.__WEB_SERVER__) {
     window.file_exists = (() => {
       const id = {
         next: 0

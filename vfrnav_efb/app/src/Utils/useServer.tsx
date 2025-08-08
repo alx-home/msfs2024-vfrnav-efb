@@ -1,28 +1,19 @@
+import { messageHandler } from "@Settings/SettingsProvider";
+import { EfbState, ServerState } from "@shared/Server";
 import { useEffect, useState } from "react"
 
 export const useServer = () => {
-   const [connected, setConnected] = useState(!__MSFS_EMBEDED__);
+   const [connected, setConnected] = useState(!__MSFS_EMBEDED__ && !window.__WEB_SERVER__);
 
    useEffect(() => {
-      if (__MSFS_EMBEDED__) {
-         const running = {
-            current: true
+      if (__MSFS_EMBEDED__ || window.__WEB_SERVER__) {
+         const onStateChanged = (message: ServerState) => {
+            setConnected(message.state);
          };
+         messageHandler.subscribe("__SERVER_STATE__", onStateChanged);
+         messageHandler.send({ "__GET_SERVER_STATE__": true });
 
-         (async () => {
-            let current = connected;
-
-            while (true) {
-               current = await window.severStateChanged(current);
-               if (running.current) {
-                  setConnected(current);
-               } else {
-                  break;
-               }
-            }
-         })();
-
-         return () => { running.current = false };
+         return () => messageHandler.unsubscribe("__SERVER_STATE__", onStateChanged);
       }
    }, [connected]);
 
@@ -34,22 +25,13 @@ export const useEFBServer = () => {
 
    useEffect(() => {
       if (!__MSFS_EMBEDED__) {
-         let running = true;
+         const onStateChanged = (message: EfbState) => {
+            setConnected(message.state);
+         };
+         messageHandler.subscribe("__EFB_STATE__", onStateChanged);
+         messageHandler.send({ "__GET_EFB_STATE__": true });
 
-         (async () => {
-            let current = connected;
-
-            while (true) {
-               current = await window.efbStateChanged(current);
-               if (running) {
-                  setConnected(current);
-               } else {
-                  break;
-               }
-            }
-         })();
-
-         return () => { running = false };
+         return () => messageHandler.unsubscribe("__EFB_STATE__", onStateChanged);
       }
    }, [connected]);
 
