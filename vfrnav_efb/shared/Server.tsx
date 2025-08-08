@@ -26,6 +26,25 @@ export const ServerStateRecord = GenRecord<ServerState>({
    state: false
 }, {})
 
+export type EfbState = {
+   __EFB_STATE__: true,
+   state: boolean
+}
+
+export const EfbStateRecord = GenRecord<EfbState>({
+   __EFB_STATE__: true,
+
+   state: false
+}, {})
+
+export type GetEFBState = {
+   __GET_EFB_STATE__: true
+}
+
+export const GetEFBStateRecord = GenRecord<GetEFBState>({
+   __GET_EFB_STATE__: true
+}, {})
+
 
 export type GetServerState = {
    __GET_SERVER_STATE__: true

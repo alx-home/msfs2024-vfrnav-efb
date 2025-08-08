@@ -88,22 +88,37 @@ Server::WebSocket::OnRead(error_code ec, size_t n) {
    std::string data{it, it + n};
    buffer_.consume(n);
 
-   auto message = js::Parse<ws::Message>(data);
+   try {
+      auto message = js::Parse<ws::Message>(data);
 
-   if (std::holds_alternative<ws::msg::HelloWorld>(message)) {
-      auto const& hello_world = std::get<ws::msg::HelloWorld>(message);
+      if (std::holds_alternative<ws::msg::HelloWorld>(message)) {
+         server_.Dispatch([self    = shared_from_this(),
+                           message = std::move(message)]() mutable constexpr {
+            auto const& hello_world = std::get<ws::msg::HelloWorld>(message);
 
-      if (*hello_world.type_ == "EFB") {
-         if (!server_.efb_socket_) {
-            server_.efb_socket_ = std::make_shared<EFBWebSocket>(std::move(*this));
-            server_.efb_socket_->Start();
-         }
+            if (*hello_world.type_ == "EFB") {
+               if (!self->server_.efb_socket_) {
+                  auto& server = self->server_;
+                  server.efb_socket_ =
+                    std::make_shared<EFBWebSocket>(std::move(*self.get()), false);
+                  self = nullptr;
+                  server.efb_socket_->Start();
+               }
+            } else {
+               assert(*hello_world.type_ == "Web");
+               auto const socket = self->server_.web_sockets_.emplace_back(
+                 std::make_shared<EFBWebSocket>(std::move(*self.get()), true)
+               );
+
+               self = nullptr;
+               socket->Start();
+            }
+         });
       } else {
-         assert(*hello_world.type_ == "Web");
-         std::make_shared<WebWebSocket>(std::move(*this))->Start();
+         std::cerr << "Unexpected message for peer " << peer_ << std::endl;
       }
-   } else {
-      std::cerr << "Unexpected message for peer " << peer_ << std::endl;
+   } catch (std::exception const& e) {
+      std::cerr << "Exception occurred for peer " << peer_ << " " << e.what() << std::endl;
    }
 }
 

@@ -1,12 +1,11 @@
 import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
 import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
-import { FileExist, GetFile, OpenFile } from "@shared/Files";
-import { Fuel, Tank } from "@shared/Fuel";
+import { FileExist, FileExistResponse, GetFile, GetFileResponse, OpenFile, OpenFileResponse } from "@shared/Files";
+import { Tank } from "@shared/Fuel";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { ExportNav } from "@shared/NavData";
 import { ExportPdfs } from "@shared/Pdfs";
-import { EditRecord, GetRecord, PlanePos, PlanePoses, PlaneRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord } from "@shared/PlanPos";
-import { ServerState } from "@shared/Server";
+import { EditRecord, GetRecord, PlanePos, PlaneRecord, PlaneRecordsRecord, RemoveRecord } from "@shared/PlanPos";
 import { SharedSettings, SharedSettingsRecord } from "@shared/Settings";
 import { fill } from "@shared/Types";
 
@@ -24,10 +23,11 @@ class FacilityManager {
 export class Manager {
    private readonly facilityLoader: FacilityLoader;
    private readonly facilityManager = new Map<number, FacilityManager>();
-   private serverConnected = false;
 
    private socket: WebSocket | undefined;
    private socketTimeout: NodeJS.Timeout | undefined;
+   private messageHandler: ((_message: MessageType) => void) | undefined = undefined
+   private serverMessageHandler: ((_id: number, _message: MessageType) => void) | undefined = undefined
 
    /* eslint-disable no-unused-vars */
    constructor(private readonly bus: EventBus) {
@@ -39,12 +39,11 @@ export class Manager {
    }
 
    public get isServerConnected() {
-      return this.serverConnected;
+      return !!this.serverMessageHandler;
    }
 
    private plane: PlanePos[] = [];
    private flying: boolean = false;
-   private readonly subscribers = new Map<number, (_: MessageType) => void>();
 
    private flights: PlaneRecord[] = (() => {
       const flightsStr = GetStoredData("flights");
@@ -60,6 +59,14 @@ export class Manager {
 
       return flights;
    })();
+
+   openEFB(messageHandler: (_: MessageType) => void) {
+      this.messageHandler = messageHandler;
+   }
+
+   closeEFB() {
+      this.messageHandler = undefined;
+   }
 
    private connectToServer() {
       if (this.socketTimeout) {
@@ -80,19 +87,16 @@ export class Manager {
       if (serverPort) {
          this.socket = new WebSocket("ws://localhost:" + serverPort);
 
-         const messageHandlers = new Map<number, (_: MessageType) => void>();
-
          const onClose = () => {
             if (!state.done) {
-               this.serverConnected = false;
-               this.subscribers.forEach(messageHandler => messageHandler({
+               state.done = true;
+               this.serverMessageHandler = undefined;
+               this.messageHandler?.({
                   "__SERVER_STATE__": true,
 
                   state: false
-               }));
-               state.done = true;
+               });
 
-               messageHandlers.forEach((messageHandler, id) => this.unsubscribe(id, messageHandler))
                this.socket = undefined;
                if (this.socketTimeout) {
                   clearTimeout(this.socketTimeout)
@@ -104,93 +108,54 @@ export class Manager {
          const state = {
             done: false
          };
-         const canSendMessage = (message: MessageType) => !isMessage("__SETTINGS__", message) && !isMessage("__GET_SETTINGS__", message) && !isMessage("__SERVER_STATE__", message);
+
          this.socket.onmessage = (event) => {
             const data = (JSON.parse(event.data) as {
                id: number,
                content: MessageType
             });
 
+            console.log(data)
             if (isMessage("__HELLO_WORLD__", data.content)) {
-               if (data.id === 1) {
-                  // EFB Server used to relay message between EFB app (id:0) / server
+               console.assert(data.id === 1);
+               // Message sent by the Server
 
-                  const messageHandler = (message: MessageType) => {
-                     if (state.done) {
-                        console.assert(false)
-                        this.unsubscribe(data.id, messageHandler);
-                        return;
-                     }
-                     if (canSendMessage(message)) {
-                        this.socket?.send(JSON.stringify({
-                           id: 0,
-                           content: message
-                        }))
-                     }
-                  };
+               this.serverMessageHandler = (id: number, message: MessageType) => {
+                  this.socket?.send(JSON.stringify({
+                     id: id,
+                     content: message
+                  }))
+               };
 
-                  messageHandlers.set(data.id, messageHandler);
-                  this.subscribe(data.id, messageHandler);
+               this.messageHandler?.({
+                  "__SERVER_STATE__": true,
 
-                  this.serverConnected = true;
-                  this.subscribers.forEach(messageHandler => messageHandler({
-                     "__SERVER_STATE__": true,
+                  state: true
+               });
 
-                     state: true
-                  }));
-               } else {
-                  const messageHandler = (message: MessageType) => {
-                     if (state.done) {
-                        console.assert(false)
-                        this.unsubscribe(data.id, messageHandler);
-                        return;
-                     }
-                     if (canSendMessage(message)) {
-                        this.socket?.send(JSON.stringify({
-                           id: data.id,
-                           content: message
-                        }))
-                     }
-                  };
-
-                  messageHandlers.set(data.id, messageHandler);
-                  this.subscribe(data.id, messageHandler);
-               }
-            } else if (isMessage("__BYE_BYE__", data.content)) {
-               if (data.content.__BYE_BYE__ === "EFB") {
-                  this.socket?.close();
-               } else {
-                  const handler = messageHandlers.get(data.id);
-
-                  if (handler) {
-                     this.unsubscribe(data.id, handler)
-                     messageHandlers.delete(data.id);
-                  } else {
-                     console.assert(false)
-                  }
-               }
+               this.onGetPlaneRecords(1);
             } else if (isMessage("__SETTINGS__", data.content)) {
                console.assert(false);
             } else if (isMessage("__GET_SETTINGS__", data.content)) {
                console.assert(false);
             } else if (isMessage("__GET_FUEL__", data.content)) {
-               this.onGetFuel(messageHandlers.get(data.id) as (_: unknown) => void);
+               this.onGetFuel(data.id);
             } else if (isMessage("__GET_RECORDS__", data.content)) {
-               this.onGetPlaneRecords(messageHandlers.get(data.id) as (_: unknown) => void);
+               this.onGetPlaneRecords(data.id);
             } else if (isMessage("__GET_FACILITIES__", data.content)) {
-               this.onGetFacilities(data.id, messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+               this.onGetFacilities(data.id, data.content);
             } else if (isMessage("__GET_ICAOS__", data.content)) {
-               this.onGetIcaos(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+               this.onGetIcaos(data.id, data.content);
             } else if (isMessage("__GET_LAT_LON__", data.content)) {
-               this.onGetLatLon(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+               this.onGetLatLon(data.id, data.content);
             } else if (isMessage("__GET_METAR__", data.content)) {
-               this.onGetMetar(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+               this.onGetMetar(data.id, data.content);
             } else if (isMessage("__REMOVE_RECORD__", data.content)) {
                this.onRemoveRecord(data.content);
             } else if (isMessage("__EDIT_RECORD__", data.content)) {
                this.onEditRecord(data.content);
             } else if (isMessage("__GET_RECORD__", data.content)) {
-               this.onGetRecord(messageHandlers.get(data.id) as (_: unknown) => void, data.content);
+               this.onGetRecord(data.id, data.content);
             } else if (isMessage("__EXPORT_NAV__", data.content)) {
                this.onExportNav(data.content);
             } else if (isMessage("__EXPORT_PDFS__", data.content)) {
@@ -198,11 +163,7 @@ export class Manager {
             } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
                || isMessage("__OPEN_FILE_RESPONSE__", data.content)
                || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
-               if (data.id === 0) {
-                  this.subscribers.get(0)!(data.content);
-               } else {
-                  console.assert(false);
-               }
+               this.onFileResponse(data.content);
             }
          };
 
@@ -241,6 +202,19 @@ export class Manager {
          };
       }
       return result
+   }
+
+   private broadCastMessage(message: MessageType) {
+      this.messageHandler?.(message);
+      this.serverMessageHandler?.(1, message);
+   }
+
+   private sendMessage(id: number, message: MessageType) {
+      if (id == 0) {
+         this.messageHandler?.(message);
+      } else {
+         this.serverMessageHandler?.(id, message);
+      }
    }
 
    private fetchPosition() {
@@ -283,18 +257,13 @@ export class Manager {
             SetStoredData(`record-${record.id}`, JSON.stringify(this.plane))
             SetStoredData("flights", JSON.stringify(this.flights))
 
-
-            this.subscribers.forEach(messageHandler => {
-               messageHandler({ __RECORDS__: true, value: this.flights });
-            });
+            this.broadCastMessage({ __RECORDS__: true, value: this.flights });
          }
 
          this.plane = []
       }
 
-      this.subscribers.forEach(messageHandler => {
-         messageHandler(info);
-      });
+      this.broadCastMessage(info);
    };
 
    async getMetar(ident: string, lat: number, lon: number) {
@@ -437,52 +406,48 @@ export class Manager {
       return SharedSettingsRecord.defaultValues;
    }
 
-   onGetSettings(messageHandler: (_: SharedSettings) => void) {
+   onGetSettings(id: number) {
       const settings = this.GetSettings()
 
       if (settings) {
-         messageHandler(settings);
+         this.sendMessage(id, settings);
       }
    }
 
-   onGetFuel(messageHandler: (_: Fuel) => void) {
-      messageHandler({
+   onGetFuel(id: number) {
+      this.sendMessage(id, {
          __FUEL__: true,
 
          tanks: this.getFuel()
       });
    }
 
-   onGetServerState(messageHandler: (_: ServerState) => void) {
-      messageHandler({ __SERVER_STATE__: true, state: this.serverConnected })
+   onGetServerState(id: number) {
+      this.sendMessage(id, { __SERVER_STATE__: true, state: !!this.serverMessageHandler })
    }
 
-   onGetPlaneRecords(messageHandler: (_: PlaneRecords) => void) {
+   onGetPlaneRecords(id: number) {
       const flightsStr = GetStoredData("flights") as string;
-      messageHandler(fill({ __RECORDS__: true, value: flightsStr === "" ? [] : (JSON.parse(flightsStr) as PlaneRecord[]) }, PlaneRecordsRecord.defaultValues));
+      this.sendMessage(id, fill({ __RECORDS__: true, value: flightsStr === "" ? [] : (JSON.parse(flightsStr) as PlaneRecord[]) }, PlaneRecordsRecord.defaultValues));
    }
 
-   async onGetFacilities(id: number, messageHandler: (_: MessageType) => void, message: GetFacilities) {
-      if (this.subscribers.get(id) === messageHandler) {
-         const list = await this.getFacilitiesList(id, message.lat, message.lon);
-         messageHandler({ __FACILITIES__: true, facilities: [...list.values()] });
-      } else {
-         console.assert(false);
-      }
+   async onGetFacilities(id: number, message: GetFacilities) {
+      const list = await this.getFacilitiesList(id, message.lat, message.lon);
+      this.sendMessage(id, { __FACILITIES__: true, facilities: [...list.values()] });
    }
 
-   async onGetIcaos(messageHandler: (_: MessageType) => void, message: GetICAOS) {
+   async onGetIcaos(id: number, message: GetICAOS) {
       const list = await this.getIcaos(message.icao);
-      messageHandler({ __ICAOS__: true, icaos: [...list.values()] });
+      this.sendMessage(id, { __ICAOS__: true, icaos: [...list.values()] });
    }
 
-   async onGetLatLon(messageHandler: (_: MessageType) => void, message: GetLatLon) {
+   async onGetLatLon(id: number, message: GetLatLon) {
       const result = await this.getLatLon(message.icao);
-      messageHandler({ __LAT_LON__: true, icao: message.icao, ...result });
+      this.sendMessage(id, { __LAT_LON__: true, icao: message.icao, ...result });
    }
 
-   async onGetMetar(messageHandler: (_: Metar) => void, message: GetMetar) {
-      messageHandler(await this.getMetar(message.icao, message.lat, message.lon));
+   async onGetMetar(id: number, message: GetMetar) {
+      this.sendMessage(id, await this.getMetar(message.icao, message.lat, message.lon));
    }
 
    onSharedSettings(message: SharedSettings) {
@@ -493,7 +458,8 @@ export class Manager {
       this.flights.find(elem => elem.id === id)!.name = name
       SetStoredData("flights", JSON.stringify(this.flights))
 
-      this.subscribers.forEach(messageHandler => messageHandler({ __RECORDS__: true, value: this.flights }));
+      // Broadcast
+      this.broadCastMessage({ __RECORDS__: true, value: this.flights });
    }
 
    onRemoveRecord({ id }: RemoveRecord) {
@@ -501,48 +467,35 @@ export class Manager {
       SetStoredData("flights", JSON.stringify(this.flights))
       DeleteStoredData(`record-${id}`)
 
-      this.subscribers.forEach(messageHandler => messageHandler({ __RECORDS__: true, value: this.flights }));
+      this.broadCastMessage({ __RECORDS__: true, value: this.flights });
    }
 
-   onGetRecord(messageHandler: (_: PlanePoses) => void, { id }: GetRecord) {
-      messageHandler({ __PLANE_POSES__: true, id: id, value: JSON.parse(GetStoredData(`record-${id}`) as string) as PlanePos[] });
+   onGetRecord(id: number, { id: record }: GetRecord) {
+      this.sendMessage(id, { __PLANE_POSES__: true, id: record, value: JSON.parse(GetStoredData(`record-${record}`) as string) as PlanePos[] });
    }
 
    onExportNav(message: ExportNav) {
-      this.subscribers.get(0)?.(message);
+      this.messageHandler?.(message);
    }
 
    onExportPdfs(message: ExportPdfs) {
-      this.subscribers.get(0)?.(message);
+      this.messageHandler?.(message);
+   }
+
+   onFileResponse(message: GetFileResponse | FileExistResponse | OpenFileResponse) {
+      this.messageHandler?.(message);
    }
 
    onGetFile(message: GetFile) {
-      this.subscribers.get(1)?.(message);
+      this.serverMessageHandler?.(1, message);
    }
 
    onOpenFile(message: OpenFile) {
-      this.subscribers.get(1)?.(message);
+      this.serverMessageHandler?.(1, message);
    }
 
    onFileExists(message: FileExist) {
-      this.subscribers.get(1)?.(message);
-   }
-
-   subscribe(id: number, messageHandler: (_: MessageType) => void) {
-      this.subscribers.set(id, messageHandler);
-      messageHandler({
-         "__SERVER_STATE__": true,
-
-         state: this.serverConnected
-      });
-   }
-
-   unsubscribe(id: number, messageHandler: ((_: MessageType) => void)) {
-      if (this.subscribers.get(id) !== messageHandler) {
-         console.error(`Unsubscribing: Message hasn't be subscribed`);
-      } else {
-         this.subscribers.delete(id);
-      }
+      this.serverMessageHandler?.(1, message);
    }
 
 };

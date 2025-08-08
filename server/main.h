@@ -42,13 +42,11 @@ public:
    void        FlushServerState();
    void        SwitchServer();
 
-   void WatchEFBState(promise::Resolve<bool> const&, promise::Reject const&, bool currentState);
-
    void OpenSettings();
 
-   void Subscribe(std::size_t id, std::function<void(ws::Message)>);
-   void Unsubscribe(std::size_t id);
-   void VDispatchMessage(std::size_t id, ws::Message);
+   void SetMessageHandler(std::size_t id, Server::MessageHandler&&);
+   void UnsetMessageHandler(std::size_t id);
+   void VDispatchMessage(std::size_t id, ws::Message&&);
 
    void OpenTaskbar() const;
    void CloseTaskbar() const;

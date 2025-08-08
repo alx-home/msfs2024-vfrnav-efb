@@ -24,7 +24,6 @@ set(SOURCES
 
     Server/WebSockets/WebSocket.cpp
     Server/WebSockets/EFBWebSocket.cpp
-    Server/WebSockets/WebWebSocket.cpp
 
     SimConnect/SimConnect.cpp
 

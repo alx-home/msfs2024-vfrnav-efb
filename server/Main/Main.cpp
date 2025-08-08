@@ -161,19 +161,19 @@ Main::OpenSettings() {
 }
 
 void
-Main::Subscribe(std::size_t id, std::function<void(ws::Message)> message_handler) {
+Main::SetMessageHandler(std::size_t id, Server::MessageHandler&& message_handler) {
    assert(server_);
-   server_->Subscribe(id, std::move(message_handler));
+   server_->SetMessageHandler(id, std::move(message_handler));
 }
 
 void
-Main::Unsubscribe(std::size_t id) {
+Main::UnsetMessageHandler(std::size_t id) {
    assert(server_);
-   server_->Unsubscribe(id);
+   server_->UnsetMessageHandler(id);
 }
 
 void
-Main::VDispatchMessage(std::size_t id, ws::Message message) {
+Main::VDispatchMessage(std::size_t id, ws::Message&& message) {
    assert(server_);
    server_->VDispatchMessage(id, std::move(message));
 }
@@ -347,16 +347,6 @@ Main::WatchServerState(
 ) {
    assert(server_);
    server_->WatchServerState(resolve, reject);
-}
-
-void
-Main::WatchEFBState(
-  promise::Resolve<bool> const& resolve,
-  promise::Reject const&        reject,
-  bool                          currentState
-) {
-   assert(server_);
-   server_->WatchEFBState(resolve, reject, currentState);
 }
 
 void

@@ -196,9 +196,11 @@ Window<WINDOW>::Window(std::function<void()> on_terminate)
       Dispatch([this]() constexpr {
          if (Main::Running()) {
             auto const id = std::bit_cast<std::size_t>(this);
-            Main::Get()->Subscribe(id, [this](ws::Message message) constexpr {
-               webview_->Call<void>("vfrnav_onmessage", std::move(message));
-            });
+            Main::Get()->SetMessageHandler(
+              id, {[this](std::size_t, ws::Message message) constexpr {
+                 webview_->Call<void>("vfrnav_onmessage", std::move(message));
+              }}
+            );
          }
       });
    }
@@ -215,7 +217,7 @@ Window<WINDOW>::~Window() {
    if constexpr (WIN::EFB == WINDOW) {
       Dispatch([this]() constexpr {
          if (Main::Running()) {
-            Main::Get()->Unsubscribe(std::bit_cast<std::size_t>(this));
+            Main::Get()->UnsetMessageHandler(std::bit_cast<std::size_t>(this));
          }
       });
    }

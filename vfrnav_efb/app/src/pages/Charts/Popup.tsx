@@ -28,6 +28,56 @@ import { sha256 } from "js-sha256";
 const sources = ['Local', 'SIA', 'TEMSI', 'Weather Fronts'] as const;
 type Source = typeof sources[number];
 
+let file: File | undefined = undefined;
+
+const useFileDialog = () => {
+  const resolver = useRef<{
+    resolve: (value: string) => void,
+    reject: () => void
+  } | undefined>(undefined);
+
+  const input = useMemo(() => {
+    if (window.__WEB_SERVER__) {
+      const input = document.createElement('input');
+      input.accept = 'application/pdf'
+      input.multiple = false
+      input.type = 'file';
+
+      input.onchange = (e) => {
+        file = undefined;
+        const target = e.target as HTMLInputElement | null
+        if (target?.files?.length) {
+          file = target.files[0];
+          resolver.current!.resolve(input.value);
+        } else {
+          resolver.current!.reject();
+        }
+
+        resolver.current = undefined;
+      };
+
+      return input;
+    } else {
+      return undefined;
+    }
+  }, []);
+
+  const openDialog = useCallback(async () => {
+    file = undefined;
+    const promise = new Promise<string>((resolve, reject) => {
+      resolver.current = {
+        resolve: resolve,
+        reject: reject
+      };
+    })
+    input!.click();
+
+    return await promise;
+  }, []);
+
+  return openDialog
+}
+
 const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, loading, enable }: {
   sourceType: Source,
   inputRef: React.RefObject<HTMLInputElement | null>,
@@ -38,6 +88,7 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
   enable: boolean
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const openDialog = useFileDialog();
 
   const [path, setPath] = useState('');
   const [pathReload, setPathReload] = useState(false);
@@ -70,10 +121,17 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
   }, [sourceType]);
 
   const openFile = useCallback(async () => {
-    const result = await window.openFile(inputRef.current!.value.length ? inputRef.current!.value : path, [{
-      name: "Pdf File",
-      value: ["*.pdf"]
-    }])
+    const result = await (async () => {
+      if (window.__WEB_SERVER__) {
+        return await openDialog();
+      }
+
+      return await window.openFile(inputRef.current!.value.length ? inputRef.current!.value : path, [{
+        name: "Pdf File",
+        value: ["*.pdf"]
+      }])
+    })()
+
     if (result && result !== '') {
       setPath(result);
       setPathReload(true);
@@ -97,9 +155,15 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
       case "Local":
         return async (value: string) => {
           setValid(false);
-          const result = path.endsWith('.pdf') && await window.file_exists(value);
-          setValid(result);
-          return result
+          if (window.__WEB_SERVER__) {
+            const result = path.endsWith('.pdf') && !!file;
+            setValid(result);
+            return result
+          } else {
+            const result = path.endsWith('.pdf') && await window.file_exists(value);
+            setValid(result);
+            return result
+          }
         }
 
       default:
@@ -121,10 +185,17 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
 
       case "Local":
         return async (value: string) => {
-          const result = value.endsWith('.pdf') && await window.file_exists(value);
-          setPartialValid(result);
-          setPath(value);
-          return result
+          if (window.__WEB_SERVER__) {
+            file = undefined;
+            setPartialValid(false)
+            setPath(value);
+            return false;
+          } else {
+            const result = value.endsWith('.pdf') && await window.file_exists(value);
+            setPartialValid(result);
+            setPath(value);
+            return result
+          }
         }
 
       default:
@@ -257,17 +328,32 @@ export const ChartsPopup = ({ setSrcs }: {
         }
 
         case "Local": {
-          window.getFile(result).then(base64 => {
-            const binaryString = atob(base64);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; ++i) {
-              bytes[i] = binaryString.charCodeAt(i);
+          if (window.__WEB_SERVER__) {
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(file!);
+
+            if (reader) {
+              reader.onload = e => {
+                if (e.target) {
+                  setPdf(new Uint8Array(e.target.result as ArrayBuffer));
+                }
+              }
             }
-            setPdf(bytes);
-          }).catch((e: Error) => {
+
             setLoading(false);
-            setError(e.message);
-          });
+          } else {
+            window.getFile(result).then(base64 => {
+              const binaryString = atob(base64);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; ++i) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              setPdf(bytes);
+            }).catch((e: Error) => {
+              setLoading(false);
+              setError(e.message);
+            });
+          }
           break;
         }
 
@@ -308,7 +394,7 @@ export const ChartsPopup = ({ setSrcs }: {
   }, [sourceType, emptyPopup, name, pdf, result, setPopup, setSrcs]);
 
   useEffect(() => {
-    if (sourceType === 'Local') {
+    if (sourceType === 'Local' && !window.__WEB_SERVER__) {
       if (serverConnected) {
         if (error === "Server not connected!") {
           setError(undefined);

@@ -37,6 +37,9 @@ declare global {
   const __SIA_AZBA_DATE_ADDR__: string;
 
   interface Window {
+    __WEB_SERVER__?: boolean;
+    manager?: unknown;
+
     vfrnav_postMessage: ((_: MessageType) => void) | undefined;
     vfrnav_onmessage: ((_: MessageType) => Promise<void>) | undefined;
 
@@ -47,7 +50,6 @@ declare global {
     }[]) => Promise<string>;
     getFile: (_: string) => Promise<string>;
     severStateChanged: (_currentState: boolean) => Promise<boolean>;
-    efbStateChanged: (_currentState: boolean) => Promise<boolean>;
   }
 }
 

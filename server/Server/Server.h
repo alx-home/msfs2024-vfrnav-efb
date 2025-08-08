@@ -71,6 +71,14 @@ struct Server : public MessageQueue {
      std::reference_wrapper<std::unique_lock<std::shared_mutex> const>,
      std::reference_wrapper<std::shared_lock<std::shared_mutex> const>>;
 
+   class MessageHandler : public std::function<void(std::size_t id, ws::Message)> {
+   public:
+      using std::function<void(std::size_t id, ws::Message)>::function;
+
+      double lat_{-1000};
+      double lon_{-1000};
+   };
+
    uint16_t    GetPort() const;
    ServerState GetState(Lock) const;
    void        SetServerPort(uint16_t);
@@ -83,27 +91,23 @@ struct Server : public MessageQueue {
    void Stop();
    void Start();
 
-   void NotifyEFBState(bool state);
-
    using tcp         = boost::asio::ip::tcp;
    using io_context  = boost::asio::io_context;
    using boost_error = boost::system::error_code;
 
    void Accept(const boost_error& error, tcp::socket socket);
 
-   bool VDispatchMessage(std::size_t id, ws::Message message);
-   void Subscribe(std::size_t id, std::function<void(ws::Message)>);
-   void Unsubscribe(std::size_t id);
+   bool VDispatchMessage(std::size_t id, ws::Message&& message);
+   void SetMessageHandler(std::size_t id, MessageHandler&&);
+   void UnsetMessageHandler(std::size_t id);
 
    void WatchServerState(Resolve<ServerState> const& resolve, Reject const& reject);
-   void WatchEFBState(Resolve<bool> const& resolve, Reject const& reject, bool currentState);
 
    Main*                       main_   = nullptr;
    bool                        runing_ = false;
    std::shared_mutex           mutex_{};
    std::condition_variable_any cv_{};
    Resolvers<ServerState>      resolvers_{};
-   Resolvers<bool>             efb_resolvers_{};
    bool                        efb_connected_{false};
    bool                        want_run_{[]() constexpr {
       auto& registry = registry::Get();
@@ -122,12 +126,9 @@ struct Server : public MessageQueue {
    class EFBWebSocket;
    class WebWebSocket;
 
-   struct MessageHandler : std::function<void(ws::Message)> {
-      double lat_{-1000};
-      double lon_{-1000};
-   };
-   std::unordered_map<std::size_t, MessageHandler> subscribers_{};
+   std::unordered_map<std::size_t, MessageHandler> message_handlers_{};
    std::shared_ptr<EFBWebSocket>                   efb_socket_{nullptr};
+   std::vector<std::shared_ptr<EFBWebSocket>>      web_sockets_{};
 
    // Must stays at the end
    std::jthread thread_{};
@@ -160,53 +161,34 @@ private:
    bool          moved_{false};
 
    friend class Server::EFBWebSocket;
-   friend class Server::WebWebSocket;
 };
 
 class Server::EFBWebSocket : public std::enable_shared_from_this<EFBWebSocket> {
 public:
-   EFBWebSocket(Server::WebSocket&& socket);
+   EFBWebSocket(Server::WebSocket&& socket, bool web_browser);
    ~EFBWebSocket();
 
    void Start();
+   void Stop();
 
-   void Subscribe(std::size_t id);
-   void Unsubscribe(std::size_t id);
-   void VDispatchMessage(std::size_t id, ws::Message message);
+   void VDispatchMessage(std::size_t id, ws::Message&& message);
+   void VSendMessage(std::size_t id, ws::Message&& message);
 
 private:
    void Read();
    void OnRead(boost::beast::error_code ec, size_t n);
    void OnWrite(boost::beast::error_code ec, size_t n);
 
+   bool                                         web_browser_{};
    Server&                                      server_;
    boost::beast::websocket::stream<tcp::socket> ws_;
    boost::beast::flat_buffer                    buffer_;
    tcp::endpoint                                peer_;
+   std::size_t                                  my_id_{1};
 
    std::shared_mutex           mutex_{};
    std::condition_variable_any cv_{};
    std::atomic<std::size_t>    promises_{};
 
    std::jthread thread_;
-};
-
-class Server::WebWebSocket : public std::enable_shared_from_this<WebWebSocket> {
-public:
-   WebWebSocket(Server::WebSocket&& socket);
-   ~WebWebSocket();
-
-   void Start();
-   void Run();
-
-private:
-   void Read();
-   void OnRead(boost::beast::error_code ec, size_t n);
-   void OnWrite(boost::beast::error_code ec, size_t n);
-
-   Server const&                                server_;
-   boost::beast::websocket::stream<tcp::socket> ws_;
-   boost::beast::flat_buffer                    buffer_;
-   tcp::endpoint                                peer_;
-   std::string                                  response_;
 };

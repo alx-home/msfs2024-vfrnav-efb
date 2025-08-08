@@ -44,31 +44,31 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   onGetSettings() {
-    this.props.manager.onGetSettings(this.messageHandle);
+    this.props.manager.onGetSettings(0);
   }
 
   onGetServerState() {
-    this.props.manager.onGetServerState(this.messageHandle);
+    this.props.manager.onGetServerState(0);
   }
 
   onGetPlaneRecords() {
-    this.props.manager.onGetPlaneRecords(this.messageHandle);
+    this.props.manager.onGetPlaneRecords(0);
   }
 
   onGetFacilities(message: GetFacilities) {
-    this.props.manager.onGetFacilities(0, this.messageHandle, message);
+    this.props.manager.onGetFacilities(0, message);
   }
 
   onGetMetar(message: GetMetar) {
-    this.props.manager.onGetMetar(this.messageHandle, message);
+    this.props.manager.onGetMetar(0, message);
   }
 
   onGetLatLon(message: GetLatLon) {
-    this.props.manager.onGetLatLon(this.messageHandle, message);
+    this.props.manager.onGetLatLon(0, message);
   }
 
   onGetIcaos(message: GetIcaos) {
-    this.props.manager.onGetIcaos(this.messageHandle, message);
+    this.props.manager.onGetIcaos(0, message);
   }
 
   onEditRecord(message: EditRecord) {
@@ -80,11 +80,11 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   onGetRecord(message: GetRecord) {
-    this.props.manager.onGetRecord(this.messageHandle, message);
+    this.props.manager.onGetRecord(0, message);
   }
 
   onGetFuel() {
-    this.props.manager.onGetFuel(this.messageHandle);
+    this.props.manager.onGetFuel(0);
   }
 
   onGetFile(message: GetFile) {
@@ -102,7 +102,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
   destroy(): void {
     if (messageHandler !== undefined) {
-      this.props.manager.unsubscribe(0, this.messageHandle);
+      this.props.manager.closeEFB();
 
       messageHandler.unsubscribe("__SETTINGS__", this.props.manager.onSharedSettings)
       messageHandler.unsubscribe("__GET_SETTINGS__", this.onGetSettings)
@@ -137,7 +137,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     if (messageHandler === undefined) {
       messageHandler = new MessageHandler(this.elementRef.instance);
 
-      this.props.manager.subscribe(0, this.messageHandle);
+      this.props.manager.openEFB(this.messageHandle);
 
       messageHandler.subscribe("__SETTINGS__", this.props.manager.onSharedSettings.bind(this.props.manager))
       messageHandler.subscribe("__GET_SETTINGS__", this.onGetSettings.bind(this))
