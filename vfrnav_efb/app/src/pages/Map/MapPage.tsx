@@ -375,7 +375,7 @@ export const MapPage = ({ active }: {
                   setDragOffset({ x: bounding.x - event.clientX, y: bounding.y - event.clientY })
                 }}
                 onDrag={(event) => {
-                  if (event.clientY !== 0 && event.clientY !== 0) {
+                  if (event.clientX !== 0 && event.clientY !== 0) {
                     const bounding = event.currentTarget.getBoundingClientRect();
                     const parentBounding = event.currentTarget.parentElement!.getBoundingClientRect();
 
