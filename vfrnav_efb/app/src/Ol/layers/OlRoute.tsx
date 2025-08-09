@@ -485,6 +485,7 @@ export const OlRouteLayer = ({
                      const drawText = (text: string, background: boolean, bottom?: boolean) => {
                         context.save();
 
+                        context.lineJoin = 'round';
                         context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
                         context.lineWidth = Math.floor(settings.map.text.borderSize);
                         context.font = "900 " + maxSize.toFixed(0) + "px Inter-bold, sans-serif";
