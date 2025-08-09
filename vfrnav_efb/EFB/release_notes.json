@@ -400,6 +400,16 @@
             "     - Navlog: Loaded fuel is no longer modified during leg validation.",
             "       Le carburant chargé n'est plus modifié lors de la validation des étapes dans le Navlog."
          ]
+      },
+      {
+         "version": "1.5.3",
+         "date": "AUG 09, 2025",
+         "notes": [
+            "### EFB ###",
+            "***🐞 Fixes / Corrections:***",
+            "     - Corrected fuel handling in the navigation log.",
+            "       Correction de la gestion du carburant dans le log de navigation."
+         ]
       }
    ]
 }
