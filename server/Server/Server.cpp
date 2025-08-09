@@ -185,13 +185,12 @@ Server::Server(Main& main)
                }
                lock.lock();
             }
-            Dispatch([this]() {
-               efb_socket_ = nullptr;
-               for (auto const& socket : web_sockets_) {
-                  socket->Stop();
-               }
-               web_sockets_.clear();
-            });
+
+            efb_socket_ = nullptr;
+            for (auto const& socket : web_sockets_) {
+               socket->Stop();
+            }
+            web_sockets_.clear();
          }
 
          runing_   = false;
