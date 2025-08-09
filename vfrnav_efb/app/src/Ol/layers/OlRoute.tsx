@@ -32,7 +32,7 @@ import { MapContext } from "@pages/Map/MapContext";
 import greenMarker from '@efb-images/marker-icon-green.svg';
 import redMarker from '@efb-images/marker-icon-red.svg';
 import blueMarker from '@efb-images/marker-icon-blue.svg';
-import { ExportNav, Properties, PropertiesRecord } from "@shared/NavData";
+import { ExportNav, PropertiesRecord } from "@shared/NavData";
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
 

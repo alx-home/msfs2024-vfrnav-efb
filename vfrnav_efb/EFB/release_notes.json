@@ -348,6 +348,22 @@
             "     - Fixed data mismatch between Navlog and legs when path coordinates extend beyond the visible screen.",
             "       Correction du décalage entre les données du Navlog et celles des segments lorsque certaines coordonnées dépassent la zone d'affichage."
          ]
+      },
+      {
+         "version": "1.5.0",
+         "date": "AUG 09, 2025",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - The web server is now connected to MSFS. Please refer to the README for instructions on accessing it from an external device.",
+            "       Le serveur web est désormais connecté à MSFS. Veuillez consulter le fichier README pour savoir comment y accéder depuis un appareil externe",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Fixed data mismatch between Navlog and legs when path coordinates extend beyond the visible screen.",
+            "           (This issue was previously marked as resolved... It is now properly fixed.)",
+            "       Correction du décalage entre les données du Navlog et celles des segments lorsque certaines coordonnées dépassent la zone d'affichage.",
+            "           (Ce problème avait été indiqué comme corrigé précédemment... Il est désormais réellement résolu.)"
+         ]
       }
    ]
 }
