@@ -33,8 +33,6 @@ import { OpenAip } from "@Ol/layers/OpenAip";
 import { ToolBar } from "./Toolbar";
 import { MapContext } from "./MapContext";
 
-
-import StreetView from '@efb-images/street-view.svg?react';
 import flightPlanImg from '@efb-images/flight-plan.svg';
 import recordImg from '@efb-images/record.svg';
 import layersImg from '@efb-images/layers.svg';
@@ -55,6 +53,7 @@ import sectionalImg from '@efb-images/sectional.jpg';
 import osmImg from '@efb-images/osm.jpg';
 import { Input } from "@alx-home/Utils";
 import { Icaos, LatLon } from "@shared/Facilities";
+import { RecordViewpoint } from "./RecordViewpoint";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -121,7 +120,7 @@ const OACIBoundaries = [[-430238.11752151186, 6642123.685482322], [-389883.69648
 export const MapPage = ({ active }: {
   active: boolean
 }) => {
-  const { map, recordsCenter, setRecordsCenter } = useContext(MapContext)!;
+  const { map } = useContext(MapContext)!;
   const settings = useContext(SettingsContext)!;
   const [opacity, setOpacity] = useState(' opacity-0');
   const [open, setOpen] = useState(false);
@@ -243,8 +242,6 @@ export const MapPage = ({ active }: {
   const [icaos, setIcaos] = useState<string[]>([]);
   const [suggestIndex, setSuggestIndex] = useState(0);
 
-  const [dragOffset, setDragOffset] = useState<{ x: number, y: number } | undefined>()
-
   const onLayerChange = useCallback<OnLayerChange>((values) =>
     setLayers(layers => {
       const newLayers = [...layers];
@@ -338,12 +335,6 @@ export const MapPage = ({ active }: {
     }
   }, [icao, icaoValid])
 
-  useEffect(() => {
-    if (menu !== Menu.records) {
-      setRecordsCenter({ x: 0.75, y: 0.75 });
-    }
-  }, [setRecordsCenter, menu])
-
   return <div className={'z-0 transition transition-std relative grow h-full' + opacity} style={active ? {} : { display: 'none' }}>
     <OlMap id='map' className='absolute w-full h-full top-0 left-0'>
       {olLayers}
@@ -358,38 +349,6 @@ export const MapPage = ({ active }: {
         <div className="relative flex flex-row h-full grow transition-all overflow-hidden">
           <div className={"relative flex grow justify-end h-full overflow-hidden"} >
             <SpinAnimation />
-            <div className={"absolute w-full h-full" + (menu === Menu.records ? '' : ' hidden')}
-              onDragEnter={(e) => {
-                e.preventDefault();
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-              }}>
-              <button className="absolute" style={{
-                top: (recordsCenter.y * 100) + "%",
-                left: (recordsCenter.x * 100) + "%"
-              }}
-                draggable={true}
-                onDragStart={(event) => {
-                  const bounding = event.currentTarget.getBoundingClientRect();
-                  setDragOffset({ x: bounding.x - event.clientX, y: bounding.y - event.clientY })
-                }}
-                onDrag={(event) => {
-                  if (event.clientX !== 0 && event.clientY !== 0) {
-                    const bounding = event.currentTarget.getBoundingClientRect();
-                    const parentBounding = event.currentTarget.parentElement!.getBoundingClientRect();
-
-                    const posX = Math.min(parentBounding.x + parentBounding.width - bounding.width, Math.max(parentBounding.x, event.clientX + dragOffset!.x))
-                    const posY = Math.min(parentBounding.y + parentBounding.height - bounding.height, Math.max(parentBounding.y, event.clientY + dragOffset!.y))
-                    setRecordsCenter({
-                      x: Math.max(0, Math.min(1, (posX - parentBounding.x) / parentBounding.width)),
-                      y: Math.max(0, Math.min(1, (posY - parentBounding.y) / parentBounding.height))
-                    });
-                  }
-                }}>
-                <StreetView className="w-8 h-8 transition-all filter-icon opacity-50 hocus:opacity-100 pointer-events-auto cursor-move" />
-              </button>
-            </div>
             <div className={"absolute transition-all right-0 top-0 m-5 max-w-20 text-base pointer-events-auto"
               + " [&_*]:uppercase p-2 rounded-md opacity-40 bg-slate-800 overflow-hidden hocus-within:overflow-visible "
               + " hocus-within:max-w-80 hocus-within:opacity-100 [&:focus-within_.suggests]:max-h-[8000px] [&:focus-within_.suggests]:opacity-100 [&:hover_.hide]:opacity-100 [&:focus-within_.hide]:opacity-100"
@@ -427,6 +386,7 @@ export const MapPage = ({ active }: {
               </div>
             </div>
             <Overlay menu={menu} setMenu={setMenu} setOpen={setOpen} />
+            <RecordViewpoint menu={menu} />
           </div>
           <div className="flex flex-row pointer-events-auto">
             <MapMenu key={"map-menu"} open={open} setOpen={setOpen} menu={menu} layers={layers}
