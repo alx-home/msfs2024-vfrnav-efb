@@ -54,6 +54,7 @@ import osmImg from '@efb-images/osm.jpg';
 import { Input } from "@alx-home/Utils";
 import { Icaos, LatLon } from "@shared/Facilities";
 import { RecordViewpoint } from "./RecordViewpoint";
+import { ServerState } from "./ServerState";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -386,6 +387,7 @@ export const MapPage = ({ active }: {
               </div>
             </div>
             <Overlay menu={menu} setMenu={setMenu} setOpen={setOpen} />
+            <ServerState />
             <RecordViewpoint menu={menu} />
           </div>
           <div className="flex flex-row pointer-events-auto">

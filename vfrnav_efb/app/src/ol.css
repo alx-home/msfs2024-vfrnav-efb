@@ -47,7 +47,7 @@
 }
 
 .ol-scale-line-inner {
-   border: 1px solid var(--ol-subtle-foreground-color);
+   border: 2rem solid var(--ol-subtle-foreground-color);
    border-top: none;
    color: var(--ol-foreground-color);
    font-size: 10px;
@@ -163,13 +163,13 @@
 }
 
 .ol-zoom {
-   top: 0.5em;
-   left: 0.5em;
+   top: 0.5rem;
+   left: 0.5rem;
 }
 
 .ol-rotate {
-   top: 4em;
-   left: 0.5em;
+   top: 6rem;
+   left: 0.5rem;
    transition: opacity 0.25s linear, visibility 0s linear;
 }
 
@@ -191,15 +191,15 @@
 
 .ol-control button {
    display: block;
-   margin: 1px;
+   margin: 0.3rem;
    padding: 0;
    color: var(--ol-subtle-foreground-color);
    font-weight: bold;
    text-decoration: none;
    font-size: inherit;
    text-align: center;
-   height: 1.375em;
-   width: 1.375em;
+   height: 2rem;
+   width: 2rem;
    line-height: 0.4em;
    background-color: var(--ol-background-color);
    border: none;
@@ -232,7 +232,7 @@
 .ol-control button:hover,
 .ol-control button:focus {
    text-decoration: none;
-   outline: 1px solid var(--ol-subtle-foreground-color);
+   outline: 0.2rem solid var(--ol-subtle-foreground-color);
    color: var(--ol-foreground-color);
 }
 

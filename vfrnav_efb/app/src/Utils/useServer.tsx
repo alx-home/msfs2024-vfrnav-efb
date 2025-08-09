@@ -14,6 +14,18 @@ export const useServer = () => {
          messageHandler.send({ "__GET_SERVER_STATE__": true });
 
          return () => messageHandler.unsubscribe("__SERVER_STATE__", onStateChanged);
+      } else {
+         let stop = false;
+
+         (async () => {
+            setConnected(await window.getServerState!() === 'running')
+
+            while (!stop) {
+               setConnected(await window.watchServerState!() === 'running')
+            }
+         })()
+
+         return () => { stop = true; }
       }
    }, [connected]);
 
