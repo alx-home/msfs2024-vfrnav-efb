@@ -390,6 +390,16 @@
             "     - Leg label was not always visible at low zoom levels.",
             "       Les labels de navigations n’étaient pas toujours visibles pour un niveau de zoom faible."
          ]
+      },
+      {
+         "version": "1.5.2",
+         "date": "AUG 09, 2025",
+         "notes": [
+            "### EFB ###",
+            "***🐞 Fixes / Corrections:***",
+            "     - Navlog: Loaded fuel is no longer modified during leg validation.",
+            "       Le carburant chargé n'est plus modifié lors de la validation des étapes dans le Navlog."
+         ]
       }
    ]
 }
