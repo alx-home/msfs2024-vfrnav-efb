@@ -366,6 +366,7 @@ export const OlRouteLayer = ({
 
                   const getCoordinateFromPixel = (coord: Coordinate) => map.getCoordinateFromPixel(fromCanvas(coord));
                   const getPixelFromCoordinate = (coord: Coordinate) => toCanvas(map.getPixelFromCoordinate(coord));
+                  const mapModulo = Math.floor(getPixelFromCoordinate([20037508.34, 20043237.22])[0] - getPixelFromCoordinate([-20037508.34, 20043237.22])[0])
 
                   const { properties, waypoints } = data;
                   const coords_ = (coords as Coordinate[][])[0];
@@ -374,7 +375,8 @@ export const OlRouteLayer = ({
                   // Draw Distance/cap
                   //------------------------------
                   fullCoords.filter((_, index) => index !== fullCoords.length - 1).forEach((coord, index) => {
-                     if (!coords_.find(elem => (Math.abs(elem[0] - coord[0]) < 1) && (Math.abs(elem[1] - coord[1]) < 1))) {
+                     if (!coords_.find(elem => (Math.abs(Math.ceil(elem[0] - coord[0]) % mapModulo) < 10)
+                        && (Math.abs(elem[1] - coord[1]) < 10))) {
                         return;
                      }
 
@@ -387,12 +389,6 @@ export const OlRouteLayer = ({
                      const { days, hours, minutes, seconds } = dur;
 
                      let angle = TC - 90;
-                     let mag = 90 + angle;
-
-                     if (mag < 0) {
-                        mag += 360;
-                     }
-
                      const mapAngle = mapRotation * 180 / Math.PI;
 
                      angle += mapAngle
@@ -512,14 +508,20 @@ export const OlRouteLayer = ({
 
 
                      for (const background of [true, false]) {
-                        drawText(ch.toString() + (cDelta === 0 ? '' : (cDelta > 0 ? ' +' : ' ') + cDelta.toFixed() + '') + "\u00b0 "
+                        const hours_str = (days && (hours < 10) ? '0' : '') + hours.toString();
+                        const minutes_str = (minutes < 10 ? "0" : '') + minutes.toString();
+                        const delta_str = cDelta === 0 ? '' : (cDelta > 0 ? ' +' : ' ') + cDelta.toFixed() + '';
+                        const seconds_str = (seconds < 10 ? '0' : '') + seconds.toString();
+
+                        drawText(ch.toString() + delta_str + "\u00b0 "
                            + Math.round(dist).toString() + " nm  "
                            + (days ? days.toString() + 'd ' : '')
-                           + ((days || hours) ? ((days && (hours < 10) ? '0' : '') + hours.toString() + ":") : "")
-                           + ((days || hours || minutes) ? ((minutes < 10 ? "0" : '') + minutes.toString() + ":") : "")
-                           + (seconds < 10 ? '0' : '') + seconds.toString(), background);
+                           + ((days || hours) ? (hours_str + ":") : "")
+                           + ((days || hours || minutes) ? (minutes_str + ":") : "")
+                           + seconds_str, background);
 
-                        drawText(waypoint + (waypoint.length ? " " : "") + (waypoint.length || nextWaypoint.length ? "→ " : '') + nextWaypoint + (nextWaypoint.length ? ' ' : '')
+                        drawText(waypoint + (waypoint.length ? " " : "")
+                           + (waypoint.length || nextWaypoint.length ? "→ " : '') + nextWaypoint + (nextWaypoint.length ? ' ' : '')
                            + "↑" + (altitude < 10000 ? altitude : "FL" + (altitude / 100).toFixed(0))
                            + (remark.length ? " @" + remark : ""), background, true)
                      }
