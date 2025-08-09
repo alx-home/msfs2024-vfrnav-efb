@@ -42,7 +42,7 @@ export const ServerState = () => {
    const efb = useEFBServer();
 
    return <div className="absolute bottom-0 left-0">
-      {__MSFS_EMBEDED__ ? <></> : <State name="EFB" state={efb} icon={efbIcon} />}
+      {__MSFS_EMBEDED__ ? <></> : <State name="MSFS" state={efb} icon={efbIcon} />}
       <State name="Server" state={server} icon={serverIcon} />
    </div>
 }
