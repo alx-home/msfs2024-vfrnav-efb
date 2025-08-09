@@ -346,8 +346,6 @@ export const OlRouteLayer = ({
                geometry.setCoordinates(coords);
 
                if (geometry.getType() === 'MultiLineString') {
-                  const coords_ = (coords as Coordinate[][])[0];
-
                   const mapRotation = state.rotation;
                   const mapSize = map.getSize()!;
 
@@ -369,42 +367,20 @@ export const OlRouteLayer = ({
                   const getCoordinateFromPixel = (coord: Coordinate) => map.getCoordinateFromPixel(fromCanvas(coord));
                   const getPixelFromCoordinate = (coord: Coordinate) => toCanvas(map.getPixelFromCoordinate(coord));
 
-                  const { properties, waypoints } = (() => {
-                     const { properties, waypoints } = data;
-                     const result: { waypoints: string[], properties: Properties[] } = { waypoints: [], properties: [] };
-                     const fullCoords = (geom as MultiLineString).getCoordinates()[0];
-
-                     let index2 = 0;
-                     for (let index = 0; (index < fullCoords.length) && (index2 < coords_.length); ++index) {
-                        const coord = getPixelFromCoordinate(fullCoords[index]);
-                        const coord2 = coords_[index2];
-
-                        if ((Math.abs(coord[0] - coord2[0]) < 1)
-                           && (Math.abs(coord[1] - coord2[1]) < 1)) {
-                           if (index < properties.length) {
-                              result.properties.push(properties[index])
-                           } else {
-                              result.properties.push(PropertiesRecord.defaultValues)
-                           }
-
-                           result.waypoints.push(waypoints[index])
-                           ++index2;
-                        }
-                     }
-
-                     console.assert(result.waypoints.length === coords_.length);
-                     console.assert(result.properties.length >= coords_.length - 1);
-
-                     return result;
-                  })();
+                  const { properties, waypoints } = data;
+                  const coords_ = (coords as Coordinate[][])[0];
+                  const fullCoords = (geom as MultiLineString).getCoordinates()[0].map(coord => getPixelFromCoordinate(coord));
 
                   // Draw Distance/cap
                   //------------------------------
-                  coords_.filter((_, index) => index !== coords_.length - 1).forEach((coord, index) => {
-                     const nextCoord = coords_[index + 1];
+                  fullCoords.filter((_, index) => index !== fullCoords.length - 1).forEach((coord, index) => {
+                     if (!coords_.find(elem => (Math.abs(elem[0] - coord[0]) < 1) && (Math.abs(elem[1] - coord[1]) < 1))) {
+                        return;
+                     }
 
+                     const nextCoord = fullCoords[index + 1];
 
-                     const props = updateNavProps(properties[index], getCoordinateFromPixel(coord), getCoordinateFromPixel(nextCoord));
+                     const props = updateNavProps(index < properties.length ? properties[index] : PropertiesRecord.defaultValues, getCoordinateFromPixel(coord), getCoordinateFromPixel(nextCoord));
                      const { CH, TC, MH, dist, altitude, dur, remark } = props;
                      const waypoint = waypoints[index];
                      const nextWaypoint = waypoints[index + 1];
@@ -553,8 +529,8 @@ export const OlRouteLayer = ({
                   context.lineWidth = 5;
                   context.strokeStyle = `rgb(255, 255, 255)`;
                   context.beginPath()
-                  context.moveTo(coords_[0][0], coords_[0][1])
-                  coords_.forEach((coord, index) => {
+                  context.moveTo(fullCoords[0][0], fullCoords[0][1])
+                  fullCoords.forEach((coord, index) => {
                      if (index > 0) {
                         context.lineTo(coord[0], coord[1])
                      }
@@ -568,8 +544,8 @@ export const OlRouteLayer = ({
                   context.lineWidth = 4;
                   context.strokeStyle = firstActive ? `rgb(0, 200, 120)` : `rgb(31, 41, 55)`;//@todo parameter
                   context.beginPath()
-                  context.moveTo(coords_[0][0], coords_[0][1])
-                  coords_.forEach((coord, index) => {
+                  context.moveTo(fullCoords[0][0], fullCoords[0][1])
+                  fullCoords.forEach((coord, index) => {
                      if (index > 0) {
                         context.lineTo(coord[0], coord[1])
 
@@ -586,7 +562,7 @@ export const OlRouteLayer = ({
 
                   // Draw markers
                   //------------------------------
-                  coords_.forEach((coord, index) => {
+                  fullCoords.forEach((coord, index) => {
                      const size = settings.map.markerSize;
 
                      context.save();
@@ -596,7 +572,7 @@ export const OlRouteLayer = ({
                         if (index === 0) {
                            // First Coord
                            context.drawImage(greenMarkerImg.current!, -size / 2, -size, size, size);
-                        } else if (index === coords_.length - 1) {
+                        } else if (index === fullCoords.length - 1) {
                            // Last Coord
                            context.drawImage(redMarkerImg.current!, -size / 2, -size, size, size);
                         } else {
