@@ -385,6 +385,7 @@
             "       Le sélecteur de point de vue (streetman) s’affiche désormais au-dessus de chaque élément pour éviter qu’il ne devienne inaccessible.",
             "     - Minor display enhancements.",
             "       Améliorations mineures de l’affichage.",
+            "",
             "***🐞 Fixes / Corrections:***",
             "     - Leg label was not always visible at low zoom levels.",
             "       Les labels de navigations n’étaient pas toujours visibles pour un niveau de zoom faible."
