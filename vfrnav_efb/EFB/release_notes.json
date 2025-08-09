@@ -365,6 +365,26 @@
             "       Correction du décalage entre les données du Navlog et celles des segments lorsque certaines coordonnées dépassent la zone d'affichage.",
             "           (Ce problème avait été indiqué comme corrigé précédemment... Il est désormais réellement résolu.)"
          ]
+      },
+      {
+         "version": "1.5.1",
+         "date": "AUG 09, 2025",
+         "notes": [
+            "### Installer/Server (new) ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Server and EFB status now displayed on the EFB map.",
+            "       Statut du serveur et de l’EFB désormais affichés sur la carte EFB",
+            "     - Viewpoint selector (streetman) now appears above each element to ensure it remains selectable.",
+            "       Le sélecteur de point de vue (streetman) s’affiche désormais au-dessus de chaque élément pour éviter qu’il ne devienne inaccessible.",
+            "     - Minor display enhancements.",
+            "       Améliorations mineures de l’affichage.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Leg label was not always visible at low zoom levels.",
+            "       Les labels de navigations n’étaient pas toujours visibles pour un niveau de zoom faible.",
+            "     - General stability improvements.",
+            "       Amélioration générale de la stabilité."
+         ]
       }
    ]
 }
