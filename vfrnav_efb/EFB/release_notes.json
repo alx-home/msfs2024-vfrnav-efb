@@ -374,16 +374,20 @@
             "***🔧 Improvements / Améliorations:***",
             "     - Server and EFB status now displayed on the EFB map.",
             "       Statut du serveur et de l’EFB désormais affichés sur la carte EFB",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - General stability improvements.",
+            "       Amélioration générale de la stabilité.",
+            "",
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
             "     - Viewpoint selector (streetman) now appears above each element to ensure it remains selectable.",
             "       Le sélecteur de point de vue (streetman) s’affiche désormais au-dessus de chaque élément pour éviter qu’il ne devienne inaccessible.",
             "     - Minor display enhancements.",
             "       Améliorations mineures de l’affichage.",
-            "",
             "***🐞 Fixes / Corrections:***",
             "     - Leg label was not always visible at low zoom levels.",
-            "       Les labels de navigations n’étaient pas toujours visibles pour un niveau de zoom faible.",
-            "     - General stability improvements.",
-            "       Amélioration générale de la stabilité."
+            "       Les labels de navigations n’étaient pas toujours visibles pour un niveau de zoom faible."
          ]
       }
    ]
