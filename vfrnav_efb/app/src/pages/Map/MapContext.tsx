@@ -92,7 +92,7 @@ export const MapContext = createContext<{
   editNav: (_id: number, _newName: string) => void,
   setLoadedFuel: (_id: number, _value: number) => void,
   setDepartureTime: (_id: number, _value: number) => void,
-  editNavProperties: (_id: number, _properties: Properties[]) => void,
+  editNavProperties: (_id: number, _properties: ((Properties[]) | ((_props: Properties[]) => (Properties[])))) => void,
   updateWaypoints: (_id: number, _names: string[]) => void,
   removeRecord: (_id: number) => void,
   activeRecord: (_id: number, _active: boolean) => void,
@@ -521,13 +521,17 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         return newItems;
       })
     },
-    editNavProperties: (id: number, properties: Properties[]) => {
+    editNavProperties: (id: number, properties: ((Properties[]) | ((_props: Properties[]) => (Properties[])))) => {
       setNavData(items => {
         const newItems = items.map(item => ({ ...item }));
         const item = newItems.find((item) => item.id === id);
         if (item) {
           const { coords } = item;
-          item.properties = properties.map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
+          if (typeof properties === 'function') {
+            item.properties = properties(item.properties).map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
+          } else {
+            item.properties = properties.map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
+          }
         }
         return newItems;
       })
