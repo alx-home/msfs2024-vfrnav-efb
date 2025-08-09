@@ -261,8 +261,8 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
    const getLegs = useCallback((mode: Modes, edit: boolean) => {
       let time = departureTime * 60;
-      let fuel = loadedFuel;
-      let deltaFuel = 0;
+      let estfuel = loadedFuel;
+      let estfuel2 = loadedFuel;
       let deltaEta = 0;
 
       return coords.map((_value, row) => {
@@ -287,13 +287,13 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
             const { ident: vorIndent, freq: vorFreq, obs: vorObs } = vor;
             const { direction: windDir, speed: windVel } = wind;
 
-            fuel -= conso;
-            const estFuel = fuel;
-            const lastFuel = (row > 1 ? properties[row - 2].curFuel : loadedFuel);
-            const estFuel2 = lastFuel - conso;
-            if (lastFuel) {
-               deltaFuel = Math.round(estFuel2 - estFuel);
+            estfuel -= conso;
+            if (curFuel) {
+               estfuel2 = curFuel
+            } else {
+               estfuel2 -= conso;
             }
+            const deltaFuel = Math.round(estfuel2 - estfuel);
 
             const ataStr = (() => {
                if (ata == -1) {
@@ -564,13 +564,13 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                         </Reset>
                      </div>
                      : <div className="flex flex-col shrink m-auto justify-center">
-                        <div className="flex grow justify-center">{Math.round(toUnit(estFuel)) + ''}</div>
+                        <div className="flex grow justify-center">{Math.round(toUnit(estfuel)) + ''}</div>
                         {
                            deltaFuel === 0 ? <></>
                               :
                               <div className="flex flex-col grow">
                                  <div className={"text-center justify-center" + (deltaFuel > 0 ? ' text-green-600' : ' text-red-600')}>
-                                    {Math.round(toUnit(estFuel + deltaFuel))}
+                                    {Math.round(toUnit(estfuel2))}
                                  </div>
                               </div>
                         }
