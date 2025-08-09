@@ -113,10 +113,17 @@ const Reset = ({ onReset, children, className }: PropsWithChildren<{
 
 const useFuel = () => {
    const [fuel, setFuel] = useState(0);
-   const promises = useRef<((_value: number) => void)[]>([])
+   const promises = useRef<{
+      resolve: (_value: number) => void,
+      reject: () => void,
+      timeout: NodeJS.Timeout
+   }[]>([])
    const getFuel = useCallback(async () => {
-      const promise = new Promise<number>((resolve) => {
-         promises.current.push(resolve);
+      const promise = new Promise<number>((resolve, reject) => {
+         const timeout = setTimeout(() => {
+            reject(new Error("timeout"))
+         }, 1000);
+         promises.current.push({ resolve, reject, timeout });
       })
       messageHandler.send({ __GET_FUEL__: true });
       return await promise
@@ -126,7 +133,10 @@ const useFuel = () => {
       const onFuel = (fuel: Fuel) => {
          const value = fuel.tanks.reduce((result, tank) => result + tank.value, 0) * 3.785411784;
          setFuel(value);
-         promises.current.forEach(resolve => resolve(value))
+         promises.current.forEach(({ resolve, reject: _, timeout }) => {
+            clearTimeout(timeout)
+            resolve(value)
+         })
          promises.current = []
       }
 
@@ -168,8 +178,10 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
    const [mode, setMode] = useState<Modes>('Enroute');
    const [reset, setReset] = useState(false);
    const [collapseWaypoints, setCollapseWaypoints] = useState(false);
+   const delayedRef = useRef<(() => void)[]>([])
+   const [delayed, setDelayed] = useState(false)
 
-   const setActive = useCallback(async (index: number) => {
+   const setActive = useCallback((index: number) => {
       const value = !actives[index];
 
       if (value) {
@@ -190,7 +202,18 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
          }
 
          if (properties[index].curFuel === 0) {
-            properties[index].curFuel = fromUnit(await getFuel());
+            getFuel().then((fuel) => {
+               delayedRef.current.push(() => {
+                  editNavProperties(id, props => {
+                     props[index].curFuel = fromUnit(fuel)
+                     return props;
+                  });
+                  setReset(true)
+               })
+
+               setDelayed(true)
+            }).catch();
+
             editNavProperties(id, properties);
             setReset(true)
          }
@@ -594,6 +617,15 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       }
    }, [reset])
 
+   useEffect(() => {
+      if (delayed) {
+         delayedRef.current.forEach(callback => callback())
+         delayedRef.current = []
+
+         setDelayed(false)
+      }
+   }, [delayed])
+
    return <div className={'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden [&>:last-child]:h-full'
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
@@ -639,8 +671,14 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                   <div className="flex flex-col mx-auto shrink">
                      <div className="flex flex-row text-sm justify-center">
                         <div className="flex m-auto grow">Loaded Fuel : </div>
-                        <Reset className="flex-row justify-end min-w-20" onReset={async () => {
-                           setLoadedFuel(id, await getFuel())
+                        <Reset className="flex-row justify-end min-w-20" onReset={() => {
+                           getFuel().then((fuel) => {
+                              delayedRef.current.push(() => {
+                                 setLoadedFuel(id, fuel)
+                                 setReset(true)
+                              })
+                              setDelayed(true)
+                           }).catch()
                         }}>
                            <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-16">
                               <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset} inputMode="decimal"
