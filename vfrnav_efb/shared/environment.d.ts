@@ -15,6 +15,8 @@
 
 import "@alx-home/types"
 
+export type ServerState = 'switching' | 'running' | 'stopped' | 'invalid_port';
+
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -50,6 +52,10 @@ declare global {
     }[]) => Promise<string>;
     getFile: (_: string) => Promise<string>;
     severStateChanged: (_currentState: boolean) => Promise<boolean>;
+
+    // For app only
+    getServerState?: () => Promise<ServerState>;
+    watchServerState?: () => Promise<ServerState>;
   }
 }
 
