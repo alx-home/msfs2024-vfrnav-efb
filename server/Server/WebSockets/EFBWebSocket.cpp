@@ -106,7 +106,22 @@ Server::EFBWebSocket::VSendMessage(std::size_t id, ws::Message&& message) {
 
 void
 Server::EFBWebSocket::Stop() {
-   ws_.next_layer().cancel();
+   std::mutex       mutex{};
+   std::unique_lock lock{mutex};
+
+   std::condition_variable cv{};
+   bool                    closed = false;
+
+   server_.Dispatch([self = shared_from_this(), &cv, &mutex, &closed]() {
+      self->ws_.next_layer().cancel();
+      self->ws_.close({});
+
+      std::lock_guard lock{mutex};
+      closed = true;
+      cv.notify_all();
+   });
+
+   cv.wait(lock, [&closed]() { return closed; });
 }
 
 void
