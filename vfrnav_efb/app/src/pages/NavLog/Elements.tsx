@@ -16,7 +16,7 @@
 import { MapContext } from "@pages/Map/MapContext";
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 import { Coordinate } from "ol/coordinate";
-import { PropsWithChildren, useCallback, useContext, useMemo, useState, useEffect } from 'react';
+import { PropsWithChildren, useCallback, useContext, useMemo, useState, useEffect, useRef } from 'react';
 
 import Arrow from '@alx-home/images/arrow.svg?react';
 import { CheckBox, Input, Scroll, Tabs } from "@alx-home/Utils";
@@ -111,6 +111,31 @@ const Reset = ({ onReset, children, className }: PropsWithChildren<{
    </div>
 }
 
+const useFuel = () => {
+   const [fuel, setFuel] = useState(0);
+   const promises = useRef<((_value: number) => void)[]>([])
+   const getFuel = useCallback(async () => {
+      const promise = new Promise<number>((resolve) => {
+         promises.current.push(resolve);
+      })
+      messageHandler.send({ __GET_FUEL__: true });
+      return await promise
+   }, [])
+
+   useEffect(() => {
+      const onFuel = (fuel: Fuel) => {
+         const value = fuel.tanks.reduce((result, tank) => result + tank.value, 0) * 3.785411784;
+         setFuel(value);
+         promises.current.forEach(resolve => resolve(value))
+         promises.current = []
+      }
+
+      messageHandler.subscribe("__FUEL__", onFuel);
+      return () => messageHandler.unsubscribe("__FUEL__", onFuel)
+   }, [setFuel]);
+
+   return { fuel, getFuel }
+}
 
 export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
    currentTab: string,
@@ -138,12 +163,13 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
    }, [departureTime])
 
    const loadedFuelStr = useMemo(() => toUnit(loadedFuel).toString(), [loadedFuel, toUnit])
+   const { getFuel } = useFuel();
 
    const [mode, setMode] = useState<Modes>('Enroute');
    const [reset, setReset] = useState(false);
    const [collapseWaypoints, setCollapseWaypoints] = useState(false);
 
-   const setActive = useCallback((index: number) => {
+   const setActive = useCallback(async (index: number) => {
       const value = !actives[index];
 
       if (value) {
@@ -164,22 +190,14 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
          }
 
          if (properties[index].curFuel === 0) {
-            messageHandler.send({ __GET_FUEL__: true });
-
-            const onFuel = (fuel: Fuel) => {
-               properties[index].curFuel = fromUnit(fuel.tanks.reduce((result, tank) => result + tank.value, 0) * 3.785411784);
-               editNavProperties(id, properties);
-               setReset(true)
-
-               messageHandler.unsubscribe("__FUEL__", onFuel)
-            }
-
-            messageHandler.subscribe("__FUEL__", onFuel);
+            properties[index].curFuel = fromUnit(await getFuel());
+            editNavProperties(id, properties);
+            setReset(true)
          }
       }
 
       editNavProperties(id, properties);
-   }, [actives, editNavProperties, id, properties, fromUnit]);
+   }, [actives, editNavProperties, id, properties, fromUnit, getFuel]);
 
    const getHeader = useCallback((mode: Modes, edit: boolean) => {
       return [
@@ -576,16 +594,6 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       }
    }, [reset])
 
-   useEffect(() => {
-      const onFuel = (fuel: Fuel) => {
-         setLoadedFuel(id, fuel.tanks.reduce((result, tank) => result + tank.value, 0) * 3.785411784);
-         setReset(true)
-      }
-
-      messageHandler.subscribe("__FUEL__", onFuel);
-      return () => messageHandler.unsubscribe("__FUEL__", onFuel)
-   }, [id, setLoadedFuel])
-
    return <div className={'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden [&>:last-child]:h-full'
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
@@ -631,8 +639,8 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                   <div className="flex flex-col mx-auto shrink">
                      <div className="flex flex-row text-sm justify-center">
                         <div className="flex m-auto grow">Loaded Fuel : </div>
-                        <Reset className="flex-row justify-end min-w-20" onReset={() => {
-                           messageHandler.send({ __GET_FUEL__: true });
+                        <Reset className="flex-row justify-end min-w-20" onReset={async () => {
+                           setLoadedFuel(id, await getFuel())
                         }}>
                            <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-16">
                               <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset} inputMode="decimal"
