@@ -147,6 +147,7 @@ Server::EFBWebSocket::Start() {
 
       if (self->web_browser_) {
          self->VSendMessage(1, ws::msg::SetId{.id_ = self->my_id_});
+         self->VSendMessage(1, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
       } else {
          // EFB MSFS App
          self->server_.efb_connected_ = true;
