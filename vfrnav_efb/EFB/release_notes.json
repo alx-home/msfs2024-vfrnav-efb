@@ -406,9 +406,15 @@
          "date": "AUG 09, 2025",
          "notes": [
             "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Removed black background on OpenFlightMap layer.",
+            "       Suppression du fond noir sur le calque OpenFlightMap.",
+            "",
             "***🐞 Fixes / Corrections:***",
             "     - Corrected fuel handling in the navigation log.",
-            "       Correction de la gestion du carburant dans le log de navigation."
+            "       Correction de la gestion du carburant dans le log de navigation.",
+            "     - Restored OpenFlightMap layer.",
+            "       Restauration du calque OpenFlightMap."
          ]
       }
    ]
