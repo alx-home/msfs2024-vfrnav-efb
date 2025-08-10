@@ -191,7 +191,7 @@ export const MapPage = ({ active }: {
       getSettings: (_settings: GlobalSettings) => _settings.openflightmaps
     },
     {
-      olLayer: <OlOSMLayer key="openflightmapsBase" url={`${openFlightMapUrl}/base/latest`} crossOrigin={null} />,
+      olLayer: <OlOSMLayer key="openflightmapsBase" url={`${openFlightMapUrl.replace('png', 'jpg')}/base/latest`} crossOrigin={null} />,
       src: openflightmapsBaseImg,
       alt: 'openflightmaps base layer',
       getSettings: (_settings: GlobalSettings) => _settings.openflightmapsBase
