@@ -25,6 +25,7 @@ import { JSX } from "react/jsx-runtime";
 import UndoImg from '@alx-home/images/undo.svg?react';
 import { messageHandler } from "@Settings/SettingsProvider";
 import { Fuel } from "@shared/Fuel";
+import { useDelayed } from '../../../../../packages/ts-utils/src/Utils/Delayed';
 
 const modes = ['Enroute', 'Vor', 'Weather', 'Remarks', 'Full'] as const;
 type Modes = typeof modes[number];
@@ -113,28 +114,29 @@ const Reset = ({ onReset, children, className }: PropsWithChildren<{
 
 const useFuel = () => {
    const [fuel, setFuel] = useState(0);
+   const delayFuel = useDelayed<number>();
    const promises = useRef<{
       resolve: (_value: number) => void,
-      reject: () => void,
-      timeout: NodeJS.Timeout
+      reject: (_error: Error) => void
    }[]>([])
+
    const getFuel = useCallback(async () => {
       const promise = new Promise<number>((resolve, reject) => {
-         const timeout = setTimeout(() => {
-            reject(new Error("timeout"))
-         }, 1000);
-         promises.current.push({ resolve, reject, timeout });
-      })
+         promises.current.push({
+            resolve: resolve,
+            reject: reject
+         })
+      });
+
       messageHandler.send({ __GET_FUEL__: true });
-      return await promise
-   }, [])
+      return await delayFuel(promise, 1000)
+   }, [delayFuel])
 
    useEffect(() => {
       const onFuel = (fuel: Fuel) => {
          const value = fuel.tanks.reduce((result, tank) => result + tank.value, 0) * 3.785411784;
          setFuel(value);
-         promises.current.forEach(({ resolve, reject: _, timeout }) => {
-            clearTimeout(timeout)
+         promises.current.forEach(({ resolve }) => {
             resolve(value)
          })
          promises.current = []
@@ -212,7 +214,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                })
 
                setDelayed(true)
-            }).catch();
+            }).catch(() => { });
 
             editNavProperties(id, properties);
             setReset(true)

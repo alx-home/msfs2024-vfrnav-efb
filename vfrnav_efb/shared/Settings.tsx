@@ -133,11 +133,11 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
     active: false,
   },
   openflightmaps: {
-    enabled: false,
+    enabled: true,
     active: false,
   },
   openflightmapsBase: {
-    enabled: false,
+    enabled: true,
     active: false,
   },
   USSectional: {
@@ -153,7 +153,7 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
     active: false
   },
   opentopo: {
-    enabled: false,
+    enabled: true,
     active: false
   },
   mapforfree: {

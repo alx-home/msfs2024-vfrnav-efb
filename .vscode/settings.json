@@ -5,7 +5,6 @@
       "connectionId": "https-sonarqube-alex-home-fr-",
       "projectKey": "alx-home_msfs2024-vfrnav-efb_4b2e913f-5043-4cb2-b198-30de43fbba1a"
    },
-   "eslint.enable": true,
    "eslint.workingDirectories": [
       "./",
 
