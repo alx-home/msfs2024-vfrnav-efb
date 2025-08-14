@@ -1,7 +1,7 @@
 import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
 import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
 import { FileExist, FileExistResponse, GetFile, GetFileResponse, OpenFile, OpenFileResponse } from "@shared/Files";
-import { Tank } from "@shared/Fuel";
+import { DeleteFuelPreset, SetFuelCurve as FuelCurve, FuelPresets, GetFuelPresets, Tank } from "@shared/Fuel";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { ExportNav } from "@shared/NavData";
 import { ExportPdfs } from "@shared/Pdfs";
@@ -29,13 +29,45 @@ export class Manager {
    private messageHandler: ((_message: MessageType) => void) | undefined = undefined
    private serverMessageHandler: ((_id: number, _message: MessageType) => void) | undefined = undefined
 
+   private readonly fuelPresets = new Map<string, FuelCurve>()
+   private fuelPresetsInit = true
+
    /* eslint-disable no-unused-vars */
    constructor(private readonly bus: EventBus) {
       this.facilityLoader = new FacilityLoader(FacilityRepository.getRepository(this.bus));
       this.facilityManager.set(0, new FacilityManager(this.facilityLoader));
+
+      this.loadFuelPresets();
+
+
       setInterval(this.fetchPosition.bind(this), 100);
 
       this.connectToServer();
+   }
+
+   private loadFuelPresets() {
+      const presetsStr = GetStoredData("fuel-presets");
+      if (presetsStr === '') {
+         this.fuelPresetsInit = false;
+         return []
+      }
+
+      const presets = JSON.parse(presetsStr as string);
+
+      if (!Array.isArray(presets)) {
+         this.fuelPresetsInit = false;
+         return []
+      }
+
+      this.fuelPresets.clear();
+      (presets as FuelCurve[]).forEach(preset => {
+         this.fuelPresets.set(preset.name, preset)
+      });
+   }
+
+   private saveFuelPresets() {
+      SetStoredData('fuel-presets', JSON.stringify(Array.from(this.fuelPresets.values())
+         .filter(elem => elem.curve.length)))
    }
 
    public get isServerConnected() {
@@ -115,7 +147,6 @@ export class Manager {
                content: MessageType
             });
 
-            console.log(data)
             if (isMessage("__HELLO_WORLD__", data.content)) {
                console.assert(data.id === 1);
                // Message sent by the Server
@@ -158,6 +189,14 @@ export class Manager {
                this.onGetRecord(data.id, data.content);
             } else if (isMessage("__EXPORT_NAV__", data.content)) {
                this.onExportNav(data.content);
+            } else if (isMessage("__FUEL_PRESETS__", data.content)) {
+               this.onFuelPresets(data.id, data.content);
+            } else if (isMessage("__GET_FUEL_PRESETS__", data.content)) {
+               this.onGetFuelPresets(data.id, data.content);
+            } else if (isMessage("__DELETE_FUEL_PRESET__", data.content)) {
+               this.onDeleteFuelPreset(data.content);
+            } else if (isMessage("__FUEL_CURVE__", data.content)) {
+               this.onFuelCurve(data.id, data.content);
             } else if (isMessage("__EXPORT_PDFS__", data.content)) {
                this.onExportPdfs(data.content);
             } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
@@ -176,8 +215,6 @@ export class Manager {
          }
 
          this.socket.onopen = () => {
-            // console.log('[open] Socket open')
-
             this.socket?.send(JSON.stringify({
                __HELLO_WORLD__: "EFB"
             }));
@@ -476,6 +513,183 @@ export class Manager {
 
    onExportNav(message: ExportNav) {
       this.messageHandler?.(message);
+   }
+
+   onFuelPresets(id: number, message: FuelPresets) {
+      console.assert(id === 1 || id === 0);
+
+      if (id === 0) {
+         // From EFB
+
+         if (this.fuelPresetsInit) {
+            this.fuelPresetsInit = false
+
+            message.data.forEach(preset => {
+               if (preset.remove) {
+                  const elem = this.fuelPresets.get(preset.name)
+                  if (elem) {
+                     this.sendMessage(0, {
+                        __FUEL_CURVE__: true,
+
+                        name: elem.name,
+                        date: elem.date,
+                        curve: elem.curve
+                     })
+                  }
+               } else {
+                  const elem = this.fuelPresets.get(preset.name)
+
+                  if (elem) {
+                     this.sendMessage(0, {
+                        __FUEL_CURVE__: true,
+
+                        name: elem.name,
+                        date: elem.date,
+                        curve: elem.curve
+                     })
+                  } else {
+                     this.sendMessage(0, {
+                        __DELETE_FUEL_PRESET__: true,
+
+                        name: preset.name,
+                        date: preset.date,
+                     })
+                  }
+               }
+            })
+
+            this.fuelPresets.forEach(preset => {
+               const elem = message.data.find(elem => elem.name === preset.name);
+
+               if (!elem) {
+                  this.sendMessage(0, {
+                     __FUEL_CURVE__: true,
+
+                     name: preset.name,
+                     date: preset.date,
+                     curve: preset.curve
+                  })
+               }
+            })
+         } else {
+            this.fuelPresets.clear();
+            message.data.forEach(preset => {
+               if (preset.remove) {
+                  this.fuelPresets.set(preset.name, {
+                     __FUEL_CURVE__: true,
+
+                     name: preset.name,
+                     date: preset.date,
+                     curve: []
+                  })
+               } else {
+                  // Will be updated later on fuel curve message
+                  this.sendMessage(0, {
+                     __GET_FUEL_CURVE__: true,
+
+                     name: preset.name
+                  })
+               }
+            })
+
+            this.saveFuelPresets()
+         }
+
+         this.sendMessage(1, {
+            __FUEL_PRESETS__: true,
+
+            data: Array.from(this.fuelPresets.values()).map(preset => ({
+               name: preset.name,
+               date: preset.date,
+               remove: preset.curve.length === 0
+            }))
+         })
+      } else {
+         console.assert(false)
+      }
+   }
+
+   onGetFuelPresets(id: number, message: GetFuelPresets) {
+      console.assert(id === 1);
+      this.sendMessage(0, message)
+   }
+
+   onDeleteFuelPreset(message: DeleteFuelPreset) {
+      // From Server
+
+      const preset = this.fuelPresets.get(message.name)
+
+      if (preset) {
+         if (preset.date < message.date) {
+            this.fuelPresets.delete(message.name)
+            this.saveFuelPresets();
+
+            this.sendMessage(0, message)
+         } else {
+            this.sendMessage(1, {
+               __FUEL_PRESETS__: true,
+
+               data: Array.from(this.fuelPresets.values()).map(elem => ({
+                  name: elem.name,
+                  date: elem.date,
+                  remove: elem.curve.length === 0
+               }))
+            })
+         }
+      }
+   }
+
+   onFuelCurve(id: number, message: FuelCurve) {
+      if (id === 0) {
+         // From EFB
+
+         this.fuelPresets.set(message.name, {
+            __FUEL_CURVE__: true,
+
+            name: message.name,
+            date: message.date,
+            curve: message.curve
+         })
+
+         this.saveFuelPresets();
+         this.sendMessage(1, message)
+      } else {
+         // From Server
+
+         console.assert(id === 1);
+
+         const preset = this.fuelPresets.get(message.name);
+         if (preset) {
+            if (preset.date < message.date) {
+               preset.date = message.date;
+               preset.curve = message.curve;
+
+               this.saveFuelPresets();
+               this.sendMessage(0, message)
+            } else {
+               this.sendMessage(1, {
+                  __FUEL_PRESETS__: true,
+
+                  data: Array.from(this.fuelPresets.values()).map(elem => ({
+                     name: elem.name,
+                     date: elem.date,
+                     remove: elem.curve.length === 0
+                  }))
+               })
+            }
+         } else {
+            this.fuelPresets.set(message.name, {
+               __FUEL_CURVE__: true,
+
+               name: message.name,
+               date: message.date,
+               curve: message.curve
+            });
+
+            this.saveFuelPresets();
+            this.sendMessage(0, message)
+         }
+      }
    }
 
    onExportPdfs(message: ExportPdfs) {

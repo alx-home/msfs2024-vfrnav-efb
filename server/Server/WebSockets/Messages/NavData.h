@@ -44,16 +44,6 @@ struct WindProperty {
    };
 };
 
-struct Deviation {
-   double x_{};
-   double y_{};
-
-   static constexpr js::Proto PROTOTYPE{
-     js::_{"x", &Deviation::x_},
-     js::_{"y", &Deviation::y_},
-   };
-};
-
 struct Duration {
    double days_{};
    double hours_{};
@@ -140,15 +130,15 @@ struct NavData {
 struct ExportNav {
    bool header_{true};
 
-   std::vector<NavData>     data_{};
-   std::vector<Deviation>   deviations_{};
-   js::Enum<"gal", "liter"> fuel_unit_{"gal"};
-   double                   fuel_consumption_{};
+   std::vector<NavData>               data_{};
+   std::vector<std::array<double, 2>> deviation_curve_{};
+   js::Enum<"gal", "liter">           fuel_unit_{"gal"};
+   double                             fuel_consumption_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__EXPORT_NAV__", &ExportNav::header_},
      js::_{"data", &ExportNav::data_},
-     js::_{"deviations", &ExportNav::deviations_},
+     js::_{"deviationCurve", &ExportNav::deviation_curve_},
      js::_{"fuelUnit", &ExportNav::fuel_unit_},
      js::_{"fuelConsumption", &ExportNav::fuel_consumption_},
    };

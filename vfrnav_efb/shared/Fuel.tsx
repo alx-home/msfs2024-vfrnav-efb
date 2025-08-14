@@ -26,9 +26,126 @@ export type Fuel = {
   tanks: Tank[],
 }
 
+export type SetFuelCurve = {
+  __FUEL_CURVE__: true,
+
+  name: string,
+  date: number,
+  curve: {
+    thrust: number,
+    points: {
+      temp: number,
+      alt: number,
+      conso: number
+    }[][]
+  }[],
+}
+
+export type GetFuelCurve = {
+  __GET_FUEL_CURVE__: true,
+
+  name: string,
+}
+
+export type GetFuelPresets = {
+  __GET_FUEL_PRESETS__: true,
+}
+
+export type FuelPresets = {
+  __FUEL_PRESETS__: true,
+
+  data: {
+    name: string,
+    date: number,
+    remove: boolean
+  }[]
+}
+
+export type DeleteFuelPreset = {
+  __DELETE_FUEL_PRESET__: true,
+
+  name: string,
+  date: number
+}
+
 export type GetFuel = {
   __GET_FUEL__: true,
 };
+
+export const DeleteFuelPresetRecord = GenRecord<DeleteFuelPreset>({
+  __DELETE_FUEL_PRESET__: true,
+
+  name: '',
+  date: 0
+}, {});
+
+export const GetFuelPresetsRecord = GenRecord<GetFuelPresets>({
+  __GET_FUEL_PRESETS__: true,
+}, {});
+
+export const FuelPresetsRecord = GenRecord<FuelPresets>({
+  __FUEL_PRESETS__: true,
+
+  data: []
+}, {
+  data: {
+    array: true,
+    record: GenRecord<{
+      name: string,
+      date: number,
+      remove: boolean
+    }>({
+      name: '',
+      date: 0,
+      remove: false
+    }, {})
+  }
+});
+
+export const GetFuelCurveRecord = GenRecord<GetFuelCurve>({
+  __GET_FUEL_CURVE__: true,
+
+  name: ""
+}, {});
+
+export const SetFuelCurveRecord = GenRecord<SetFuelCurve>({
+  __FUEL_CURVE__: true,
+
+  name: "",
+  date: 0,
+  curve: []
+}, {
+  curve: {
+    array: true,
+    record: GenRecord<{
+      thrust: number,
+      points: {
+        temp: number,
+        alt: number,
+        conso: number
+      }[][]
+    }>({
+      thrust: 100,
+      points: []
+    }, {
+      points: {
+        array: true,
+        record: {
+          array: true,
+          record: GenRecord<{
+            temp: number,
+            alt: number,
+            conso: number
+          }>({
+            temp: 0,
+            alt: 0,
+            conso: 0
+          }, {})
+        }
+      }
+    })
+  }
+});
 
 export const TankRecord = GenRecord<Tank>({
   capacity: 0,

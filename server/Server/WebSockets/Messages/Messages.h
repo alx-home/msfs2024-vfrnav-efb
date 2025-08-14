@@ -96,6 +96,7 @@ namespace ws {
 
 using Message = std::variant<
   msg::ByeBye,
+  msg::DeleteFuelPreset,
   msg::EditRecord,
   msg::EFBState,
   msg::ExportNav,
@@ -104,11 +105,15 @@ using Message = std::variant<
   msg::FileExists,
   msg::FileExistsResponse,
   msg::Fuel,
+  msg::FuelCurve,
+  msg::FuelPresets,
   msg::GetEFBState,
   msg::GetFacilities,
   msg::GetFile,
   msg::GetFileResponse,
   msg::GetFuel,
+  msg::GetFuelCurve,
+  msg::GetFuelPresets,
   msg::GetIcaos,
   msg::GetLatLon,
   msg::GetMetar,

@@ -54,7 +54,7 @@ const GridElem = ({ children, className, col: col_, row: row_, size, active, edi
          if (edit) {
             return [2, 4, 7, 8, 10].find(elem => elem === col)
          } else {
-            return [3, 5, 7, 9, 12].find(elem => elem === col)
+            return [3, 5, 7, 10, 13].find(elem => elem === col)
          }
       } else if (currentMode === "Weather") {
          return [3].find(elem => elem === col)
@@ -149,7 +149,7 @@ const useFuel = () => {
    return { fuel, getFuel }
 }
 
-export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
+export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    currentTab: string,
    tab: string,
    coords: Coordinate[],
@@ -179,7 +179,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
 
    const [mode, setMode] = useState<Modes>('Enroute');
    const [reset, setReset] = useState(false);
-   const [collapseWaypoints, setCollapseWaypoints] = useState(false);
+   const [collapseWaypoints, setCollapseWaypoints] = useState(true);
    const delayedRef = useRef<(() => void)[]>([])
    const [delayed, setDelayed] = useState(false)
 
@@ -224,9 +224,9 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       editNavProperties(id, properties);
    }, [actives, editNavProperties, id, properties, fromUnit, getFuel]);
 
-   const getHeader = useCallback((mode: Modes, edit: boolean) => {
+   const getHeader = useCallback((mode: Modes, edit: boolean, dry: boolean) => {
       return [
-         <GridElem key="Waypoint" active={true} edit={edit} currentMode={mode}>{collapseWaypoints ? "" : "Waypoint"}</GridElem>,
+         <GridElem key="Waypoint" active={true} edit={edit} currentMode={mode}>{(collapseWaypoints && !dry) ? "" : "Waypoint"}</GridElem>,
          <GridElem key="Altitude" active={true} edit={edit} mode="Enroute" currentMode={mode}>Altitude</GridElem>,
          ...(edit ? [] : [<GridElem key="Dist" active={true} edit={edit} mode="Enroute" currentMode={mode}>Dist</GridElem>]),
          <GridElem key="VOR Ind/Freq" active={true} edit={edit} mode="Vor" currentMode={mode}>VOR Ind/Freq</GridElem>,
@@ -248,6 +248,7 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                <GridElem key="CH" active={true} edit={edit} mode="Full" currentMode={mode}>CH</GridElem>,
                <GridElem key="MH" active={true} edit={edit} mode="Vor" currentMode={mode}>MH</GridElem>,
                <GridElem key="IAS" active={true} edit={edit} mode="Enroute" currentMode={mode}>IAS</GridElem>,
+               <GridElem key="TAS" active={true} edit={edit} mode="Full" currentMode={mode}>TAS</GridElem>,
                <GridElem key="GS" active={true} edit={edit} mode="Full" currentMode={mode}>GS</GridElem>,
                <GridElem key="ETE" active={true} edit={edit} mode="Full" currentMode={mode}>ETE</GridElem>,
                <GridElem key="ETA" active={true} edit={edit} mode="Enroute" currentMode={mode}>ETA</GridElem>
@@ -258,10 +259,10 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       ].filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full').map((elem, index, all) => <elem.type key={elem.key} {...elem.props} col={index} size={all.length} />)
    }, [fuelUnit, collapseWaypoints]);
 
-   const header = useMemo(() => getHeader(mode, edit), [edit, getHeader, mode]);
-   const fullHeader = useMemo(() => getHeader("Full", false), [getHeader]);
+   const header = useMemo(() => getHeader(mode, edit, false), [edit, getHeader, mode]);
+   const fullHeader = useMemo(() => getHeader("Full", false, true), [getHeader]);
 
-   const getLegs = useCallback((mode: Modes, edit: boolean) => {
+   const getLegs = useCallback((mode: Modes, edit: boolean, dry: boolean) => {
       let time = departureTime * 60;
       let estfuel = loadedFuel;
       let estfuel2 = loadedFuel;
@@ -278,14 +279,14 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                      waypoints[row] = value
                      updateWaypoints(id, waypoints);
                   }} />
-                  : <div className={"m-auto text-center transition-all " + (collapseWaypoints ? "w-0" : "w-36")}>{name}</div>
+                  : <div className={"m-auto text-center transition-all " + ((collapseWaypoints && !dry) ? "w-0" : "w-36")}>{name}</div>
             }
          </GridElem>)
 
          if (row > 0) {
             const active = actives[row - 1];
             const navProps = properties[row - 1];
-            const { altitude, dist, vor, wind, remark, CH, MH, GS, ias, magVar, oat, conso, curFuel, ata } = navProps;
+            const { altitude, dist, vor, wind, remark, CH, MH, GS, ias, tas, magVar, oat, conso, curFuel, ata } = navProps;
             const { ident: vorIndent, freq: vorFreq, obs: vorObs } = vor;
             const { direction: windDir, speed: windVel } = wind;
 
@@ -524,6 +525,10 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
                   <div className="w-10 m-auto text-center">{Math.round(ias)}</div>
                </GridElem>)
 
+               result.push(<GridElem key={"TAS"} active={active} edit={edit} mode="Full" currentMode={mode}>
+                  <div className="w-10 m-auto text-center">{Math.round(tas)}</div>
+               </GridElem>)
+
                result.push(<GridElem key={"GS"} active={active} edit={edit} mode="Full" currentMode={mode}>
                   <div className="w-10 m-auto text-center">{Math.round(GS).toString()}</div>
                </GridElem>)
@@ -606,8 +611,8 @@ export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
       })
    }, [actives, coords, departureTime, editNavProperties, fromUnit, id, loadedFuel, properties, setActive, toUnit, updateWaypoints, waypoints, reset, collapseWaypoints])
 
-   const legs = useMemo(() => getLegs(mode, edit), [edit, getLegs, mode]);
-   const fullLegs = useMemo(() => getLegs("Full", false), [getLegs]);
+   const legs = useMemo(() => getLegs(mode, edit, false), [edit, getLegs, mode]);
+   const fullLegs = useMemo(() => getLegs("Full", false, true), [getLegs]);
 
    useEffect(() => {
       setReset(true)

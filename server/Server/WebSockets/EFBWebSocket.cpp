@@ -18,6 +18,7 @@
 #include "../Server.h"
 #include "Messages/Records.h"
 #include "Server/WebSockets/Messages/Facilities.h"
+#include "Server/WebSockets/Messages/Fuel.h"
 #include "boost/beast/websocket/rfc6455.hpp"
 
 #include <window/FileDialog.h>
@@ -164,6 +165,8 @@ Server::EFBWebSocket::Start() {
             }
          }
       }
+
+      self->VSendMessage(1, ws::msg::GetFuelPresets{});
    });
 
    Read();
@@ -213,7 +216,13 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
    try {
       auto message = js::Parse<ws::Proxy>(data);
 
-      if (std::holds_alternative<ws::msg::GetEFBState>(message.content_)) {
+      if (std::holds_alternative<ws::msg::FuelPresets>(message.content_)) {
+         server_.HandleFuelPresets(my_id_, std::move(message.content_));
+      } else if (std::holds_alternative<ws::msg::FuelCurve>(message.content_)) {
+         server_.HandleFuelCurve(my_id_, std::move(message.content_));
+      } else if (std::holds_alternative<ws::msg::GetFuelPresets>(message.content_)) {
+         server_.HandleGetFuelPresets(my_id_);
+      } else if (std::holds_alternative<ws::msg::GetEFBState>(message.content_)) {
          assert(message.id_ != 2);
          assert(message.id_ != 1);
 

@@ -22,13 +22,14 @@ import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord,
 import { EfbState, EfbStateRecord, GetEFBState, GetEFBStateRecord, GetServerState, GetServerStateRecord, ServerState, ServerStateRecord } from './Server';
 import { ExportNav, ExportNavRecord, ImportNav, ImportNavRecord } from './NavData';
 import { ExportPdfs, ExportPdfsRecord } from './Pdfs';
-import { Fuel, FuelRecord, GetFuel, GetFuelRecord } from './Fuel';
+import { DeleteFuelPreset, DeleteFuelPresetRecord, Fuel, FuelPresets, FuelPresetsRecord, FuelRecord, GetFuel, GetFuelCurve, GetFuelCurveRecord, GetFuelPresets, GetFuelPresetsRecord, GetFuelRecord, SetFuelCurve, SetFuelCurveRecord } from './Fuel';
 
 const MessageIdValues = [
    '__EXPORT_NAV__',
    '__GET_RECORD__',
    '__IMPORT_NAV__',
    "__BYE_BYE__",
+   "__DELETE_FUEL_PRESET__",
    "__EDIT_RECORD__",
    "__EFB_STATE__",
    "__EXPORT_PDFS__",
@@ -36,11 +37,15 @@ const MessageIdValues = [
    "__FILE_EXISTS__",
    "__FILE_EXISTS_RESPONSE__",
    "__FUEL__",
+   "__FUEL_CURVE__",
+   "__FUEL_PRESETS__",
    "__GET_EFB_STATE__",
    "__GET_FACILITIES__",
    "__GET_FILE__",
    "__GET_FILE_RESPONSE__",
    "__GET_FUEL__",
+   "__GET_FUEL_CURVE__",
+   "__GET_FUEL_PRESETS__",
    "__GET_ICAOS__",
    "__GET_LAT_LON__",
    "__GET_METAR__",
@@ -75,6 +80,7 @@ const GetRecordsRecord = GenRecord<GetRecords>({
 
 type MessageTypes = {
    "__BYE_BYE__": ByeBye,
+   "__DELETE_FUEL_PRESET__": DeleteFuelPreset,
    "__EDIT_RECORD__": EditRecord,
    "__EFB_STATE__": EfbState,
    "__EXPORT_NAV__": ExportNav,
@@ -83,11 +89,15 @@ type MessageTypes = {
    "__FILE_EXISTS__": FileExist,
    "__FILE_EXISTS_RESPONSE__": FileExistResponse,
    "__FUEL__": Fuel,
+   "__FUEL_CURVE__": SetFuelCurve,
+   "__FUEL_PRESETS__": FuelPresets,
    "__GET_EFB_STATE__": GetEFBState,
    "__GET_FACILITIES__": GetFacilities,
    "__GET_FILE__": GetFile,
    "__GET_FILE_RESPONSE__": GetFileResponse,
    "__GET_FUEL__": GetFuel,
+   "__GET_FUEL_CURVE__": GetFuelCurve,
+   "__GET_FUEL_PRESETS__": GetFuelPresets,
    "__GET_ICAOS__": GetICAOS,
    "__GET_LAT_LON__": GetLatLon,
    "__GET_METAR__": GetMetar,
@@ -114,6 +124,7 @@ export type MessageType = MessageTypes[keyof MessageTypes];
 
 const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__BYE_BYE__": ByeByeRecord,
+   "__DELETE_FUEL_PRESET__": DeleteFuelPresetRecord,
    "__EDIT_RECORD__": EditRecordRecord,
    "__EFB_STATE__": EfbStateRecord,
    "__EXPORT_NAV__": ExportNavRecord,
@@ -122,11 +133,15 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__FILE_EXISTS__": FileExistRecord,
    "__FILE_EXISTS_RESPONSE__": FileExistResponseRecord,
    "__FUEL__": FuelRecord,
+   "__FUEL_CURVE__": SetFuelCurveRecord,
+   "__FUEL_PRESETS__": FuelPresetsRecord,
    "__GET_EFB_STATE__": GetEFBStateRecord,
    "__GET_FACILITIES__": GetFacilitiesRecord,
    "__GET_FILE__": GetFileRecord,
    "__GET_FILE_RESPONSE__": GetFileResponseRecord,
    "__GET_FUEL__": GetFuelRecord,
+   "__GET_FUEL_CURVE__": GetFuelCurveRecord,
+   "__GET_FUEL_PRESETS__": GetFuelPresetsRecord,
    "__GET_ICAOS__": GetIcaosRecord,
    "__GET_LAT_LON__": GetLatLonRecord,
    "__GET_METAR__": GetMetarRecord,
