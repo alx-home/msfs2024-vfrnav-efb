@@ -122,7 +122,6 @@ const OPENFLightsBoundaries = [[-545822.3693499268, 6350651.923376388], [-469001
 const openFlightMapUrl = (() => {
   const now = new Date()
   const res = ((now.getFullYear() - 2000)).toFixed(0) + (now.getMonth() < 10 ? '0' + (now.getMonth() + 1).toFixed(0) : (now.getMonth() + 1).toFixed(0))
-  console.log(res)
   return "https://nwy-tiles-api.prod.newaydata.com/tiles/{z}/{x}/{y}.png?path=" + res
 })()
 

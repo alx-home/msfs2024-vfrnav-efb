@@ -20,9 +20,9 @@ import { ReactElement, useCallback, useContext, useEffect, useMemo, useState } f
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
 import { Settings } from "./Settings";
-import { TabElem } from "./Elements";
 import { messageHandler } from "@Settings/SettingsProvider";
 import { useEFBServer } from "@Utils/useServer";
+import { Navlog } from "./NavLog";
 
 export const NavLogPage = ({ active }: {
   active: boolean
@@ -42,7 +42,7 @@ export const NavLogPage = ({ active }: {
     const addTab = (data: NavData) => {
       const id = data.id.toFixed(0)
 
-      elems.push(<TabElem edit={edit} key={id} tab={id} currentTab={tab} coords={data.coords} navData={data} />)
+      elems.push(<Navlog edit={edit} key={id} tab={id} currentTab={tab} coords={data.coords} navData={data} />)
       tabs.push(id)
       tabNames[id] = data.name
     }
@@ -68,8 +68,8 @@ export const NavLogPage = ({ active }: {
     } else {
       setEmpty(false);
 
-      elems.push(<div key="aircraft" className={"flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden" + (tab === 'Settings' ? "" : " opacity-0 select-none pointer-events-none max-h-0")}>
-        <Settings />
+      elems.push(<div key="aircraft" className={"flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden h-full" + (tab === 'Settings' ? "" : " opacity-0 select-none pointer-events-none max-h-0")}>
+        <Settings currentTab={tab} />
       </div>)
       tabs.push('Settings')
       tabNames['Settings'] = 'Settings'
