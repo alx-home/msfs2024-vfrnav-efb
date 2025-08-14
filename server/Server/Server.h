@@ -17,6 +17,7 @@
 
 #include "Registry/Registry.h"
 #include "Server/WebSockets/Messages/Messages.h"
+#include "WebSockets/Messages/Fuel.h"
 #include "Window/template/Window.h"
 #include "boost/beast/http/string_body_fwd.hpp"
 #include "utils/MessageQueue.h"
@@ -91,6 +92,13 @@ struct Server : public MessageQueue {
    void Stop();
    void Start();
 
+   void SaveFuelPresets() const;
+   void LoadFuelPresets();
+
+   void HandleFuelPresets(std::size_t id, ws::Message&& message);
+   void HandleFuelCurve(std::size_t id, ws::Message&& message);
+   void HandleGetFuelPresets(std::size_t id);
+
    using tcp         = boost::asio::ip::tcp;
    using io_context  = boost::asio::io_context;
    using boost_error = boost::system::error_code;
@@ -129,6 +137,10 @@ struct Server : public MessageQueue {
    std::unordered_map<std::size_t, MessageHandler> message_handlers_{};
    std::shared_ptr<EFBWebSocket>                   efb_socket_{nullptr};
    std::vector<std::shared_ptr<EFBWebSocket>>      web_sockets_{};
+
+   std::unordered_map<std::string, ws::msg::FuelCurve> fuel_presets_{};
+
+   static std::vector<ws::msg::Curve> h125_curve_s;
 
    // Must stays at the end
    std::jthread thread_{};

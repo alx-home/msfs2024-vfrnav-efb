@@ -78,7 +78,9 @@ export type SharedSettings = {
       range: number
     },
     markerSize: number
-  }
+  },
+
+  savedFuelCurveNames: string[],
 };
 
 const LayerRecord = GenRecord<LayerSetting>({
@@ -169,6 +171,8 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
     active: false
   },
 
+  savedFuelCurveNames: ['real h125'],
+
   map: {
     azba: {
       inactiveHighColor: {
@@ -232,4 +236,6 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
   mapforfree: LayerRecord,
   googlemap: LayerRecord,
   openstreet: LayerRecord,
+
+  savedFuelCurveNames: { array: true, record: "string" }
 })

@@ -50,6 +50,7 @@ export type GlobalSettings = Settings & SharedSettings & {
   getSIAAZBA: () => Promise<Azba[]>,
   setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>
   setPage: Dispatch<SetStateAction<string>>
+  setSavedFuelCurveNames: Dispatch<SetStateAction<string[]>>
 
   addPdf: RefObject<((_name: string, _pdf: Src) => void) | undefined>,
 

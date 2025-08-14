@@ -15,11 +15,17 @@
 
 import { GenRecord } from './Types';
 
+export type Temp = number;
+export type Alt = number;
+export type Fuel = number;
+export type Speed = number;
+export type FuelPoint = [Temp, Alt, Fuel][]
+
 export type FuelUnit = 'gal' | 'liter';
-export type Deviation = {
-   x: number;
-   y: number;
-};
+export type Deviation = [
+   Alt,
+   number
+];
 
 export type Properties = {
    active: boolean
@@ -76,9 +82,9 @@ export type ExportNav = {
       loadedFuel: number,
       departureTime: number,
    }[]
-   deviations: Deviation[],
+   deviationCurve: Deviation[],
    fuelUnit: FuelUnit,
-   fuelConsumption: number,
+   fuelCurve: [number, FuelPoint[]][],
 };
 
 export const PropertiesRecord = GenRecord<Properties>({
@@ -123,15 +129,77 @@ export const PropertiesRecord = GenRecord<Properties>({
 }, {
 });
 
+export const h125Curve: [number, FuelPoint[]][] = [
+   [100, [
+      [[-40, 0, 177], [17, 0, 189], [30, 0, 179], [40, 0, 165], [50, 0, 151]],
+      [[-40, 2000, 173], [7, 2000, 184], [25, 2000, 170], [50, 2000, 139]],
+      [[-40, 4000, 173], [-4, 4000, 180], [22, 4000, 160], [50, 4000, 126]],
+      [[-40, 6000, 173], [-15, 6000, 177], [17, 6000, 151], [50, 6000, 122]],
+      [[-40, 8000, 173], [-30, 8000, 177], [-10, 8000, 158], [15, 8000, 142], [50, 8000, 111]],
+      [[-40, 10000, 173], [-15, 10000, 151], [10, 10000, 134], [50, 10000, 103]],
+      [[-40, 12000, 158], [-20, 12000, 142], [5, 12000, 126], [50, 12000, 92]],
+      [[-40, 14000, 146], [-20, 14000, 132], [0, 14000, 120], [50, 14000, 84]],
+      [[-40, 16000, 135], [-25, 16000, 123], [-10, 16000, 116], [2, 16000, 110], [50, 16000, 75]],
+      [[-40, 25000, 135], [-25, 25000, 123], [-10, 25000, 116], [2, 25000, 110], [50, 25000, 75]],
+   ]],
+]
+
+
+export const getDatasets = ({ fuelCurve, oat }: {
+   fuelCurve: [number, FuelPoint[]][]
+   oat: Temp
+}) => {
+   return fuelCurve.map(elem => {
+      const [, curve] = elem;
+
+      return curve.map((point): [number, number, boolean] => {
+         const maxTempIndex = point.findIndex(elem => elem[0] >= oat);
+
+         if (maxTempIndex === -1) {
+            return [point[point.length - 1][1], point[point.length - 1][2], true]
+         } else {
+            const maxTemp = point[maxTempIndex]
+
+            if (maxTemp[0] === oat) {
+               return [maxTemp[1], maxTemp[2], false]
+            } else if (maxTempIndex === 0) {
+               return [maxTemp[1], maxTemp[2], true]
+            } else {
+               const minTemp = point[maxTempIndex - 1]
+               const ratio = (oat - minTemp[0]) / (maxTemp[0] - minTemp[0]);
+
+               const interpolated = Array.from({ length: 2 }, (_, i) => minTemp[i + 1] + (maxTemp[i + 1] - minTemp[i + 1]) * ratio);
+               return [interpolated[0], interpolated[1], true]
+            }
+         }
+      })
+   })
+}
+
+export const getFuelConsumption = ({ fuelCurve, oat, altitude }: {
+   fuelCurve: [number, FuelPoint[]][]
+   oat: Temp,
+   altitude: number
+}) => {
+   const dataset = getDatasets({ fuelCurve, oat })[0]
+
+   const index = dataset.findIndex(elem => elem[0] >= altitude)
+
+   if (index === -1) {
+      return dataset[dataset.length - 1][1]
+   } else if ((dataset[index][0] === altitude) || (index === 0)) {
+      return dataset[index][1]
+   } else {
+      return dataset[index - 1][1] + (dataset[index][1] - dataset[index - 1][1]) * (oat - dataset[index - 1][0]) / (dataset[index][0] - dataset[index - 1][0])
+   }
+}
+
 export const ExportNavRecord = GenRecord<ExportNav>({
    __EXPORT_NAV__: true,
 
    data: [],
-   deviations: [
-      { x: 0, y: 0 },
-      { x: 360, y: 0 }
-   ],
-   fuelConsumption: 145,
+   deviationCurve: [[0, 0], [360, 0]],
+   fuelCurve: h125Curve,
    fuelUnit: 'liter'
 }, {
    data: {
@@ -154,11 +222,11 @@ export const ExportNavRecord = GenRecord<ExportNav>({
          departureTime: 'number',
       }
    },
-   deviations: {
+   deviationCurve: {
       array: true,
       record: {
-         x: "number",
-         y: "number"
+         array: true,
+         record: 'number'
       }
    },
    fuelConsumption: 'number',

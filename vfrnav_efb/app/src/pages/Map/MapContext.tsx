@@ -14,7 +14,7 @@
  */
 
 import { Collection, Map as olMap, MapBrowserEvent, getUid, MapEvent } from 'ol';
-import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { NavData } from './MapMenu/Menus/Nav';
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
@@ -27,8 +27,8 @@ import { LineString, SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
 import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
-import { messageHandler } from '@Settings/SettingsProvider';
-import { Deviation, ExportNavRecord, FuelUnit, Properties } from '@shared/NavData';
+import { messageHandler, SettingsContext } from '@Settings/SettingsProvider';
+import { Deviation, ExportNavRecord, FuelUnit, getFuelConsumption, h125Curve, FuelPoint, Properties, Alt } from '@shared/NavData';
 import { getLength } from 'ol/sphere';
 
 export type Interactive = {
@@ -99,15 +99,23 @@ export const MapContext = createContext<{
   editRecord: (_id: number, _newName: string) => void,
   reorderNav: (_orders: number[]) => void,
 
-  updateNavProps: (_props: Properties, _prevCoords: Coordinate, _coords: Coordinate) => Properties
+  updateNavProps: (_props: Properties, _prevCoords: Coordinate, _coords: Coordinate, _withFuel?: boolean) => Properties
 
-  deviations: { x: number, y: number }[],
-  setDeviations: Dispatch<SetStateAction<Deviation[]>>,
-
-  fuelConsumption: number,
-  setFuelConsumption: Dispatch<SetStateAction<number>>,
   fuelUnit: FuelUnit,
   setFuelUnit: Dispatch<SetStateAction<FuelUnit>>,
+
+  savedFuelCurves: [string, number, [number, FuelPoint[]][]][]
+  setSavedFuelCurves: Dispatch<SetStateAction<[string, number, [number, FuelPoint[]][]][]>>,
+
+  fuelCurve: [number, FuelPoint[]][]
+  setFuelCurve: Dispatch<SetStateAction<[number, FuelPoint[]][]>>,
+
+  savedDeviationCurves: [string, [Alt, number][]][]
+  setSavedDeviationCurves: Dispatch<SetStateAction<[string, [Alt, number][]][]>>,
+
+  deviationCurve: [Alt, number][]
+  setDeviationCurve: Dispatch<SetStateAction<[Alt, number][]>>
+
 } | undefined>(undefined);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -140,7 +148,9 @@ const getFeaturesAtPixel = (map: olMap, layer: Layer, coords: Coordinate, event:
   return [];
 }
 
-const updateFuel = (fuelConsumption: number, props: Properties): Properties => {
+const updateFuel = (fuelCurve: [number, FuelPoint[]][], props: Properties): Properties => {
+  const fuelConsumption = getFuelConsumption({ fuelCurve, oat: props.oat, altitude: props.altitude })
+
   return {
     ...props, vor: { ...props.vor }, wind: { ...props.wind },
     dur: { ...props.dur },
@@ -148,7 +158,7 @@ const updateFuel = (fuelConsumption: number, props: Properties): Properties => {
   }
 }
 
-const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props: Properties, prevCoords: Coordinate, coords: Coordinate): Properties => {
+const updateNavProps = (deviationCurve: Deviation[], props: Properties, prevCoords: Coordinate, coords: Coordinate, fuelCurve?: [number, FuelPoint[]][]): Properties => {
   const { ias, oat, altitude, wind, magVar } = props;
   const { direction, speed: windVel } = wind;
   const windDir = direction > 180 ? direction - 180 : direction + 180;
@@ -163,7 +173,6 @@ const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props:
 
   const dist = getLength(new LineString([prevCoords, coords])) * 0.0005399568;
 
-  // const tas = ias * Math.sqrt(1 +  altitude / 44330 + (oat - (15 - 0.0065 * altitude)) / 273.15)
   const tas = ias * Math.sqrt(0.945085118 + altitude * 4.635453591185e-5 + oat / 273.15)
 
   const WCA = Math.asin(Math.max(-1, Math.min(1, windVel * Math.sin((TC - windDir) * (Math.PI / 180)) / tas))) * (180 / Math.PI)
@@ -177,22 +186,22 @@ const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props:
 
       return value;
     })();
-    const devIndex = deviations.findIndex(elem => elem.x > value)
+    const devIndex = deviationCurve.findIndex(elem => elem[0] > value)
 
     if (devIndex === -1) {
-      if (value === deviations[0].x) {
-        return [(value + deviations[0].y) % 360, deviations[0].y];
+      if (value === deviationCurve[0][0]) {
+        return [(value + deviationCurve[0][1]) % 360, deviationCurve[0][1]];
       } else {
-        console.assert(value === deviations[deviations.length - 1].x)
-        return [(value + deviations[deviations.length - 1].y) % 360, deviations[deviations.length - 1].y];
+        console.assert(value === deviationCurve[deviationCurve.length - 1][0])
+        return [(value + deviationCurve[deviationCurve.length - 1][1]) % 360, deviationCurve[deviationCurve.length - 1][1]];
       }
     } else {
       const index = devIndex - 1;
       console.assert(index >= 0);
 
-      const x = value - deviations[index].x
-      const slope = (deviations[index + 1].y - deviations[index].y) / (deviations[index + 1].x - deviations[index].x)
-      const dev = slope * x + deviations[index].y;
+      const x = value - deviationCurve[index][0]
+      const slope = (deviationCurve[index + 1][1] - deviationCurve[index][1]) / (deviationCurve[index + 1][0] - deviationCurve[index][0])
+      const dev = slope * x + deviationCurve[index][1];
       return [(value + dev) % 360, dev];
     }
   })()
@@ -209,7 +218,7 @@ const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props:
   const fseconds = (fminutes - minutes) * 60;
   const seconds = Math.floor(fseconds);
 
-  return updateFuel(fuelConsumption, {
+  const result = {
     ...props, TC: TC, CH: CH, dev: dev, MH: MH, dur: {
       days: days,
       hours: hours,
@@ -217,11 +226,12 @@ const updateNavProps = (fuelConsumption: number, deviations: Deviation[], props:
       seconds: seconds,
       full: dur
     }, tas: tas, GS: GS, dist: dist
-  })
+  };
+  return fuelCurve ? updateFuel(fuelCurve, result) : result
 }
 
-
 const MapContextProvider = ({ children }: PropsWithChildren) => {
+  const { setSavedFuelCurveNames } = useContext(SettingsContext)!;
   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
   const dragging = useRef(false);
 
@@ -382,33 +392,43 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [recordsCenter, setRecordsCenter] = useState({ x: 0.65, y: 0.65 });
   const [touchdown, setTouchdown] = useState(false);
   const [ground, setGround] = useState(true);
-  const [deviations, setDeviations] = useState<Deviation[]>([
-    {
-      x: 0,
-      y: 0
-    },
-    {
-      x: 360,
-      y: 0
-    }
-  ])
 
-  const [fuelConsumption, setFuelConsumption] = useState(ExportNavRecord.defaultValues.fuelConsumption);
   const [fuelUnit, setFuelUnit] = useState<FuelUnit>(ExportNavRecord.defaultValues.fuelUnit)
 
+  const [savedFuelCurves, setSavedFuelCurves] = useState<[string, number, [number, FuelPoint[]][]][]>([
+    ['real h125', 0, h125Curve]
+  ])
+  const [fuelCurve, setFuelCurve] = useState<[number, FuelPoint[]][]>(
+    savedFuelCurves.length
+      ? savedFuelCurves[0][2]
+      : [[100, [
+        [[20, 0, 145]],
+        [[20, 25000, 145]]
+      ]]])
+
+  const [savedDeviationCurves, setSavedDeviationCurves] = useState<[string, [number, number][]][]>([])
+  const [deviationCurve, setDeviationCurve] = useState<[number, number][]>(
+    savedDeviationCurves.length
+      ? savedDeviationCurves[0][1]
+      : [
+        [0, 0],
+        [360, 0]
+      ])
+
+
   const updateNavPropsCB = useCallback((props: Properties, prevCoords: Coordinate, coords: Coordinate) =>
-    updateNavProps(fuelConsumption, deviations, props, prevCoords, coords)
-    , [deviations, fuelConsumption])
+    updateNavProps(deviationCurve, props, prevCoords, coords, fuelCurve)
+    , [deviationCurve, fuelCurve])
 
   useEffect(() => {
     setNavData(navData => navData.map(elem => (
       {
         ...elem,
         properties: elem.properties.map((props, index) =>
-          updateNavProps(fuelConsumption, deviations, props, elem.coords[index], elem.coords[index + 1]))
+          updateNavProps(deviationCurve, props, elem.coords[index], elem.coords[index + 1], fuelCurve))
       }
     )))
-  }, [deviations, fuelConsumption])
+  }, [deviationCurve, fuelCurve])
 
   useEffect(() => {
     if (cancelRequest) {
@@ -601,15 +621,27 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     enableGround: setGround,
     withGround: ground,
 
-    deviations: deviations,
-    setDeviations: setDeviations,
     updateNavProps: updateNavPropsCB,
 
-    fuelConsumption: fuelConsumption,
-    setFuelConsumption: setFuelConsumption,
     fuelUnit: fuelUnit,
     setFuelUnit: setFuelUnit,
-  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, deviations, updateNavPropsCB, fuelConsumption, fuelUnit, activeRecords]);
+
+    setSavedFuelCurves: setSavedFuelCurves,
+    savedFuelCurves: savedFuelCurves,
+
+    fuelCurve: fuelCurve,
+    setFuelCurve: setFuelCurve,
+
+    setSavedDeviationCurves: setSavedDeviationCurves,
+    savedDeviationCurves: savedDeviationCurves,
+
+    deviationCurve: deviationCurve,
+    setDeviationCurve: setDeviationCurve
+  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, fuelCurve, savedDeviationCurves, deviationCurve, activeRecords]);
+
+  useEffect(() => {
+    setSavedFuelCurveNames(savedFuelCurves.map(value => value[0]))
+  }, [savedFuelCurves, setSavedFuelCurveNames])
 
   return (
     <MapContext.Provider

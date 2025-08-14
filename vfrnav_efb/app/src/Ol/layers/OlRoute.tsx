@@ -318,7 +318,7 @@ export const OlRouteLayer = ({
 }: {
    zIndex: number
 } & OlLayerProp) => {
-   const { setNavData, counter, map, setCancel, navData, updateNavProps, setFuelConsumption, setFuelUnit, setDeviations } = useContext(MapContext)!;
+   const { setNavData, counter, map, setCancel, navData, updateNavProps, setFuelCurve, setFuelUnit, setDeviationCurve } = useContext(MapContext)!;
    const settings = useContext(SettingsContext)!;
 
    const { source, layer, initFeature } = useMap();
@@ -382,7 +382,7 @@ export const OlRouteLayer = ({
 
                      const nextCoord = fullCoords[index + 1];
 
-                     const props = updateNavProps(index < properties.length ? properties[index] : PropertiesRecord.defaultValues, getCoordinateFromPixel(coord), getCoordinateFromPixel(nextCoord));
+                     const props = updateNavProps(index < properties.length ? properties[index] : PropertiesRecord.defaultValues, getCoordinateFromPixel(coord), getCoordinateFromPixel(nextCoord), false);
                      const { CH, TC, MH, dist, altitude, dur, remark } = props;
                      const waypoint = waypoints[index];
                      const nextWaypoint = waypoints[index + 1];
@@ -646,15 +646,15 @@ export const OlRouteLayer = ({
 
             source.addFeatures(features);
             setNavData(data);
-            setFuelConsumption(message.fuelConsumption)
+            setFuelCurve(message.fuelCurve)
             setFuelUnit(message.fuelUnit)
-            setDeviations(message.deviations)
+            setDeviationCurve(message.deviationCurve)
          };
 
          messageHandler.subscribe("__EXPORT_NAV__", onExportNav)
          return () => messageHandler.unsubscribe("__EXPORT_NAV__", onExportNav);
       }
-   }, [counter, initFeature, layer, navData, setDeviations, setFuelConsumption, setFuelUnit, setNavData, source])
+   }, [counter, initFeature, layer, navData, setDeviationCurve, setFuelCurve, setFuelUnit, setNavData, source])
 
    return <div className="hidden">
       <img ref={greenMarkerImg} src={greenMarker} alt='start marker' />

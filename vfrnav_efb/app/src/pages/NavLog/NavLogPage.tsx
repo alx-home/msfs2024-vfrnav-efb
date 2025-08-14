@@ -20,14 +20,14 @@ import { ReactElement, useCallback, useContext, useEffect, useMemo, useState } f
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
 import { Settings } from "./Settings";
-import { TabElem } from "./Elements";
 import { messageHandler } from "@Settings/SettingsProvider";
 import { useEFBServer } from "@Utils/useServer";
+import { Navlog } from "./NavLog";
 
 export const NavLogPage = ({ active }: {
   active: boolean
 }) => {
-  const { navData, deviations, fuelUnit, fuelConsumption } = useContext(MapContext)!;
+  const { navData, deviationCurve, fuelUnit, fuelCurve } = useContext(MapContext)!;
 
   const [opacity, setOpacity] = useState(' opacity-0');
   const [tab, setTab] = useState<string>('Settings');
@@ -42,12 +42,12 @@ export const NavLogPage = ({ active }: {
     const addTab = (data: NavData) => {
       const id = data.id.toFixed(0)
 
-      elems.push(<TabElem edit={edit} key={id} tab={id} currentTab={tab} coords={data.coords} navData={data} />)
+      elems.push(<Navlog edit={edit} key={id} tab={id} currentTab={tab} coords={data.coords} navData={data} />)
       tabs.push(id)
       tabNames[id] = data.name
     }
 
-    navData.forEach(data => addTab(data))
+    navData.toSorted((a, b) => a.order - b.order).forEach(data => addTab(data))
 
     if (navData.length === 0) {
       setEmpty(true);
@@ -68,15 +68,15 @@ export const NavLogPage = ({ active }: {
     } else {
       setEmpty(false);
 
-      elems.push(<div key="aircraft" className={"flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden" + (tab === 'Settings' ? "" : " opacity-0 select-none pointer-events-none max-h-0")}>
-        <Settings />
+      elems.push(<div key="aircraft" className={"flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden h-full" + (tab === 'Settings' ? "" : " opacity-0 select-none pointer-events-none max-h-0")}>
+        <Settings currentTab={tab} active={active} />
       </div>)
       tabs.push('Settings')
       tabNames['Settings'] = 'Settings'
     }
 
     return [tabs, elems, tabNames]
-  }, [edit, navData, tab]);
+  }, [active, edit, navData, tab]);
 
   const switchEdit = useCallback(() => {
     setEdit(edit => !edit)
@@ -97,11 +97,11 @@ export const NavLogPage = ({ active }: {
         loadedFuel: data.loadedFuel,
         departureTime: data.departureTime,
       })),
-      deviations: deviations,
+      deviationCurve: deviationCurve,
       fuelUnit: fuelUnit,
-      fuelConsumption: fuelConsumption
+      fuelCurve: fuelCurve
     })
-  }, [deviations, fuelConsumption, fuelUnit, navData]);
+  }, [deviationCurve, fuelCurve, fuelUnit, navData]);
 
   useEffect(() => {
     if (!tabs.find(value => value === tab)) {

@@ -20,6 +20,7 @@ import { MessageHandler, MessageType } from "@shared/MessageHandler";
 import { EditRecord, GetRecord, RemoveRecord } from "@shared/PlanPos";
 import { Manager } from "../Manager";
 import { FileExist, GetFile, OpenFile } from "@shared/Files";
+import { FuelPresets, SetFuelCurve } from "@shared/Fuel";
 
 interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
   /** The page title */
@@ -99,6 +100,13 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onFileExists(message);
   }
 
+  onFuelPresets(message: FuelPresets) {
+    this.props.manager.onFuelPresets(0, message);
+  }
+
+  onFuelCurve(message: SetFuelCurve) {
+    this.props.manager.onFuelCurve(0, message);
+  }
 
   destroy(): void {
     if (messageHandler !== undefined) {
@@ -119,6 +127,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("__GET_FILE__", this.onGetFile)
       messageHandler.unsubscribe("__OPEN_FILE__", this.onOpenFile)
       messageHandler.unsubscribe("__FILE_EXISTS__", this.onFileExists)
+      messageHandler.unsubscribe("__FUEL_PRESETS__", this.onFuelPresets)
+      messageHandler.unsubscribe("__FUEL_CURVE__", this.onFuelCurve)
     }
 
     super.destroy();
@@ -154,6 +164,9 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__GET_FILE__", this.onGetFile.bind(this))
       messageHandler.subscribe("__OPEN_FILE__", this.onOpenFile.bind(this))
       messageHandler.subscribe("__FILE_EXISTS__", this.onFileExists.bind(this))
+
+      messageHandler.subscribe("__FUEL_PRESETS__", this.onFuelPresets.bind(this))
+      messageHandler.subscribe("__FUEL_CURVE__", this.onFuelCurve.bind(this))
     }
   }
 
