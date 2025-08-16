@@ -149,7 +149,7 @@ const useFuel = () => {
    return { fuel, getFuel }
 }
 
-export const TabElem = ({ tab, currentTab, coords, edit, navData }: {
+export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    currentTab: string,
    tab: string,
    coords: Coordinate[],
