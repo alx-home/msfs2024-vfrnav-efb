@@ -95,9 +95,18 @@ struct Server : public MessageQueue {
    void SaveFuelPresets() const;
    void LoadFuelPresets();
 
+   void SaveDeviationPresets() const;
+   void LoadDeviationPresets();
+
    void HandleFuelPresets(std::size_t id, ws::Message&& message);
    void HandleFuelCurve(std::size_t id, ws::Message&& message);
+   void HandleDefaultFuelPreset(std::size_t id, ws::Message&& message);
    void HandleGetFuelPresets(std::size_t id);
+
+   void HandleDeviationPresets(std::size_t id, ws::Message&& message);
+   void HandleDeviationCurve(std::size_t id, ws::Message&& message);
+   void HandleDefaultDeviationPreset(std::size_t id, ws::Message&& message);
+   void HandleGetDeviationPresets(std::size_t id);
 
    using tcp         = boost::asio::ip::tcp;
    using io_context  = boost::asio::io_context;
@@ -138,9 +147,12 @@ struct Server : public MessageQueue {
    std::shared_ptr<EFBWebSocket>                   efb_socket_{nullptr};
    std::vector<std::shared_ptr<EFBWebSocket>>      web_sockets_{};
 
-   std::unordered_map<std::string, ws::msg::FuelCurve> fuel_presets_{};
+   std::unordered_map<std::string, ws::msg::fuel::Curves> fuel_presets_{};
+   ws::msg::fuel::DefaultPreset                           default_fuel_preset_{};
+   std::unordered_map<std::string, ws::msg::dev::Curve>   deviation_presets_{};
+   ws::msg::dev::DefaultPreset                            default_deviation_preset_{};
 
-   static std::vector<ws::msg::Curve> h125_curve_s;
+   static std::vector<ws::msg::fuel::Curve> h125_curve_s;
 
    // Must stays at the end
    std::jthread thread_{};

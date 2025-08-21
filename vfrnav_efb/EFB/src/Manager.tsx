@@ -1,7 +1,7 @@
 import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
 import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
 import { FileExist, FileExistResponse, GetFile, GetFileResponse, OpenFile, OpenFileResponse } from "@shared/Files";
-import { DeleteFuelPreset, SetFuelCurve as FuelCurve, FuelPresets, GetFuelPresets, Tank } from "@shared/Fuel";
+import { DefaultFuelPreset, DeleteFuelPreset, SetFuelCurve as FuelCurve, FuelPresets, GetFuelPresets, Tank } from "@shared/Fuel";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { ExportNav } from "@shared/NavData";
 import { ExportPdfs } from "@shared/Pdfs";
@@ -30,6 +30,7 @@ export class Manager {
    private serverMessageHandler: ((_id: number, _message: MessageType) => void) | undefined = undefined
 
    private readonly fuelPresets = new Map<string, FuelCurve>()
+   private defaultFuelPreset: { name: string, date: number } | undefined = undefined
    private fuelPresetsInit = true
 
    /* eslint-disable no-unused-vars */
@@ -38,7 +39,7 @@ export class Manager {
       this.facilityManager.set(0, new FacilityManager(this.facilityLoader));
 
       this.loadFuelPresets();
-
+      this.loadDefaultFuelPreset();
 
       setInterval(this.fetchPosition.bind(this), 100);
 
@@ -49,14 +50,14 @@ export class Manager {
       const presetsStr = GetStoredData("fuel-presets");
       if (presetsStr === '') {
          this.fuelPresetsInit = false;
-         return []
+         return
       }
 
       const presets = JSON.parse(presetsStr as string);
 
       if (!Array.isArray(presets)) {
          this.fuelPresetsInit = false;
-         return []
+         return
       }
 
       this.fuelPresets.clear();
@@ -68,6 +69,24 @@ export class Manager {
    private saveFuelPresets() {
       SetStoredData('fuel-presets', JSON.stringify(Array.from(this.fuelPresets.values())
          .filter(elem => elem.curve.length)))
+   }
+
+   private loadDefaultFuelPreset() {
+      this.defaultFuelPreset = {
+         name: GetStoredData("fuel-preset.default") as string,
+         date: 0
+      };
+      if (this.defaultFuelPreset.name === '') {
+         this.defaultFuelPreset = undefined
+      }
+   }
+
+   private saveDefaultFuelPreset() {
+      if (this.defaultFuelPreset) {
+         SetStoredData('fuel-preset.default', this.defaultFuelPreset.name)
+      } else {
+         DeleteStoredData('fuel-preset.default')
+      }
    }
 
    public get isServerConnected() {
@@ -197,6 +216,8 @@ export class Manager {
                this.onDeleteFuelPreset(data.content);
             } else if (isMessage("__FUEL_CURVE__", data.content)) {
                this.onFuelCurve(data.id, data.content);
+            } else if (isMessage("__DEFAULT_FUEL_PRESET__", data.content)) {
+               this.onDefaultFuelPreset(data.id, data.content)
             } else if (isMessage("__EXPORT_PDFS__", data.content)) {
                this.onExportPdfs(data.content);
             } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
@@ -604,6 +625,14 @@ export class Manager {
                remove: preset.curve.length === 0
             }))
          })
+
+         if (this.defaultFuelPreset) {
+            this.sendMessage(0, {
+               __DEFAULT_FUEL_PRESET__: true,
+
+               ...this.defaultFuelPreset
+            })
+         }
       } else {
          console.assert(false)
       }
@@ -636,6 +665,28 @@ export class Manager {
                }))
             })
          }
+      }
+   }
+
+   onDefaultFuelPreset(id: number, message: DefaultFuelPreset) {
+      if (message.date > (this.defaultFuelPreset?.date ?? (message.date - 1))) {
+         this.defaultFuelPreset = { name: message.name, date: message.date };
+         this.saveDefaultFuelPreset();
+
+         if (id === 0) {
+            this.sendMessage(1, message)
+         } else {
+            console.assert(id === 1)
+            this.sendMessage(0, message)
+         }
+      } else if (message.date < this.defaultFuelPreset!.date) {
+         console.assert(id === 1)
+         this.sendMessage(1, {
+            __DEFAULT_FUEL_PRESET__: true,
+
+            name: this.defaultFuelPreset!.name,
+            date: this.defaultFuelPreset!.date
+         })
       }
    }
 
@@ -676,6 +727,14 @@ export class Manager {
                      remove: elem.curve.length === 0
                   }))
                })
+
+               if (this.defaultFuelPreset) {
+                  this.sendMessage(1, {
+                     __DEFAULT_FUEL_PRESET__: true,
+
+                     ...this.defaultFuelPreset
+                  })
+               }
             }
          } else {
             this.fuelPresets.set(message.name, {

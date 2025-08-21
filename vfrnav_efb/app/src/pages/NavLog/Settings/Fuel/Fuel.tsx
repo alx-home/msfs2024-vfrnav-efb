@@ -22,12 +22,13 @@ import { useDataset } from "./Dataset";
 import { useSettings } from "./Settings";
 
 
-export const Fuel = ({ curentPage, active }: {
+export const Fuel = ({ curentPage, active: parentActive }: {
    curentPage: SettingsTabs,
    active: boolean
 }) => {
    const { fuelUnit } = useContext(MapContext)!;
    const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gph' : 'l/h', [fuelUnit])
+   const xUnit = useCallback((val: number) => val < 10000 ? 'ft' : '', [])
    const toUnit = useCallback((value: number) =>
       fuelUnit === 'gal' ? value * 3.785411784 : value
       , [fuelUnit])
@@ -38,6 +39,9 @@ export const Fuel = ({ curentPage, active }: {
 
    const updateOat = useCallback((oat: number) => setOat(Math.round(oat)), [])
 
+   const bounds = useMemo((): [[number, number], [number, number]] => ([[0, 25000], [0, 500]]), [])
+   const step = useMemo((): [number, number] => [1000, 10], [])
+   const active = useMemo(() => (curentPage === 'Fuel') && parentActive, [parentActive, curentPage])
    const [reload, setReload] = useState(false);
 
    const xValuesStr = useCallback((elem: number) => elem < 10000 ? elem.toFixed(0) : 'FL' + (elem / 100).toFixed(0), [])
@@ -76,11 +80,11 @@ export const Fuel = ({ curentPage, active }: {
    }>
       <div className="flex w-full justify-center text-xl pb-2">Fuel Consumption</div>
       {Settings}
-      <Graph bounds={[[0, 25000], [0, 500]]} datasets={datasets} fullCoverMode={'Weak'} setDatasets={setDataset}
-         setDatasetsWeak={setDatasetsWeak} step={[1000, 10]} active={(curentPage === 'Fuel') && active}
+      <Graph bounds={bounds} datasets={datasets} fullCoverMode={'Weak'} setDatasets={setDataset}
+         setDatasetsWeak={setDatasetsWeak} step={step} active={active}
          xValuesStr={xValuesStr} yValuesStr={yValuesStr}
          datasetLegend='Thrust' showDatasetLegend={true} xLegend='Alt' yLegend='Fuel' datasetStr={datasetStr}
-         xUnit={val => val < 10000 ? 'ft' : ''} yUnit={fuelUnitStr} datasetUnit='%' />
+         xUnit={xUnit} yUnit={fuelUnitStr} datasetUnit='%' />
       <div className="flex flex-row w-full px-10 pb-4">
          <div className="flex min-w-20">OAT {oat.toFixed(0) + '\u00b0'} :</div>
          <Slider active={curentPage === 'Fuel'}

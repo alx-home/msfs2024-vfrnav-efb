@@ -119,10 +119,10 @@ export const Line = ({
                   setSelector({ dataset: dataset_index, pos: [coords[0] - bounds.left, coords[1] - bounds.top] })
                }}
                onPointerLeave={() => {
-                  setSelectorCount(count => --count)
+                  setSelectorCount(0)
                }}
                onPointerEnter={() => {
-                  setSelectorCount(count => ++count)
+                  setSelectorCount(1)
                }}
                onPointerDown={() => {
                   addPoint(dataset_index, index + 1)

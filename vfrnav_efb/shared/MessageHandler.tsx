@@ -22,14 +22,20 @@ import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord,
 import { EfbState, EfbStateRecord, GetEFBState, GetEFBStateRecord, GetServerState, GetServerStateRecord, ServerState, ServerStateRecord } from './Server';
 import { ExportNav, ExportNavRecord, ImportNav, ImportNavRecord } from './NavData';
 import { ExportPdfs, ExportPdfsRecord } from './Pdfs';
-import { DeleteFuelPreset, DeleteFuelPresetRecord, Fuel, FuelPresets, FuelPresetsRecord, FuelRecord, GetFuel, GetFuelCurve, GetFuelCurveRecord, GetFuelPresets, GetFuelPresetsRecord, GetFuelRecord, SetFuelCurve, SetFuelCurveRecord } from './Fuel';
+import { DefaultFuelPreset, DefaultFuelPresetRecord, DeleteFuelPreset, DeleteFuelPresetRecord, Fuel, FuelPresets, FuelPresetsRecord, FuelRecord, GetFuel, GetFuelCurve, GetFuelCurveRecord, GetFuelPresets, GetFuelPresetsRecord, GetFuelRecord, SetFuelCurve, SetFuelCurveRecord } from './Fuel';
+import { DefaultDeviationPreset, DefaultDeviationPresetRecord, DeleteDeviationPreset, DeleteDeviationPresetRecord, DeviationPresets, DeviationPresetsRecord, GetDeviationCurve, GetDeviationCurveRecord, GetDeviationPresets, GetDeviationPresetsRecord, SetDeviationCurve, SetDeviationCurveRecord } from './Deviation';
 
 const MessageIdValues = [
-   '__EXPORT_NAV__',
-   '__GET_RECORD__',
-   '__IMPORT_NAV__',
+   "__EXPORT_NAV__",
+   "__GET_RECORD__",
+   "__IMPORT_NAV__",
    "__BYE_BYE__",
+   "__DEFAULT_DEVIATION_PRESET__",
+   "__DEFAULT_FUEL_PRESET__",
+   "__DELETE_DEVIATION_PRESET__",
    "__DELETE_FUEL_PRESET__",
+   "__DEVIATION_CURVE__",
+   "__DEVIATION_PRESETS__",
    "__EDIT_RECORD__",
    "__EFB_STATE__",
    "__EXPORT_PDFS__",
@@ -39,6 +45,8 @@ const MessageIdValues = [
    "__FUEL__",
    "__FUEL_CURVE__",
    "__FUEL_PRESETS__",
+   "__GET_DEVIATION_CURVE__",
+   "__GET_DEVIATION_PRESETS__",
    "__GET_EFB_STATE__",
    "__GET_FACILITIES__",
    "__GET_FILE__",
@@ -80,7 +88,12 @@ const GetRecordsRecord = GenRecord<GetRecords>({
 
 type MessageTypes = {
    "__BYE_BYE__": ByeBye,
+   "__DEFAULT_DEVIATION_PRESET__": DefaultDeviationPreset,
+   "__DEFAULT_FUEL_PRESET__": DefaultFuelPreset,
+   "__DELETE_DEVIATION_PRESET__": DeleteDeviationPreset,
    "__DELETE_FUEL_PRESET__": DeleteFuelPreset,
+   "__DEVIATION_CURVE__": SetDeviationCurve,
+   "__DEVIATION_PRESETS__": DeviationPresets,
    "__EDIT_RECORD__": EditRecord,
    "__EFB_STATE__": EfbState,
    "__EXPORT_NAV__": ExportNav,
@@ -91,6 +104,8 @@ type MessageTypes = {
    "__FUEL__": Fuel,
    "__FUEL_CURVE__": SetFuelCurve,
    "__FUEL_PRESETS__": FuelPresets,
+   "__GET_DEVIATION_CURVE__": GetDeviationCurve,
+   "__GET_DEVIATION_PRESETS__": GetDeviationPresets,
    "__GET_EFB_STATE__": GetEFBState,
    "__GET_FACILITIES__": GetFacilities,
    "__GET_FILE__": GetFile,
@@ -124,7 +139,12 @@ export type MessageType = MessageTypes[keyof MessageTypes];
 
 const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__BYE_BYE__": ByeByeRecord,
+   "__DEFAULT_DEVIATION_PRESET__": DefaultDeviationPresetRecord,
+   "__DEFAULT_FUEL_PRESET__": DefaultFuelPresetRecord,
+   "__DELETE_DEVIATION_PRESET__": DeleteDeviationPresetRecord,
    "__DELETE_FUEL_PRESET__": DeleteFuelPresetRecord,
+   "__DEVIATION_CURVE__": SetDeviationCurveRecord,
+   "__DEVIATION_PRESETS__": DeviationPresetsRecord,
    "__EDIT_RECORD__": EditRecordRecord,
    "__EFB_STATE__": EfbStateRecord,
    "__EXPORT_NAV__": ExportNavRecord,
@@ -135,6 +155,8 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__FUEL__": FuelRecord,
    "__FUEL_CURVE__": SetFuelCurveRecord,
    "__FUEL_PRESETS__": FuelPresetsRecord,
+   "__GET_DEVIATION_CURVE__": GetDeviationCurveRecord,
+   "__GET_DEVIATION_PRESETS__": GetDeviationPresetsRecord,
    "__GET_EFB_STATE__": GetEFBStateRecord,
    "__GET_FACILITIES__": GetFacilitiesRecord,
    "__GET_FILE__": GetFileRecord,

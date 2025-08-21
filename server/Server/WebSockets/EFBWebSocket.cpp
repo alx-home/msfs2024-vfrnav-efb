@@ -166,7 +166,8 @@ Server::EFBWebSocket::Start() {
          }
       }
 
-      self->VSendMessage(1, ws::msg::GetFuelPresets{});
+      self->VSendMessage(1, ws::msg::fuel::GetPresets{});
+      self->VSendMessage(1, ws::msg::dev::GetPresets{});
    });
 
    Read();
@@ -216,12 +217,22 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
    try {
       auto message = js::Parse<ws::Proxy>(data);
 
-      if (std::holds_alternative<ws::msg::FuelPresets>(message.content_)) {
+      if (std::holds_alternative<ws::msg::fuel::Presets>(message.content_)) {
          server_.HandleFuelPresets(my_id_, std::move(message.content_));
-      } else if (std::holds_alternative<ws::msg::FuelCurve>(message.content_)) {
+      } else if (std::holds_alternative<ws::msg::fuel::Curves>(message.content_)) {
          server_.HandleFuelCurve(my_id_, std::move(message.content_));
-      } else if (std::holds_alternative<ws::msg::GetFuelPresets>(message.content_)) {
+      } else if (std::holds_alternative<ws::msg::fuel::DefaultPreset>(message.content_)) {
+         server_.HandleDefaultFuelPreset(my_id_, std::move(message.content_));
+      } else if (std::holds_alternative<ws::msg::fuel::GetPresets>(message.content_)) {
          server_.HandleGetFuelPresets(my_id_);
+      } else if (std::holds_alternative<ws::msg::dev::Presets>(message.content_)) {
+         server_.HandleDeviationPresets(my_id_, std::move(message.content_));
+      } else if (std::holds_alternative<ws::msg::dev::Curve>(message.content_)) {
+         server_.HandleDeviationCurve(my_id_, std::move(message.content_));
+      } else if (std::holds_alternative<ws::msg::dev::DefaultPreset>(message.content_)) {
+         server_.HandleDefaultDeviationPreset(my_id_, std::move(message.content_));
+      } else if (std::holds_alternative<ws::msg::dev::GetPresets>(message.content_)) {
+         server_.HandleGetDeviationPresets(my_id_);
       } else if (std::holds_alternative<ws::msg::GetEFBState>(message.content_)) {
          assert(message.id_ != 2);
          assert(message.id_ != 1);

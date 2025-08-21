@@ -13,6 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Temp, Fuel as Conso } from './NavData';
 import { GenRecord } from './Types';
 
 export type Tank = {
@@ -26,6 +27,7 @@ export type Fuel = {
   tanks: Tank[],
 }
 
+
 export type SetFuelCurve = {
   __FUEL_CURVE__: true,
 
@@ -34,10 +36,9 @@ export type SetFuelCurve = {
   curve: {
     thrust: number,
     points: {
-      temp: number,
       alt: number,
-      conso: number
-    }[][]
+      values: [Temp, Conso][]
+    }[]
   }[],
 }
 
@@ -71,6 +72,20 @@ export type DeleteFuelPreset = {
 export type GetFuel = {
   __GET_FUEL__: true,
 };
+
+export type DefaultFuelPreset = {
+  __DEFAULT_FUEL_PRESET__: true,
+
+  name: string
+  date: number
+}
+
+export const DefaultFuelPresetRecord = GenRecord<DefaultFuelPreset>({
+  __DEFAULT_FUEL_PRESET__: true,
+
+  name: '',
+  date: 0
+}, {});
 
 export const DeleteFuelPresetRecord = GenRecord<DeleteFuelPreset>({
   __DELETE_FUEL_PRESET__: true,
@@ -120,28 +135,30 @@ export const SetFuelCurveRecord = GenRecord<SetFuelCurve>({
     record: GenRecord<{
       thrust: number,
       points: {
-        temp: number,
         alt: number,
-        conso: number
-      }[][]
+        values: {
+          temp: number,
+          conso: number
+        }[]
+      }[]
     }>({
       thrust: 100,
       points: []
     }, {
       points: {
         array: true,
-        record: {
-          array: true,
-          record: GenRecord<{
-            temp: number,
-            alt: number,
-            conso: number
-          }>({
-            temp: 0,
-            alt: 0,
-            conso: 0
-          }, {})
-        }
+        record: GenRecord<{
+          alt: number,
+          values: [Temp, Conso][]
+        }>({
+          alt: 0,
+          values: []
+        }, {
+          values: {
+            array: true,
+            record: 'number'
+          }
+        })
       }
     })
   }
