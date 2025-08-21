@@ -18,7 +18,6 @@
 #include <json/json.h>
 #include <cstdint>
 #include <optional>
-#include <vector>
 
 namespace ws::msg {
 
@@ -72,8 +71,6 @@ struct Settings {
    bool header_{true};
 
    double server_port_{};
-
-   std::vector<std::string> saved_curve_names_{};
 
    double      default_speed_{};
    std::string sia_auth_{};
@@ -146,7 +143,6 @@ struct Settings {
    static constexpr js::Proto PROTOTYPE{
      js::_{"__SETTINGS__", &Settings::header_},
 
-     js::_{"savedFuelCurveNames", &Settings::saved_curve_names_},
      js::_{"serverPort", &Settings::server_port_},
      js::_{"defaultSpeed", &Settings::default_speed_},
      js::_{"SIAAuth", &Settings::sia_auth_},

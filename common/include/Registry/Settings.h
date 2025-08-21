@@ -24,11 +24,13 @@ class Settings : public Key<STORE, "MSFS2024 VFRNav' Server", PARENT, true> {
 public:
    Settings() = default;
 
-   Value<std::string, Settings, "LaunchMode"> launch_mode_;
-   Value<std::string, Settings, "Community">  community_;
-   Value<std::string, Settings, "Install">    destination_;
-   Value<bool, Settings, "AutoStartServer">   auto_start_server_;
-   Value<uint16_t, Settings, "ServerPort">    server_port_;
+   Value<std::string, Settings, "LaunchMode">             launch_mode_;
+   Value<std::string, Settings, "Community">              community_;
+   Value<std::string, Settings, "Install">                destination_;
+   Value<std::string, Settings, "DefaultPuelPreset">      default_fuel_preset_;
+   Value<std::string, Settings, "DefaultDeviationPreset"> default_deviation_preset_;
+   Value<bool, Settings, "AutoStartServer">               auto_start_server_;
+   Value<uint16_t, Settings, "ServerPort">                server_port_;
 
    static constexpr Values VALUES{
      &Settings::launch_mode_,

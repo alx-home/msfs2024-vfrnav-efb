@@ -203,7 +203,33 @@ Server::Server(Main& main)
          Notify(GetState(lock), lock);
       }
    }} {
-   Dispatch([this]() { LoadFuelPresets(); });
+   Dispatch([this]() {
+      LoadFuelPresets();
+
+      auto&       registry            = registry::Get();
+      auto const& default_fuel_preset = registry.alx_home_->settings_->default_fuel_preset_;
+
+      if (default_fuel_preset) {
+         this->default_fuel_preset_.name_ = *default_fuel_preset;
+         this->default_fuel_preset_.date_ = 0;
+      } else {
+         this->default_fuel_preset_.name_ = "";
+         this->default_fuel_preset_.date_ = 0;
+      }
+
+      LoadDeviationPresets();
+
+      auto const& default_deviation_preset =
+        registry.alx_home_->settings_->default_deviation_preset_;
+
+      if (default_deviation_preset) {
+         this->default_deviation_preset_.name_ = *default_deviation_preset;
+         this->default_deviation_preset_.date_ = 0;
+      } else {
+         this->default_deviation_preset_.name_ = "";
+         this->default_deviation_preset_.date_ = 0;
+      }
+   });
 }
 
 Server::~Server() { assert(resolvers_.empty()); }
@@ -314,7 +340,7 @@ Server::SaveFuelPresets() const {
    {
       std::ofstream file{path + "/FuelPresets.json.tmp"};
 
-      std::vector<ws::msg::FuelCurve> curves{};
+      std::vector<ws::msg::fuel::Curves> curves{};
       for (auto const& preset : fuel_presets_) {
          if (preset.second.curve_.size()) {
             curves.emplace_back(preset.second);
@@ -349,7 +375,7 @@ Server::LoadFuelPresets() {
       fuel_presets_.clear();
 
       try {
-         auto const curves{js::Parse<std::vector<ws::msg::FuelCurve>>(content)};
+         auto const curves{js::Parse<std::vector<ws::msg::fuel::Curves>>(content)};
          for (auto const& preset : curves) {
             fuel_presets_.emplace(preset.name_, preset);
          }
@@ -359,7 +385,7 @@ Server::LoadFuelPresets() {
    } else {
       fuel_presets_.clear();
       fuel_presets_.emplace(
-        "real h125", ws::msg::FuelCurve{.name_ = "real h125", .date_ = 0, .curve_ = h125_curve_s}
+        "real h125", ws::msg::fuel::Curves{.name_ = "real h125", .date_ = 0, .curve_ = h125_curve_s}
       );
    }
 }
@@ -367,7 +393,7 @@ Server::LoadFuelPresets() {
 void
 Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
    Dispatch([this, id, message = std::move(message)]() constexpr {
-      auto const& [_, fuel_presets] = std::get<ws::msg::FuelPresets>(message);
+      auto const& [_, fuel_presets] = std::get<ws::msg::fuel::Presets>(message);
 
       bool                            save = false;
       std::unordered_set<std::string> current_presets{};
@@ -378,17 +404,17 @@ Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
             if (preset.remove_) {
                fuel_presets_.emplace(
                  preset.name_,
-                 ws::msg::FuelCurve{.name_ = preset.name_, .date_ = preset.date_, .curve_ = {}}
+                 ws::msg::fuel::Curves{.name_ = preset.name_, .date_ = preset.date_, .curve_ = {}}
                );
 
                for (auto const& message_handler : message_handlers_) {
                   message_handler.second(
-                    1, ws::msg::DeleteFuelPreset{.name_ = preset.name_, .date_ = preset.date_}
+                    1, ws::msg::fuel::DeletePreset{.name_ = preset.name_, .date_ = preset.date_}
                   );
                }
             } else {
                if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-                  it->second(1, ws::msg::GetFuelCurve{.name_ = preset.name_});
+                  it->second(1, ws::msg::fuel::GetCurve{.name_ = preset.name_});
                }
             }
          } else {
@@ -402,12 +428,12 @@ Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
 
                   for (auto const& message_handler : message_handlers_) {
                      message_handler.second(
-                       1, ws::msg::DeleteFuelPreset{.name_ = preset.name_, .date_ = preset.date_}
+                       1, ws::msg::fuel::DeletePreset{.name_ = preset.name_, .date_ = preset.date_}
                      );
                   }
                } else {
                   if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-                     it->second(1, ws::msg::GetFuelCurve{.name_ = preset.name_});
+                     it->second(1, ws::msg::fuel::GetCurve{.name_ = preset.name_});
                   }
                }
             } else if (it->second.date_ > preset.date_) {
@@ -416,7 +442,7 @@ Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
 
                   if (data.curve_.empty()) {
                      it->second(
-                       1, ws::msg::DeleteFuelPreset{.name_ = data.name_, .date_ = data.date_}
+                       1, ws::msg::fuel::DeletePreset{.name_ = data.name_, .date_ = data.date_}
                      );
                   } else {
                      it->second(1, data);
@@ -439,13 +465,19 @@ Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
             }
          }
       }
+
+      if (default_fuel_preset_.name_.size()) {
+         if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
+            it->second(1, default_fuel_preset_);
+         }
+      }
    });
 }
 
 void
 Server::HandleFuelCurve(std::size_t, ws::Message&& message) {
    Dispatch([this, message = std::move(message)]() constexpr {
-      auto const& fuel_preset = std::get<ws::msg::FuelCurve>(message);
+      auto const& fuel_preset = std::get<ws::msg::fuel::Curves>(message);
 
       bool update = false;
       if (auto it = fuel_presets_.find(fuel_preset.name_); it != fuel_presets_.end()) {
@@ -468,7 +500,7 @@ Server::HandleFuelCurve(std::size_t, ws::Message&& message) {
             } else {
                message_handler.second(
                  1,
-                 ws::msg::DeleteFuelPreset{.name_ = fuel_preset.name_, .date_ = fuel_preset.date_}
+                 ws::msg::fuel::DeletePreset{.name_ = fuel_preset.name_, .date_ = fuel_preset.date_}
                );
             }
          }
@@ -477,29 +509,236 @@ Server::HandleFuelCurve(std::size_t, ws::Message&& message) {
 }
 
 void
+Server::HandleDefaultFuelPreset(std::size_t, ws::Message&& message) {
+   Dispatch([this, message = std::move(message)]() constexpr {
+      auto const& default_fuel_preset = std::get<ws::msg::fuel::DefaultPreset>(message);
+      if (this->default_fuel_preset_.name_.empty()
+          || (this->default_fuel_preset_.date_ < default_fuel_preset.date_)) {
+         this->default_fuel_preset_ = default_fuel_preset;
+         {
+            auto& registry                                      = registry::Get();
+            registry.alx_home_->settings_->default_fuel_preset_ = this->default_fuel_preset_.name_;
+         }
+      }
+   });
+}
+
+void
 Server::HandleGetFuelPresets(std::size_t) {
    std::cerr << "shall not happen..." << std::endl;
-   // Dispatch([this, id = id]() constexpr {
-   //    if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-   //       std::vector<ws::msg::Preset> data{};
-   //       for (auto const& preset : fuel_presets_) {
-   //          data.emplace_back(preset.second.name_, preset.second.date_);
-   //       }
-   //       it->second(1, ws::msg::FuelPresets{.data_ = data});
-   //    }
-   // });
+}
+
+void
+Server::SaveDeviationPresets() const {
+   auto&      registry = registry::Get();
+   auto const path     = *registry.alx_home_->settings_->destination_ + "/Data";
+   std::filesystem::create_directories(path);
+   {
+      std::ofstream file{path + "/DeviationPresets.json.tmp"};
+
+      std::vector<ws::msg::dev::Curve> curves{};
+      for (auto const& preset : deviation_presets_) {
+         if (preset.second.curve_.size()) {
+            curves.emplace_back(preset.second);
+         }
+      }
+
+      auto const json = js::Stringify(curves, false);
+      file.write(json.c_str(), json.size());
+   }
+
+   std::filesystem::rename(path + "/DeviationPresets.json.tmp", path + "/DeviationPresets.json");
+}
+
+void
+Server::LoadDeviationPresets() {
+   auto&      registry = registry::Get();
+   auto const path = *registry.alx_home_->settings_->destination_ + "/Data/DeviationPresets.json";
+   if (std::filesystem::exists(path)) {
+      std::string content{};
+      {
+         std::ifstream file{path};
+         file.seekg(0, std::ios::end);
+         auto const size = file.tellg();
+
+         if (size >= 0) {
+            content.resize(file.tellg());
+            file.seekg(0, std::ios::beg);
+            file.read(content.data(), content.size());
+         }
+      }
+
+      deviation_presets_.clear();
+
+      try {
+         auto const curves{js::Parse<std::vector<ws::msg::dev::Curve>>(content)};
+         for (auto const& preset : curves) {
+            deviation_presets_.emplace(preset.name_, preset);
+         }
+      } catch (std::exception const& e) {
+         std::cerr << e.what() << std::endl;
+      }
+   }
+}
+
+void
+Server::HandleDeviationPresets(std::size_t id, ws::Message&& message) {
+   Dispatch([this, id, message = std::move(message)]() constexpr {
+      auto const& [_, dev_presets] = std::get<ws::msg::dev::Presets>(message);
+
+      bool                            save = false;
+      std::unordered_set<std::string> current_presets{};
+      for (auto const& preset : dev_presets) {
+         auto const it = deviation_presets_.find(preset.name_);
+
+         if (it == deviation_presets_.end()) {
+            if (preset.remove_) {
+               deviation_presets_.emplace(
+                 preset.name_,
+                 ws::msg::dev::Curve{.name_ = preset.name_, .date_ = preset.date_, .curve_ = {}}
+               );
+
+               for (auto const& message_handler : message_handlers_) {
+                  message_handler.second(
+                    1, ws::msg::dev::DeletePreset{.name_ = preset.name_, .date_ = preset.date_}
+                  );
+               }
+            } else {
+               if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
+                  it->second(1, ws::msg::dev::GetCurve{.name_ = preset.name_});
+               }
+            }
+         } else {
+            current_presets.emplace(preset.name_);
+
+            if (it->second.date_ < preset.date_) {
+               if (preset.remove_) {
+                  it->second.date_ = preset.date_;
+                  it->second.curve_.clear();
+                  save = true;
+
+                  for (auto const& message_handler : message_handlers_) {
+                     message_handler.second(
+                       1, ws::msg::dev::DeletePreset{.name_ = preset.name_, .date_ = preset.date_}
+                     );
+                  }
+               } else {
+                  if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
+                     it->second(1, ws::msg::dev::GetCurve{.name_ = preset.name_});
+                  }
+               }
+            } else if (it->second.date_ > preset.date_) {
+               if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
+                  auto const& data = deviation_presets_.at(preset.name_);
+
+                  if (data.curve_.empty()) {
+                     it->second(
+                       1, ws::msg::dev::DeletePreset{.name_ = data.name_, .date_ = data.date_}
+                     );
+                  } else {
+                     it->second(1, data);
+                  }
+               }
+            }
+         }
+      }
+
+      if (save) {
+         SaveDeviationPresets();
+      }
+
+      for (auto const& preset : deviation_presets_) {
+         auto const it = current_presets.find(preset.second.name_);
+
+         if ((it == current_presets.end()) && preset.second.curve_.size()) {
+            if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
+               it->second(1, preset.second);
+            }
+         }
+      }
+
+      if (default_deviation_preset_.name_.size()) {
+         if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
+            it->second(1, default_deviation_preset_);
+         }
+      }
+   });
+}
+
+void
+Server::HandleDeviationCurve(std::size_t, ws::Message&& message) {
+   Dispatch([this, message = std::move(message)]() constexpr {
+      auto const& dev_preset = std::get<ws::msg::dev::Curve>(message);
+
+      bool update = false;
+      if (auto it = deviation_presets_.find(dev_preset.name_); it != deviation_presets_.end()) {
+         if (it->second.date_ < dev_preset.date_) {
+            it->second.date_  = dev_preset.date_;
+            it->second.curve_ = dev_preset.curve_;
+            update            = true;
+         }
+      } else {
+         deviation_presets_.emplace(dev_preset.name_, dev_preset);
+         update = true;
+      }
+
+      if (update) {
+         SaveDeviationPresets();
+
+         for (auto const& message_handler : message_handlers_) {
+            if (dev_preset.curve_.size()) {
+               message_handler.second(1, dev_preset);
+            } else {
+               message_handler.second(
+                 1, ws::msg::dev::DeletePreset{.name_ = dev_preset.name_, .date_ = dev_preset.date_}
+               );
+            }
+         }
+      }
+   });
+}
+
+void
+Server::HandleDefaultDeviationPreset(std::size_t, ws::Message&& message) {
+   Dispatch([this, message = std::move(message)]() constexpr {
+      auto const& default_dev_preset = std::get<ws::msg::dev::DefaultPreset>(message);
+      if (this->default_deviation_preset_.name_.empty()
+          || (this->default_deviation_preset_.date_ < default_dev_preset.date_)) {
+         this->default_deviation_preset_ = default_dev_preset;
+         {
+            auto& registry = registry::Get();
+            registry.alx_home_->settings_->default_deviation_preset_ =
+              this->default_deviation_preset_.name_;
+         }
+      }
+   });
+}
+
+void
+Server::HandleGetDeviationPresets(std::size_t) {
+   std::cerr << "shall not happen..." << std::endl;
 }
 
 bool
 Server::VDispatchMessage(std::size_t id, ws::Message&& message) {
    auto const efb_socket = efb_socket_;
 
-   if (std::holds_alternative<ws::msg::FuelPresets>(message)) {
+   if (std::holds_alternative<ws::msg::fuel::Presets>(message)) {
       HandleFuelPresets(id, std::move(message));
-   } else if (std::holds_alternative<ws::msg::FuelCurve>(message)) {
+   } else if (std::holds_alternative<ws::msg::fuel::Curves>(message)) {
       HandleFuelCurve(id, std::move(message));
-   } else if (std::holds_alternative<ws::msg::GetFuelPresets>(message)) {
+   } else if (std::holds_alternative<ws::msg::fuel::DefaultPreset>(message)) {
+      HandleDefaultFuelPreset(id, std::move(message));
+   } else if (std::holds_alternative<ws::msg::fuel::GetPresets>(message)) {
       HandleGetFuelPresets(id);
+   } else if (std::holds_alternative<ws::msg::dev::Presets>(message)) {
+      HandleDeviationPresets(id, std::move(message));
+   } else if (std::holds_alternative<ws::msg::dev::Curve>(message)) {
+      HandleDeviationCurve(id, std::move(message));
+   } else if (std::holds_alternative<ws::msg::dev::DefaultPreset>(message)) {
+      HandleDefaultDeviationPreset(id, std::move(message));
+   } else if (std::holds_alternative<ws::msg::dev::GetPresets>(message)) {
+      HandleGetDeviationPresets(id);
    } else if (efb_socket) {
       return Dispatch([efb_socket, id, message = std::move(message)]() mutable {
          efb_socket->VDispatchMessage(id, std::move(message));
@@ -549,76 +788,119 @@ Server::WatchServerState(Resolve<ServerState> const& resolve, Reject const& reje
    resolvers_.emplace_back(resolve.shared_from_this(), reject.shared_from_this());
 }
 
-std::vector<ws::msg::Curve>
+std::vector<ws::msg::fuel::Curve>
   Server::h125_curve_s =
     {
-      ws::msg::Curve{
+      ws::msg::fuel::Curve{
         .thrust_ = 100,
         .points_ =
           {
             {
-              {.temp_ = -40, .alt_ = 0, .conso_ = 177},
-              {.temp_ = 17, .alt_ = 0, .conso_ = 189},
-              {.temp_ = 30, .alt_ = 0, .conso_ = 179},
-              {.temp_ = 40, .alt_ = 0, .conso_ = 165},
-              {.temp_ = 50, .alt_ = 0, .conso_ = 151},
+              .alt_ = 0,
+              .values_ =
+                {
+                  {-40, 177},
+                  {17, 189},
+                  {30, 179},
+                  {40, 165},
+                  {50, 151},
+                },
             },
             {
-              {.temp_ = -40, .alt_ = 2000, .conso_ = 173},
-              {.temp_ = 7, .alt_ = 2000, .conso_ = 184},
-              {.temp_ = 25, .alt_ = 2000, .conso_ = 170},
-              {.temp_ = 50, .alt_ = 2000, .conso_ = 139},
+              .alt_ = 2000,
+              .values_ =
+                {
+                  {-40, 173},
+                  {7, 184},
+                  {25, 170},
+                  {50, 139},
+                },
             },
             {
-              {.temp_ = -40, .alt_ = 4000, .conso_ = 173},
-              {.temp_ = -4, .alt_ = 4000, .conso_ = 180},
-              {.temp_ = 22, .alt_ = 4000, .conso_ = 160},
-              {.temp_ = 50, .alt_ = 4000, .conso_ = 126},
+              .alt_ = 4000,
+              .values_ =
+                {
+                  {-40, 173},
+                  {-4, 180},
+                  {22, 160},
+                  {50, 126},
+                },
             },
             {
-              {.temp_ = -40, .alt_ = 6000, .conso_ = 173},
-              {.temp_ = -15, .alt_ = 6000, .conso_ = 177},
-              {.temp_ = 17, .alt_ = 6000, .conso_ = 151},
-              {.temp_ = 50, .alt_ = 6000, .conso_ = 122},
+              .alt_ = 6000,
+              .values_ =
+                {
+                  {-40, 173},
+                  {-15, 177},
+                  {17, 151},
+                  {50, 122},
+                },
             },
             {
-              {.temp_ = -40, .alt_ = 8000, .conso_ = 173},
-              {.temp_ = -30, .alt_ = 8000, .conso_ = 177},
-              {.temp_ = -10, .alt_ = 8000, .conso_ = 158},
-              {.temp_ = 15, .alt_ = 8000, .conso_ = 142},
-              {.temp_ = 50, .alt_ = 8000, .conso_ = 111},
+              .alt_ = 8000,
+
+              .values_ =
+                {
+                  {-40, 173},
+                  {-30, 177},
+                  {-10, 158},
+                  {15, 142},
+                  {50, 111},
+                },
             },
             {
-              {.temp_ = -40, .alt_ = 10000, .conso_ = 173},
-              {.temp_ = -15, .alt_ = 10000, .conso_ = 151},
-              {.temp_ = 10, .alt_ = 10000, .conso_ = 134},
-              {.temp_ = 50, .alt_ = 10000, .conso_ = 103},
+              .alt_ = 10000,
+
+              .values_ =
+                {
+                  {-40, 173},
+                  {-15, 151},
+                  {10, 134},
+                  {50, 103},
+                },
             },
             {
-              {.temp_ = -40, .alt_ = 12000, .conso_ = 158},
-              {.temp_ = -20, .alt_ = 12000, .conso_ = 142},
-              {.temp_ = 5, .alt_ = 12000, .conso_ = 126},
-              {.temp_ = 50, .alt_ = 12000, .conso_ = 92},
+              .alt_ = 12000,
+
+              .values_ =
+                {
+                  {-40, 158},
+                  {-20, 142},
+                  {5, 126},
+                  {50, 92},
+                },
             },
             {
-              {.temp_ = -40, .alt_ = 14000, .conso_ = 146},
-              {.temp_ = -20, .alt_ = 14000, .conso_ = 132},
-              {.temp_ = 0, .alt_ = 14000, .conso_ = 120},
-              {.temp_ = 50, .alt_ = 14000, .conso_ = 84},
+              .alt_ = 14000,
+              .values_ =
+                {
+                  {-40, 146},
+                  {-20, 132},
+                  {0, 120},
+                  {50, 84},
+                },
             },
             {
-              {.temp_ = -40, .alt_ = 16000, .conso_ = 135},
-              {.temp_ = -25, .alt_ = 16000, .conso_ = 123},
-              {.temp_ = -10, .alt_ = 16000, .conso_ = 116},
-              {.temp_ = 2, .alt_ = 16000, .conso_ = 110},
-              {.temp_ = 50, .alt_ = 16000, .conso_ = 75},
+              .alt_ = 16000,
+              .values_ =
+                {
+                  {-40, 135},
+                  {-25, 123},
+                  {-10, 116},
+                  {2, 110},
+                  {50, 75},
+                },
             },
             {
-              {.temp_ = -40, .alt_ = 25000, .conso_ = 135},
-              {.temp_ = -25, .alt_ = 25000, .conso_ = 123},
-              {.temp_ = -10, .alt_ = 25000, .conso_ = 116},
-              {.temp_ = 2, .alt_ = 25000, .conso_ = 110},
-              {.temp_ = 50, .alt_ = 25000, .conso_ = 75},
+              .alt_ = 25000,
+              .values_ =
+                {
+                  {-40, 135},
+                  {-25, 123},
+                  {-10, 116},
+                  {2, 110},
+                  {50, 75},
+                },
             },
           }
       }

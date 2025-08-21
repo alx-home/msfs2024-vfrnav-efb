@@ -85,6 +85,7 @@ struct GetEFBState {
 #include "Facilities.h"
 #include "Files.h"
 #include "Fuel.h"
+#include "Deviation.h"
 #include "GetMetar.h"
 #include "NavData.h"
 #include "Pdfs.h"
@@ -96,7 +97,6 @@ namespace ws {
 
 using Message = std::variant<
   msg::ByeBye,
-  msg::DeleteFuelPreset,
   msg::EditRecord,
   msg::EFBState,
   msg::ExportNav,
@@ -105,15 +105,23 @@ using Message = std::variant<
   msg::FileExists,
   msg::FileExistsResponse,
   msg::Fuel,
-  msg::FuelCurve,
-  msg::FuelPresets,
+  msg::fuel::Curves,
+  msg::fuel::DefaultPreset,
+  msg::fuel::DeletePreset,
+  msg::fuel::GetCurve,
+  msg::fuel::GetPresets,
+  msg::fuel::Presets,
+  msg::dev::Curve,
+  msg::dev::DefaultPreset,
+  msg::dev::DeletePreset,
+  msg::dev::GetCurve,
+  msg::dev::GetPresets,
+  msg::dev::Presets,
   msg::GetEFBState,
   msg::GetFacilities,
   msg::GetFile,
   msg::GetFileResponse,
   msg::GetFuel,
-  msg::GetFuelCurve,
-  msg::GetFuelPresets,
   msg::GetIcaos,
   msg::GetLatLon,
   msg::GetMetar,

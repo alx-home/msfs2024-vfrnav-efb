@@ -121,6 +121,7 @@ export const Content = ({ baseDatasets, bounds, span, showLegend, datasetLegend,
 
       setEditCursor([...toBounds(dataset_index, index, [bounds[0][0] + pos[0] * span[0] / cbounds.width, bounds[1][0] + pos[1] * span[1] / cbounds.height]), false])
       setEditIndex([dataset_index, index])
+      setPointCount(1)
    }, [mousePos, toBounds, span, bounds])
 
    const editPoint = useCallback((dataset_index: number, index: number) => {
@@ -153,7 +154,7 @@ export const Content = ({ baseDatasets, bounds, span, showLegend, datasetLegend,
    ), [baseDatasets, editIndex, editMode, editCursor]);
 
    const lines = useMemo(() => datasets.map((dataset, dataset_index) => dataset.filter((_, index) => index !== 0).map((elem, index) =>
-      <Line key={index} index={index} parentRef={graphRef} graphWidth={graphWidth} graphHeight={graphHeight}
+      <Line key={JSON.stringify(dataset[index]) + '-' + JSON.stringify(elem)} index={index} parentRef={graphRef} graphWidth={graphWidth} graphHeight={graphHeight}
          addPoint={addPoint} editIndex={editIndex} editPoint={editPoint} removePoint={removePoint}
          setSelectorCount={setSelectorCount} setSelector={setSelectorPos} setPointCount={setPointCount}
          dataset_index={dataset_index} from={dataset[index]} to={elem} bounds={bounds} />

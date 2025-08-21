@@ -14,7 +14,7 @@
  */
 
 import { Collection, Map as olMap, MapBrowserEvent, getUid, MapEvent } from 'ol';
-import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState, useContext } from 'react';
+import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NavData } from './MapMenu/Menus/Nav';
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
@@ -27,7 +27,7 @@ import { LineString, SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
 import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
-import { messageHandler, SettingsContext } from '@Settings/SettingsProvider';
+import { messageHandler } from '@Settings/SettingsProvider';
 import { Deviation, ExportNavRecord, FuelUnit, getFuelConsumption, h125Curve, FuelPoint, Properties, Alt } from '@shared/NavData';
 import { getLength } from 'ol/sphere';
 
@@ -110,8 +110,8 @@ export const MapContext = createContext<{
   fuelCurve: [number, FuelPoint[]][]
   setFuelCurve: Dispatch<SetStateAction<[number, FuelPoint[]][]>>,
 
-  savedDeviationCurves: [string, [Alt, number][]][]
-  setSavedDeviationCurves: Dispatch<SetStateAction<[string, [Alt, number][]][]>>,
+  savedDeviationCurves: [string, number, [Alt, number][]][]
+  setSavedDeviationCurves: Dispatch<SetStateAction<[string, number, [Alt, number][]][]>>,
 
   deviationCurve: [Alt, number][]
   setDeviationCurve: Dispatch<SetStateAction<[Alt, number][]>>
@@ -231,7 +231,6 @@ const updateNavProps = (deviationCurve: Deviation[], props: Properties, prevCoor
 }
 
 const MapContextProvider = ({ children }: PropsWithChildren) => {
-  const { setSavedFuelCurveNames } = useContext(SettingsContext)!;
   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
   const dragging = useRef(false);
 
@@ -402,14 +401,14 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     savedFuelCurves.length
       ? savedFuelCurves[0][2]
       : [[100, [
-        [[20, 0, 145]],
-        [[20, 25000, 145]]
+        [0, [[20, 145]]],
+        [25000, [[20, 145]]]
       ]]])
 
-  const [savedDeviationCurves, setSavedDeviationCurves] = useState<[string, [number, number][]][]>([])
+  const [savedDeviationCurves, setSavedDeviationCurves] = useState<[string, number, [number, number][]][]>([])
   const [deviationCurve, setDeviationCurve] = useState<[number, number][]>(
     savedDeviationCurves.length
-      ? savedDeviationCurves[0][1]
+      ? savedDeviationCurves[0][2]
       : [
         [0, 0],
         [360, 0]
@@ -638,10 +637,6 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     deviationCurve: deviationCurve,
     setDeviationCurve: setDeviationCurve
   }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, fuelCurve, savedDeviationCurves, deviationCurve, activeRecords]);
-
-  useEffect(() => {
-    setSavedFuelCurveNames(savedFuelCurves.map(value => value[0]))
-  }, [savedFuelCurves, setSavedFuelCurveNames])
 
   return (
     <MapContext.Provider

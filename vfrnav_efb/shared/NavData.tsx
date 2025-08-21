@@ -19,7 +19,7 @@ export type Temp = number;
 export type Alt = number;
 export type Fuel = number;
 export type Speed = number;
-export type FuelPoint = [Temp, Alt, Fuel][]
+export type FuelPoint = [Alt, [Temp, Fuel][]]
 
 export type FuelUnit = 'gal' | 'liter';
 export type Deviation = [
@@ -131,16 +131,16 @@ export const PropertiesRecord = GenRecord<Properties>({
 
 export const h125Curve: [number, FuelPoint[]][] = [
    [100, [
-      [[-40, 0, 177], [17, 0, 189], [30, 0, 179], [40, 0, 165], [50, 0, 151]],
-      [[-40, 2000, 173], [7, 2000, 184], [25, 2000, 170], [50, 2000, 139]],
-      [[-40, 4000, 173], [-4, 4000, 180], [22, 4000, 160], [50, 4000, 126]],
-      [[-40, 6000, 173], [-15, 6000, 177], [17, 6000, 151], [50, 6000, 122]],
-      [[-40, 8000, 173], [-30, 8000, 177], [-10, 8000, 158], [15, 8000, 142], [50, 8000, 111]],
-      [[-40, 10000, 173], [-15, 10000, 151], [10, 10000, 134], [50, 10000, 103]],
-      [[-40, 12000, 158], [-20, 12000, 142], [5, 12000, 126], [50, 12000, 92]],
-      [[-40, 14000, 146], [-20, 14000, 132], [0, 14000, 120], [50, 14000, 84]],
-      [[-40, 16000, 135], [-25, 16000, 123], [-10, 16000, 116], [2, 16000, 110], [50, 16000, 75]],
-      [[-40, 25000, 135], [-25, 25000, 123], [-10, 25000, 116], [2, 25000, 110], [50, 25000, 75]],
+      [0, [[-40, 177], [17, 189], [30, 179], [40, 165], [50, 151]]],
+      [2000, [[-40, 173], [7, 184], [25, 170], [50, 139]]],
+      [4000, [[-40, 173], [-4, 180], [22, 160], [50, 126]]],
+      [6000, [[-40, 173], [-15, 177], [17, 151], [50, 122]]],
+      [8000, [[-40, 173], [-30, 177], [-10, 158], [15, 142], [50, 111]]],
+      [10000, [[-40, 173], [-15, 151], [10, 134], [50, 103]]],
+      [12000, [[-40, 158], [-20, 142], [5, 126], [50, 92]]],
+      [14000, [[-40, 146], [-20, 132], [0, 120], [50, 84]]],
+      [16000, [[-40, 135], [-25, 123], [-10, 116], [2, 110], [50, 75]]],
+      [25000, [[-40, 135], [-25, 123], [-10, 116], [2, 110], [50, 75]]],
    ]],
 ]
 
@@ -152,24 +152,24 @@ export const getDatasets = ({ fuelCurve, oat }: {
    return fuelCurve.map(elem => {
       const [, curve] = elem;
 
-      return curve.map((point): [number, number, boolean] => {
+      return curve.map((points): [Alt, Fuel, boolean] => {
+         const [alt, point] = points;
          const maxTempIndex = point.findIndex(elem => elem[0] >= oat);
 
          if (maxTempIndex === -1) {
-            return [point[point.length - 1][1], point[point.length - 1][2], true]
+            return [alt, point[point.length - 1][1], true]
          } else {
             const maxTemp = point[maxTempIndex]
 
             if (maxTemp[0] === oat) {
-               return [maxTemp[1], maxTemp[2], false]
+               return [alt, maxTemp[1], false]
             } else if (maxTempIndex === 0) {
-               return [maxTemp[1], maxTemp[2], true]
+               return [alt, maxTemp[1], true]
             } else {
                const minTemp = point[maxTempIndex - 1]
                const ratio = (oat - minTemp[0]) / (maxTemp[0] - minTemp[0]);
 
-               const interpolated = Array.from({ length: 2 }, (_, i) => minTemp[i + 1] + (maxTemp[i + 1] - minTemp[i + 1]) * ratio);
-               return [interpolated[0], interpolated[1], true]
+               return [alt, minTemp[1] + (maxTemp[1] - minTemp[1]) * ratio, true]
             }
          }
       })
@@ -180,17 +180,65 @@ export const getFuelConsumption = ({ fuelCurve, oat, altitude }: {
    fuelCurve: [number, FuelPoint[]][]
    oat: Temp,
    altitude: number
-}) => {
-   const dataset = getDatasets({ fuelCurve, oat })[0]
+}): number => {
 
-   const index = dataset.findIndex(elem => elem[0] >= altitude)
+   const maxAltIndex = fuelCurve[0][1].findIndex(elem => elem[0] >= altitude);
 
-   if (index === -1) {
-      return dataset[dataset.length - 1][1]
-   } else if ((dataset[index][0] === altitude) || (index === 0)) {
-      return dataset[index][1]
+
+   const interpolate = (data: [Temp, Fuel][]) => {
+      const maxOatIndex = data.findIndex(elem => elem[0] >= oat)
+
+      if (maxOatIndex === -1) {
+         return data[data.length - 1][1];
+      } else {
+         const maxOat = data[maxOatIndex];
+
+         if (maxOat[0] === oat) {
+            return maxOat[1]
+         } else if (maxOatIndex === 0) {
+            return maxOat[1]
+         } else {
+            const minOat = data[maxOatIndex - 1];
+
+            return minOat[1] + (maxOat[1] - minOat[1]) * (oat - minOat[0]) / (maxOat[0] - minOat[0]);
+         }
+      }
+   }
+
+   if (maxAltIndex === -1) {
+      const minAlt = fuelCurve[0][1][fuelCurve[0][1].length - 1];
+
+      const maxOatIndex = minAlt[1].findIndex(elem => elem[0] >= oat)
+
+      if (maxOatIndex === -1) {
+         return minAlt[1][minAlt[1].length - 1][1];
+      } else {
+         const maxOat = minAlt[1][maxOatIndex];
+
+         if (maxOat[0] === oat) {
+            return maxOat[1]
+         } else if (maxOatIndex === 0) {
+            return maxOat[1]
+         } else {
+            const minOat = minAlt[1][maxOatIndex - 1];
+
+            return minOat[1] + (maxOat[1] - minOat[1]) * (oat - minOat[0]) / (maxOat[0] - minOat[0]);
+         }
+      }
+
    } else {
-      return dataset[index - 1][1] + (dataset[index][1] - dataset[index - 1][1]) * (oat - dataset[index - 1][0]) / (dataset[index][0] - dataset[index - 1][0])
+      const maxAlt = fuelCurve[0][1][maxAltIndex];
+
+      if (maxAltIndex === 0 || (altitude === maxAlt[0])) {
+
+         return interpolate(maxAlt[1])
+      } else {
+         const minAlt = fuelCurve[0][1][maxAltIndex - 1];
+         const min = interpolate(minAlt[1])
+         const max = interpolate(maxAlt[1])
+
+         return min + max * (altitude - minAlt[0]) / (maxAlt[0] - minAlt[0])
+      }
    }
 }
 

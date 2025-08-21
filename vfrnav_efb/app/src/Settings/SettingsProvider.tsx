@@ -153,7 +153,6 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
   const googlemapSetting = useLayer('googlemap', sharedSettings, setSharedSettings);
   const openstreetSetting = useLayer('openstreet', sharedSettings, setSharedSettings);
   const addPdf = useRef<((_name: string, _pdf: Src) => void) | undefined>(undefined);
-  const [savedFuelCurveNames, setSavedFuelCurveNames] = useState<string[]>([])
 
   const provider = useMemo((): GlobalSettings => ({
     ...globalSettings,
@@ -189,9 +188,6 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
     addPdf: addPdf,
     setPage: setPage,
 
-    savedFuelCurveNames: savedFuelCurveNames,
-    setSavedFuelCurveNames: setSavedFuelCurveNames,
-
     map: {
       ...sharedSettings.map,
 
@@ -221,8 +217,8 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
   }), [
     airportsSetting, googlemapSetting, mapforfreeSetting, openstreetSetting, opentopoSetting, OACISetting,
     USIFRHighSetting, USIFRLowSetting, USSectionalSetting, azbaSetting, germanySetting, openflightmapsSettings,
-    openaipmapsSettings, openflightmapsBaseSettings, planeSetting, savedFuelCurveNames,
-    getSIAAZBA, getSIAPDF, setPage, setSavedFuelCurveNames,
+    openaipmapsSettings, openflightmapsBaseSettings, planeSetting,
+    getSIAAZBA, getSIAPDF, setPage,
     setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor, setAZBARange,
     setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setDefaultSpeed,
     setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize, setTextMinSize,

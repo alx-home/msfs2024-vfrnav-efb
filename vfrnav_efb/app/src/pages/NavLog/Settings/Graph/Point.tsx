@@ -38,16 +38,16 @@ export const Point = ({ pos, index, editIndex, editPoint, removePoint, interpola
       <div className="group flex w-5 h-5 rounded-xl cursor-pointer"
          onPointerEnter={() => {
             const bounds = parentRef.current!.getBoundingClientRect();
-            setPointCount(count => ++count)
+            setPointCount(1)
             setSelector({ dataset: dataset_index, pos: [pos[0] * bounds.width * 0.01, (1 - pos[1] * 0.01) * bounds.height] })
          }}
 
-         onPointerLeave={() => setPointCount(count => Math.max(0, --count))}
+         onPointerLeave={() => setPointCount(0)}
          onPointerDownCapture={(e) => {
             const now = new Date()
 
             if ((now.getTime() - lastDown.getTime() < 300) || ((e.button === 1) || e.button === 2)) {
-               setPointCount(count => Math.max(0, --count))
+               setPointCount(0)
                removePoint(dataset_index, index)
             } else {
                setLastDown(now)

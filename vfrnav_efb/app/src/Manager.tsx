@@ -7,6 +7,7 @@ export class Manager {
    private socketTimeout: NodeJS.Timeout | undefined;
    private readonly messageHandler = (message: MessageType) => window.vfrnav_onmessage!(message)
    private serverMessageHandler: ((_id: number, _message: MessageType) => void) | undefined = undefined
+   private defaultFuelPreset: { name: string, date: number } | undefined = undefined
 
 
    constructor() {
@@ -37,6 +38,9 @@ export class Manager {
 
             state: !!this.serverMessageHandler
          })
+      } else if (isMessage('__DEFAULT_FUEL_PRESET__', message)) {
+         this.defaultFuelPreset = { name: message.name, date: message.date };
+         this.serverMessageHandler?.(0, message);
       } else {
          this.serverMessageHandler?.(0, message);
       }
@@ -112,6 +116,15 @@ export class Manager {
 
                state: true
             });
+
+
+            if (this.defaultFuelPreset) {
+               this.serverMessageHandler?.(0, {
+                  __DEFAULT_FUEL_PRESET__: true,
+
+                  ...this.defaultFuelPreset
+               })
+            }
          } else {
             this.sendMessage(this.id, data.content)
          }

@@ -18,39 +18,7 @@
 #include <json/json.h>
 #include <vector>
 
-namespace ws::msg {
-
-struct GetFuel {
-   bool header_{true};
-
-   static constexpr js::Proto PROTOTYPE{
-     js::_{"__GET_FUEL__", &GetFuel::header_},
-   };
-};
-
-struct Tank {
-   std::size_t capacity_{};
-   std::size_t value_{};
-
-   static constexpr js::Proto PROTOTYPE{
-     js::_{"capacity", &Tank::capacity_},
-     js::_{"value", &Tank::value_},
-   };
-};
-
-struct Fuel {
-   bool header_{true};
-
-   std::vector<Tank> tanks_{};
-
-   static constexpr js::Proto PROTOTYPE{
-     js::_{"__FUEL__", &Fuel::header_},
-
-     js::_{"tanks", &Fuel::tanks_},
-   };
-};
-
-namespace fuel {
+namespace ws::msg::dev {
 struct Preset {
    std::string name_{};
    std::size_t date_{};
@@ -69,7 +37,7 @@ struct Presets {
    std::vector<Preset> data_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__FUEL_PRESETS__", &Presets::header_},
+     js::_{"__DEVIATION_PRESETS__", &Presets::header_},
 
      js::_{"data", &Presets::data_},
    };
@@ -82,7 +50,7 @@ struct DeletePreset {
    std::size_t date_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__DELETE_FUEL_PRESET__", &DeletePreset::header_},
+     js::_{"__DELETE_DEVIATION_PRESET__", &DeletePreset::header_},
 
      js::_{"name", &DeletePreset::name_},
      js::_{"date", &DeletePreset::date_},
@@ -93,43 +61,23 @@ struct GetPresets {
    bool header_{true};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__GET_FUEL_PRESETS__", &GetPresets::header_},
-   };
-};
-
-struct Points {
-   int16_t                                 alt_{};
-   std::vector<std::tuple<int16_t, float>> values_{};
-
-   static constexpr js::Proto PROTOTYPE{
-     js::_{"alt", &Points::alt_},
-     js::_{"values", &Points::values_},
+     js::_{"__GET_DEVIATION_PRESETS__", &GetPresets::header_},
    };
 };
 
 struct Curve {
-   std::size_t         thrust_;
-   std::vector<Points> points_;
-
-   static constexpr js::Proto PROTOTYPE{
-     js::_{"thrust", &Curve::thrust_},
-     js::_{"points", &Curve::points_},
-   };
-};
-
-struct Curves {
    bool header_{true};
 
-   std::string        name_{};
-   std::size_t        date_{};
-   std::vector<Curve> curve_{};
+   std::string                         name_{};
+   std::size_t                         date_{};
+   std::vector<std::array<int16_t, 2>> curve_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__FUEL_CURVE__", &Curves::header_},
+     js::_{"__DEVIATION_CURVE__", &Curve::header_},
 
-     js::_{"name", &Curves::name_},
-     js::_{"date", &Curves::date_},
-     js::_{"curve", &Curves::curve_},
+     js::_{"name", &Curve::name_},
+     js::_{"date", &Curve::date_},
+     js::_{"curve", &Curve::curve_},
    };
 };
 
@@ -139,7 +87,7 @@ struct GetCurve {
    std::string name_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__GET_FUEL_CURVE__", &GetCurve::header_},
+     js::_{"__GET_DEVIATION_CURVE__", &GetCurve::header_},
 
      js::_{"name", &GetCurve::name_},
    };
@@ -152,12 +100,11 @@ struct DefaultPreset {
    std::size_t date_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__DEFAULT_FUEL_PRESET__", &DefaultPreset::header_},
+     js::_{"__DEFAULT_DEVIATION_PRESET__", &DefaultPreset::header_},
 
      js::_{"name", &DefaultPreset::name_},
      js::_{"date", &DefaultPreset::date_},
    };
 };
 
-}  // namespace fuel
-}  // namespace ws::msg
+}  // namespace ws::msg::dev

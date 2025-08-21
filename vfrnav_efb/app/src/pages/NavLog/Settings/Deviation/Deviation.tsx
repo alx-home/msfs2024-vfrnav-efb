@@ -19,39 +19,35 @@ import { SettingsTabs } from "../../Settings";
 import { Datasets, Graph } from "../Graph/Graph";
 import { useSettings } from "./Settings";
 
-export const Deviation = ({ curentPage, active }: {
+export const Deviation = ({ curentPage, active: parentActive }: {
    curentPage: SettingsTabs,
    active: boolean
 }) => {
-   const { Settings, setPreset, setPresets } = useSettings()
+   const { Settings, setPreset } = useSettings()
    const { deviationCurve, setDeviationCurve } = useContext(MapContext)!;
-   const setDataset = useCallback((value: SetStateAction<Datasets>) => {
-      setPresets(presets => presets.find(elem => elem === 'custom') ? presets : presets.toSpliced(presets.length, 0, 'custom'))
-      setPreset('custom')
-      if (typeof value === 'function') {
-         setDeviationCurve(old => value([
-            old.map(elem => ([
-               elem[0],
-               elem[1],
-               false
-            ]))
-         ])[0].map(elem => ([
-            elem[0],
-            elem[1]
-         ])))
-      } else {
-         setDeviationCurve(
-            value[0].map(elem => ([
-               elem[0],
-               elem[1]
-            ]))
-         )
-      }
-   }, [setDeviationCurve, setPreset, setPresets])
+   const bounds = useMemo(() => ([[0, 360], [-10, 10]] as [[number, number], [number, number]]), [])
+   const step = useMemo(() => ([5, 1] as [number, number]), [])
+   const active = useMemo(() => (curentPage === 'Deviation') && parentActive, [curentPage, parentActive])
+   const valueStr = useCallback((elem: number) => elem.toFixed(0) + '\u00b0', [])
 
    const dataset = useMemo(() => ([
       deviationCurve.map(elem => [elem[0], elem[1], false] as [number, number, boolean])
    ]), [deviationCurve]);
+
+   const setDataset = useCallback((value: SetStateAction<Datasets>) => {
+      const newDataset = ((typeof value === 'function')
+         ? value(dataset)
+         : value);
+
+      setPreset('custom')
+      setDeviationCurve(
+         newDataset[0].map(elem => ([
+            elem[0],
+            elem[1]
+         ]))
+      )
+   }, [dataset, setDeviationCurve, setPreset])
+
 
    const legend = useCallback(() => 'Dev', [])
 
@@ -60,8 +56,8 @@ export const Deviation = ({ curentPage, active }: {
    }>
       <div className="flex w-full justify-center text-xl pb-2">Compass Deviation</div>
       {Settings}
-      <Graph bounds={[[0, 360], [-10, 10]]} datasets={dataset} fullCoverMode={'Full'} setDatasets={setDataset}
-         step={[5, 1]} active={(curentPage === 'Deviation') && active} datasetStr={legend}
-         xLegend='MH' yLegend='Dev' xValuesStr={elem => elem.toFixed(0) + '\u00b0'} yValuesStr={elem => elem.toFixed(0) + '\u00b0'} />
+      <Graph bounds={bounds} datasets={dataset} fullCoverMode={'Full'} setDatasets={setDataset}
+         step={step} active={active} datasetStr={legend}
+         xLegend='MH' yLegend='Dev' xValuesStr={valueStr} yValuesStr={valueStr} />
    </div>
 }
