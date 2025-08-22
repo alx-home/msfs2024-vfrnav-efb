@@ -13,26 +13,283 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Button, Tabs } from "@alx-home/Utils";
+import { Button, CheckBox, Input, Tabs } from "@alx-home/Utils";
 import { MapContext } from "@pages/Map/MapContext";
-import { ReactElement, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { ReactElement, useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
 
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
 import { Settings } from "./Settings";
-import { messageHandler } from "@Settings/SettingsProvider";
+import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 import { useEFBServer } from "@Utils/useServer";
 import { Navlog } from "./NavLog";
+import { useKeyUp } from "@alx-home/Events";
+import { FuelPoint, Properties } from "@shared/NavData";
+import { Coordinate } from "ol/coordinate";
+
+const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
+  navData: NavData[],
+  settingPage?: string,
+  deviationCurve: [number, number][],
+  fuelCurve: [number, FuelPoint[]][]
+}) => {
+  const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+  const key = useKeyUp();
+  const [exportDev, setExportDev] = useState(settingPage === "Deviation")
+  const [exportDevName, setExportDevName] = useState("")
+  const [exportFuel, setExportFuel] = useState(settingPage === "Fuel")
+  const [exportFuelName, setExportFuelName] = useState("")
+  const [exportNav, setExportNav] = useState(navData.map(() => !settingPage))
+  const [exportNavName, setExportNavName] = useState(navData.map(() => ""))
+  const [devValid, setDevValid] = useState(false);
+  const [fuelValid, setFuelValid] = useState(false);
+
+  const ok = useMemo((): boolean =>
+    (!exportDev || devValid)
+    && (!exportFuel || fuelValid)
+    && (exportDev || exportFuel || (exportNav.find(elem => elem) !== undefined))
+    , [devValid, exportDev, exportFuel, exportNav, fuelValid])
+
+  const validate = useCallback(() => {
+    if (ok) {
+      const navs = exportNav.map((elem, index) => elem ? {
+        name: exportNavName[index].length ? exportNavName[index] : navData[index].name,
+        data: {
+          order: navData[index].order,
+          shortName: navData[index].shortName,
+          coords: navData[index].coords,
+          properties: navData[index].properties,
+          waypoints: navData[index].waypoints,
+          loadedFuel: navData[index].loadedFuel,
+          departureTime: navData[index].departureTime,
+        }
+      } : undefined).filter(elem => elem !== undefined);
+
+
+      const result = {
+        ...(navs.length ? { navs: navs } : {}),
+        ...(exportDev ? {
+          dev: {
+            name: exportDevName,
+            data: deviationCurve
+          }
+        } : {}),
+        ...(exportFuel ? {
+          fuel: {
+            name: exportFuelName,
+            data: fuelCurve
+          }
+        } : {})
+      }
+
+      const file = new Blob([JSON.stringify(result, undefined, "   ")], { type: "application/json" });
+      const a = document.createElement("a")
+      const url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = "navlog.json";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 0);
+
+      setPopup(emptyPopup);
+    }
+  }, [deviationCurve, emptyPopup, exportDev, exportDevName, exportFuel, exportFuelName, exportNav, exportNavName, fuelCurve, navData, ok, setPopup])
+
+  const exportNavElems = useMemo(() => navData.map((elem, index) => <div key={elem.id} className="flex flex-row">
+    <CheckBox value={exportNav[index]} onChange={(value) => {
+      setExportNav(data => data.toSpliced(index, 1, value))
+    }} />
+    <div className="flex ml-2 m-auto mr-4 w-36">{elem.name}</div>
+    <Input active={exportNav[index]} placeholder={elem.name} onValidate={validate}
+      onChange={(value) => setExportNavName(names => names.toSpliced(index, 1, value))} />
+  </div>), [exportNav, navData, validate])
+
+
+  useEffect(() => {
+    if (key == 'Escape') {
+      setPopup(emptyPopup);
+    }
+  }, [emptyPopup, key, setPopup])
+
+
+  return <div className='flex flex-col p-2 w-full max-h-full'>
+    <div className='text-2xl mt-4 mb-6 flex flex-row'>
+      Export Navlog
+    </div>
+    <div className="flex flex-row w-full justify-center [&_.invalid]:text-red-500">
+      <div className="flex flex-col text-base w-full px-10">
+        <div className="flex flex-col [&>*]:mb-1">
+          {exportNavElems}
+          <div className="flex flex-row mt-2">
+            <CheckBox value={exportDev} onChange={setExportDev} />
+            <div className="flex ml-2 m-auto mr-4 w-36">Deviation</div>
+            <Input active={exportDev} onChange={setExportDevName}
+              onValidate={validate}
+              validate={async (value) => {
+                const result = (value !== 'none') && (value !== 'custom')
+                setDevValid(result && value.length !== 0)
+                return result
+              }}
+              placeholder="name" />
+          </div>
+          <div className="flex flex-row">
+            <CheckBox value={exportFuel} onChange={setExportFuel} />
+            <div className="flex ml-2 m-auto mr-4 w-36">Fuel Consumption</div>
+            <Input active={exportFuel} onChange={setExportFuelName}
+              validate={async (value) => {
+                const result = (value !== 'simple') && (value !== 'custom')
+                setFuelValid(result && value.length !== 0)
+                return result
+              }}
+              onValidate={validate}
+              placeholder="name" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className='flex flex-row w-full min-h-0 shrink-0 pt-8 justify-end [&>*]:mx-1' >
+      <Button active={true} className='px-2'
+        onClick={() => {
+          setPopup(emptyPopup);
+        }}>Cancel</Button>
+      <Button active={ok} disabled={!ok} className='px-2'
+        onClick={validate}>Export</Button>
+    </div>
+  </div >;
+}
 
 export const NavLogPage = ({ active }: {
   active: boolean
 }) => {
-  const { navData, deviationCurve, fuelUnit, fuelCurve } = useContext(MapContext)!;
+  const {
+    navData, deviationCurve, fuelUnit, fuelCurve, importNav,
+    setSavedDeviationCurves, setSavedFuelCurves, setDeviationPreset, setFuelPreset
+  } = useContext(MapContext)!;
+  const { setPopup, emptyPopup } = useContext(SettingsContext)!;
 
   const [opacity, setOpacity] = useState(' opacity-0');
   const [tab, setTab] = useState<string>('Settings');
   const [edit, setEdit] = useState<boolean>(false);
   const [empty, setEmpty] = useState(true);
+  const settingPage = useRef<string>(undefined)
+  const exportCb = useCallback(() => {
+    setPopup(<ExportPopup navData={navData} deviationCurve={deviationCurve} fuelCurve={fuelCurve} settingPage={settingPage.current} />)
+  }, [deviationCurve, fuelCurve, navData, setPopup])
+  const importCb = useCallback(() => {
+    const input = document.createElement('input');
+    input.accept = 'application/json'
+    input.multiple = false
+    input.type = 'file';
+
+    input.onchange = (e) => {
+      document.body.removeChild(input);
+
+      const target = e.target as HTMLInputElement | null
+
+      const diplayError = () => setPopup(<div className='flex flex-col p-2 w-full max-h-full'>
+        <div className='text-2xl mt-4 mb-6 flex flex-row text-red-600'>
+          Error
+        </div>
+        <div className="flex ml-8 text-base">
+          An error occurred, couldn&apos;t import navlog !
+        </div>
+        <div className='flex flex-row w-full min-h-0 shrink-0 pt-8 justify-end [&>*]:mx-1' >
+          <Button active={true} className='px-2'
+            onClick={() => {
+              setPopup(emptyPopup);
+            }}>Ok</Button>
+        </div>
+      </div>)
+
+      if (target?.files?.length) {
+        const file = target.files[0];
+
+        const reader = new FileReader();
+        reader.readAsText(file);
+
+        if (reader) {
+          reader.onload = e => {
+            if (e.target?.result) {
+              const result = JSON.parse(e.target.result as string);
+
+              if (result['navs'] !== undefined) {
+                importNav((result['navs'] as {
+                  name: string,
+                  data: {
+                    order: number,
+                    shortName: string,
+                    coords: Coordinate[],
+                    properties: Properties[],
+                    waypoints: string[],
+                    loadedFuel: number,
+                    departureTime: number,
+                  }
+                }[]).map(elem => ({
+                  name: elem.name,
+                  ...elem.data
+                })))
+              }
+
+              if (result['dev'] !== undefined) {
+                const dev = result['dev'] as {
+                  name: string,
+                  data: [number, number][]
+                };
+
+                setSavedDeviationCurves(saved => {
+                  const index = saved.findIndex(value => value[0] === dev.name)
+
+                  return (index === -1 ? saved.toSpliced(saved.length, 0, [
+                    dev.name, (new Date()).getTime(), dev.data
+                  ]) : saved.toSpliced(index, 1, [
+                    dev.name, (new Date()).getTime(), dev.data
+                  ]))
+                })
+
+                setTimeout(() => setDeviationPreset(dev.name), 100);
+              }
+
+              if (result['fuel'] !== undefined) {
+                const fuel = result['fuel'] as {
+                  name: string,
+                  data: [number, FuelPoint[]][]
+                };
+
+                setSavedFuelCurves(saved => {
+                  const index = saved.findIndex(value => value[0] === fuel.name)
+
+                  return (index === -1 ? saved.toSpliced(saved.length, 0, [
+                    fuel.name, (new Date()).getTime(), fuel.data
+                  ]) : saved.toSpliced(index, 1, [
+                    fuel.name, (new Date()).getTime(), fuel.data
+                  ]))
+                })
+
+                setTimeout(() => setFuelPreset(fuel.name), 100);
+              }
+
+            } else {
+              diplayError()
+            }
+          }
+        } else {
+          diplayError()
+        }
+      } else {
+        diplayError()
+      }
+    };
+
+    input.oncancel = () => {
+      document.body.removeChild(input);
+    }
+
+    document.body.appendChild(input);
+    input.click();
+  }, [emptyPopup, importNav, setDeviationPreset, setFuelPreset, setPopup, setSavedDeviationCurves, setSavedFuelCurves])
 
   const [tabs, tabElems, tabNames] = useMemo(() => {
     const elems: ReactElement[] = [];
@@ -68,8 +325,9 @@ export const NavLogPage = ({ active }: {
     } else {
       setEmpty(false);
 
-      elems.push(<div key="aircraft" className={"flex flex-col text-sm overflow-hidden h-full" + (tab === 'Settings' ? "" : " opacity-0 select-none pointer-events-none max-h-0")}>
-        <Settings currentTab={tab} active={active} />
+      elems.push(<div key="aircraft" className={"flex flex-col text-sm overflow-hidden h-full"
+        + (tab === 'Settings' ? "" : " opacity-0 select-none pointer-events-none max-h-0")}>
+        <Settings currentTab={tab} active={active} pageRef={settingPage} />
       </div>)
       tabs.push('Settings')
       tabNames['Settings'] = 'Settings'
@@ -139,16 +397,28 @@ export const NavLogPage = ({ active }: {
         <div className="flex flex-row shrink-0 min-h-0 px-4">
           {
             __MSFS_EMBEDED__ ? <></> :
-              <div className="flex flex-row mr-2 grow">
+              <div className="flex flex-row mr-2 grow [&>*:not(:first-child)]:ml-1">
                 <Button active={!empty} disabled={empty || !efbConnected || __MSFS_EMBEDED__} onClick={exportNav}>
                   Upload
                 </Button>
+                <Button active={!empty} disabled={empty}
+                  onClick={exportCb}>
+                  Export
+                </Button>
+                <Button active={true}
+                  onClick={importCb}>
+                  Import
+                </Button>
               </div>
           }
-          <Button active={!empty} disabled={empty}
-            onClick={switchEdit}>
-            {edit ? "Done" : "Edit"}
-          </Button>
+          {
+            tab === 'Settings'
+              ? <></>
+              : <Button active={!empty} disabled={empty}
+                onClick={switchEdit}>
+                {edit ? "Done" : "Edit"}
+              </Button>
+          }
         </div>
       </div>
     </div>
