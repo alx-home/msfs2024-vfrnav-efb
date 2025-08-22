@@ -219,6 +219,12 @@ Main::Validate(
       }
    }
 
+   auto const default_fuel_preset =
+     settings->default_fuel_preset_ ? *settings->default_fuel_preset_ : "";
+   auto const default_deviation_preset =
+     settings->default_deviation_preset_ ? *settings->default_deviation_preset_ : "";
+   auto const server_port = settings->server_port_ ? *settings->server_port_ : -1;
+
    registry.Clear();
 
    auto& uninstall = registry.current_version_->uninstall_;
@@ -232,7 +238,15 @@ Main::Validate(
    settings->community_         = communityPath;
    settings->destination_       = installPath;
    settings->auto_start_server_ = true;
-   settings->server_port_       = 48578ui16;
+   settings->server_port_       = server_port == -1 ? 48578ui16 : server_port;
+
+   if (default_deviation_preset.size()) {
+      settings->default_deviation_preset_ = default_deviation_preset;
+   }
+
+   if (default_fuel_preset.size()) {
+      settings->default_fuel_preset_ = default_fuel_preset;
+   }
 
    if (startupOption == "Startup"_sv) {
       if (auto result = launch_mode::Startup(); result.size()) {
