@@ -23,15 +23,19 @@ const State = ({ state, name, icon }: {
    name: string,
    icon: string
 }) => {
-   return <div className={"group flex relative transition-all hocus:opacity-100 max-w-8 overflow-hidden max-h-6 hocus:max-w-96 pointer-events-auto"
-      + " border-solid border-1 [--tw-shadow-opacity:0.6] shadow-md mb-1"}
+   return <div className={"group flex relative transition-all hocus:opacity-100 max-w-8 overflow-hidden max-h-7 hocus:max-w-96 pointer-events-auto"
+      + " border-solid border-1 [--tw-shadow-opacity:0.6] shadow-md mb-1 m-auto"}
    >
-      <div className={'flex transition-colors group-hocus:opacity-100 duration-1000 px-2' + (state ? " bg-msfs" : " bg-gray-700")}>
-         <div className='relative transition-all opacity-0 group-hocus:opacity-100 text-nowrap'>
-            {name} {state ? "C" : "Disc"}onnected
+      <div className={'flex transition-colors group-hocus:opacity-100 duration-1000' + (state ? " bg-msfs" : " bg-gray-700")}>
+         <div className='relative transition-all opacity-0 group-hocus:opacity-100 text-nowrap px-2'>
+            {`${name} ${state ? "C" : "Disc"}onnected`}
          </div>
-         <div className='absolute flex flex-col transition-all w-full h-full opacity-100 group-hocus:opacity-0'>
-            <img className="my-auto ml-[-0.1rem] justify-center invert max-h-6" src={icon} alt={name} width={16} height={16} />
+         <div className='absolute flex flex-col transition-all opacity-100 group-hocus:opacity-0 w-full h-full'>
+            <div className='relative flex flex-col w-full h-full'>
+               <div className='m-auto w-5'>
+                  <img className="flex invert" src={icon} alt={name} width={'100%'} height={'100%'} />
+               </div>
+            </div>
          </div>
       </div>
    </div>
@@ -41,8 +45,12 @@ export const ServerState = () => {
    const server = useServer();
    const efb = useEFBServer();
 
-   return <div className="absolute bottom-0 left-0">
-      {__MSFS_EMBEDED__ ? <></> : <State name="MSFS" state={efb} icon={efbIcon} />}
-      <State name="Server" state={server} icon={serverIcon} />
+   return <div className="absolute bottom-0 left-0 w-full">
+      <div className='relative flex flex-col'>
+         <div className='flex flex-col'>
+            {__MSFS_EMBEDED__ ? <></> : <State name="MSFS" state={efb} icon={efbIcon} />}
+            <State name="Server" state={server} icon={serverIcon} />
+         </div>
+      </div>
    </div>
 }

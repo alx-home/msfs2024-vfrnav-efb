@@ -14,6 +14,7 @@
  */
 
 import { Page, Space } from "@app/App";
+import { ServerState } from "@pages/Map/ServerState";
 import { useRef } from "react";
 
 export const Menu = ({ setPage, pages, activePage }: { pages: (Page | Space)[], setPage: (_page: string) => void, activePage: string }) => {
@@ -48,5 +49,6 @@ export const Menu = ({ setPage, pages, activePage }: { pages: (Page | Space)[], 
       }
     }
     )}
+    <ServerState />
   </div>;
 }
