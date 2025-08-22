@@ -21,6 +21,7 @@ import { EditRecord, GetRecord, RemoveRecord } from "@shared/PlanPos";
 import { Manager } from "../Manager";
 import { FileExist, GetFile, OpenFile } from "@shared/Files";
 import { DefaultFuelPreset, FuelPresets, SetFuelCurve } from "@shared/Fuel";
+import { DefaultDeviationPreset, DeviationPresets, SetDeviationCurve } from "@shared/Deviation";
 
 interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
   /** The page title */
@@ -112,6 +113,18 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onDefaultFuelPreset(0, message);
   }
 
+  onDeviationPresets(message: DeviationPresets) {
+    this.props.manager.onDeviationPresets(0, message);
+  }
+
+  onDeviationCurve(message: SetDeviationCurve) {
+    this.props.manager.onDeviationCurve(0, message);
+  }
+
+  onDefaultDeviationPreset(message: DefaultDeviationPreset) {
+    this.props.manager.onDefaultDeviationPreset(0, message);
+  }
+
   destroy(): void {
     if (messageHandler !== undefined) {
       this.props.manager.closeEFB();
@@ -135,6 +148,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("__FUEL_PRESETS__", this.onFuelPresets)
       messageHandler.unsubscribe("__FUEL_CURVE__", this.onFuelCurve)
       messageHandler.unsubscribe("__DEFAULT_FUEL_PRESET__", this.onDefaultFuelPreset)
+
+      messageHandler.unsubscribe("__DEVIATION_PRESETS__", this.onDeviationPresets)
+      messageHandler.unsubscribe("__DEVIATION_CURVE__", this.onDeviationCurve)
+      messageHandler.unsubscribe("__DEFAULT_DEVIATION_PRESET__", this.onDefaultDeviationPreset)
     }
 
     super.destroy();
@@ -173,8 +190,11 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
       messageHandler.subscribe("__FUEL_PRESETS__", this.onFuelPresets.bind(this))
       messageHandler.subscribe("__FUEL_CURVE__", this.onFuelCurve.bind(this))
-
       messageHandler.subscribe("__DEFAULT_FUEL_PRESET__", this.onDefaultFuelPreset.bind(this))
+
+      messageHandler.subscribe("__DEVIATION_PRESETS__", this.onDeviationPresets.bind(this))
+      messageHandler.subscribe("__DEVIATION_CURVE__", this.onDeviationCurve.bind(this))
+      messageHandler.subscribe("__DEFAULT_DEVIATION_PRESET__", this.onDefaultDeviationPreset.bind(this))
     }
   }
 

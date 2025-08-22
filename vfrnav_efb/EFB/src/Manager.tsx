@@ -1,4 +1,5 @@
 import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
+import { DefaultDeviationPreset, DeleteDeviationPreset, SetDeviationCurve as DeviationCurve, DeviationPresets, GetDeviationPresets } from "@shared/Deviation";
 import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
 import { FileExist, FileExistResponse, GetFile, GetFileResponse, OpenFile, OpenFileResponse } from "@shared/Files";
 import { DefaultFuelPreset, DeleteFuelPreset, SetFuelCurve as FuelCurve, FuelPresets, GetFuelPresets, Tank } from "@shared/Fuel";
@@ -33,6 +34,10 @@ export class Manager {
    private defaultFuelPreset: { name: string, date: number } | undefined = undefined
    private fuelPresetsInit = true
 
+   private readonly deviationPresets = new Map<string, DeviationCurve>()
+   private defaultDeviationPreset: { name: string, date: number } | undefined = undefined
+   private deviationPresetsInit = true
+
    /* eslint-disable no-unused-vars */
    constructor(private readonly bus: EventBus) {
       this.facilityLoader = new FacilityLoader(FacilityRepository.getRepository(this.bus));
@@ -40,6 +45,8 @@ export class Manager {
 
       this.loadFuelPresets();
       this.loadDefaultFuelPreset();
+      this.loadDeviationPresets();
+      this.loadDefaultDeviationPreset();
 
       setInterval(this.fetchPosition.bind(this), 100);
 
@@ -86,6 +93,50 @@ export class Manager {
          SetStoredData('fuel-preset.default', this.defaultFuelPreset.name)
       } else {
          DeleteStoredData('fuel-preset.default')
+      }
+   }
+
+
+   private loadDeviationPresets() {
+      const presetsStr = GetStoredData("deviation-presets");
+      if (presetsStr === '') {
+         this.deviationPresetsInit = false;
+         return
+      }
+
+      const presets = JSON.parse(presetsStr as string);
+
+      if (!Array.isArray(presets)) {
+         this.deviationPresetsInit = false;
+         return
+      }
+
+      this.deviationPresets.clear();
+      (presets as DeviationCurve[]).forEach(preset => {
+         this.deviationPresets.set(preset.name, preset)
+      });
+   }
+
+   private saveDeviationPresets() {
+      SetStoredData('deviation-presets', JSON.stringify(Array.from(this.deviationPresets.values())
+         .filter(elem => elem.curve.length)))
+   }
+
+   private loadDefaultDeviationPreset() {
+      this.defaultDeviationPreset = {
+         name: GetStoredData("deviation-preset.default") as string,
+         date: 0
+      };
+      if (this.defaultDeviationPreset.name === '') {
+         this.defaultDeviationPreset = undefined
+      }
+   }
+
+   private saveDefaultDeviationPreset() {
+      if (this.defaultDeviationPreset) {
+         SetStoredData('deviation-preset.default', this.defaultDeviationPreset.name)
+      } else {
+         DeleteStoredData('deviation-preset.default')
       }
    }
 
@@ -218,6 +269,16 @@ export class Manager {
                this.onFuelCurve(data.id, data.content);
             } else if (isMessage("__DEFAULT_FUEL_PRESET__", data.content)) {
                this.onDefaultFuelPreset(data.id, data.content)
+            } else if (isMessage("__DEVIATION_PRESETS__", data.content)) {
+               this.onDeviationPresets(data.id, data.content);
+            } else if (isMessage("__GET_DEVIATION_PRESETS__", data.content)) {
+               this.onGetDeviationPresets(data.id, data.content);
+            } else if (isMessage("__DELETE_DEVIATION_PRESET__", data.content)) {
+               this.onDeleteDeviationPreset(data.content);
+            } else if (isMessage("__DEVIATION_CURVE__", data.content)) {
+               this.onDeviationCurve(data.id, data.content);
+            } else if (isMessage("__DEFAULT_DEVIATION_PRESET__", data.content)) {
+               this.onDefaultDeviationPreset(data.id, data.content)
             } else if (isMessage("__EXPORT_PDFS__", data.content)) {
                this.onExportPdfs(data.content);
             } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
@@ -746,6 +807,225 @@ export class Manager {
             });
 
             this.saveFuelPresets();
+            this.sendMessage(0, message)
+         }
+      }
+   }
+
+
+
+
+
+   onDeviationPresets(id: number, message: DeviationPresets) {
+      console.assert(id === 1 || id === 0);
+
+      if (id === 0) {
+         // From EFB
+
+         if (this.deviationPresetsInit) {
+            this.deviationPresetsInit = false
+
+            message.data.forEach(preset => {
+               if (preset.remove) {
+                  const elem = this.deviationPresets.get(preset.name)
+                  if (elem) {
+                     this.sendMessage(0, {
+                        __DEVIATION_CURVE__: true,
+
+                        name: elem.name,
+                        date: elem.date,
+                        curve: elem.curve
+                     })
+                  }
+               } else {
+                  const elem = this.deviationPresets.get(preset.name)
+
+                  if (elem) {
+                     this.sendMessage(0, {
+                        __DEVIATION_CURVE__: true,
+
+                        name: elem.name,
+                        date: elem.date,
+                        curve: elem.curve
+                     })
+                  } else {
+                     this.sendMessage(0, {
+                        __DELETE_DEVIATION_PRESET__: true,
+
+                        name: preset.name,
+                        date: preset.date,
+                     })
+                  }
+               }
+            })
+
+            this.deviationPresets.forEach(preset => {
+               const elem = message.data.find(elem => elem.name === preset.name);
+
+               if (!elem) {
+                  this.sendMessage(0, {
+                     __DEVIATION_CURVE__: true,
+
+                     name: preset.name,
+                     date: preset.date,
+                     curve: preset.curve
+                  })
+               }
+            })
+         } else {
+            this.deviationPresets.clear();
+            message.data.forEach(preset => {
+               if (preset.remove) {
+                  this.deviationPresets.set(preset.name, {
+                     __DEVIATION_CURVE__: true,
+
+                     name: preset.name,
+                     date: preset.date,
+                     curve: []
+                  })
+               } else {
+                  // Will be updated later on deviation curve message
+                  this.sendMessage(0, {
+                     __GET_DEVIATION_CURVE__: true,
+
+                     name: preset.name
+                  })
+               }
+            })
+
+            this.saveDeviationPresets()
+         }
+
+         this.sendMessage(1, {
+            __DEVIATION_PRESETS__: true,
+
+            data: Array.from(this.deviationPresets.values()).map(preset => ({
+               name: preset.name,
+               date: preset.date,
+               remove: preset.curve.length === 0
+            }))
+         })
+
+         if (this.defaultDeviationPreset) {
+            this.sendMessage(0, {
+               __DEFAULT_DEVIATION_PRESET__: true,
+
+               ...this.defaultDeviationPreset
+            })
+         }
+      } else {
+         console.assert(false)
+      }
+   }
+
+   onGetDeviationPresets(id: number, message: GetDeviationPresets) {
+      console.assert(id === 1);
+      this.sendMessage(0, message)
+   }
+
+   onDeleteDeviationPreset(message: DeleteDeviationPreset) {
+      // From Server
+
+      const preset = this.deviationPresets.get(message.name)
+
+      if (preset) {
+         if (preset.date < message.date) {
+            this.deviationPresets.delete(message.name)
+            this.saveDeviationPresets();
+
+            this.sendMessage(0, message)
+         } else {
+            this.sendMessage(1, {
+               __DEVIATION_PRESETS__: true,
+
+               data: Array.from(this.deviationPresets.values()).map(elem => ({
+                  name: elem.name,
+                  date: elem.date,
+                  remove: elem.curve.length === 0
+               }))
+            })
+         }
+      }
+   }
+
+   onDefaultDeviationPreset(id: number, message: DefaultDeviationPreset) {
+      if (message.date > (this.defaultDeviationPreset?.date ?? (message.date - 1))) {
+         this.defaultDeviationPreset = { name: message.name, date: message.date };
+         this.saveDefaultDeviationPreset();
+
+         if (id === 0) {
+            this.sendMessage(1, message)
+         } else {
+            console.assert(id === 1)
+            this.sendMessage(0, message)
+         }
+      } else if (message.date < this.defaultDeviationPreset!.date) {
+         console.assert(id === 1)
+         this.sendMessage(1, {
+            __DEFAULT_DEVIATION_PRESET__: true,
+
+            name: this.defaultDeviationPreset!.name,
+            date: this.defaultDeviationPreset!.date
+         })
+      }
+   }
+
+   onDeviationCurve(id: number, message: DeviationCurve) {
+      if (id === 0) {
+         // From EFB
+
+         this.deviationPresets.set(message.name, {
+            __DEVIATION_CURVE__: true,
+
+            name: message.name,
+            date: message.date,
+            curve: message.curve
+         })
+
+         this.saveDeviationPresets();
+         this.sendMessage(1, message)
+      } else {
+         // From Server
+
+         console.assert(id === 1);
+
+         const preset = this.deviationPresets.get(message.name);
+         if (preset) {
+            if (preset.date < message.date) {
+               preset.date = message.date;
+               preset.curve = message.curve;
+
+               this.saveDeviationPresets();
+               this.sendMessage(0, message)
+            } else {
+               this.sendMessage(1, {
+                  __DEVIATION_PRESETS__: true,
+
+                  data: Array.from(this.deviationPresets.values()).map(elem => ({
+                     name: elem.name,
+                     date: elem.date,
+                     remove: elem.curve.length === 0
+                  }))
+               })
+
+               if (this.defaultDeviationPreset) {
+                  this.sendMessage(1, {
+                     __DEFAULT_DEVIATION_PRESET__: true,
+
+                     ...this.defaultDeviationPreset
+                  })
+               }
+            }
+         } else {
+            this.deviationPresets.set(message.name, {
+               __DEVIATION_CURVE__: true,
+
+               name: message.name,
+               date: message.date,
+               curve: message.curve
+            });
+
+            this.saveDeviationPresets();
             this.sendMessage(0, message)
          }
       }
