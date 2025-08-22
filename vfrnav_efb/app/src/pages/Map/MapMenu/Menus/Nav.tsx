@@ -198,8 +198,8 @@ const Add = ({ name, image, onClick, disabled, active }: PropsWithChildren<{
   const isDisabled = useMemo(() => disabled ?? false, [disabled]);
   return <Button onClick={onClick} active={isActive} disabled={isDisabled} className='px-2 min-h-6 pt-[2px] flex flex-row grow @container'>
     <div className='hidden @[47px]:flex justify-center w-full'>{name}</div>
-    <div className='flex grow justify-center @[47px]:hidden'>
-      <img src={image} alt={name} className='invert' />
+    <div className='flex grow justify-center @[47px]:hidden w-5 h-5'>
+      <img src={image} alt={name} width={'100%'} height={'100%'} className='invert' />
     </div>
   </Button>;
 };
