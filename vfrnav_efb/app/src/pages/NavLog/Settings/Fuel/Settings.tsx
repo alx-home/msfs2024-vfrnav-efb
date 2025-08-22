@@ -28,7 +28,7 @@ import { DefaultFuelPreset, DeleteFuelPreset, GetFuelCurve, SetFuelCurve } from 
 export const useSettings = ({ setOat }: {
    setOat: (_value: number) => void
 }) => {
-   const { fuelUnit, setFuelUnit, savedFuelCurves, setSavedFuelCurves, setFuelCurve, fuelCurve } = useContext(MapContext)!;
+   const { fuelUnit, setFuelUnit, savedFuelCurves, setSavedFuelCurves, setFuelCurve, fuelCurve, setFuelPresetRef } = useContext(MapContext)!;
    const { setPopup } = useContext(SettingsContext)!;
 
    const hardPresets = useMemo(() => (['simple']), [])
@@ -42,6 +42,23 @@ export const useSettings = ({ setOat }: {
    const updatePreset = useCallback((value: string, user?: boolean) => {
       updatePreset_.current?.(value, user)
    }, [])
+
+
+   useEffect(() => {
+      setFuelPresetRef.current = (dname) => {
+         const name = (() => {
+            if (typeof dname === 'function') {
+               return dname(preset)
+            } else {
+               return dname
+            }
+         })()
+
+         if ((name !== 'simple') && (name !== 'custom') && (savedFuelCurves.find(elem => elem[0] === name))) {
+            updatePreset_.current?.(name, true)
+         }
+      }
+   }, [setPreset, setFuelPresetRef, preset, savedFuelCurves])
 
    useEffect(() => {
       updatePreset_.current = (value: string, user?: boolean) => {

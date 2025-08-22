@@ -25,7 +25,7 @@ import { DefaultDeviationPreset, DeleteDeviationPreset, GetDeviationCurve, SetDe
 
 export const useSettings = () => {
    const { setPopup } = useContext(SettingsContext)!;
-   const { savedDeviationCurves, setSavedDeviationCurves, deviationCurve, setDeviationCurve } = useContext(MapContext)!;
+   const { savedDeviationCurves, setSavedDeviationCurves, deviationCurve, setDeviationCurve, setDeviationPresetRef } = useContext(MapContext)!;
 
    const hardPresets = useMemo(() => (['none']), [])
    const [defaultPreset, setDefaultPreset] = useState<string | undefined>(undefined)
@@ -38,6 +38,22 @@ export const useSettings = () => {
    const updatePreset = useCallback((value: string, user?: boolean) => {
       updatePreset_.current?.(value, user)
    }, [])
+
+   useEffect(() => {
+      setDeviationPresetRef.current = (dname) => {
+         const name = (() => {
+            if (typeof dname === 'function') {
+               return dname(preset)
+            } else {
+               return dname
+            }
+         })()
+
+         if ((name !== 'none') && (name !== 'custom') && (savedDeviationCurves.find(elem => elem[0] === name))) {
+            updatePreset_.current?.(name, true)
+         }
+      }
+   }, [setPreset, setDeviationPresetRef, preset, savedDeviationCurves])
 
    useEffect(() => {
       updatePreset_.current = (value: string, user?: boolean) => {

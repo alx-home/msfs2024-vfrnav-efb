@@ -109,12 +109,38 @@ export const MapContext = createContext<{
 
   fuelCurve: [number, FuelPoint[]][]
   setFuelCurve: Dispatch<SetStateAction<[number, FuelPoint[]][]>>,
+  setFuelPresetRef: RefObject<Dispatch<SetStateAction<string>> | undefined>,
+  setFuelPreset: Dispatch<SetStateAction<string>>,
 
   savedDeviationCurves: [string, number, [Alt, number][]][]
   setSavedDeviationCurves: Dispatch<SetStateAction<[string, number, [Alt, number][]][]>>,
 
   deviationCurve: [Alt, number][]
-  setDeviationCurve: Dispatch<SetStateAction<[Alt, number][]>>
+  setDeviationCurve: Dispatch<SetStateAction<[Alt, number][]>>,
+  setDeviationPresetRef: RefObject<Dispatch<SetStateAction<string>> | undefined>,
+  setDeviationPreset: Dispatch<SetStateAction<string>>,
+
+  importNavRef: RefObject<((_data: {
+    name: string;
+    shortName: string;
+    order: number;
+    coords: number[][];
+    properties: Properties[];
+    waypoints: string[];
+    loadedFuel: number;
+    departureTime: number;
+  }[]) => void) | undefined>
+
+  importNav: (_data: {
+    name: string;
+    shortName: string;
+    order: number;
+    coords: number[][];
+    properties: Properties[];
+    waypoints: string[];
+    loadedFuel: number;
+    departureTime: number;
+  }[]) => void
 
 } | undefined>(undefined);
 
@@ -405,6 +431,11 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         [25000, [[20, 145]]]
       ]]])
 
+  const setFuelPresetRef = useRef<Dispatch<SetStateAction<string>>>(undefined)
+  const setFuelPreset = useCallback<Dispatch<SetStateAction<string>>>((value) => {
+    setFuelPresetRef.current?.(value)
+  }, [])
+
   const [savedDeviationCurves, setSavedDeviationCurves] = useState<[string, number, [number, number][]][]>([])
   const [deviationCurve, setDeviationCurve] = useState<[number, number][]>(
     savedDeviationCurves.length
@@ -413,6 +444,34 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         [0, 0],
         [360, 0]
       ])
+  const setDeviationPresetRef = useRef<Dispatch<SetStateAction<string>>>(undefined)
+  const setDeviationPreset = useCallback<Dispatch<SetStateAction<string>>>((value) => {
+    setDeviationPresetRef.current?.(value)
+  }, [])
+
+  const importNavRef = useRef<(_data: {
+    name: string;
+    shortName: string;
+    order: number;
+    coords: number[][];
+    properties: Properties[];
+    waypoints: string[];
+    loadedFuel: number;
+    departureTime: number;
+  }[]) => void>(undefined);
+
+  const importNav = useCallback((data: {
+    name: string;
+    shortName: string;
+    order: number;
+    coords: number[][];
+    properties: Properties[];
+    waypoints: string[];
+    loadedFuel: number;
+    departureTime: number;
+  }[]) => {
+    importNavRef.current?.(data)
+  }, [])
 
 
   const updateNavPropsCB = useCallback((props: Properties, prevCoords: Coordinate, coords: Coordinate) =>
@@ -627,6 +686,8 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
     setSavedFuelCurves: setSavedFuelCurves,
     savedFuelCurves: savedFuelCurves,
+    setFuelPresetRef: setFuelPresetRef,
+    setFuelPreset: setFuelPreset,
 
     fuelCurve: fuelCurve,
     setFuelCurve: setFuelCurve,
@@ -635,8 +696,13 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     savedDeviationCurves: savedDeviationCurves,
 
     deviationCurve: deviationCurve,
-    setDeviationCurve: setDeviationCurve
-  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, fuelCurve, savedDeviationCurves, deviationCurve, activeRecords]);
+    setDeviationCurve: setDeviationCurve,
+    setDeviationPresetRef: setDeviationPresetRef,
+    setDeviationPreset: setDeviationPreset,
+
+    importNavRef: importNavRef,
+    importNav: importNav
+  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, setFuelPreset, fuelCurve, savedDeviationCurves, deviationCurve, setDeviationPreset, importNav, activeRecords]);
 
   return (
     <MapContext.Provider

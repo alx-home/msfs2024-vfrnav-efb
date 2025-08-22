@@ -32,7 +32,7 @@ import { MapContext } from "@pages/Map/MapContext";
 import greenMarker from '@efb-images/marker-icon-green.svg';
 import redMarker from '@efb-images/marker-icon-red.svg';
 import blueMarker from '@efb-images/marker-icon-blue.svg';
-import { ExportNav, PropertiesRecord } from "@shared/NavData";
+import { ExportNav, Properties, PropertiesRecord } from "@shared/NavData";
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
 
@@ -318,7 +318,7 @@ export const OlRouteLayer = ({
 }: {
    zIndex: number
 } & OlLayerProp) => {
-   const { setNavData, counter, map, setCancel, navData, updateNavProps, setFuelCurve, setFuelUnit, setDeviationCurve } = useContext(MapContext)!;
+   const { setNavData, map, setCancel, navData, updateNavProps, setFuelCurve, setFuelUnit, setDeviationCurve, importNavRef } = useContext(MapContext)!;
    const settings = useContext(SettingsContext)!;
 
    const { source, layer, initFeature } = useMap();
@@ -593,6 +593,49 @@ export const OlRouteLayer = ({
       return [];
    }, [map, navData, settings, updateNavProps]);
 
+   const onExportNav = useCallback((data: {
+      name: string;
+      shortName: string;
+      order: number;
+      coords: number[][];
+      properties: Properties[];
+      waypoints: string[];
+      loadedFuel: number;
+      departureTime: number;
+   }[]) => {
+      source.clear();
+
+      const features: Feature[] = [];
+      const navData = data.map((data): NavData => {
+         const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
+         initFeature(feature);
+
+         features.push(feature)
+         const result: NavData = {
+            id: feature.getId() as number,
+            order: data.order,
+            active: true,
+            name: data.name,
+            shortName: data.shortName,
+            coords: data.coords.map(coords => ([...coords])),
+            layer: layer!,
+            departureTime: data.departureTime,
+            loadedFuel: data.loadedFuel,
+            waypoints: data.waypoints,
+            properties: data.properties,
+         }
+
+         return result;
+      })
+
+      source.addFeatures(features);
+      setNavData(navData);
+   }, [initFeature, layer, setNavData, source])
+
+   useEffect(() => {
+      importNavRef.current = onExportNav
+   }, [importNavRef, onExportNav])
+
    useEffect(() => {
       layer?.setZIndex(zIndex);
    }, [zIndex, layer]);
@@ -618,43 +661,16 @@ export const OlRouteLayer = ({
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
-         const onExportNav = (message: ExportNav) => {
-            source.clear();
-
-            const features: Feature[] = [];
-            const data = message.data.map((data): NavData => {
-               const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
-               initFeature(feature);
-
-               features.push(feature)
-               const result: NavData = {
-                  id: feature.getId() as number,
-                  order: data.order,
-                  active: true,
-                  name: data.name,
-                  shortName: data.shortName,
-                  coords: data.coords.map(coords => ([...coords])),
-                  layer: layer!,
-                  departureTime: data.departureTime,
-                  loadedFuel: data.loadedFuel,
-                  waypoints: data.waypoints,
-                  properties: data.properties,
-               }
-
-               return result;
-            })
-
-            source.addFeatures(features);
-            setNavData(data);
-            setFuelCurve(message.fuelCurve)
+         const callback = (message: ExportNav) => {
+            onExportNav(message.data)
             setFuelUnit(message.fuelUnit)
+            setFuelCurve(message.fuelCurve)
             setDeviationCurve(message.deviationCurve)
-         };
-
-         messageHandler.subscribe("__EXPORT_NAV__", onExportNav)
-         return () => messageHandler.unsubscribe("__EXPORT_NAV__", onExportNav);
+         }
+         messageHandler.subscribe("__EXPORT_NAV__", callback)
+         return () => messageHandler.unsubscribe("__EXPORT_NAV__", callback);
       }
-   }, [counter, initFeature, layer, navData, setDeviationCurve, setFuelCurve, setFuelUnit, setNavData, source])
+   }, [onExportNav, setDeviationCurve, setFuelCurve, setFuelUnit])
 
    return <div className="hidden">
       <img ref={greenMarkerImg} src={greenMarker} alt='start marker' />
