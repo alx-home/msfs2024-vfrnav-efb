@@ -51,7 +51,7 @@ export const Deviation = ({ curentPage, active: parentActive }: {
 
    const legend = useCallback(() => 'Dev', [])
 
-   return <div className={'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden max-h-full'
+   return <div className={'absolute flex flex-col text-sm overflow-hidden h-full w-full'
       + (('Deviation' === curentPage) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
       <div className="flex w-full justify-center text-xl pb-2">Compass Deviation</div>

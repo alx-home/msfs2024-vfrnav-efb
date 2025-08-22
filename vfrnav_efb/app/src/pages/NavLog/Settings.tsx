@@ -42,7 +42,7 @@ export const Settings = ({ currentTab: currentPage, active }: {
       <div className="flex flex-row pl-4 pt-2">
          <Tabs className="pb-0" tabs={Array.from(settingsTabs)} activeTab={tab} names={settingsTabsStr} switchTab={setTab} />
       </div>
-      <div className='relative grid grow overflow-hidden h-[78vh]'>
+      <div className='relative h-full grow overflow-hidden'>
          {tabElems}
       </div>
    </div>
