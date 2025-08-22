@@ -53,8 +53,8 @@ export const NavLogPage = ({ active }: {
       setEmpty(true);
       setEdit(false);
 
-      elems.push(<div key="empty" className="flex text-sm overflow-hidden">
-        <div className="flex w-full -mt-10">
+      elems.push(<div key="empty" className="flex text-sm overflow-hidden h-full">
+        <div className="flex w-full">
           <div className="flex flex-col justify-center m-auto text-center">
             <div className="flex m-auto">
               Navigation path is empty.
@@ -118,20 +118,20 @@ export const NavLogPage = ({ active }: {
   }, [active]);
 
 
-  return <div className="flex grow justify-center overflow-hidden" style={active ? {} : { display: 'none' }}>
-    <div className="flex flex-row w-full justify-center">
+  return <div className="flex grow justify-center overflow-hidden h-full" style={active ? {} : { display: 'none' }}>
+    <div className="flex flex-row w-full h-full justify-center">
       <div className={"flex flex-col shrink transition transition-std py-1 h-full text-left"
         + " justify-start overflow-hidden bg-menu rounded-sm shadow-md"
         + " hocus:border-msfs"
         + opacity + " max-w-full" + (empty ? ' w-[800px]' : '')
       }>
-        <div className={"relative flex flex-col grow overflow-hidden"}>
+        <div className={"relative flex flex-col grow overflow-hidden h-full"}>
           <div className="flex text-2xl pt-6 px-8">Nav Log</div>
-          <div className='flex flex-col overflow-hidden grow m-4 mt-5 mb-0'>
+          <div className='flex flex-col overflow-hidden grow m-4 mt-5 mb-0 h-full'>
             <div className="pl-4">
               <Tabs tabs={Array.from(tabs)} activeTab={tab} names={tabNames} switchTab={setTab} className="hidden" />
             </div>
-            <div className='relative grid grow overflow-hidden h-[78vh]'>
+            <div className='relative grow overflow-hidden h-full'>
               {tabElems}
             </div>
           </div>

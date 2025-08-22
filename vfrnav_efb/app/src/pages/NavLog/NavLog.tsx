@@ -633,7 +633,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
       }
    }, [delayed])
 
-   return <div className={'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden [&>:last-child]:h-full'
+   return <div className={'flex flex-col text-sm h-full overflow-hidden [&>:last-child]:h-full'
       + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
       <div className="flex flex-row pl-4 pt-2">
@@ -644,15 +644,15 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
       }>
          <div className="flex flex-col w-full min-h-max">
             <div className="flex flex-row w-full">
-               <div className='flex flex-col mx-5 shadow-sm min-h-max ml-5 min-w-max'>
-                  <div className={"grid pb-8"}>
-                     <div className="relative [grid-row:1] [grid-column:1] opacity-0 pointer-events-none select-none" inert={true}>
+               <div className='flex flex-col shadow-sm min-h-max ml-5 min-w-max'>
+                  <div className={"flex flex-col w-full h-full pb-8"}>
+                     <div className="flex w-full h-0 !max-h-0 opacity-0 pointer-events-none select-none" inert={true}>
                         <div className="grid">
                            {fullHeader}
                            {fullLegs}
                         </div>
                      </div>
-                     <div className={"relative [grid-row:1] [grid-column:1] max-w-min"}>
+                     <div className={"relative max-w-min"}>
                         <div className={"absolute top-0 bottom-0 left-0 w-4 bg-slate-900 hocus:bg-msfs shadow-md m-[0.1rem] "
                            + (edit ? "hidden " : '')
                            + "select-none transition-all cursor-pointer opacity-40 hocus:opacity-100"}>
@@ -726,23 +726,23 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                   : <></>
             }
             <div className="flex flex-row p-4 pt-4">
-               <div className="flex flex-col mx-auto text-sm border-2 border-slate-700 shadow-lg py-4 px-14 whitespace-nowrap">
+               <div className="flex flex-col mx-auto text-sm border-2 border-slate-700 shadow-lg py-4 px-10 whitespace-nowrap">
                   {edit ? <>
-                     <div className="flex flex-row"><div className="w-32">OBS: </div>Omni Beer Selector</div>
-                     <div className="flex flex-row"><div className="w-32">VAR: </div>Variation</div>
-                     <div className="flex flex-row"><div className="w-32">IAS: </div>Indicated Air Speed</div>
-                     <div className="flex flex-row"><div className="w-32">OAT: </div>Outside Air Temperature</div>
-                     <div className="flex flex-row"><div className="w-32">ATA: </div>Actual Time of Arrival</div>
-                     <div className="flex flex-row"><div className="w-32">Fuel: </div>Fuel Level at Leg Completion</div>
+                     <div className="flex flex-row"><div className="w-24">OBS: </div>Omni Beer Selector</div>
+                     <div className="flex flex-row"><div className="w-24">VAR: </div>Variation</div>
+                     <div className="flex flex-row"><div className="w-24">IAS: </div>Indicated Air Speed</div>
+                     <div className="flex flex-row"><div className="w-24">OAT: </div>Outside Air Temperature</div>
+                     <div className="flex flex-row"><div className="w-24">ATA: </div>Actual Time of Arrival</div>
+                     <div className="flex flex-row"><div className="w-24">Fuel: </div>Fuel Level at Leg Completion</div>
                   </> : <>
-                     <div className="flex flex-row"><div className="w-32">OBS: </div>Omni Beer Selector</div>
-                     <div className="flex flex-row"><div className="w-32">CH: </div>Compass Heading</div>
-                     <div className="flex flex-row"><div className="w-32">MH: </div>Magnetic Heading</div>
-                     <div className="flex flex-row mt-2"><div className="w-32">IAS: </div>Indicated Air Speed</div>
-                     <div className="flex flex-row"><div className="w-32">GS: </div>Ground Speed</div>
-                     <div className="flex flex-row mt-2"><div className="w-32">ETE: </div>Estimated Time Enroute</div>
-                     <div className="flex flex-row"><div className="w-32">ETA: </div>Estimated Time of Arrival</div>
-                     <div className="flex flex-row mt-2"><div className="w-32">Fuel: </div>
+                     <div className="flex flex-row"><div className="w-24">OBS: </div>Omni Beer Selector</div>
+                     <div className="flex flex-row"><div className="w-24">CH: </div>Compass Heading</div>
+                     <div className="flex flex-row"><div className="w-24">MH: </div>Magnetic Heading</div>
+                     <div className="flex flex-row mt-2"><div className="w-24">IAS: </div>Indicated Air Speed</div>
+                     <div className="flex flex-row"><div className="w-24">GS: </div>Ground Speed</div>
+                     <div className="flex flex-row mt-2"><div className="w-24">ETE: </div>Estimated Time Enroute</div>
+                     <div className="flex flex-row"><div className="w-24">ETA: </div>Estimated Time of Arrival</div>
+                     <div className="flex flex-row mt-2"><div className="w-24">Fuel: </div>
                         <div className="flex flex-col">
                            <div>Estimated Fuel Level at Leg Completion</div>
                            <div>&#40;Based on last input / departure fuel&#41;</div>
