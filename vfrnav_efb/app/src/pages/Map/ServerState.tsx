@@ -27,7 +27,7 @@ const State = ({ state, name, icon }: {
       + " border-solid border-1 [--tw-shadow-opacity:0.6] shadow-md mb-1 m-auto"}
    >
       <div className={'flex transition-colors group-hocus:opacity-100 duration-1000' + (state ? " bg-msfs" : " bg-gray-700")}>
-         <div className='relative transition-all opacity-0 group-hocus:opacity-100 text-nowrap px-2'>
+         <div className='relative transition-all opacity-0 group-hocus:opacity-100 text-nowrap whitespace-nowrap px-2'>
             {`${name} ${state ? "C" : "Disc"}onnected`}
          </div>
          <div className='absolute flex flex-col transition-all opacity-100 group-hocus:opacity-0 w-full h-full'>
