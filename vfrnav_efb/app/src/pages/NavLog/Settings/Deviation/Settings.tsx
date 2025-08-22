@@ -265,7 +265,7 @@ export const useSettings = () => {
 
                                                       if (index !== -1) {
                                                          // Mark curve to be removed
-                                                         return saved.toSpliced(saved.length, 1, [saved[index][0], (new Date()).getTime(), []])
+                                                         return saved.toSpliced(index, 1, [saved[index][0], (new Date()).getTime(), []])
                                                       }
 
                                                       return saved
