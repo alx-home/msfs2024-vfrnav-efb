@@ -223,7 +223,8 @@ Main::Validate(
      settings->default_fuel_preset_ ? *settings->default_fuel_preset_ : "";
    auto const default_deviation_preset =
      settings->default_deviation_preset_ ? *settings->default_deviation_preset_ : "";
-   auto const server_port = settings->server_port_ ? *settings->server_port_ : -1;
+   auto const server_port =
+     settings->server_port_ ? static_cast<int32_t>(*settings->server_port_) : -1;
 
    registry.Clear();
 
@@ -238,7 +239,7 @@ Main::Validate(
    settings->community_         = communityPath;
    settings->destination_       = installPath;
    settings->auto_start_server_ = true;
-   settings->server_port_       = server_port == -1 ? 48578ui16 : server_port;
+   settings->server_port_ = server_port == -1 ? 48578ui16 : static_cast<uint16_t>(server_port);
 
    if (default_deviation_preset.size()) {
       settings->default_deviation_preset_ = default_deviation_preset;
