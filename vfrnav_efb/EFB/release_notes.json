@@ -433,7 +433,7 @@
             "***🔧 Improvements / Améliorations:***",
             "     - Added ability to save compass deviation and fuel consumption curves as presets.",
             "       Ajout de la possibilité d'enregistrer les courbes de déviation du compas et de consommation de carburant comme preset.",
-            "     - Enhanced fuel flow calculations by factoring in altitude (and thrust - not yet implemented).",
+            "     - Enhanced fuel flow calculations by factoring in altitude, temperature (and thrust - not yet implemented).",
             "       Amélioration du calcul du débit de carburant en tenant compte de l'altitude, la température (et du régime moteur - pas encore implémenté).",
             "     - Improved deviation curve chart visualization.",
             "       Amélioration de l'affichage du graphique des courbes de déviation.",
