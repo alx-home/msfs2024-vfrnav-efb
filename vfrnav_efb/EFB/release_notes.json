@@ -358,6 +358,7 @@
             "     - The web server is now connected to MSFS. Please refer to the README for instructions on accessing it from an external device.",
             "       Le serveur web est désormais connecté à MSFS. Veuillez consulter le fichier README pour savoir comment y accéder depuis un appareil externe",
             "",
+            "",
             "### EFB ###",
             "***🐞 Fixes / Corrections:***",
             "     - Fixed data mismatch between Navlog and legs when path coordinates extend beyond the visible screen.",
@@ -378,6 +379,7 @@
             "***🐞 Fixes / Corrections:***",
             "     - General stability improvements.",
             "       Amélioration générale de la stabilité.",
+            "",
             "",
             "### EFB ###",
             "***🔧 Improvements / Améliorations:***",
@@ -415,6 +417,30 @@
             "       Correction de la gestion du carburant dans le log de navigation.",
             "     - Restored OpenFlightMap layer.",
             "       Restauration du calque OpenFlightMap."
+         ]
+      },
+      {
+         "version": "1.6.0",
+         "date": "AUG 23, 2025",
+         "notes": [
+            "### Installer/Server (new) ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Added support for importing/exporting navlog and compass deviation/fuel consumption curves from/to file.",
+            "       Ajout de la possibilité d'importer/exporter le navlog et les courbes de déviation/consommation de carburant vers/depuis un fichier.",
+            "",
+            "",
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Added ability to save compass deviation and fuel consumption curves as presets.",
+            "       Ajout de la possibilité d'enregistrer les courbes de déviation du compas et de consommation de carburant comme preset.",
+            "     - Enhanced fuel flow calculations by factoring in altitude (and thrust - not yet implemented).",
+            "       Amélioration du calcul du débit de carburant en tenant compte de l'altitude, la température (et du régime moteur - pas encore implémenté).",
+            "     - Improved deviation curve chart visualization.",
+            "       Amélioration de l'affichage du graphique des courbes de déviation.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Resolved button sizing issue on the navdata page in MSFS EFB.",
+            "       Correction de la taille des boutons sur la page des données de navigation dans l'EFB MSFS."
          ]
       }
    ]
