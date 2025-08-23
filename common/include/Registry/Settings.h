@@ -36,6 +36,8 @@ public:
      &Settings::launch_mode_,
      &Settings::community_,
      &Settings::destination_,
+     &Settings::default_fuel_preset_,
+     &Settings::default_deviation_preset_,
      &Settings::auto_start_server_,
      &Settings::server_port_,
    };
