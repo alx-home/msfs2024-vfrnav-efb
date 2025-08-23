@@ -83,8 +83,16 @@ export type ExportNav = {
       departureTime: number,
    }[]
    deviationCurve: Deviation[],
+   deviationPreset: string,
    fuelUnit: FuelUnit,
-   fuelCurve: [number, FuelPoint[]][],
+   fuelCurve: {
+      thrust: number,
+      curves: {
+         alt: number,
+         values: [number, number][]
+      }[]
+   }[],
+   fuelPreset: string,
 };
 
 export const PropertiesRecord = GenRecord<Properties>({
@@ -247,7 +255,14 @@ export const ExportNavRecord = GenRecord<ExportNav>({
 
    data: [],
    deviationCurve: [[0, 0], [360, 0]],
-   fuelCurve: h125Curve,
+   deviationPreset: '',
+   fuelCurve: [{
+      thrust: h125Curve[0][0], curves: h125Curve[0][1].map(elem => ({
+         alt: elem[0],
+         values: elem[1]
+      }))
+   }],
+   fuelPreset: '',
    fuelUnit: 'liter'
 }, {
    data: {
@@ -277,10 +292,39 @@ export const ExportNavRecord = GenRecord<ExportNav>({
          record: 'number'
       }
    },
-   fuelConsumption: 'number',
-   fuelUnit: 'string'
+   fuelCurve: {
+      array: true,
+      record: GenRecord<{
+         thrust: number,
+         curves: {
+            alt: number,
+            values: [number, number][]
+         }[]
+      }>({
+         thrust: 0,
+         curves: []
+      }, {
+         curves: {
+            array: true,
+            record: GenRecord<{
+               alt: number,
+               values: [number, number][]
+            }>({
+               alt: 0,
+               values: []
+            }, {
+               values: {
+                  array: true,
+                  record: {
+                     array: true,
+                     record: 'number'
+                  }
+               }
+            })
+         }
+      })
+   },
 })
-
 
 export type ImportNav = {
    __IMPORT_NAV__: true,

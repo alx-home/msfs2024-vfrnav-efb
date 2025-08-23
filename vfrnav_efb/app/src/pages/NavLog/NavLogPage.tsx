@@ -166,7 +166,8 @@ export const NavLogPage = ({ active }: {
 }) => {
   const {
     navData, deviationCurve, fuelUnit, fuelCurve, importNav,
-    setSavedDeviationCurves, setSavedFuelCurves, setDeviationPreset, setFuelPreset
+    setSavedDeviationCurves, setSavedFuelCurves, deviationPreset, fuelPreset,
+    updateDeviationPreset, updateFuelPreset
   } = useContext(MapContext)!;
   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
 
@@ -249,7 +250,7 @@ export const NavLogPage = ({ active }: {
                   ]))
                 })
 
-                setTimeout(() => setDeviationPreset(dev.name), 100);
+                setTimeout(() => updateDeviationPreset(dev.name), 100);
               }
 
               if (result['fuel'] !== undefined) {
@@ -268,7 +269,7 @@ export const NavLogPage = ({ active }: {
                   ]))
                 })
 
-                setTimeout(() => setFuelPreset(fuel.name), 100);
+                setTimeout(() => updateFuelPreset(fuel.name), 100);
               }
 
             } else {
@@ -289,7 +290,7 @@ export const NavLogPage = ({ active }: {
 
     document.body.appendChild(input);
     input.click();
-  }, [emptyPopup, importNav, setDeviationPreset, setFuelPreset, setPopup, setSavedDeviationCurves, setSavedFuelCurves])
+  }, [emptyPopup, importNav, setPopup, setSavedDeviationCurves, setSavedFuelCurves, updateDeviationPreset, updateFuelPreset])
 
   const [tabs, tabElems, tabNames] = useMemo(() => {
     const elems: ReactElement[] = [];
@@ -355,11 +356,19 @@ export const NavLogPage = ({ active }: {
         loadedFuel: data.loadedFuel,
         departureTime: data.departureTime,
       })),
-      deviationCurve: deviationCurve,
+      deviationCurve: deviationPreset === 'custom' ? deviationCurve : [],
+      deviationPreset: deviationPreset,
       fuelUnit: fuelUnit,
-      fuelCurve: fuelCurve
+      fuelCurve: fuelPreset === 'custom' ? fuelCurve.map(elem => ({
+        thrust: elem[0],
+        curves: elem[1].map(curve => ({
+          alt: curve[0],
+          values: curve[1]
+        }))
+      })) : [],
+      fuelPreset: fuelPreset
     })
-  }, [deviationCurve, fuelCurve, fuelUnit, navData]);
+  }, [deviationCurve, deviationPreset, fuelCurve, fuelPreset, fuelUnit, navData]);
 
   useEffect(() => {
     if (!tabs.find(value => value === tab)) {

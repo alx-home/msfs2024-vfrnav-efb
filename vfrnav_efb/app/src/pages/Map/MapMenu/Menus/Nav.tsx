@@ -232,7 +232,7 @@ export const Nav = ({ closeMenu, className, style }: {
 }) => {
   const efbConnected = useEFBServer();
 
-  const { addNav, navData, deviationCurve, fuelUnit, fuelCurve, reorderNav } = useContext(MapContext)!;
+  const { addNav, navData, deviationCurve, deviationPreset, fuelUnit, fuelCurve, fuelPreset, reorderNav } = useContext(MapContext)!;
   const key = useMemo(() => navData.reduce((prev, elem) => { return prev + ";" + elem.name; }, ""), [navData]);
   const [draggable, setDraggable] = useState(true);
   const childs = useMemo(() => navData.map((item, index) => {
@@ -262,11 +262,19 @@ export const Nav = ({ closeMenu, className, style }: {
         loadedFuel: data.loadedFuel,
         departureTime: data.departureTime,
       })),
-      deviationCurve: deviationCurve,
+      deviationCurve: deviationPreset === 'custom' ? deviationCurve : [],
+      deviationPreset: deviationPreset,
       fuelUnit: fuelUnit,
-      fuelCurve: fuelCurve
+      fuelCurve: fuelPreset === 'custom' ? fuelCurve.map(elem => ({
+        thrust: elem[0],
+        curves: elem[1].map(curve => ({
+          alt: curve[0],
+          values: curve[1]
+        }))
+      })) : [],
+      fuelPreset: fuelPreset
     })
-  }, [deviationCurve, fuelCurve, fuelUnit, navData]);
+  }, [deviationCurve, deviationPreset, fuelCurve, fuelPreset, fuelUnit, navData]);
 
   const onOrdersChange = useMemo(() => (orders: number[]) => {
     reorderNav(orders);

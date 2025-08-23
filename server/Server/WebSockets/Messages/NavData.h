@@ -127,20 +127,44 @@ struct NavData {
    };
 };
 
+struct FuelCurve {
+   uint16_t                                  alt_{};
+   std::vector<std::pair<int16_t, uint16_t>> values_{};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"alt", &FuelCurve::alt_},
+     js::_{"values", &FuelCurve::values_},
+   };
+};
+
+struct FuelCurves {
+   uint16_t               thrust_{};
+   std::vector<FuelCurve> curves_{};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"thrust", &FuelCurves::thrust_},
+     js::_{"curves", &FuelCurves::curves_},
+   };
+};
+
 struct ExportNav {
    bool header_{true};
 
    std::vector<NavData>               data_{};
    std::vector<std::array<double, 2>> deviation_curve_{};
+   std::string                        deviation_preset_{};
+   std::vector<FuelCurves>            fuel_curve_{};
+   std::string                        fuel_preset_{};
    js::Enum<"gal", "liter">           fuel_unit_{"gal"};
-   double                             fuel_consumption_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__EXPORT_NAV__", &ExportNav::header_},
      js::_{"data", &ExportNav::data_},
      js::_{"deviationCurve", &ExportNav::deviation_curve_},
+     js::_{"deviationPreset", &ExportNav::deviation_preset_},
      js::_{"fuelUnit", &ExportNav::fuel_unit_},
-     js::_{"fuelConsumption", &ExportNav::fuel_consumption_},
+     js::_{"fuelCurve", &ExportNav::fuel_curve_},
+     js::_{"fuelPreset", &ExportNav::fuel_preset_},
    };
 };
 

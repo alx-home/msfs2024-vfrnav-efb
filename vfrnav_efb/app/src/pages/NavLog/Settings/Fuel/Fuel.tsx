@@ -19,25 +19,22 @@ import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { SettingsTabs } from "../../Settings";
 import { Datasets, Graph } from "../Graph/Graph";
 import { useDataset } from "./Dataset";
-import { useSettings } from "./Settings";
+import { Settings } from "./Settings";
 
 
 export const Fuel = ({ curentPage, active: parentActive }: {
    curentPage: SettingsTabs,
    active: boolean
 }) => {
-   const { fuelUnit } = useContext(MapContext)!;
+   const { fuelUnit, updateFuelPreset: updatePreset, fuelSettingsOat: oat, setFuelSettingsOat: setOat } = useContext(MapContext)!;
    const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gph' : 'l/h', [fuelUnit])
    const xUnit = useCallback((val: number) => val < 10000 ? 'ft' : '', [])
    const toUnit = useCallback((value: number) =>
       fuelUnit === 'gal' ? value * 3.785411784 : value
       , [fuelUnit])
 
-   const [oat, setOat] = useState(20)
    const [datasets, updateDataset, speeds] = useDataset({ oat: oat });
-   const { Settings, setPreset } = useSettings({ setOat: setOat })
-
-   const updateOat = useCallback((oat: number) => setOat(Math.round(oat)), [])
+   const updateOat = useCallback((oat: number) => setOat(Math.round(oat)), [setOat])
 
    const bounds = useMemo((): [[number, number], [number, number]] => ([[0, 25000], [0, 500]]), [])
    const step = useMemo((): [number, number] => [1000, 10], [])
@@ -53,17 +50,17 @@ export const Fuel = ({ curentPage, active: parentActive }: {
          ? value(datasets)
          : value);
 
-      setPreset('custom')
+      updatePreset('custom')
       updateDataset(newDataset, true);
-   }, [datasets, setPreset, updateDataset])
+   }, [datasets, updatePreset, updateDataset])
    const setDataset = useCallback((value: (Datasets | ((_value: Datasets) => Datasets))) => {
       const newDataset = ((typeof value === 'function')
          ? value(datasets)
          : value);
 
-      setPreset('custom')
+      updatePreset('custom')
       updateDataset(newDataset, false);
-   }, [datasets, setPreset, updateDataset]);
+   }, [datasets, updatePreset, updateDataset]);
 
    useEffect(() => {
       setReload(true)
@@ -80,7 +77,7 @@ export const Fuel = ({ curentPage, active: parentActive }: {
    }>
       <div className="relative flex flex-col w-full h-full">
          <div className="flex w-full justify-center text-xl pb-2">Fuel Consumption</div>
-         {Settings}
+         <Settings />
          <Graph bounds={bounds} datasets={datasets} fullCoverMode={'Weak'} setDatasets={setDataset}
             setDatasetsWeak={setDatasetsWeak} step={step} active={active}
             xValuesStr={xValuesStr} yValuesStr={yValuesStr}

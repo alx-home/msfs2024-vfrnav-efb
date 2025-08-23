@@ -14,7 +14,7 @@
  */
 
 import { Collection, Map as olMap, MapBrowserEvent, getUid, MapEvent } from 'ol';
-import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { NavData } from './MapMenu/Menus/Nav';
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
@@ -27,9 +27,10 @@ import { LineString, SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
 import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
-import { messageHandler } from '@Settings/SettingsProvider';
+import { messageHandler, SettingsContext } from '@Settings/SettingsProvider';
 import { Deviation, ExportNavRecord, FuelUnit, getFuelConsumption, h125Curve, FuelPoint, Properties, Alt } from '@shared/NavData';
 import { getLength } from 'ol/sphere';
+import { PresetPopup } from '@pages/NavLog/Settings/Fuel/PresetPopup';
 
 export type Interactive = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,19 +107,21 @@ export const MapContext = createContext<{
 
   savedFuelCurves: [string, number, [number, FuelPoint[]][]][]
   setSavedFuelCurves: Dispatch<SetStateAction<[string, number, [number, FuelPoint[]][]][]>>,
+  fuelSettingsOat: number,
+  setFuelSettingsOat: Dispatch<SetStateAction<number>>,
 
   fuelCurve: [number, FuelPoint[]][]
   setFuelCurve: Dispatch<SetStateAction<[number, FuelPoint[]][]>>,
-  setFuelPresetRef: RefObject<Dispatch<SetStateAction<string>> | undefined>,
-  setFuelPreset: Dispatch<SetStateAction<string>>,
+  updateFuelPreset: (_name: string, _user?: boolean) => void,
+  fuelPreset: string,
 
   savedDeviationCurves: [string, number, [Alt, number][]][]
   setSavedDeviationCurves: Dispatch<SetStateAction<[string, number, [Alt, number][]][]>>,
 
   deviationCurve: [Alt, number][]
   setDeviationCurve: Dispatch<SetStateAction<[Alt, number][]>>,
-  setDeviationPresetRef: RefObject<Dispatch<SetStateAction<string>> | undefined>,
-  setDeviationPreset: Dispatch<SetStateAction<string>>,
+  updateDeviationPreset: (_name: string, _user?: boolean) => void,
+  deviationPreset: string,
 
   importNavRef: RefObject<((_data: {
     name: string;
@@ -257,6 +260,7 @@ const updateNavProps = (deviationCurve: Deviation[], props: Properties, prevCoor
 }
 
 const MapContextProvider = ({ children }: PropsWithChildren) => {
+  const { setPopup } = useContext(SettingsContext)!
   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
   const dragging = useRef(false);
 
@@ -431,10 +435,16 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         [25000, [[20, 145]]]
       ]]])
 
-  const setFuelPresetRef = useRef<Dispatch<SetStateAction<string>>>(undefined)
-  const setFuelPreset = useCallback<Dispatch<SetStateAction<string>>>((value) => {
-    setFuelPresetRef.current?.(value)
+  const [fuelPreset, setFuelPreset] = useState(savedFuelCurves.length ? savedFuelCurves[0][0] : 'custom')
+  const [nextFuelPreset, setNextFuelPreset] = useState<{
+    value: string,
+    user?: boolean
+  } | undefined>(undefined)
+  const updateFuelPreset = useCallback((value: string, user?: boolean) => {
+    setNextFuelPreset({ value, user })
   }, [])
+
+  const [fuelSettingsOat, setFuelSettingsOat] = useState(20)
 
   const [savedDeviationCurves, setSavedDeviationCurves] = useState<[string, number, [number, number][]][]>([])
   const [deviationCurve, setDeviationCurve] = useState<[number, number][]>(
@@ -444,10 +454,15 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         [0, 0],
         [360, 0]
       ])
-  const setDeviationPresetRef = useRef<Dispatch<SetStateAction<string>>>(undefined)
-  const setDeviationPreset = useCallback<Dispatch<SetStateAction<string>>>((value) => {
-    setDeviationPresetRef.current?.(value)
+  const [deviationPreset, setDeviationPreset] = useState(savedDeviationCurves.length ? savedDeviationCurves[0][0] : 'none')
+  const [nextDeviationPreset, setNextDeviationPreset] = useState<{
+    value: string,
+    user?: boolean
+  } | undefined>(undefined)
+  const updateDeviationPreset = useCallback((value: string, user?: boolean) => {
+    setNextDeviationPreset({ value, user });
   }, [])
+
 
   const importNavRef = useRef<(_data: {
     name: string;
@@ -477,6 +492,79 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const updateNavPropsCB = useCallback((props: Properties, prevCoords: Coordinate, coords: Coordinate) =>
     updateNavProps(deviationCurve, props, prevCoords, coords, fuelCurve)
     , [deviationCurve, fuelCurve])
+
+
+  useEffect(() => {
+    if (nextDeviationPreset) {
+      const { value, user } = nextDeviationPreset;
+      setNextDeviationPreset(undefined);
+
+      if (value === 'custom') {
+        setDeviationPreset('custom')
+      } else {
+        if (value === 'none') {
+          setDeviationCurve([[0, 0], [360, 0]])
+          setDeviationPreset('none')
+        } else {
+          const curve = savedDeviationCurves.find(e => e[0] === value);
+
+          if (curve?.[2].length) {
+            setDeviationCurve(curve[2])
+            setDeviationPreset(value)
+          } else {
+            return;
+          }
+        }
+
+        if ((user ?? true)) {
+          messageHandler.send({
+            __DEFAULT_DEVIATION_PRESET__: true,
+
+            name: value,
+            date: (new Date()).getTime()
+          })
+        }
+      }
+    }
+  }, [nextDeviationPreset, savedDeviationCurves])
+
+  useEffect(() => {
+    if (nextFuelPreset) {
+      const { value, user } = nextFuelPreset
+      setNextFuelPreset(undefined);
+
+      if (value === 'custom') {
+        setFuelPreset('custom')
+      } else if (value === 'simple') {
+        setPopup(<PresetPopup validate={(fuel) => {
+          setFuelCurve([
+            [100, [
+              [0, [[20, fuel]]],
+              [25000, [[20, fuel]]]
+            ]],
+          ])
+          setFuelSettingsOat(20)
+          setFuelPreset('custom')
+        }} />)
+      } else {
+        const curve = savedFuelCurves.find(e => e[0] === value);
+
+        if (curve?.[2].length) {
+          setFuelCurve(curve[2])
+          setFuelPreset(value)
+
+          if ((user ?? true)) {
+            messageHandler.send({
+              __DEFAULT_FUEL_PRESET__: true,
+
+              name: value,
+              date: (new Date()).getTime()
+            })
+          }
+        }
+      }
+    }
+  }, [nextFuelPreset, savedFuelCurves, setPopup])
 
   useEffect(() => {
     setNavData(navData => navData.map(elem => (
@@ -686,8 +774,10 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
     setSavedFuelCurves: setSavedFuelCurves,
     savedFuelCurves: savedFuelCurves,
-    setFuelPresetRef: setFuelPresetRef,
-    setFuelPreset: setFuelPreset,
+    updateFuelPreset: updateFuelPreset,
+    fuelPreset: fuelPreset,
+    fuelSettingsOat: fuelSettingsOat,
+    setFuelSettingsOat: setFuelSettingsOat,
 
     fuelCurve: fuelCurve,
     setFuelCurve: setFuelCurve,
@@ -697,12 +787,12 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
     deviationCurve: deviationCurve,
     setDeviationCurve: setDeviationCurve,
-    setDeviationPresetRef: setDeviationPresetRef,
-    setDeviationPreset: setDeviationPreset,
+    updateDeviationPreset: updateDeviationPreset,
+    deviationPreset: deviationPreset,
 
     importNavRef: importNavRef,
     importNav: importNav
-  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, setFuelPreset, fuelCurve, savedDeviationCurves, deviationCurve, setDeviationPreset, importNav, activeRecords]);
+  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav, activeRecords]);
 
   return (
     <MapContext.Provider

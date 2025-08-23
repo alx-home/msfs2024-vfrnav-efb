@@ -17,14 +17,13 @@ import { MapContext } from "@pages/Map/MapContext";
 import { useContext, useMemo, useCallback, SetStateAction } from 'react';
 import { SettingsTabs } from "../../Settings";
 import { Datasets, Graph } from "../Graph/Graph";
-import { useSettings } from "./Settings";
+import { Settings } from "./Settings";
 
 export const Deviation = ({ curentPage, active: parentActive }: {
    curentPage: SettingsTabs,
    active: boolean
 }) => {
-   const { Settings, setPreset } = useSettings()
-   const { deviationCurve, setDeviationCurve } = useContext(MapContext)!;
+   const { deviationCurve, updateDeviationPreset: updatePreset, setDeviationCurve } = useContext(MapContext)!;
    const bounds = useMemo(() => ([[0, 360], [-10, 10]] as [[number, number], [number, number]]), [])
    const step = useMemo(() => ([5, 1] as [number, number]), [])
    const active = useMemo(() => (curentPage === 'Deviation') && parentActive, [curentPage, parentActive])
@@ -39,14 +38,14 @@ export const Deviation = ({ curentPage, active: parentActive }: {
          ? value(dataset)
          : value);
 
-      setPreset('custom')
+      updatePreset('custom')
       setDeviationCurve(
          newDataset[0].map(elem => ([
             elem[0],
             elem[1]
          ]))
       )
-   }, [dataset, setDeviationCurve, setPreset])
+   }, [dataset, setDeviationCurve, updatePreset])
 
 
    const legend = useCallback(() => 'Dev', [])
@@ -55,7 +54,7 @@ export const Deviation = ({ curentPage, active: parentActive }: {
       + (('Deviation' === curentPage) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
       <div className="flex w-full justify-center text-xl pb-2">Compass Deviation</div>
-      {Settings}
+      <Settings />
       <Graph bounds={bounds} datasets={dataset} fullCoverMode={'Full'} setDatasets={setDataset}
          step={step} active={active} datasetStr={legend}
          xLegend='MH' yLegend='Dev' xValuesStr={valueStr} yValuesStr={valueStr} />
