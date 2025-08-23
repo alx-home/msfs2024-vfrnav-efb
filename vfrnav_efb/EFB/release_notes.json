@@ -442,6 +442,16 @@
             "     - Resolved button sizing issue on the navdata page in MSFS EFB.",
             "       Correction de la taille des boutons sur la page des données de navigation dans l'EFB MSFS."
          ]
+      },
+      {
+         "version": "1.6.1",
+         "date": "AUG 23, 2025",
+         "notes": [
+            "### Installer/Server (new) ###",
+            "***🐞 Fixes / Corrections:***",
+            "     - The installer now correctly handles the Community folder, which was previously wiped.",
+            "       Le programme d'installation gère désormais correctement le dossier Community, qui était auparavant supprimé."
+         ]
       }
    ]
 }
