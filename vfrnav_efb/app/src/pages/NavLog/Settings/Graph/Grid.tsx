@@ -13,18 +13,20 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-export const Grid = ({ xValues, yValues, lastRatio }: {
+import { memo } from "react"
+
+const GridComp = ({ xValues, yValues, lastRatio }: {
    xValues: number[],
    yValues: number[],
    lastRatio: [number, number]
 }) => {
    return yValues.toSpliced(yValues.length - 1).map((rowValue, row) =>
-      <div key={'row-' + row} className='flex flex-row w-full grow'
+      <div key={'row-' + row} className='flex flex-row w-full grow pointer-events-none select-none'
          style={
             (row === 0)
                ? { flexGrow: lastRatio[1] }
                : {}
-         }>
+         } inert={true} >
          {
             xValues.toSpliced(0, 1).map((colValue, col) =>
                <div key={"content-" + col + '-' + row} className={
@@ -54,3 +56,5 @@ export const Grid = ({ xValues, yValues, lastRatio }: {
       </div>
    )
 }
+
+export const Grid = memo(GridComp)

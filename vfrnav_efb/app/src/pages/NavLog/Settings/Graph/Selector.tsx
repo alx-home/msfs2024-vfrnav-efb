@@ -1,4 +1,3 @@
-
 /*
  * SPDX-License-Identifier: (GNU General Public License v3.0 only)
  * Copyright © 2024 Alexandre GARCIN
@@ -13,8 +12,9 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
+import { memo } from 'react';
 
-export const Selector = ({ hoverPos, selectorCount, editIndex }: {
+const SelectorComp = ({ hoverPos, selectorCount, editIndex }: {
    hoverPos: [number, number]
    selectorCount: number,
    editIndex: [number, number] | undefined,
@@ -31,3 +31,4 @@ export const Selector = ({ hoverPos, selectorCount, editIndex }: {
    </div>
 }
 
+export const Selector = memo(SelectorComp)

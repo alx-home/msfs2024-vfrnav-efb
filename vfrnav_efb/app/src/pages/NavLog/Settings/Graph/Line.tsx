@@ -14,10 +14,10 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Dispatch, RefObject, SetStateAction, useCallback, useMemo, useRef } from "react";
+import { Dispatch, RefObject, SetStateAction, useCallback, useMemo, useRef, memo } from 'react';
 import { Point } from "./Point";
 
-export const Line = ({
+const LineComp = ({
    dataset_index, setSelector, from, to, bounds, parentRef, setSelectorCount, setPointCount,
    addPoint, editPoint, removePoint, editIndex, index, graphWidth, graphHeight
 }: {
@@ -30,9 +30,9 @@ export const Line = ({
    bounds: [[number, number], [number, number]],
    index: number,
    parentRef: RefObject<HTMLDivElement | null>,
-   addPoint: (_dataset_index: number, _index: number) => void,
+   addPoint: (_dataset_index: number, _index: number, _mouse_pos: [number, number]) => void,
    removePoint: (_dataset_index: number, _index: number) => void,
-   editPoint: (_dataset_index: number, _index: number) => void,
+   editPoint: (_dataset_index: number, _index: number, _mouse_pos: [number, number]) => void,
    editIndex: [number, number] | undefined,
    graphWidth: number,
    graphHeight: number
@@ -124,8 +124,8 @@ export const Line = ({
                onPointerEnter={() => {
                   setSelectorCount(1)
                }}
-               onPointerDown={() => {
-                  addPoint(dataset_index, index + 1)
+               onPointerDown={(e) => {
+                  addPoint(dataset_index, index + 1, [e.clientX, e.clientY])
                }}
             />
             <div className="relative flex w-full h-full">
@@ -138,3 +138,5 @@ export const Line = ({
       </div>
    </>
 }
+
+export const Line = memo(LineComp)

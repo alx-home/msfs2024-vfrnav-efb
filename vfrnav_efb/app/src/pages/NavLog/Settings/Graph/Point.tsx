@@ -13,15 +13,15 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Dispatch, RefObject, SetStateAction, useState } from "react"
+import { Dispatch, RefObject, SetStateAction, useState, memo } from 'react';
 
-export const Point = ({ pos, index, editIndex, editPoint, removePoint, interpolated, dataset_index, setPointCount, setSelector, parentRef }: {
+const PointComp = ({ pos, index, editIndex, editPoint, removePoint, interpolated, dataset_index, setPointCount, setSelector, parentRef }: {
    dataset_index: number
    pos: [number, number],
    index: number,
    editIndex: [number, number] | undefined,
-   editPoint: (_dataset_index: number, _index: number) => void,
-   removePoint: (_dataset_index: number, _index: number) => void,
+   editPoint: (_dataset_index: number, _index: number, _mouse_pos: [number, number]) => void,
+   removePoint: (_dataset_index: number, _index: number, _mouse_pos: [number, number]) => void,
    setPointCount: Dispatch<SetStateAction<number>>
    interpolated: boolean
    setSelector: (_value: { dataset: number, pos: [number, number] }) => void,
@@ -48,10 +48,10 @@ export const Point = ({ pos, index, editIndex, editPoint, removePoint, interpola
 
             if ((now.getTime() - lastDown.getTime() < 300) || ((e.button === 1) || e.button === 2)) {
                setPointCount(0)
-               removePoint(dataset_index, index)
+               removePoint(dataset_index, index, [e.clientX, e.clientY])
             } else {
                setLastDown(now)
-               editPoint(dataset_index, index)
+               editPoint(dataset_index, index, [e.clientX, e.clientY])
             }
          }}
       >
@@ -66,3 +66,5 @@ export const Point = ({ pos, index, editIndex, editPoint, removePoint, interpola
       </div>
    </div>
 }
+
+export const Point = memo(PointComp)

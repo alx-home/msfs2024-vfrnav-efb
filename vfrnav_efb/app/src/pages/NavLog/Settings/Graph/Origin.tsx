@@ -13,7 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-export const Origin = ({ bounds, xValuesStr, yValuesStr }: {
+import { memo } from "react"
+
+const OriginComp = ({ bounds, xValuesStr, yValuesStr }: {
    bounds: [[number, number], [number, number]],
    xValuesStr?: (_value: number) => string,
    yValuesStr?: (_value: number) => string,
@@ -39,3 +41,5 @@ export const Origin = ({ bounds, xValuesStr, yValuesStr }: {
       </div>
    </div>
 }
+
+export const Origin = memo(OriginComp)

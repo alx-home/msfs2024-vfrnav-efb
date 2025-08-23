@@ -14,7 +14,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-export const Legend = ({ showLegend, datasetLegend, datasetStr, hoverValue, bounds, span,
+import { memo } from "react"
+
+const LegendComp = ({ showLegend, datasetLegend, datasetStr, hoverValue, bounds, span,
    hoverPos, pointCount, editIndex, selectorDataset, selectorCount,
    xLegend, xValuesStr, xUnit, yLegend, yValuesStr, yUnit, datasetUnit }: {
       showLegend?: boolean,
@@ -105,3 +107,5 @@ export const Legend = ({ showLegend, datasetLegend, datasetStr, hoverValue, boun
       </div>
    </div>
 }
+
+export const Legend = memo(LegendComp)

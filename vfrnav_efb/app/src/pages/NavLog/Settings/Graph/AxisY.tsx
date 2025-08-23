@@ -13,7 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-export const AxisY = ({ yValues, yValuesStr, bounds, lastRatio }: {
+import { memo } from "react"
+
+const AxisYComp = ({ yValues, yValuesStr, bounds, lastRatio }: {
    yValues: number[],
    yValuesStr?: (_value: number) => string,
    bounds: [[number, number], [number, number]],
@@ -42,3 +44,5 @@ export const AxisY = ({ yValues, yValuesStr, bounds, lastRatio }: {
       </div>
    </div>
 }
+
+export const AxisY = memo(AxisYComp)

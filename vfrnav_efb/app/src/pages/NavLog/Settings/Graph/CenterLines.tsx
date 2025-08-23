@@ -1,4 +1,3 @@
-
 /*
  * SPDX-License-Identifier: (GNU General Public License v3.0 only)
  * Copyright © 2024 Alexandre GARCIN
@@ -14,7 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-export const CenterLines = ({ bounds, xValues, yValues, span }: {
+import { memo } from 'react';
+
+const CenterLinesComp = ({ bounds, xValues, yValues, span }: {
    xValues: number[],
    yValues: number[],
    bounds: [[number, number], [number, number]],
@@ -40,3 +41,5 @@ export const CenterLines = ({ bounds, xValues, yValues, span }: {
       }
    </>
 }
+
+export const CenterLines = memo(CenterLinesComp)

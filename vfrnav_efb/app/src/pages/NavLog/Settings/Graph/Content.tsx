@@ -15,14 +15,14 @@
  */
 
 import { useMouseMove, useMouseRelease } from "@alx-home/Events";
-import { Dispatch, SetStateAction, useRef, useState, useMemo, useCallback, useEffect } from "react";
+import { Dispatch, SetStateAction, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { Datasets, FullCoverMode } from "./Graph";
 import { Selector } from "./Selector";
 import { Line } from "./Line";
 import { Legend } from "./Legend";
 
 export const Content = ({ baseDatasets, bounds, span, showLegend, datasetLegend, datasetStr,
-   xLegend, xValuesStr, xUnit, yLegend, yValuesStr, yUnit, datasetUnit, active, fullCoverMode,
+   xLegend, xValuesStr, xUnit, yLegend, yValuesStr, yUnit, datasetUnit, fullCoverMode, active,
    setBaseDatasets, setBaseDatasetsWeak, xMargin, graphWidth, graphHeight
 }: {
    active?: boolean,
@@ -47,9 +47,6 @@ export const Content = ({ baseDatasets, bounds, span, showLegend, datasetLegend,
    span: [number, number],
 }) => {
    const graphRef = useRef<HTMLDivElement>(null);
-   const mouse = useMouseMove(active ?? true);
-   const mousePos = useRef<[number, number]>([0, 0]);
-   const mouseUp = useMouseRelease(active ?? true);
 
    const [selectorPos_, setSelectorPos] = useState<{ dataset: number, pos: [number, number] }>({ dataset: 0, pos: [0, 0] })
    const [selectorPos, selectorDataset] = useMemo(() => [selectorPos_.pos, selectorPos_.dataset], [selectorPos_])
@@ -59,6 +56,10 @@ export const Content = ({ baseDatasets, bounds, span, showLegend, datasetLegend,
    const [editIndex, setEditIndex] = useState<[number, number] | undefined>(undefined);
    const [editCursor, setEditCursor] = useState<[number, number, boolean] | undefined>(undefined)
    const [editMode, setEditMode] = useState<boolean>(false)
+
+   const mouse = useMouseMove((active ?? true) && (editIndex !== undefined));
+   const mousePos = useRef<[number, number]>([0, 0]);
+   const mouseUp = useMouseRelease((active ?? true) && (editIndex !== undefined));
 
    const getPixelsFromPoint = useCallback((coords: [number, number]): [number, number] => {
       const cbounds = graphRef.current?.getBoundingClientRect();
@@ -115,18 +116,18 @@ export const Content = ({ baseDatasets, bounds, span, showLegend, datasetLegend,
    }, [baseDatasets, bounds, editMode, fullCoverMode, xMargin])
 
 
-   const addPoint = useCallback((dataset_index: number, index: number) => {
+   const addPoint = useCallback((dataset_index: number, index: number, mouse_pos: [number, number]) => {
       const cbounds = graphRef.current!.getBoundingClientRect();
-      const pos = [mousePos.current[0] - cbounds.left, cbounds.height - (mousePos.current[1] - cbounds.top)];
+      const pos = [mouse_pos[0] - cbounds.left, cbounds.height - (mouse_pos[1] - cbounds.top)];
 
       setEditCursor([...toBounds(dataset_index, index, [bounds[0][0] + pos[0] * span[0] / cbounds.width, bounds[1][0] + pos[1] * span[1] / cbounds.height]), false])
       setEditIndex([dataset_index, index])
       setPointCount(1)
-   }, [mousePos, toBounds, span, bounds])
+   }, [toBounds, span, bounds])
 
-   const editPoint = useCallback((dataset_index: number, index: number) => {
+   const editPoint = useCallback((dataset_index: number, index: number, mouse_pos: [number, number]) => {
       setEditMode(true)
-      addPoint(dataset_index, index)
+      addPoint(dataset_index, index, mouse_pos)
    }, [addPoint, setEditMode])
 
    const removePoint = useCallback((dataset_index: number, index: number) => {
@@ -161,13 +162,13 @@ export const Content = ({ baseDatasets, bounds, span, showLegend, datasetLegend,
    )), [addPoint, bounds, datasets, editIndex, editPoint, graphHeight, graphWidth, removePoint])
 
    useEffect(() => {
-      if (editIndex !== undefined) {
+      if ((editIndex !== undefined) && mouse) {
          setEditCursor([...getBoundedPointFromPixels(editIndex[0], editIndex[1], [mouse!.x, mouse!.y]), false])
       }
    }, [editIndex, getBoundedPointFromPixels, mouse])
 
    useEffect(() => {
-      if (mouseUp && editIndex !== undefined) {
+      if (mouseUp && (editIndex !== undefined)) {
          setEditIndex(undefined)
          setBaseDatasets(values => values.toSpliced(editIndex[0], 1, values[editIndex[0]].toSpliced(editIndex[1], editMode ? 1 : 0, [...getBoundedPointFromPixels(editIndex[0], editIndex[1], mousePos.current), false])))
          setEditMode(false)
