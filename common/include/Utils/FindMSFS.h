@@ -13,14 +13,6 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
 #include <string>
-#include <vector>
 
-namespace launch_mode {
-std::vector<std::string> Startup(bool clean = false);
-std::vector<std::string> Login(bool clean = false);
-std::vector<std::string> Never();
-
-}  // namespace launch_mode
+std::string FindMSFS();

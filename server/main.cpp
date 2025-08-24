@@ -186,11 +186,15 @@ main() {
       auto& settings = registry.alx_home_->settings_;
 
       auto const destination = *settings->destination_;
-      auto const community   = *settings->community_;
+      auto const addon       = *settings->addon_;
 
       if (auto const error = launch_mode::Never(); error.size()) {
+         std::string error_str{};
+         for (auto const& value : error) {
+            error_str += value + " ";
+         }
          MessageBox(
-           nullptr, error.c_str(), "MSFS2024 VFRNav' Server uninstaller", MB_OK | MB_ICONWARNING
+           nullptr, error_str.c_str(), "MSFS2024 VFRNav' Server uninstaller", MB_OK | MB_ICONWARNING
          );
       }
       registry.Clear();
@@ -215,10 +219,10 @@ main() {
          );
       }
 
-      if (std::filesystem::exists(community) && !std::filesystem::remove_all(community)) {
+      if (std::filesystem::exists(addon) && !std::filesystem::remove_all(addon)) {
          MessageBox(
            nullptr,
-           ("Couldn't clean " + community).c_str(),
+           ("Couldn't clean " + addon).c_str(),
            "MSFS2024 VFRNav' Server uninstaller",
            MB_OK | MB_ICONWARNING
          );

@@ -180,11 +180,11 @@ export const Body = ({ setCanContinue, validate }: {
             </Elem>
             <h2 className='mt-4 text-lg'>Install Path</h2>
             <Elem>
-               <div className='m-auto mr-4'>Community :</div>
+               <div className='m-auto mr-4 w-14'>Addon :</div>
                {communityElem}
             </Elem>
             <Elem>
-               <div className='m-auto mr-4'>Destination :</div>
+               <div className='m-auto mr-4 w-14'>Server :</div>
                {installPathElem}
             </Elem>
          </div>
@@ -220,6 +220,38 @@ const RunClosePopup = ({ resolve }: {
    </div>
 };
 
+const RunCleanPathPopup = ({ resolve, path, close }: {
+   resolve: (_: boolean | PromiseLike<boolean>) => void,
+   path: string,
+   close?: () => void
+}) => {
+   const abort = useCallback(() => {
+      resolve(false);
+      close!();
+   }, [close, resolve]);
+   const validate = useCallback(() => {
+      resolve(true);
+      close!();
+   }, [close, resolve]);
+
+   return <div className='flex flex-col gap-y-5 grow'>
+      <div className='text-2xl text-yellow-500'>Warning</div>
+      <div className='text-sm gap-y-2 overflow-hidden'>
+         <Scroll>
+            <div>
+               Folder &ldquo;{path}&ldquo; will be removed
+            </div>
+         </Scroll>
+      </div>
+      <div className='flex flex-row [&>*>*]:px-14'>
+         <Button active={true} className="grow" onClick={validate}>Continue</Button>
+         <div className='flex flex-row [&>*]:bg-red-800 [&>*]:hover:bg-red-500 [&>*]:hover:border-white'>
+            <Button active={true} onClick={abort}>Cancel</Button>
+         </div>
+      </div>
+   </div>
+};
+
 window.start_program = async (): Promise<boolean> => {
    let resolve: ((_: boolean | PromiseLike<boolean>) => void) | null = null;
    const promise = new Promise<boolean>((resolve_) => {
@@ -230,3 +262,14 @@ window.start_program = async (): Promise<boolean> => {
 
    return promise;
 };
+
+window.clean_path = async (path: string): Promise<boolean> => {
+   let resolve: ((_: boolean | PromiseLike<boolean>) => void) | null = null;
+   const promise = new Promise<boolean>((resolve_) => {
+      resolve = resolve_;
+   });
+
+   addPopup(<RunCleanPathPopup resolve={resolve!} path={path} />, 1)
+
+   return promise;
+}

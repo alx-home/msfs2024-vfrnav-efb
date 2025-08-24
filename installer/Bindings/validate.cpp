@@ -24,12 +24,14 @@
 #include "windows/Process.h"
 #include "windows/Registry/impl/Registry.h"
 #include "windows/Shortcuts.h"
+#include "Utils/FindMSFS.h"
 
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <numeric>
 #include <string>
+#include <system_error>
 #include <variant>
 #include <vector>
 #include <handleapi.h>
@@ -155,7 +157,7 @@ struct Layout {
 Promise<>
 Main::Validate(
   js::Enum<"Startup", "Login", "Never"> startupOption,
-  std::string                           communityPath,
+  std::string                           addonPath,
   std::string                           installPath
 ) {
    auto const lock = win32::CreateLock("MSFS_VFR_NAV_SERVER");
@@ -171,52 +173,53 @@ Main::Validate(
       co_return Fatal("Parent path not found : ", "\"" + installPath + "\"");
    }
 
-   if (!std::filesystem::exists(std::filesystem::path{communityPath}.parent_path())) {
-      co_return Fatal("Path not found : ", "\"" + communityPath + "\"");
+   if (std::filesystem::path const path{addonPath};
+       !path.has_parent_path() || !std::filesystem::exists(path.parent_path())) {
+      co_return Fatal("Parent path not found : ", "\"" + addonPath + "\"");
    }
-
-   if (!std::filesystem::create_directory(installPath)) {
-      if (!std::filesystem::exists(installPath) || !std::filesystem::is_directory(installPath)) {
-         co_return Fatal("Couldn't create directory : ", "\"" + installPath + "\"");
-      }
-   }
-
-   {
-      std::ofstream file(
-        installPath + "\\msfs2024-vfrnav_server.exe", std::ios::ate | std::ios::binary
-      );
-
-      // using namespace boost::iostreams;
-
-      // filtering_istreambuf in;
-      // in.push(zlib_decompressor());
-      // in.push(array_source{reinterpret_cast<char const*>(SERVER_BIN.data()), SERVER_BIN.size()});
-
-      // copy(in, file);
-
-      file.write(reinterpret_cast<char const*>(SERVER_BIN.data()), SERVER_BIN.size());
-   }
-
-   auto const shortcutPath =
-     GetAppData() + R"(\Microsoft\Windows\Start Menu\Programs\MSFS2024 VFRNav' Server.lnk)";
-   if (auto result = win32::CreateLink(
-         installPath + "\\msfs2024-vfrnav_server.exe", shortcutPath, "MSFS2024 VFRNav' Server"
-       );
-       !SUCCEEDED(result)) {
-      Warning("Couldn't create shortcut (" + std::to_string(result) + "):", shortcutPath);
-   }
-
-   auto const fsPath =
-     std::filesystem::path(communityPath).parent_path().parent_path().parent_path();
-   std::filesystem::path const exePath = fsPath.string() + "\\exe.xml";
 
    auto& registry = registry::Get();
    auto& settings = registry.alx_home_->settings_;
 
-   if (settings->launch_mode_) {
-      if (auto result = launch_mode::Never(); result.size()) {
-         Warning(result);
+   if (auto const addon = settings->addon_       ? *settings->addon_
+                          : settings->community_ ? *settings->community_
+                                                 : "";
+       addon.size() && std::filesystem::exists(addon)) {
+      if (co_await webview_.Call<bool>("clean_path", addon)) {
+         std::error_code ec{};
+         if (std::filesystem::remove_all(addon, ec) == static_cast<std::uintmax_t>(-1)) {
+            co_return Fatal("Couldn't cleanup previous version : ", ec.message(), addon);
+         }
+      } else {
+         co_return;
       }
+   }
+
+   if (std::filesystem::exists(addonPath)) {
+      if (co_await webview_.Call<bool>("clean_path", addonPath)) {
+         std::error_code ec{};
+         if (std::filesystem::remove_all(addonPath, ec) == static_cast<std::uintmax_t>(-1)) {
+            co_return Fatal("Couldn't cleanup : ", ec.message(), addonPath);
+         }
+      } else {
+         co_return;
+      }
+   }
+
+   if (auto const oldInstall = (settings->destination_ ? *settings->destination_ : "");
+       oldInstall.size() && (installPath != oldInstall) && std::filesystem::exists(oldInstall)) {
+      if (co_await webview_.Call<bool>("clean_path", oldInstall)) {
+         std::error_code ec{};
+         if (std::filesystem::remove_all(oldInstall, ec) == static_cast<std::uintmax_t>(-1)) {
+            co_return Fatal("Couldn't cleanup : ", ec.message(), oldInstall);
+         }
+      } else {
+         co_return;
+      }
+   }
+
+   if (auto result = launch_mode::Never(); result.size()) {
+      Warning(result);
    }
 
    auto const default_fuel_preset =
@@ -236,7 +239,7 @@ Main::Validate(
    uninstall->publisher_ = "alx-home";
    uninstall->uninstall_ = installPath + "\\msfs2024-vfrnav_server.exe --uninstall";
 
-   settings->community_         = communityPath;
+   settings->addon_             = addonPath;
    settings->destination_       = installPath;
    settings->auto_start_server_ = true;
    settings->server_port_ = server_port == -1 ? 48578ui16 : static_cast<uint16_t>(server_port);
@@ -249,6 +252,40 @@ Main::Validate(
       settings->default_fuel_preset_ = default_fuel_preset;
    }
 
+   {
+      std::error_code ec{};
+      std::filesystem::create_directory(installPath, ec);
+      if (ec) {
+         co_return Fatal("Couldn't create directory : ", ec.message(), "\"" + installPath + "\"");
+      }
+   }
+
+   {
+      std::ofstream file(
+        installPath + "\\msfs2024-vfrnav_server.exe", std::ios::ate | std::ios::binary
+      );
+
+      if (!file.is_open()) {
+         co_return Fatal(
+           "Couldn't create file : ", "\"" + installPath + "\\msfs2024-vfrnav_server.exe" + "\""
+         );
+      }
+
+      file.write(reinterpret_cast<char const*>(SERVER_BIN.data()), SERVER_BIN.size());
+   }
+
+   auto const shortcutPath =
+     GetAppData() + R"(\Microsoft\Windows\Start Menu\Programs\MSFS2024 VFRNav' Server.lnk)";
+   if (auto result = win32::CreateLink(
+         installPath + "\\msfs2024-vfrnav_server.exe", shortcutPath, "MSFS2024 VFRNav' Server"
+       );
+       !SUCCEEDED(result)) {
+      Warning("Couldn't create shortcut (" + std::to_string(result) + "):", shortcutPath);
+   }
+
+   auto const                  fsPath  = ::FindMSFS();
+   std::filesystem::path const exePath = fsPath + "\\exe.xml";
+
    if (startupOption == "Startup"_sv) {
       if (auto result = launch_mode::Startup(); result.size()) {
          Warning(result);
@@ -257,33 +294,40 @@ Main::Validate(
       if (auto result = launch_mode::Login(); result.size()) {
          Warning(result);
       }
+   } else {
+      if (auto result = launch_mode::Never(); result.size()) {
+         Warning(result);
+      }
    }
 
    // Install EFB in community folder
-
-   if (std::filesystem::exists(communityPath) && !std::filesystem::remove_all(communityPath)) {
-      co_return Fatal("Couldn't cleanup previous version:", communityPath);
+   {
+      std::error_code ec{};
+      auto const      path = addonPath + "/html_ui/efb_ui/efb_apps/msfs2024-vfrnav/efb";
+      std::filesystem::create_directories(path, ec);
+      if (ec) {
+         co_return Fatal("Couldn't create community package folder:", ec.message(), addonPath);
+      }
    }
 
-   if (auto const path = communityPath + "/html_ui/efb_ui/efb_apps/msfs2024-vfrnav/efb";
-       !std::filesystem::create_directories(path)) {
-      co_return Fatal("Couldn't create community package folder:", communityPath);
-   }
-
-   if (!std::filesystem::create_directories(
-         communityPath + "/ContentInfo/alexhome-msfs2024-vfrnav"
-       )) {
-      co_return Fatal("Couldn't create community package folder:", communityPath);
+   {
+      std::error_code ec{};
+      std::filesystem::create_directories(addonPath + "/ContentInfo/alexhome-msfs2024-vfrnav", ec);
+      if (ec) {
+         co_return Fatal("Couldn't create community package folder:", ec.message(), addonPath);
+      }
    }
 
 #ifndef WATCH_MODE
    for (auto const& [name, data] : EFB_RESOURCES) {
       auto const last_slash = name.find_last_of("/");
       auto const file_name  = name.substr(last_slash == std::string::npos ? 0 : last_slash + 1);
-      auto const directory  = communityPath + "/html_ui/efb_ui/efb_apps/msfs2024-vfrnav/"
+      auto const directory  = addonPath + "/html_ui/efb_ui/efb_apps/msfs2024-vfrnav/"
                              + name.substr(0, last_slash == std::string::npos ? 0 : last_slash);
-      if (!std::filesystem::exists(directory) && !std::filesystem::create_directories(directory)) {
-         co_return Fatal("Couldn't create directory:", directory);
+      std::error_code ec{};
+      std::filesystem::create_directories(directory, ec);
+      if (ec) {
+         co_return Fatal("Couldn't create directory:", ec.message(), directory);
       }
 
       std::ofstream file{directory + "/" + file_name, std::ios::binary | std::ios::ate};
@@ -299,7 +343,7 @@ Main::Validate(
 
    // Install thumbnail
 
-   auto const    thumbnail = communityPath + "/ContentInfo/alexhome-msfs2024-vfrnav/Thumbnail.jpg";
+   auto const    thumbnail = addonPath + "/ContentInfo/alexhome-msfs2024-vfrnav/Thumbnail.jpg";
    std::ofstream file{thumbnail, std::ios::binary | std::ios::ate};
 
    if (!file.is_open()) {
@@ -353,32 +397,32 @@ Main::Validate(
 
    auto const manifest_str = js::Stringify<2>(manifest, true);
    {
-      std::ofstream file{communityPath + "/manifest.json", std::ios::binary | std::ios::ate};
+      std::ofstream file{addonPath + "/manifest.json", std::ios::binary | std::ios::ate};
       if (!file.is_open()) {
-         co_return Fatal("Couldn't create file:", communityPath + "/manifest.json");
+         co_return Fatal("Couldn't create file:", addonPath + "/manifest.json");
       }
 
       file.write(manifest_str.data(), manifest_str.size());
       if (file.tellp() != manifest_str.size()) {
-         co_return Fatal("Couldn't create file:", communityPath + "/manifest.json");
+         co_return Fatal("Couldn't create file:", addonPath + "/manifest.json");
       }
    }
 
    // Generate layout
 
    {
-      Layout     layout{communityPath};
+      Layout     layout{addonPath};
       auto const layout_str = js::Stringify<2>(layout, true);
 
-      std::ofstream file{communityPath + "/layout.json", std::ios::binary | std::ios::ate};
+      std::ofstream file{addonPath + "/layout.json", std::ios::binary | std::ios::ate};
 
       if (!file.is_open()) {
-         co_return Fatal("Couldn't create file:", communityPath + "/layout.json");
+         co_return Fatal("Couldn't create file:", addonPath + "/layout.json");
       }
 
       file.write(layout_str.data(), layout_str.size());
       if (file.tellp() != layout_str.size()) {
-         co_return Fatal("Couldn't create file:", communityPath + "/layout.json");
+         co_return Fatal("Couldn't create file:", addonPath + "/layout.json");
       }
    }
 

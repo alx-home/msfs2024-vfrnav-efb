@@ -15,6 +15,7 @@
 
 #include "Registry/Registry.h"
 #include "Utils/LaunchMode.h"
+#include "Utils/FindMSFS.h"
 
 #include <filesystem>
 #include <fstream>
@@ -177,17 +178,16 @@ AddToExeXml(std::string_view data, std::string_view path) {
 
 }  // namespace
 
-std::string
+std::vector<std::string>
 StartupImpl(bool clean) {
    auto& registry = registry::Get();
    auto& settings = registry.alx_home_->settings_;
 
-   auto const fsPath =
-     std::filesystem::path(*settings->community_).parent_path().parent_path().parent_path();
-   std::filesystem::path const exePath = fsPath.string() + "\\exe.xml";
+   auto const                  fsPath  = ::FindMSFS();
+   std::filesystem::path const exePath = fsPath + "\\exe.xml";
 
    if (auto const Exists = std::filesystem::exists(exePath); !Exists && clean) {
-      return R"(Path not found : <br/>")" + exePath.string() + R"("<br/><br/>Couldn't clean it !)";
+      return {"Path not found : ", "\"" + exePath.string() + "\"", "Couldn't clean it !"};
    } else if (Exists) {
       std::string content;
 
@@ -213,13 +213,13 @@ StartupImpl(bool clean) {
 
       settings->launch_mode_ = "Startup";
    } else {
-      return R"(Path not found : <br/>")" + exePath.string() + R"(")";
+      return {"Path not found : ", "\"" + exePath.string() + "'\""};
    }
 
-   return "";
+   return {};
 }
 
-std::string
+std::vector<std::string>
 LoginImpl(bool clean) {
    auto& registry = registry::Get();
    auto& settings = registry.alx_home_->settings_;
@@ -228,27 +228,27 @@ LoginImpl(bool clean) {
 
    if (clean) {
       if (auto const result = run->value_.DeleteValue(); result != S_OK) {
-         return std::format(
+         return {std::format(
            "couldn't clean registry {}:{} ({})",
            run->FullPath(),
-           run->value_.VALUE_NAME.value_,
+           std::string{run->value_.VALUE_NAME.value_.data()},
            result
-         );
+         )};
       }
    } else {
       run->value_ = "\"" + *settings->destination_ + R"(\msfs2024-vfrnav_server.exe" --minimized)";
       settings->launch_mode_ = "Login";
    }
 
-   return "";
+   return {};
 }
 
-std::string
+std::vector<std::string>
 Never() {
    auto& registry = registry::Get();
    auto& settings = registry.alx_home_->settings_;
 
-   std::string error{};
+   std::vector<std::string> error{};
 
    if (settings->launch_mode_) {
       if (*settings->launch_mode_ == "Startup") {
@@ -262,16 +262,26 @@ Never() {
    return error;
 }
 
-std::string
+std::vector<std::string>
 Startup(bool clean) {
-   std::string error = Never();
-   return (error.size() ? error + "<br/><br/>" : error) + StartupImpl(clean);
+   auto error = Never();
+
+   if (error.size()) {
+      return error;
+   } else {
+      return StartupImpl(clean);
+   }
 }
 
-std::string
+std::vector<std::string>
 Login(bool clean) {
-   std::string error = Never();
-   return (error.size() ? error + "<br/><br/>" : error) + LoginImpl(clean);
+   auto error = Never();
+
+   if (error.size()) {
+      return error;
+   } else {
+      return LoginImpl(clean);
+   }
 }
 
 }  // namespace launch_mode

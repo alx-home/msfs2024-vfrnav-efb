@@ -102,10 +102,14 @@ private:
    Promise<ServerState> GetServerState();
    Promise<>            SwitchServer();
 
-   void Warning(std::string_view message);
-   void Error(std::string_view message);
-   void Fatal(std::string_view message);
-   void Info(std::string_view message);
+   template <class... STR>
+   void Warning(STR&&... message);
+   template <class... STR>
+   void Error(STR&&... message);
+   template <class... STR>
+   void Fatal(STR&&... message);
+   template <class... STR>
+   void Info(STR&&... message);
 
    std::string const APP_DATA      = GetAppData();
    std::string const USER_DATA_DIR = APP_DATA + "\\MSFS2024 VFRNav' Server";

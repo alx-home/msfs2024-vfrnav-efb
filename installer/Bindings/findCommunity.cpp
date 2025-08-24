@@ -15,6 +15,7 @@
 
 #include "main.h"
 
+#include "Utils/FindMSFS.h"
 #include <filesystem>
 
 std::string
@@ -38,4 +39,9 @@ FindCommunity() {
 Promise<std::string>
 Main::FindCommunity() {
    co_return ::FindCommunity();
+}
+
+Promise<std::string>
+Main::FindMSFS() {
+   co_return ::FindMSFS();
 }

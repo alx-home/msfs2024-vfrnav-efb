@@ -26,6 +26,7 @@ public:
 
    Value<std::string, Settings, "LaunchMode">             launch_mode_;
    Value<std::string, Settings, "Community">              community_;
+   Value<std::string, Settings, "Addon">                  addon_;
    Value<std::string, Settings, "Install">                destination_;
    Value<std::string, Settings, "DefaultPuelPreset">      default_fuel_preset_;
    Value<std::string, Settings, "DefaultDeviationPreset"> default_deviation_preset_;
@@ -35,6 +36,7 @@ public:
    static constexpr Values VALUES{
      &Settings::launch_mode_,
      &Settings::community_,
+     &Settings::addon_,
      &Settings::destination_,
      &Settings::default_fuel_preset_,
      &Settings::default_deviation_preset_,
