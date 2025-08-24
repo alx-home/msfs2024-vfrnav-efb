@@ -238,8 +238,13 @@ const RunCleanPathPopup = ({ resolve, path, close }: {
       <div className='text-2xl text-yellow-500'>Warning</div>
       <div className='text-sm gap-y-2 overflow-hidden'>
          <Scroll>
-            <div>
-               Folder &ldquo;{path}&ldquo; will be removed
+            <div className="flex flex-col">
+               <div>
+                  Removing folder :
+               </div>
+               <div>
+                  &ldquo;{path}&ldquo;
+               </div>
             </div>
          </Scroll>
       </div>
