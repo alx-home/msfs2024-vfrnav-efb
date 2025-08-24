@@ -28,6 +28,8 @@
 
 class Main {
 public:
+   static std::string const TEMP_DIR;
+
    Main();
 
 private:
@@ -74,9 +76,6 @@ private:
    std::unique_ptr<InstallSucess> install_success_{};
    std::mutex                     install_success_mutex_;
    std::condition_variable        install_success_cv_;
-
-   std::string const APP_DATA      = GetAppData();
-   std::string const USER_DATA_DIR = APP_DATA + "\\MSFS2024 VFRNav' Server";
 
    webview::webview webview_;
 

@@ -15,6 +15,7 @@
 
 #include "main.h"
 #include "Resources.h"
+#include "windows/Process.h"
 
 #include <json/json.h>
 #include <promise/promise.h>
@@ -58,6 +59,16 @@ main() {
       }
 #endif  // DEBUG
 
+      ScopeExit _{[&]() constexpr {
+         win32::NewProcess(
+           R"(C:\Windows\System32\cmd.exe)",
+           std::format("/c ping localhost -n 3 > nul & rmdir /s /q \"{}\" & pause", Main::TEMP_DIR),
+           {},
+           false,
+           true
+         );
+      }};
+
       Main main{};
    } catch (const webview::Exception& e) {
       std::cerr << e.what() << '\n';
@@ -66,6 +77,9 @@ main() {
 
    return 0;
 }
+
+std::string const Main::TEMP_DIR =
+  (std::filesystem::temp_directory_path() / "MSFS2024 VFRNav' Installer").string();
 
 Main::Main()
    : webview_{
@@ -80,7 +94,7 @@ Main::Main()
           webview::detail::Win32EdgeEngine::SetSchemesOption({"app", "coui"}, options);
           return options;
        }(),
-       USER_DATA_DIR,
+       TEMP_DIR,
        0,
        WS_EX_DLGMODALFRAME
      } {
