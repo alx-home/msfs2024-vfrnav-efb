@@ -17,6 +17,7 @@
 
 #include <json/json.h>
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -109,6 +110,7 @@ struct NavData {
    std::string                        name_{};
    std::string                        short_name_{};
    std::size_t                        order_{};
+   std::optional<bool>                active_{};
    std::vector<std::array<double, 2>> coords_{};
    std::vector<NavProperties>         properties_{};
    std::vector<std::string>           waypoints_{};
@@ -119,6 +121,7 @@ struct NavData {
      js::_{"name", &NavData::name_},
      js::_{"shortName", &NavData::short_name_},
      js::_{"order", &NavData::order_},
+     js::_{"active", &NavData::active_},
      js::_{"coords", &NavData::coords_},
      js::_{"properties", &NavData::properties_},
      js::_{"waypoints", &NavData::waypoints_},

@@ -255,6 +255,7 @@ export const Nav = ({ closeMenu, className, style }: {
       data: navData.map(data => ({
         name: data.name,
         order: data.order,
+        active: data.active,
         shortName: data.shortName,
         coords: data.coords,
         properties: data.properties,
