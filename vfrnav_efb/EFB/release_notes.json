@@ -452,6 +452,26 @@
             "     - The installer now correctly handles the Community folder, which was previously wiped.",
             "       Le programme d'installation gère désormais correctement le dossier Community, qui était auparavant supprimé."
          ]
+      },
+      {
+         "version": "1.6.2",
+         "date": "AUG 24, 2025",
+         "notes": [
+            "### Installer/Server (new) ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Always ask permission before removing a file or folder.",
+            "       Demande systématique de confirmation avant la suppression d’un fichier ou dossier.",
+            "",
+            "",
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Deactivated navigation paths are no longer selectable on the map.",
+            "       Les trajectoires de navigation désactivées ne sont plus sélectionnables sur la carte.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Resolved performance issue on the navlog page when hovering over the embedded EFB of MSFS.",
+            "       Problème de performance résolu sur la page navlog lors du survol de l’EFB intégré de MSFS."
+         ]
       }
    ]
 }
