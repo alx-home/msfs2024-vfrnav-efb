@@ -76,6 +76,7 @@ export type ExportNav = {
       name: string,
       shortName: string,
       order: number,
+      active?: boolean,
       coords: number[][],
       properties: Properties[],
       waypoints: string[],
@@ -270,6 +271,10 @@ export const ExportNavRecord = GenRecord<ExportNav>({
          name: "string",
          shortName: "string",
          order: "number",
+         active: {
+            optional: true,
+            record: 'boolean'
+         },
          coords: {
             array: true, record: {
                array: true, record: "number"

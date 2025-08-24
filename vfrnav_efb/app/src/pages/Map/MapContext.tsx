@@ -126,6 +126,7 @@ export const MapContext = createContext<{
   importNavRef: RefObject<((_data: {
     name: string;
     shortName: string;
+    active?: boolean
     order: number;
     coords: number[][];
     properties: Properties[];
@@ -135,14 +136,15 @@ export const MapContext = createContext<{
   }[]) => void) | undefined>
 
   importNav: (_data: {
-    name: string;
-    shortName: string;
-    order: number;
-    coords: number[][];
-    properties: Properties[];
-    waypoints: string[];
-    loadedFuel: number;
-    departureTime: number;
+    name: string
+    shortName: string
+    active?: boolean
+    order: number
+    coords: number[][]
+    properties: Properties[]
+    waypoints: string[]
+    loadedFuel: number
+    departureTime: number
   }[]) => void
 
 } | undefined>(undefined);
@@ -467,6 +469,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const importNavRef = useRef<(_data: {
     name: string;
     shortName: string;
+    active?: boolean
     order: number;
     coords: number[][];
     properties: Properties[];
@@ -478,6 +481,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const importNav = useCallback((data: {
     name: string;
     shortName: string;
+    active?: boolean
     order: number;
     coords: number[][];
     properties: Properties[];

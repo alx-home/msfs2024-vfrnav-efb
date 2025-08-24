@@ -57,7 +57,9 @@ const useMap = () => {
    }, [counter])
 
    const [newFeatures, setNewFeatures] = useState<Feature<MultiLineString>[] | undefined>(undefined)
+   const [features, setFeatures] = useState<Feature<MultiLineString>[]>([])
    const [orders, setOrders] = useState<number[]>([]);
+   const [activeFeatures, setActiveFeatures] = useState<boolean[]>([]);
 
    const source = useMemo(() => {
       const source = new VectorSource<Feature<Geometry>>({
@@ -67,23 +69,6 @@ const useMap = () => {
 
       return source
    }, []);
-
-   useEffect(() => {
-      if (orders.length != navData.length || navData.find((data, index) => data.order !== orders[index])) {
-         const oldFeatures = source.getFeatures();
-
-         source.clear();
-         setOrders(navData.map(data => data.order));
-         source.addFeatures(navData.toSorted((left, right) => left.order - right.order).map(data => {
-            const oldFeature = oldFeatures.find((feature) => feature.getId() === data.id)!;
-            const feature = oldFeature.clone();
-            feature.setProperties(oldFeature.getProperties())
-            feature.setId(oldFeature.getId())
-
-            return feature;
-         }));
-      }
-   }, [navData, orders, source])
 
    useEffect(() => {
       if (newFeatures) {
@@ -117,6 +102,7 @@ const useMap = () => {
          }
 
          if (hasChanges) {
+            setFeatures(features => features.toSpliced(features.length, 0, ...newFeatures))
             setNavData(items => ([...items, ...newData.map((value, index) => ({
                ...value,
                order: items.length + index
@@ -125,6 +111,34 @@ const useMap = () => {
          setNewFeatures(undefined);
       }
    }, [defaultSpeed, initFeature, layer, newFeatures, setNavData, updateNavProps])
+
+   useEffect(() => {
+      if (orders.length !== navData.length
+         || activeFeatures.length !== navData.length
+         || features.length !== navData.length
+         || navData.find((data, index) => data.order !== orders[index])
+         || navData.find((data, index) => data.active !== activeFeatures[index])) {
+         source.clear();
+         setOrders(navData.map(data => data.order));
+         const activeFeatures = navData.map(data => data.active);
+         setActiveFeatures(activeFeatures);
+
+         const newFeatures = navData
+            .toSorted((left, right) => left.order - right.order)
+            .map(data => {
+               const oldFeature = features.find((feature) => feature.getId() === data.id)!;
+               const feature = oldFeature.clone();
+               feature.setProperties(oldFeature.getProperties())
+               feature.setId(oldFeature.getId())
+
+               return feature;
+            });
+
+         setFeatures(newFeatures);
+
+         source.addFeatures(newFeatures.filter((_, index) => activeFeatures[index]));
+      }
+   }, [activeFeatures, features, navData, orders, source])
 
    useEffect(() => {
       const layer = new VectorLayer({
@@ -139,22 +153,24 @@ const useMap = () => {
 
    useEffect(() => {
       if (resetLayer) {
-         const features: Feature[] = [];
+         const newFeatures: Feature<MultiLineString>[] = []
+         navData
+            .toSorted((left, right) => left.order - right.order)
+            .forEach(data => {
+               const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
+               initFeature(feature);
+               newFeatures.push(feature)
 
-         navData.forEach(data => {
-            const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
-            initFeature(feature);
-            features.push(feature)
+               data.id = feature.getId() as number;
+            })
 
-            data.id = feature.getId() as number;
-         })
-
-         source.addFeatures(features);
+         setFeatures(newFeatures);
+         source.addFeatures(newFeatures.filter((_, index) => activeFeatures[index]));
          setNavData(navData);
 
          setResetLayer(false);
       }
-   }, [resetLayer, layer, source, navData, initFeature, setNavData]);
+   }, [resetLayer, layer, source, navData, initFeature, setNavData, activeFeatures]);
 
    useEffect(() => {
       const modify = new Modify({
@@ -264,11 +280,14 @@ const useMap = () => {
 
 
    return {
-      source: source,
-      modify: modify,
-      snap: snap,
-      layer: layer,
-      initFeature: initFeature
+      source,
+      modify,
+      activeFeatures,
+      snap,
+      layer,
+      initFeature,
+      setFeatures,
+      setActiveFeatures
    };
 };
 
@@ -321,7 +340,7 @@ export const OlRouteLayer = ({
    const { setNavData, map, setCancel, navData, updateNavProps, setFuelCurve, updateFuelPreset, setFuelUnit, setDeviationCurve, updateDeviationPreset, importNavRef } = useContext(MapContext)!;
    const settings = useContext(SettingsContext)!;
 
-   const { source, layer, initFeature } = useMap();
+   const { source, layer, initFeature, setFeatures, setActiveFeatures } = useMap();
    const { draw } = useDraw(source);
 
    const greenMarkerImg = useRef<HTMLImageElement | null>(null);
@@ -337,10 +356,6 @@ export const OlRouteLayer = ({
                const context = state.context;
 
                const data = navData.find(data => data.id === state.feature.getId())!;
-
-               if (!data.active) {
-                  return;
-               }
 
                const geometry = state.geometry.clone() as SimpleGeometry;
                geometry.setCoordinates(coords);
@@ -597,6 +612,7 @@ export const OlRouteLayer = ({
       name: string;
       shortName: string;
       order: number;
+      active?: boolean,
       coords: number[][];
       properties: Properties[];
       waypoints: string[];
@@ -605,32 +621,38 @@ export const OlRouteLayer = ({
    }[]) => {
       source.clear();
 
-      const features: Feature[] = [];
-      const navData = data.map((data): NavData => {
-         const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
-         initFeature(feature);
+      const features: Feature<MultiLineString>[] = [];
+      const activeFeatures: boolean[] = [];
+      const navData = data
+         .toSorted((left, right) => left.order - right.order)
+         .map((data): NavData => {
+            const feature = new Feature<MultiLineString>(new MultiLineString([data.coords]));
+            initFeature(feature);
 
-         features.push(feature)
-         const result: NavData = {
-            id: feature.getId() as number,
-            order: data.order,
-            active: true,
-            name: data.name,
-            shortName: data.shortName,
-            coords: data.coords.map(coords => ([...coords])),
-            layer: layer!,
-            departureTime: data.departureTime,
-            loadedFuel: data.loadedFuel,
-            waypoints: data.waypoints,
-            properties: data.properties,
-         }
+            activeFeatures.push(data.active ?? true)
+            features.push(feature)
+            const result: NavData = {
+               id: feature.getId() as number,
+               order: data.order,
+               active: data.active ?? true,
+               name: data.name,
+               shortName: data.shortName,
+               coords: data.coords.map(coords => ([...coords])),
+               layer: layer!,
+               departureTime: data.departureTime,
+               loadedFuel: data.loadedFuel,
+               waypoints: data.waypoints,
+               properties: data.properties,
+            }
 
-         return result;
-      })
+            return result;
+         })
 
-      source.addFeatures(features);
+      setFeatures(features)
+      setActiveFeatures(activeFeatures)
+      source.addFeatures(features.filter((_, index) => activeFeatures[index]));
       setNavData(navData);
-   }, [initFeature, layer, setNavData, source])
+   }, [initFeature, layer, setActiveFeatures, setFeatures, setNavData, source])
 
    useEffect(() => {
       importNavRef.current = onExportNav

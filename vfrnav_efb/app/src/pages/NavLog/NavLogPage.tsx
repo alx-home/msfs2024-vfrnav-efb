@@ -56,6 +56,7 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
         name: exportNavName[index].length ? exportNavName[index] : navData[index].name,
         data: {
           order: navData[index].order,
+          active: navData[index].active,
           shortName: navData[index].shortName,
           coords: navData[index].coords,
           properties: navData[index].properties,
@@ -221,6 +222,7 @@ export const NavLogPage = ({ active }: {
                   name: string,
                   data: {
                     order: number,
+                    active?: boolean,
                     shortName: string,
                     coords: Coordinate[],
                     properties: Properties[],
@@ -349,6 +351,7 @@ export const NavLogPage = ({ active }: {
       data: navData.map(data => ({
         name: data.name,
         order: data.order,
+        active: data.active,
         shortName: data.shortName,
         coords: data.coords,
         properties: data.properties,
