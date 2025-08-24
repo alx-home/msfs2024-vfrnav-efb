@@ -13,14 +13,23 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "Utils/FindMSFS.h"
 
-#include <string>
-#include <vector>
+#include <windows/Env.h>
+#include <filesystem>
 
-namespace launch_mode {
-std::vector<std::string> Startup(bool clean = false);
-std::vector<std::string> Login(bool clean = false);
-std::vector<std::string> Never();
+std::string
+FindMSFS() {
+   if (std::string const steam = ReplaceEnv(R"(%AppData%\Microsoft Flight Simulator 2024)");
+       std::filesystem::exists(steam)) {
+      return steam;
+   }
 
-}  // namespace launch_mode
+   if (std::string const msStore =
+         ReplaceEnv(R"(%LocalAppData%\Packages\Microsoft.Limitless_8wekyb3d8bbwe)");
+       std::filesystem::exists(msStore)) {
+      return msStore;
+   }
+
+   return "";
+}

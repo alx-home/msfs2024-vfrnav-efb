@@ -1,5 +1,6 @@
 add_library(vfrnav_common
       src/LaunchMode.cpp
+      src/FindMSFS.cpp
 )
 
 target_include_directories(vfrnav_common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
