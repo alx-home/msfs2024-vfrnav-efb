@@ -77,17 +77,24 @@ export const Fuel = ({ curentPage, active: parentActive }: {
    }>
       <div className="relative flex flex-col w-full h-full">
          <div className="flex w-full justify-center text-xl pb-2">Fuel Consumption</div>
-         <Settings />
-         <Graph bounds={bounds} datasets={datasets} fullCoverMode={'Weak'} setDatasets={setDataset}
-            setDatasetsWeak={setDatasetsWeak} step={step} active={active}
-            xValuesStr={xValuesStr} yValuesStr={yValuesStr}
-            datasetLegend='Thrust' showDatasetLegend={true} xLegend='Alt' yLegend='Fuel' datasetStr={datasetStr}
-            xUnit={xUnit} yUnit={fuelUnitStr} datasetUnit='%' />
-         <div className="flex flex-row w-full px-10 pb-4">
-            <div className="flex min-w-20">OAT {oat.toFixed(0) + '\u00b0'} :</div>
-            <Slider active={curentPage === 'Fuel'}
-               defaultValue={20} value={oat} range={{ min: -40, max: 50 }} onChange={updateOat} />
-         </div>
+         <Settings active={'Fuel' === curentPage} />
+         {
+            ('Fuel' === curentPage)
+               ? <>
+                  <Graph bounds={bounds} datasets={datasets} fullCoverMode={'Weak'} setDatasets={setDataset}
+                     setDatasetsWeak={setDatasetsWeak} step={step} active={active}
+                     xValuesStr={xValuesStr} yValuesStr={yValuesStr}
+                     datasetLegend='Thrust' showDatasetLegend={true} xLegend='Alt' yLegend='Fuel' datasetStr={datasetStr}
+                     xUnit={xUnit} yUnit={fuelUnitStr} datasetUnit='%' />
+                  <div className="flex flex-row w-full px-10 pb-4">
+                     <div className="flex min-w-20">OAT {oat.toFixed(0) + '\u00b0'} :</div>
+                     <Slider active={curentPage === 'Fuel'}
+                        defaultValue={20} value={oat} range={{ min: -40, max: 50 }} onChange={updateOat} />
+                  </div>
+               </>
+               : <></>
+         }
+
       </div>
    </div>
 }

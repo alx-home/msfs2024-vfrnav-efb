@@ -23,7 +23,9 @@ import DeleteImg from "@alx-home/images/delete.svg?react";
 import { MapContext } from '@pages/Map/MapContext';
 import { DefaultDeviationPreset, DeleteDeviationPreset, GetDeviationCurve, SetDeviationCurve } from '@shared/Deviation';
 
-export const Settings = () => {
+export const Settings = ({ active }: {
+   active: boolean
+}) => {
    const { setPopup } = useContext(SettingsContext)!;
    const { savedDeviationCurves, setSavedDeviationCurves, deviationCurve, deviationPreset: preset, updateDeviationPreset: updatePreset } = useContext(MapContext)!;
 
@@ -168,7 +170,7 @@ export const Settings = () => {
    }, [closePreset])
 
 
-   return <div className="flex flex-row shrink text-sm justify-center m-auto mb-4 pt-2" >
+   return active ? <div className="flex flex-row shrink text-sm justify-center m-auto mb-4 pt-2" >
       <div className="flex flex-col pr-2 text-sm justify-center w-[17.4rem]">
          <div className="flex flex-row">
             <Select active={true} value={preset} close={closePreset} className="[&_.option:hover_.edit]:w-full [&_.option]:p-0"
@@ -244,4 +246,5 @@ export const Settings = () => {
          </div>
       </div>
    </div>
+      : <></>
 }
