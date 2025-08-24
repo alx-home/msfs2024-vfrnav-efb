@@ -45,7 +45,8 @@ export const Settings = ({ currentTab: currentPage, active, pageRef }: {
       }
    }, [active, currentPage, pageRef, tab])
 
-   return <div className={'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden h-full'
+   return <div className={
+      'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden h-full'
       + (('Settings' === currentPage) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
       <div className="flex flex-row pl-4 pt-2">

@@ -54,9 +54,13 @@ export const Deviation = ({ curentPage, active: parentActive }: {
       + (('Deviation' === curentPage) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
       <div className="flex w-full justify-center text-xl pb-2">Compass Deviation</div>
-      <Settings />
-      <Graph bounds={bounds} datasets={dataset} fullCoverMode={'Full'} setDatasets={setDataset}
-         step={step} active={active} datasetStr={legend}
-         xLegend='MH' yLegend='Dev' xValuesStr={valueStr} yValuesStr={valueStr} />
+      <Settings active={curentPage === 'Deviation'} />
+      {
+         (curentPage === 'Deviation')
+            ? <Graph bounds={bounds} datasets={dataset} fullCoverMode={'Full'} setDatasets={setDataset}
+               step={step} active={active} datasetStr={legend}
+               xLegend='MH' yLegend='Dev' xValuesStr={valueStr} yValuesStr={valueStr} />
+            : <></>
+      }
    </div>
 }

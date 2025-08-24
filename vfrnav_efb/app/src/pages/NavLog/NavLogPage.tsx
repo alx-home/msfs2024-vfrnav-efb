@@ -15,7 +15,7 @@
 
 import { Button, CheckBox, Input, Tabs } from "@alx-home/Utils";
 import { MapContext } from "@pages/Map/MapContext";
-import { ReactElement, useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
+import { ReactElement, useCallback, useContext, useEffect, useMemo, useState, useRef, memo } from 'react';
 
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
@@ -162,7 +162,7 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
   </div >;
 }
 
-export const NavLogPage = ({ active }: {
+const NavLogPageElem = ({ active }: {
   active: boolean
 }) => {
   const {
@@ -393,7 +393,7 @@ export const NavLogPage = ({ active }: {
       <div className={"flex flex-col shrink transition transition-std py-1 h-full text-left"
         + " justify-start overflow-hidden bg-menu rounded-sm shadow-md"
         + " hocus:border-msfs"
-        + opacity + " max-w-full" + (empty ? ' w-[800px]' : '')
+        + opacity + " max-w-full w-[77rem]"
       }>
         <div className={"relative flex flex-col grow overflow-hidden h-full"}>
           <div className="flex text-2xl pt-6 px-8">Nav Log</div>
@@ -436,3 +436,5 @@ export const NavLogPage = ({ active }: {
     </div>
   </div >;
 }
+
+export const NavLogPage = memo(NavLogPageElem);

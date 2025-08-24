@@ -25,7 +25,10 @@ import DeleteImg from '@alx-home/images/delete.svg?react';
 import { DefaultFuelPreset, DeleteFuelPreset, GetFuelCurve, SetFuelCurve } from '@shared/Fuel';
 
 
-export const Settings = () => {
+export const Settings = ({ active }:
+   {
+      active: boolean
+   }) => {
    const { fuelUnit, setFuelUnit, savedFuelCurves, setSavedFuelCurves, fuelCurve, updateFuelPreset: updatePreset, fuelPreset: preset } = useContext(MapContext)!;
    const { setPopup } = useContext(SettingsContext)!;
 
@@ -188,90 +191,92 @@ export const Settings = () => {
       }
    }, [closePreset])
 
-   return <div className="flex flex-row shrink text-sm justify-center m-auto mb-4 pt-2" >
-      <div className="flex flex-col pr-2 text-sm justify-center w-[17.4rem]">
-         <div className="flex flex-row">
-            <Select active={true} value={preset} close={closePreset} className="[&_.option:hover_.edit]:w-full [&_.option]:p-0"
-               onChange={updatePreset}>
-               {[...savedFuelCurves
-                  .filter(curve => curve[2].length).map(elem => elem[0]), ...hardPresets, ...(preset === 'custom' ? ['custom'] : [])]
-                  .map(name => <SelectOption<string> key={name} id={name}>
-                     <div className='relative flex flex-row px-2 grow'>
-                        <div className="flex flex-row grow justify-center min-w-0 py-1 px-1">
-                           {name === 'custom' ? '*unsaved' : name}
-                        </div>
-                        {
-                           (hardPresets.find(value => name === value) === undefined)
-                              ? <div className="absolute flex flex-row w-full h-full justify-end pr-2">
-                                 <div className='edit transition-all justify-end flex flex-row w-0 max-h-full'>
-                                    <EditImg className="bg-msfs mr-1 hover:brightness-125 focus:border-2 focus:border-with w-6 h-6 mt-auto mb-auto justify-center cursor-pointer"
-                                       onClick={e => {
-                                          setClosePreset(true);
-                                          e.stopPropagation()
-                                          setPopup(<EditPresetPopup current={name} hardPresets={hardPresets} validate={(newName) => {
-                                             setSavedFuelCurves(saved => {
-                                                const oldIndex = saved.findIndex(value => value[0] === name)
-                                                const newCurves = (oldIndex === -1 ? saved : saved.toSpliced(oldIndex, 1, [name, (new Date()).getTime(), []]))
-                                                const index = newCurves.findIndex(value => value[0] === newName)
-
-                                                const values = name === preset ? fuelCurve : savedFuelCurves[oldIndex][2];
-
-                                                if (index === -1) {
-                                                   return newCurves.toSpliced(saved.length, 0, [
-                                                      newName, (new Date()).getTime(), values
-                                                   ])
-                                                }
-
-                                                return newCurves.toSpliced(index, 1, [
-                                                   newName, (new Date()).getTime(), values
-                                                ])
-                                             })
-
-                                             if (name === preset) {
-                                                updatePreset(newName)
-                                             }
-                                          }} />)
-                                       }} />
-                                    {
-                                       (name !== 'custom')
-                                          ? <DeleteImg className="bg-red-600 hover:brightness-125 focus:border-2 focus:border-with w-6 h-6 mt-auto mb-auto justify-center cursor-pointer"
-                                             onClick={e => {
-                                                setClosePreset(true);
-                                                if (preset === name) {
-                                                   updatePreset('custom')
-                                                }
+   return active
+      ? < div className="flex flex-row shrink text-sm justify-center m-auto mb-4 pt-2" >
+         <div className="flex flex-col pr-2 text-sm justify-center w-[17.4rem]">
+            <div className="flex flex-row">
+               <Select active={true} value={preset} close={closePreset} className="[&_.option:hover_.edit]:w-full [&_.option]:p-0"
+                  onChange={updatePreset}>
+                  {[...savedFuelCurves
+                     .filter(curve => curve[2].length).map(elem => elem[0]), ...hardPresets, ...(preset === 'custom' ? ['custom'] : [])]
+                     .map(name => <SelectOption<string> key={name} id={name}>
+                        <div className='relative flex flex-row px-2 grow'>
+                           <div className="flex flex-row grow justify-center min-w-0 py-1 px-1">
+                              {name === 'custom' ? '*unsaved' : name}
+                           </div>
+                           {
+                              (hardPresets.find(value => name === value) === undefined)
+                                 ? <div className="absolute flex flex-row w-full h-full justify-end pr-2">
+                                    <div className='edit transition-all justify-end flex flex-row w-0 max-h-full'>
+                                       <EditImg className="bg-msfs mr-1 hover:brightness-125 focus:border-2 focus:border-with w-6 h-6 mt-auto mb-auto justify-center cursor-pointer"
+                                          onClick={e => {
+                                             setClosePreset(true);
+                                             e.stopPropagation()
+                                             setPopup(<EditPresetPopup current={name} hardPresets={hardPresets} validate={(newName) => {
                                                 setSavedFuelCurves(saved => {
-                                                   const index = saved.findIndex(value => value[0] === name)
+                                                   const oldIndex = saved.findIndex(value => value[0] === name)
+                                                   const newCurves = (oldIndex === -1 ? saved : saved.toSpliced(oldIndex, 1, [name, (new Date()).getTime(), []]))
+                                                   const index = newCurves.findIndex(value => value[0] === newName)
 
-                                                   if (index !== -1) {
-                                                      // Mark curve to be removed
-                                                      return saved.toSpliced(index, 1, [saved[index][0], (new Date()).getTime(), []])
+                                                   const values = name === preset ? fuelCurve : savedFuelCurves[oldIndex][2];
+
+                                                   if (index === -1) {
+                                                      return newCurves.toSpliced(saved.length, 0, [
+                                                         newName, (new Date()).getTime(), values
+                                                      ])
                                                    }
 
-                                                   return saved
+                                                   return newCurves.toSpliced(index, 1, [
+                                                      newName, (new Date()).getTime(), values
+                                                   ])
                                                 })
-                                                e.stopPropagation()
-                                             }} />
-                                          : <></>
-                                    }
+
+                                                if (name === preset) {
+                                                   updatePreset(newName)
+                                                }
+                                             }} />)
+                                          }} />
+                                       {
+                                          (name !== 'custom')
+                                             ? <DeleteImg className="bg-red-600 hover:brightness-125 focus:border-2 focus:border-with w-6 h-6 mt-auto mb-auto justify-center cursor-pointer"
+                                                onClick={e => {
+                                                   setClosePreset(true);
+                                                   if (preset === name) {
+                                                      updatePreset('custom')
+                                                   }
+                                                   setSavedFuelCurves(saved => {
+                                                      const index = saved.findIndex(value => value[0] === name)
+
+                                                      if (index !== -1) {
+                                                         // Mark curve to be removed
+                                                         return saved.toSpliced(index, 1, [saved[index][0], (new Date()).getTime(), []])
+                                                      }
+
+                                                      return saved
+                                                   })
+                                                   e.stopPropagation()
+                                                }} />
+                                             : <></>
+                                       }
+                                    </div>
                                  </div>
-                              </div>
-                              : <></>
-                        }
-                     </div>
-                  </SelectOption>)}
-            </Select>
+                                 : <></>
+                           }
+                        </div>
+                     </SelectOption>)}
+               </Select>
+            </div>
          </div>
-      </div>
-      <div className="flex flex-col text-sm justify-center w-24">
-         <div className="flex flex-row">
-            <Select active={true} value={fuelUnit} onChange={(value) => {
-               setFuelUnit(value)
-            }}>
-               <SelectOption<FuelUnit> id={'gal'}>Galon</SelectOption>
-               <SelectOption<FuelUnit> id={'liter'}>Liter</SelectOption>
-            </Select>
+         <div className="flex flex-col text-sm justify-center w-24">
+            <div className="flex flex-row">
+               <Select active={true} value={fuelUnit} onChange={(value) => {
+                  setFuelUnit(value)
+               }}>
+                  <SelectOption<FuelUnit> id={'gal'}>Galon</SelectOption>
+                  <SelectOption<FuelUnit> id={'liter'}>Liter</SelectOption>
+               </Select>
+            </div>
          </div>
-      </div>
-   </div >
+      </div >
+      : <></>
 }

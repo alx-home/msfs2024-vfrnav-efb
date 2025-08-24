@@ -260,7 +260,6 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    }, [fuelUnit, collapseWaypoints]);
 
    const header = useMemo(() => getHeader(mode, edit, false), [edit, getHeader, mode]);
-   const fullHeader = useMemo(() => getHeader("Full", false, true), [getHeader]);
 
    const getLegs = useCallback((mode: Modes, edit: boolean, dry: boolean) => {
       let time = departureTime * 60;
@@ -612,7 +611,6 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    }, [actives, coords, departureTime, editNavProperties, fromUnit, id, loadedFuel, properties, setActive, toUnit, updateWaypoints, waypoints, reset, collapseWaypoints])
 
    const legs = useMemo(() => getLegs(mode, edit, false), [edit, getLegs, mode]);
-   const fullLegs = useMemo(() => getLegs("Full", false, true), [getLegs]);
 
    useEffect(() => {
       setReset(true)
@@ -633,126 +631,122 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
       }
    }, [delayed])
 
-   return <div className={'flex flex-col text-sm h-full overflow-hidden [&>:last-child]:h-full'
-      + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
-   }>
-      <div className="flex flex-row pl-4 pt-2">
-         <Tabs tabs={Array.from(modes)} activeTab={mode} names={modesStr} switchTab={setMode} />
-      </div>
-      <Scroll className={
-         'block [&>:not(:first-child)]:mt-8'
+   return (tab === currentTab)
+      ? <div className={'flex flex-col text-sm h-full overflow-hidden [&>:last-child]:h-full'
+         + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
       }>
-         <div className="flex flex-col w-full min-h-max">
-            <div className="flex flex-row w-full">
-               <div className='flex flex-col shadow-sm min-h-max ml-5 min-w-max'>
-                  <div className={"flex flex-col w-full h-full pb-8"}>
-                     <div className="flex w-full h-0 !max-h-0 opacity-0 pointer-events-none select-none" inert={true}>
-                        <div className="grid">
-                           {fullHeader}
-                           {fullLegs}
-                        </div>
-                     </div>
-                     <div className={"relative max-w-min"}>
-                        <div className={"absolute top-0 bottom-0 left-0 w-4 bg-slate-900 hocus:bg-msfs shadow-md m-[0.1rem] "
-                           + (edit ? "hidden " : '')
-                           + "select-none transition-all cursor-pointer opacity-40 hocus:opacity-100"}>
-                           <button className="flex bg-slate-900 w-4 h-full hocus:bg-msfs select-none transition-all cursor-pointer justify-center text-center"
-                              onClick={(e) => {
-                                 setCollapseWaypoints(value => !value)
-                                 e.currentTarget.blur()
-                              }}
-                           >
-                              <Arrow width={20} height={15} className={'transition-all m-auto' + (collapseWaypoints ? ' rotate-180' : ' ')} />
-                           </button>
-                        </div>
-                        <div className="grid">
-                           {header}
-                           {legs}
+         <div className="flex flex-row pl-4 pt-2">
+            <Tabs tabs={Array.from(modes)} activeTab={mode} names={modesStr} switchTab={setMode} />
+         </div>
+         <Scroll className={
+            'block [&>:not(:first-child)]:mt-8'
+         }>
+            <div className="flex flex-col w-full min-h-max">
+               <div className="flex flex-row w-full">
+                  <div className='flex flex-col shadow-sm min-h-max ml-5 min-w-max'>
+                     <div className={"flex flex-col w-full h-full pb-8"}>
+                        <div className={"relative max-w-min"}>
+                           <div className={"absolute top-0 bottom-0 left-0 w-4 bg-slate-900 hocus:bg-msfs shadow-md m-[0.1rem] "
+                              + (edit ? "hidden " : '')
+                              + "select-none transition-all cursor-pointer opacity-40 hocus:opacity-100"}>
+                              <button className="flex bg-slate-900 w-4 h-full hocus:bg-msfs select-none transition-all cursor-pointer justify-center text-center"
+                                 onClick={(e) => {
+                                    setCollapseWaypoints(value => !value)
+                                    e.currentTarget.blur()
+                                 }}
+                              >
+                                 <Arrow width={20} height={15} className={'transition-all m-auto' + (collapseWaypoints ? ' rotate-180' : ' ')} />
+                              </button>
+                           </div>
+                           <div className="grid">
+                              {header}
+                              {legs}
+                           </div>
                         </div>
                      </div>
                   </div>
-               </div>
-            </div >
-            {
-               edit ?
-                  <div className="flex flex-col mx-auto shrink">
-                     <div className="flex flex-row text-sm justify-center">
-                        <div className="flex m-auto grow">Loaded Fuel : </div>
-                        <Reset className="flex-row justify-end min-w-20" onReset={() => {
-                           getFuel().then((fuel) => {
-                              delayedRef.current.push(() => {
-                                 setLoadedFuel(id, fuel)
-                                 setReset(true)
-                              })
-                              setDelayed(true)
-                           }).catch()
-                        }}>
-                           <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-16">
-                              <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset} inputMode="decimal"
-                                 onChange={(value) => {
-                                    setLoadedFuel(id, fromUnit(+value));
-                                 }} validate={async (value) => {
-                                    return /^\d*(\.\d*)?$/.test(value);
-                                 }} />
-                           </div>
-                        </Reset>
-                        <div className="flex shrink ml-1 my-auto w-3">{fuelUnitStr}</div>
-                     </div>
-                     <div className="flex flex-row text-sm justify-center">
-                        <div className="flex mr-2 m-auto grow">Departure Time : </div>
-                        <Reset className="justify-end min-w-20" onReset={() => {
-                           const date = new Date();
-                           setDepartureTime(id, date.getHours() * 60 + date.getMinutes());
-                           setReset(true)
-                        }}>
-                           <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                              <Input active={true} className="my-1 max-w-16" reload={reset} value={departureTimeStr}
-                                 onChange={(value) => {
-                                    const data = value.split('h');
-                                    setDepartureTime(id, +data[0] * 60 + +data[1]);
-                                 }} validate={async (value) => {
-                                    if (/^\d+h\d*$/.test(value)) {
+               </div >
+               {
+                  edit ?
+                     <div className="flex flex-col mx-auto shrink">
+                        <div className="flex flex-row text-sm justify-center">
+                           <div className="flex m-auto grow">Loaded Fuel : </div>
+                           <Reset className="flex-row justify-end min-w-20" onReset={() => {
+                              getFuel().then((fuel) => {
+                                 delayedRef.current.push(() => {
+                                    setLoadedFuel(id, fuel)
+                                    setReset(true)
+                                 })
+                                 setDelayed(true)
+                              }).catch()
+                           }}>
+                              <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-16">
+                                 <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset} inputMode="decimal"
+                                    onChange={(value) => {
+                                       setLoadedFuel(id, fromUnit(+value));
+                                    }} validate={async (value) => {
+                                       return /^\d*(\.\d*)?$/.test(value);
+                                    }} />
+                              </div>
+                           </Reset>
+                           <div className="flex shrink ml-1 my-auto w-3">{fuelUnitStr}</div>
+                        </div>
+                        <div className="flex flex-row text-sm justify-center">
+                           <div className="flex mr-2 m-auto grow">Departure Time : </div>
+                           <Reset className="justify-end min-w-20" onReset={() => {
+                              const date = new Date();
+                              setDepartureTime(id, date.getHours() * 60 + date.getMinutes());
+                              setReset(true)
+                           }}>
+                              <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
+                                 <Input active={true} className="my-1 max-w-16" reload={reset} value={departureTimeStr}
+                                    onChange={(value) => {
                                        const data = value.split('h');
-                                       return (+data[0] < 24) && (+data[1] < 60);
-                                    }
+                                       setDepartureTime(id, +data[0] * 60 + +data[1]);
+                                    }} validate={async (value) => {
+                                       if (/^\d+h\d*$/.test(value)) {
+                                          const data = value.split('h');
+                                          return (+data[0] < 24) && (+data[1] < 60);
+                                       }
 
-                                    return false;
-                                 }} />
-                           </div>
-                        </Reset>
-                        <div className="flex ml-1 m-auto w-3"></div>
-                     </div>
-                  </div>
-                  : <></>
-            }
-            <div className="flex flex-row p-4 pt-4">
-               <div className="flex flex-col mx-auto text-sm border-2 border-slate-700 shadow-lg py-4 px-10 whitespace-nowrap">
-                  {edit ? <>
-                     <div className="flex flex-row"><div className="w-24">OBS: </div>Omni Beer Selector</div>
-                     <div className="flex flex-row"><div className="w-24">VAR: </div>Variation</div>
-                     <div className="flex flex-row"><div className="w-24">IAS: </div>Indicated Air Speed</div>
-                     <div className="flex flex-row"><div className="w-24">OAT: </div>Outside Air Temperature</div>
-                     <div className="flex flex-row"><div className="w-24">ATA: </div>Actual Time of Arrival</div>
-                     <div className="flex flex-row"><div className="w-24">Fuel: </div>Fuel Level at Leg Completion</div>
-                  </> : <>
-                     <div className="flex flex-row"><div className="w-24">OBS: </div>Omni Beer Selector</div>
-                     <div className="flex flex-row"><div className="w-24">CH: </div>Compass Heading</div>
-                     <div className="flex flex-row"><div className="w-24">MH: </div>Magnetic Heading</div>
-                     <div className="flex flex-row mt-2"><div className="w-24">IAS: </div>Indicated Air Speed</div>
-                     <div className="flex flex-row"><div className="w-24">GS: </div>Ground Speed</div>
-                     <div className="flex flex-row mt-2"><div className="w-24">ETE: </div>Estimated Time Enroute</div>
-                     <div className="flex flex-row"><div className="w-24">ETA: </div>Estimated Time of Arrival</div>
-                     <div className="flex flex-row mt-2"><div className="w-24">Fuel: </div>
-                        <div className="flex flex-col">
-                           <div>Estimated Fuel Level at Leg Completion</div>
-                           <div>&#40;Based on last input / departure fuel&#41;</div>
+                                       return false;
+                                    }} />
+                              </div>
+                           </Reset>
+                           <div className="flex ml-1 m-auto w-3"></div>
                         </div>
                      </div>
-                  </>
-                  }
+                     : <></>
+               }
+               <div className="flex flex-row p-4 pt-4">
+                  <div className="flex flex-col mx-auto text-sm border-2 border-slate-700 shadow-lg py-4 px-10 whitespace-nowrap">
+                     {edit ? <>
+                        <div className="flex flex-row"><div className="w-24">OBS: </div>Omni Beer Selector</div>
+                        <div className="flex flex-row"><div className="w-24">VAR: </div>Variation</div>
+                        <div className="flex flex-row"><div className="w-24">IAS: </div>Indicated Air Speed</div>
+                        <div className="flex flex-row"><div className="w-24">OAT: </div>Outside Air Temperature</div>
+                        <div className="flex flex-row"><div className="w-24">ATA: </div>Actual Time of Arrival</div>
+                        <div className="flex flex-row"><div className="w-24">Fuel: </div>Fuel Level at Leg Completion</div>
+                     </> : <>
+                        <div className="flex flex-row"><div className="w-24">OBS: </div>Omni Beer Selector</div>
+                        <div className="flex flex-row"><div className="w-24">CH: </div>Compass Heading</div>
+                        <div className="flex flex-row"><div className="w-24">MH: </div>Magnetic Heading</div>
+                        <div className="flex flex-row mt-2"><div className="w-24">IAS: </div>Indicated Air Speed</div>
+                        <div className="flex flex-row"><div className="w-24">GS: </div>Ground Speed</div>
+                        <div className="flex flex-row mt-2"><div className="w-24">ETE: </div>Estimated Time Enroute</div>
+                        <div className="flex flex-row"><div className="w-24">ETA: </div>Estimated Time of Arrival</div>
+                        <div className="flex flex-row mt-2"><div className="w-24">Fuel: </div>
+                           <div className="flex flex-col">
+                              <div>Estimated Fuel Level at Leg Completion</div>
+                              <div>&#40;Based on last input / departure fuel&#41;</div>
+                           </div>
+                        </div>
+                     </>
+                     }
+                  </div>
                </div>
             </div>
-         </div>
-      </Scroll >
-   </div >
+         </Scroll >
+      </div >
+      : <></>
 }
