@@ -37,6 +37,7 @@
   ],
   "devDependencies": {
     "@types/chart.js": "2.9.41",
+    "@types/wicg-file-system-access": "^2023.10.6",
     "jiti": "2.4.2"
   }
 }
