@@ -93,6 +93,9 @@ export const MapContext = createContext<{
   editNav: (_id: number, _newName: string) => void,
   setLoadedFuel: (_id: number, _value: number) => void,
   setDepartureTime: (_id: number, _value: number) => void,
+  setTaxiTime: (_id: number, _value: number) => void,
+  setTaxiConso: (_id: number, _value: number) => void,
+  setLink: (_id: number, _value: string) => void,
   editNavProperties: (_id: number, _properties: ((Properties[]) | ((_props: Properties[]) => (Properties[])))) => void,
   updateWaypoints: (_id: number, _names: string[]) => void,
   removeRecord: (_id: number) => void,
@@ -124,6 +127,7 @@ export const MapContext = createContext<{
   deviationPreset: string,
 
   importNavRef: RefObject<((_data: {
+    id: number,
     name: string;
     shortName: string;
     active?: boolean
@@ -133,9 +137,13 @@ export const MapContext = createContext<{
     waypoints: string[];
     loadedFuel: number;
     departureTime: number;
+    taxiTime: number;
+    taxiConso: number;
+    link: string;
   }[]) => void) | undefined>
 
   importNav: (_data: {
+    id: number,
     name: string
     shortName: string
     active?: boolean
@@ -145,6 +153,9 @@ export const MapContext = createContext<{
     waypoints: string[]
     loadedFuel: number
     departureTime: number
+    taxiTime: number;
+    taxiConso: number;
+    link: string;
   }[]) => void
 
 } | undefined>(undefined);
@@ -467,6 +478,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
 
   const importNavRef = useRef<(_data: {
+    id: number,
     name: string;
     shortName: string;
     active?: boolean
@@ -476,9 +488,13 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     waypoints: string[];
     loadedFuel: number;
     departureTime: number;
+    taxiTime: number;
+    taxiConso: number;
+    link: string;
   }[]) => void>(undefined);
 
   const importNav = useCallback((data: {
+    id: number,
     name: string;
     shortName: string;
     active?: boolean
@@ -488,6 +504,9 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     waypoints: string[];
     loadedFuel: number;
     departureTime: number;
+    taxiTime: number;
+    taxiConso: number;
+    link: string;
   }[]) => {
     importNavRef.current?.(data)
   }, [])
@@ -571,13 +590,15 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   }, [nextFuelPreset, savedFuelCurves, setPopup])
 
   useEffect(() => {
-    setNavData(navData => navData.map(elem => (
-      {
+    setNavData(navData => navData.map(elem => {
+      const result = {
         ...elem,
         properties: elem.properties.map((props, index) =>
           updateNavProps(deviationCurve, props, elem.coords[index], elem.coords[index + 1], fuelCurve))
-      }
-    )))
+      };
+
+      return result;
+    }))
   }, [deviationCurve, fuelCurve])
 
   useEffect(() => {
@@ -610,6 +631,73 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     messageHandler.subscribe("__RECORDS__", onPlaneRecords)
     return () => messageHandler.unsubscribe("__RECORDS__", onPlaneRecords);
   }, [activeRecords])
+
+  useEffect(() => {
+    setNavData(oldNavData => {
+      let change = false;
+
+      const data = oldNavData.map(elem => ({
+        conso: elem.taxiConso + elem.properties.reduce((result, elem) => result + elem.conso, 0),
+        dur: elem.taxiTime * 60 + elem.properties.reduce((result, elem) => result + elem.dur.full, 0)
+      }));
+
+      const navData = oldNavData.map(elem => {
+        if (elem.link === 'None') {
+          return elem;
+        }
+
+        if (oldNavData.find(elem1 => elem1.id === +elem.link)) {
+          return elem;
+        }
+
+        change = true;
+        return { ...elem, link: 'None' };
+      })
+
+      const getData = (id: number): {
+        fuel: number,
+        dur: number
+      } => {
+        const index = navData.findIndex(elem => elem.id === id);
+
+        console.assert(index !== -1)
+        const elem = navData[index];
+
+        if (elem.link === 'None') {
+          return {
+            fuel: elem.loadedFuel - data[index].conso,
+            dur: elem.departureTime * 60 + data[index].dur
+          }
+        } else {
+          const parent = getData(+elem.link);
+          return {
+            fuel: parent.fuel - data[index].conso,
+            dur: parent.dur + data[index].dur
+          }
+        }
+      }
+
+      const newNavData = navData.map(elem => {
+        if (elem.link !== 'None') {
+          const data = getData(+elem.link)
+
+          return {
+            ...elem,
+            departureTime: data.dur / 60,
+            loadedFuel: data.fuel
+          }
+        }
+
+        return elem;
+      })
+
+      if (change || newNavData.find((elem, index) => (elem.departureTime !== navData[index].departureTime) || (elem.loadedFuel !== navData[index].loadedFuel))) {
+        return newNavData;
+      } else {
+        return oldNavData;
+      }
+    })
+  }, [navData])
 
   useEffect(() => {
     messageHandler.send({ __GET_RECORDS__: true });
@@ -656,39 +744,72 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     },
     activeNav: (id: number, active: boolean) => {
       setNavData(items => {
-        const newItems = [...items];
-        newItems.find((item) => item.id === id)!.active = active;
-        return newItems;
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) {
+          return items;
+        }
+
+        return items.toSpliced(index, 1, { ...items[index], active: active })
       });
     },
     editNav: (id: number, newName: string) => {
       setNavData(items => {
-        const newItems = [...items];
-        const item = newItems.find((item) => item.id === id);
-        if (item) {
-          item.name = newName;
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) {
+          return items;
         }
-        return newItems;
+
+        return items.toSpliced(index, 1, { ...items[index], name: newName })
       })
     },
     setLoadedFuel: (id: number, value: number) => {
       setNavData(items => {
-        const newItems = items.map(item => ({ ...item }));
-        const item = newItems.find((item) => item.id === id);
-        if (item) {
-          item.loadedFuel = value;
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) {
+          return items;
         }
-        return newItems;
+
+        return items.toSpliced(index, 1, { ...items[index], loadedFuel: value })
       })
     },
     setDepartureTime: (id: number, value: number) => {
       setNavData(items => {
-        const newItems = items.map(item => ({ ...item }));
-        const item = newItems.find((item) => item.id === id);
-        if (item) {
-          item.departureTime = value;
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) {
+          return items;
         }
-        return newItems;
+
+        return items.toSpliced(index, 1, { ...items[index], departureTime: value })
+      })
+    },
+    setTaxiTime: (id: number, value: number) => {
+      setNavData(items => {
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) {
+          return items;
+        }
+
+        return items.toSpliced(index, 1, { ...items[index], taxiTime: value })
+      })
+    },
+    setTaxiConso: (id: number, value: number) => {
+      setNavData(items => {
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) {
+          return items;
+        }
+
+        return items.toSpliced(index, 1, { ...items[index], taxiConso: value })
+      })
+    },
+    setLink: (id: number, value: string) => {
+      setNavData(items => {
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) {
+          return items;
+        }
+
+        return items.toSpliced(index, 1, { ...items[index], link: value })
       })
     },
     editNavProperties: (id: number, properties: ((Properties[]) | ((_props: Properties[]) => (Properties[])))) => {
@@ -703,17 +824,18 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
             item.properties = properties.map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
           }
         }
+
         return newItems;
       })
     },
     updateWaypoints: (id: number, names: string[]) => {
       setNavData(items => {
-        const newItems = items.map(item => ({ ...item }));
-        const item = newItems.find((item) => item.id === id);
-        if (item) {
-          item.waypoints = [...names];
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) {
+          return items;
         }
-        return newItems;
+
+        return items.toSpliced(index, 1, { ...items[index], waypoints: [...names] })
       })
     },
     reorderNav: (orders: number[]) => {

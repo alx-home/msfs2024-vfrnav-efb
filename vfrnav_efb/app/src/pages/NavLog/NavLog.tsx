@@ -19,7 +19,7 @@ import { Coordinate } from "ol/coordinate";
 import { PropsWithChildren, useCallback, useContext, useMemo, useState, useEffect, useRef } from 'react';
 
 import Arrow from '@alx-home/images/arrow.svg?react';
-import { CheckBox, Input, Scroll, Tabs } from "@alx-home/Utils";
+import { CheckBox, Input, Scroll, Select, SelectOption, Tabs } from "@alx-home/Utils";
 import { JSX } from "react/jsx-runtime";
 
 import UndoImg from '@alx-home/images/undo.svg?react';
@@ -156,8 +156,8 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    edit: boolean,
    navData: NavData
 }) => {
-   const { editNavProperties, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime } = useContext(MapContext)!;
-   const { properties, waypoints, departureTime, loadedFuel, id } = navData;
+   const { editNavProperties, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useContext(MapContext)!;
+   const { properties, waypoints, departureTime, link, taxiTime, taxiConso, loadedFuel, id } = navData;
    const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);
    const toUnit = useCallback((value: number) =>
       fuelUnit === 'gal' ? value * 3.785411784 : value
@@ -173,8 +173,15 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
 
       return (hours % 24) + 'h' + (minutes < 10 ? '0' + minutes : minutes)
    }, [departureTime])
+   const taxiTimeStr = useMemo(() => {
+      const hours = Math.floor(taxiTime / 60);
+      const minutes = Math.round(taxiTime - 60 * hours);
+
+      return (hours % 24) + 'h' + (minutes < 10 ? '0' + minutes : minutes)
+   }, [taxiTime])
 
    const loadedFuelStr = useMemo(() => toUnit(loadedFuel).toString(), [loadedFuel, toUnit])
+   const taxiFuelStr = useMemo(() => toUnit(taxiConso).toString(), [taxiConso, toUnit])
    const { getFuel } = useFuel();
 
    const [mode, setMode] = useState<Modes>('Enroute');
@@ -182,6 +189,25 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    const [collapseWaypoints, setCollapseWaypoints] = useState(true);
    const delayedRef = useRef<(() => void)[]>([])
    const [delayed, setDelayed] = useState(false)
+
+   const linkOptions = useMemo(() => {
+      const links = new Set<number>()
+
+      const addLinks = (id: number) => {
+         navDatas.forEach(elem => {
+            if (+elem.link === id) {
+               links.add(elem.id);
+               addLinks(elem.id)
+            }
+         })
+      }
+
+      addLinks(navData.id);
+
+      return navDatas
+         .filter(elem => (elem.id !== navData.id) && !links.has(elem.id))
+         .map(elem => <SelectOption key={elem.id} id={elem.id.toString()}>{elem.name}</SelectOption>)
+   }, [navData, navDatas])
 
    const setActive = useCallback((index: number) => {
       const value = !actives[index];
@@ -262,9 +288,9 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    const header = useMemo(() => getHeader(mode, edit, false), [edit, getHeader, mode]);
 
    const getLegs = useCallback((mode: Modes, edit: boolean, dry: boolean) => {
-      let time = departureTime * 60;
-      let estfuel = loadedFuel;
-      let estfuel2 = loadedFuel;
+      let time = (departureTime + taxiTime) * 60;
+      let estfuel = (loadedFuel - taxiConso);
+      let estfuel2 = estfuel;
       let deltaEta = 0;
 
       return coords.map((_value, row) => {
@@ -608,7 +634,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
             .filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full')
             .map((elem, index, all) => <elem.type key={elem.key} {...elem.props} row={row + 1} col={index} size={all.length} />);
       })
-   }, [actives, coords, departureTime, editNavProperties, fromUnit, id, loadedFuel, properties, setActive, toUnit, updateWaypoints, waypoints, reset, collapseWaypoints])
+   }, [departureTime, taxiTime, loadedFuel, taxiConso, coords, waypoints, collapseWaypoints, updateWaypoints, id, actives, properties, toUnit, reset, editNavProperties, fromUnit, setActive])
 
    const legs = useMemo(() => getLegs(mode, edit, false), [edit, getLegs, mode]);
 
@@ -670,51 +696,165 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                   edit ?
                      <div className="flex flex-col mx-auto shrink">
                         <div className="flex flex-row text-sm justify-center">
-                           <div className="flex m-auto grow">Loaded Fuel : </div>
-                           <Reset className="flex-row justify-end min-w-20" onReset={() => {
-                              getFuel().then((fuel) => {
-                                 delayedRef.current.push(() => {
-                                    setLoadedFuel(id, fuel)
+                           <div className="flex m-auto grow">After : </div>
+                           <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-32 mr-4 ml-4">
+                              <Select active={true} value={link} className="my-1 max-w-32"
+                                 onChange={(value) => {
+                                    setLinks(id, value);
                                     setReset(true)
-                                 })
-                                 setDelayed(true)
-                              }).catch()
-                           }}>
-                              <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-16">
-                                 <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset} inputMode="decimal"
-                                    onChange={(value) => {
-                                       setLoadedFuel(id, fromUnit(+value));
-                                    }} validate={async (value) => {
-                                       return /^\d*(\.\d*)?$/.test(value);
-                                    }} />
-                              </div>
-                           </Reset>
-                           <div className="flex shrink ml-1 my-auto w-3">{fuelUnitStr}</div>
+                                 }} >
+                                 <SelectOption id='None'>
+                                    None
+                                 </SelectOption>
+                                 {linkOptions}
+                              </Select>
+                           </div>
                         </div>
-                        <div className="flex flex-row text-sm justify-center">
-                           <div className="flex mr-2 m-auto grow">Departure Time : </div>
-                           <Reset className="justify-end min-w-20" onReset={() => {
-                              const date = new Date();
-                              setDepartureTime(id, date.getHours() * 60 + date.getMinutes());
-                              setReset(true)
-                           }}>
-                              <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                 <Input active={true} className="my-1 max-w-16" reload={reset} value={departureTimeStr}
-                                    onChange={(value) => {
-                                       const data = value.split('h');
-                                       setDepartureTime(id, +data[0] * 60 + +data[1]);
-                                    }} validate={async (value) => {
-                                       if (/^\d+h\d*$/.test(value)) {
-                                          const data = value.split('h');
-                                          return (+data[0] < 24) && (+data[1] < 60);
-                                       }
+                        {
+                           link === 'None'
+                              ? <>
+                                 <div className="flex flex-row text-sm justify-center">
+                                    <div className="flex m-auto grow">Loaded Fuel : </div>
+                                    <Reset className="flex-row justify-end min-w-20" onReset={() => {
+                                       getFuel().then((fuel) => {
+                                          delayedRef.current.push(() => {
+                                             setLoadedFuel(id, fuel)
+                                             setReset(true)
+                                          })
+                                          setDelayed(true)
+                                       }).catch()
+                                    }}>
+                                       <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-16">
+                                          <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset} inputMode="decimal"
+                                             onChange={(value) => {
+                                                setLoadedFuel(id, fromUnit(+value));
+                                             }} validate={async (value) => {
+                                                return /^\d*(\.\d*)?$/.test(value);
+                                             }} />
+                                       </div>
+                                    </Reset>
+                                    <div className="flex shrink ml-1 my-auto w-3">{fuelUnitStr}</div>
+                                 </div>
+                                 <div className="flex flex-row text-sm justify-center">
+                                    <div className="flex mr-2 m-auto grow">Departure Time : </div>
+                                    <Reset className="justify-end min-w-20" onReset={() => {
+                                       const date = new Date();
+                                       setDepartureTime(id, date.getHours() * 60 + date.getMinutes());
+                                       setReset(true)
+                                    }}>
+                                       <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
+                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={departureTimeStr}
+                                             onChange={(value) => {
+                                                const data = value.split('h');
+                                                setDepartureTime(id, +data[0] * 60 + +data[1]);
+                                             }} validate={async (value) => {
+                                                if (/^\d+h\d*$/.test(value)) {
+                                                   const data = value.split('h');
+                                                   return (+data[0] < 24) && (+data[1] < 60);
+                                                }
 
-                                       return false;
-                                    }} />
-                              </div>
-                           </Reset>
-                           <div className="flex ml-1 m-auto w-3"></div>
-                        </div>
+                                                return false;
+                                             }} />
+                                       </div>
+                                    </Reset>
+                                    <div className="flex ml-1 m-auto w-3"></div>
+                                 </div>
+                                 <div className="flex flex-row text-sm justify-center">
+                                    <div className="flex mr-2 m-auto grow">Taxi Duration : </div>
+                                    <Reset className="justify-end min-w-20" onReset={() => {
+                                       setTaxiTime(id, 15);
+                                       setReset(true)
+                                    }}>
+                                       <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
+                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={taxiTimeStr}
+                                             onChange={(value) => {
+                                                if (/^\d+h\d*$/.test(value)) {
+                                                   const data = value.split('h');
+                                                   setTaxiTime(id, +data[0] * 60 + +data[1]);
+                                                } else {
+                                                   setTaxiTime(id, +value);
+                                                }
+                                             }} validate={async (value) => {
+                                                if (/^\d+h\d*$/.test(value)) {
+                                                   const data = value.split('h');
+                                                   return (+data[0] < 24) && (+data[1] < 60);
+                                                } else if (/^\d+$/.test(value)) {
+                                                   return (+value < 60);
+                                                }
+
+                                                return false;
+                                             }} />
+                                       </div>
+                                    </Reset>
+                                    <div className="flex ml-1 m-auto w-3"></div>
+                                 </div>
+                                 <div className="flex flex-row text-sm justify-center">
+                                    <div className="flex mr-2 m-auto grow">Taxi Conso : </div>
+                                    <Reset className="justify-end min-w-20" onReset={() => {
+                                       setTaxiConso(id, 30);
+                                       setReset(true)
+                                    }}>
+                                       <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
+                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={taxiFuelStr} inputMode="decimal"
+                                             onChange={(value) => {
+                                                setTaxiConso(id, fromUnit(+value));
+                                             }} validate={async (value) => {
+                                                return /^\d*(\.\d*)?$/.test(value);
+                                             }} />
+                                       </div>
+                                    </Reset>
+                                    <div className="flex ml-1 m-auto w-3"></div>
+                                 </div>
+                              </>
+                              : <>
+                                 <div className="flex flex-row text-sm justify-center">
+                                    <div className="flex mr-2 m-auto grow">Time Offset : </div>
+                                    <Reset className="justify-end min-w-20" onReset={() => {
+                                       setTaxiTime(id, 0);
+                                       setReset(true)
+                                    }}>
+                                       <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
+                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={taxiTimeStr}
+                                             onChange={(value) => {
+                                                if (/^\d+h\d*$/.test(value)) {
+                                                   const data = value.split('h');
+                                                   setTaxiTime(id, +data[0] * 60 + +data[1]);
+                                                } else {
+                                                   setTaxiTime(id, +value);
+                                                }
+                                             }} validate={async (value) => {
+                                                if (/^\d+h\d*$/.test(value)) {
+                                                   const data = value.split('h');
+                                                   return (+data[0] < 24) && (+data[1] < 60);
+                                                } else if (/^\d+$/.test(value)) {
+                                                   return (+value < 60);
+                                                }
+
+                                                return false;
+                                             }} />
+                                       </div>
+                                    </Reset>
+                                    <div className="flex ml-1 m-auto w-3"></div>
+                                 </div>
+                                 <div className="flex flex-row text-sm justify-center">
+                                    <div className="flex mr-2 m-auto grow">Conso Offset : </div>
+                                    <Reset className="justify-end min-w-20" onReset={() => {
+                                       setTaxiConso(id, 30);
+                                       setReset(true)
+                                    }}>
+                                       <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
+                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={taxiFuelStr} inputMode="decimal"
+                                             onChange={(value) => {
+                                                setTaxiConso(id, fromUnit(+value));
+                                             }} validate={async (value) => {
+                                                return /^\d*(\.\d*)?$/.test(value);
+                                             }} />
+                                       </div>
+                                    </Reset>
+                                    <div className="flex ml-1 m-auto w-3"></div>
+                                 </div>
+                              </>
+                        }
                      </div>
                      : <></>
                }

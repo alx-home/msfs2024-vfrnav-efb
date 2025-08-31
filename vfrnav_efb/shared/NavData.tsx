@@ -73,6 +73,7 @@ export type ExportNav = {
    __EXPORT_NAV__: true,
 
    data: {
+      id: number,
       name: string,
       shortName: string,
       order: number,
@@ -82,6 +83,9 @@ export type ExportNav = {
       waypoints: string[],
       loadedFuel: number,
       departureTime: number,
+      taxiTime: number,
+      taxiConso: number,
+      link: string,
    }[]
    deviationCurve: Deviation[],
    deviationPreset: string,
@@ -268,6 +272,7 @@ export const ExportNavRecord = GenRecord<ExportNav>({
 }, {
    data: {
       array: true, record: {
+         id: 'number',
          name: "string",
          shortName: "string",
          order: "number",
@@ -288,6 +293,9 @@ export const ExportNavRecord = GenRecord<ExportNav>({
          },
          loadedFuel: 'number',
          departureTime: 'number',
+         taxiTime: 'number',
+         taxiConso: 'number',
+         link: 'string',
       }
    },
    deviationCurve: {
