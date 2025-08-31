@@ -89,23 +89,35 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
           } : {})
         }
 
-        const handle = await window.showSaveFilePicker({
-          suggestedName:
-            navs.reduce((result, elem, index) => result + (index ? "-" : "") + elem.name, "")
-            + (exportDev ? (navs.length ? "+" : "") + exportDevName : '')
-            + (exportFuel ? ((navs.length || exportDev) ? "+" : "") + exportFuelName : '')
-            + ".json",
-          types: [{
-            description: 'Navlog',
-            accept: { 'application/json': ['.json'] },
-          }],
-        });
-
         const blob = new Blob([JSON.stringify(result, undefined, "   ")], { type: "application/json" });
+        if (window.showSaveFilePicker) {
+          const handle = await window.showSaveFilePicker({
+            suggestedName:
+              navs.reduce((result, elem, index) => result + (index ? "-" : "") + elem.name, "")
+              + (exportDev ? (navs.length ? "+" : "") + exportDevName : '')
+              + (exportFuel ? ((navs.length || exportDev) ? "+" : "") + exportFuelName : '')
+              + ".json",
+            types: [{
+              description: 'Navlog',
+              accept: { 'application/json': ['.json'] },
+            }],
+          });
 
-        const writableStream = await handle.createWritable();
-        await writableStream.write(blob);
-        await writableStream.close();
+          const writableStream = await handle.createWritable();
+          await writableStream.write(blob);
+          await writableStream.close();
+        } else {
+          const a = document.createElement("a")
+          const url = URL.createObjectURL(blob);
+          a.href = url;
+          a.download = "navlog.json";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }, 0);
+        }
       })()
 
       setPopup(emptyPopup);
