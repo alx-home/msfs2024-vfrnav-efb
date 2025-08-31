@@ -474,7 +474,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                         navProps.magVar = +value;
                         editNavProperties(id, properties);
                      }} validate={async (value) => {
-                        return /^[-+]?\d*$/.test(value);
+                        return /^[-+]?\d*(\.\d*)?$/.test(value);
                      }} inputMode='decimal' />
                   </div>
                </GridElem>)
