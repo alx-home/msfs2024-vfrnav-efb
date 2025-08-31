@@ -82,6 +82,11 @@ const useMap = () => {
                const date = new Date();
 
                hasChanges = true;
+               const props = coords.filter((_, index) => index).map((value, index) => {
+                  const props = { ...PropertiesRecord.defaultValues, ias: defaultSpeed, ata: -1 };
+                  return updateNavProps(props, coords[index], value)
+               });
+
                newData.push({
                   id: id,
                   order: 0,
@@ -93,10 +98,10 @@ const useMap = () => {
                   waypoints: coords.map(() => ""),
                   loadedFuel: 300,
                   departureTime: date.getHours() * 60 + date.getMinutes(),
-                  properties: coords.filter((_, index) => index).map((value, index) => {
-                     const props = { ...PropertiesRecord.defaultValues, ias: defaultSpeed, ata: -1 };
-                     return updateNavProps(props, coords[index], value)
-                  })
+                  taxiTime: 15,
+                  taxiConso: 30,
+                  link: 'None',
+                  properties: props
                })
             }
          }
@@ -609,6 +614,7 @@ export const OlRouteLayer = ({
    }, [map, navData, settings, updateNavProps]);
 
    const onExportNav = useCallback((data: {
+      id: number,
       name: string;
       shortName: string;
       order: number;
@@ -618,8 +624,13 @@ export const OlRouteLayer = ({
       waypoints: string[];
       loadedFuel: number;
       departureTime: number;
+      taxiTime: number;
+      taxiConso: number;
+      link: string
    }[]) => {
       source.clear();
+
+      const idMap = new Map<number, number>();
 
       const features: Feature<MultiLineString>[] = [];
       const activeFeatures: boolean[] = [];
@@ -640,12 +651,20 @@ export const OlRouteLayer = ({
                coords: data.coords.map(coords => ([...coords])),
                layer: layer!,
                departureTime: data.departureTime,
+               taxiTime: data.taxiTime,
+               taxiConso: data.taxiConso,
+               link: data.link,
                loadedFuel: data.loadedFuel,
                waypoints: data.waypoints,
                properties: data.properties,
             }
 
+            idMap.set(data.id, result.id);
             return result;
+         })
+         .map(elem => elem.link === 'None' ? elem : {
+            ...elem,
+            link: idMap.get(+elem.link)!.toString()
          })
 
       setFeatures(features)

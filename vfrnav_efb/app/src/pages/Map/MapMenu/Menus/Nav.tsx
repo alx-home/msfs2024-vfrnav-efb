@@ -49,6 +49,12 @@ export class NavData {
     // eslint-disable-next-line no-unused-vars
     public departureTime: number,
     // eslint-disable-next-line no-unused-vars
+    public taxiTime: number,
+    // eslint-disable-next-line no-unused-vars
+    public taxiConso: number,
+    // eslint-disable-next-line no-unused-vars
+    public link: string,
+    // eslint-disable-next-line no-unused-vars
     public properties: Properties[],
     // eslint-disable-next-line no-unused-vars
     public waypoints: string[],
@@ -253,6 +259,7 @@ export const Nav = ({ closeMenu, className, style }: {
       __EXPORT_NAV__: true,
 
       data: navData.map(data => ({
+        id: data.id,
         name: data.name,
         order: data.order,
         active: data.active,
@@ -262,6 +269,9 @@ export const Nav = ({ closeMenu, className, style }: {
         waypoints: data.waypoints,
         loadedFuel: data.loadedFuel,
         departureTime: data.departureTime,
+        taxiTime: data.taxiTime,
+        taxiConso: data.taxiConso,
+        link: data.link
       })),
       deviationCurve: deviationPreset === 'custom' ? deviationCurve : [],
       deviationPreset: deviationPreset,

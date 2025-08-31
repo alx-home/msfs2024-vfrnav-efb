@@ -55,6 +55,7 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
       const navs = exportNav.map((elem, index) => elem ? {
         name: exportNavName[index].length ? exportNavName[index] : navData[index].name,
         data: {
+          id: navData[index].id,
           order: navData[index].order,
           active: navData[index].active,
           shortName: navData[index].shortName,
@@ -63,6 +64,9 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
           waypoints: navData[index].waypoints,
           loadedFuel: navData[index].loadedFuel,
           departureTime: navData[index].departureTime,
+          taxiTime: navData[index].taxiTime,
+          taxiConso: navData[index].taxiConso,
+          link: navData[index].link,
         }
       } : undefined).filter(elem => elem !== undefined);
 
@@ -228,6 +232,7 @@ const NavLogPageElem = ({ active }: {
 
               if (result['navs'] !== undefined) {
                 importNav((result['navs'] as {
+                  id?: number,
                   name: string,
                   data: {
                     order: number,
@@ -238,10 +243,18 @@ const NavLogPageElem = ({ active }: {
                     waypoints: string[],
                     loadedFuel: number,
                     departureTime: number,
+                    link?: string,
+                    taxiTime?: number,
+                    taxiConso?: number,
                   }
                 }[]).map(elem => ({
                   name: elem.name,
-                  ...elem.data
+                  // Retro-compatibility
+                  id: elem.id ?? 0,
+                  taxiTime: 15,
+                  taxiConso: 30,
+                  link: 'None',
+                  ...elem.data,
                 })))
               }
 
@@ -358,6 +371,7 @@ const NavLogPageElem = ({ active }: {
       __EXPORT_NAV__: true,
 
       data: navData.map(data => ({
+        id: data.id,
         name: data.name,
         order: data.order,
         active: data.active,
@@ -367,6 +381,9 @@ const NavLogPageElem = ({ active }: {
         waypoints: data.waypoints,
         loadedFuel: data.loadedFuel,
         departureTime: data.departureTime,
+        taxiTime: data.taxiTime,
+        taxiConso: data.taxiConso,
+        link: data.link
       })),
       deviationCurve: deviationPreset === 'custom' ? deviationCurve : [],
       deviationPreset: deviationPreset,

@@ -107,6 +107,7 @@ struct NavProperties {
 };
 
 struct NavData {
+   std::size_t                        id_{};
    std::string                        name_{};
    std::string                        short_name_{};
    std::size_t                        order_{};
@@ -116,8 +117,12 @@ struct NavData {
    std::vector<std::string>           waypoints_{};
    double                             loaded_fuel_{};
    double                             departure_time_{};
+   double                             taxi_time_{};
+   double                             taxi_conso_{};
+   std::string                        link_{};
 
    static constexpr js::Proto PROTOTYPE{
+     js::_{"id", &NavData::id_},
      js::_{"name", &NavData::name_},
      js::_{"shortName", &NavData::short_name_},
      js::_{"order", &NavData::order_},
@@ -127,6 +132,9 @@ struct NavData {
      js::_{"waypoints", &NavData::waypoints_},
      js::_{"loadedFuel", &NavData::loaded_fuel_},
      js::_{"departureTime", &NavData::departure_time_},
+     js::_{"taxiTime", &NavData::taxi_time_},
+     js::_{"taxiConso", &NavData::taxi_conso_},
+     js::_{"link", &NavData::link_},
    };
 };
 
