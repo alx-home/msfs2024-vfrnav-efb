@@ -22,6 +22,7 @@
       "rootDir": "../../",
       "baseUrl": ".",
       "outDir": "../../build/vfrnav_efb/ts-dist/efb/app/",
+      "types": ["@types/wicg-file-system-access"],
       "paths": {
          "@alx-home/global.css": ["../../packages/ts-utils/src/global.css"],
 

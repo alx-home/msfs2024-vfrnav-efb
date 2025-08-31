@@ -67,33 +67,42 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
       } : undefined).filter(elem => elem !== undefined);
 
 
-      const result = {
-        ...(navs.length ? { navs: navs } : {}),
-        ...(exportDev ? {
-          dev: {
-            name: exportDevName,
-            data: deviationCurve
-          }
-        } : {}),
-        ...(exportFuel ? {
-          fuel: {
-            name: exportFuelName,
-            data: fuelCurve
-          }
-        } : {})
-      }
+      (async () => {
 
-      const file = new Blob([JSON.stringify(result, undefined, "   ")], { type: "application/json" });
-      const a = document.createElement("a")
-      const url = URL.createObjectURL(file);
-      a.href = url;
-      a.download = "navlog.json";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function () {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }, 0);
+        const result = {
+          ...(navs.length ? { navs: navs } : {}),
+          ...(exportDev ? {
+            dev: {
+              name: exportDevName,
+              data: deviationCurve
+            }
+          } : {}),
+          ...(exportFuel ? {
+            fuel: {
+              name: exportFuelName,
+              data: fuelCurve
+            }
+          } : {})
+        }
+
+        const handle = await window.showSaveFilePicker({
+          suggestedName:
+            navs.reduce((result, elem, index) => result + (index ? "-" : "") + elem.name, "")
+            + (exportDev ? (navs.length ? "+" : "") + exportDevName : '')
+            + (exportFuel ? ((navs.length || exportDev) ? "+" : "") + exportFuelName : '')
+            + ".json",
+          types: [{
+            description: 'Navlog',
+            accept: { 'application/json': ['.json'] },
+          }],
+        });
+
+        const blob = new Blob([JSON.stringify(result, undefined, "   ")], { type: "application/json" });
+
+        const writableStream = await handle.createWritable();
+        await writableStream.write(blob);
+        await writableStream.close();
+      })()
 
       setPopup(emptyPopup);
     }
