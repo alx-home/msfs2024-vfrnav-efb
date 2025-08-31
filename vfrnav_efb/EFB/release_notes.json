@@ -472,6 +472,24 @@
             "     - Resolved performance issue on the navlog page when hovering over the embedded EFB of MSFS.",
             "       Problème de performance résolu sur la page navlog lors du survol de l’EFB intégré de MSFS."
          ]
+      },
+      {
+         "version": "1.7.0",
+         "date": "AUG 31, 2025",
+         "notes": [
+            "### Installer/Server (new) ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Use a save dialog instead of a download dialog for navlog import.",
+            "       Utilise une boîte de dialogue d'enregistrement au lieu d'une boîte de téléchargement pour l'importation du navlog.",
+            "",
+            "",
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Add the possibility to chain nav logs.",
+            "       Ajoute la possibilité d'enchaîner les journaux de navigation.",
+            "     - Add the possibility to enter floating values for variation.",
+            "       Ajoute la possibilité de saisir des valeurs décimales pour la variation."
+         ]
       }
    ]
 }
