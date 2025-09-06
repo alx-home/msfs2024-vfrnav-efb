@@ -90,6 +90,7 @@ struct Settings {
    LayerSetting us_ifr_high_{};
    LayerSetting us_ifr_low_{};
    LayerSetting opentopo_{};
+   LayerSetting opentopography_{};
    LayerSetting mapforfree_{};
    LayerSetting googlemap_{};
    LayerSetting openstreet_{};
@@ -160,6 +161,7 @@ struct Settings {
      js::_{"USIFRHigh", &Settings::us_ifr_high_},
      js::_{"USIFRLow", &Settings::us_ifr_low_},
      js::_{"opentopo", &Settings::opentopo_},
+     js::_{"opentopography", &Settings::opentopography_},
      js::_{"mapforfree", &Settings::mapforfree_},
      js::_{"googlemap", &Settings::googlemap_},
      js::_{"openstreet", &Settings::openstreet_},

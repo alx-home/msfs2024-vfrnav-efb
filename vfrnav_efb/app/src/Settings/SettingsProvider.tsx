@@ -149,6 +149,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
   const USIFRHighSetting = useLayer('USIFRHigh', sharedSettings, setSharedSettings);
   const USIFRLowSetting = useLayer('USIFRLow', sharedSettings, setSharedSettings);
   const opentopoSetting = useLayer('opentopo', sharedSettings, setSharedSettings);
+  const opentopographySetting = useLayer('opentopography', sharedSettings, setSharedSettings);
   const mapforfreeSetting = useLayer('mapforfree', sharedSettings, setSharedSettings);
   const googlemapSetting = useLayer('googlemap', sharedSettings, setSharedSettings);
   const openstreetSetting = useLayer('openstreet', sharedSettings, setSharedSettings);
@@ -170,6 +171,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
     USIFRHigh: { ...USIFRHighSetting },
     USIFRLow: { ...USIFRLowSetting },
     opentopo: { ...opentopoSetting },
+    opentopography: { ...opentopographySetting },
     mapforfree: { ...mapforfreeSetting },
     googlemap: { ...googlemapSetting },
     openstreet: { ...openstreetSetting },
@@ -215,7 +217,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
       setMarkerSize: setMarkerSize
     }
   }), [
-    airportsSetting, googlemapSetting, mapforfreeSetting, openstreetSetting, opentopoSetting, OACISetting,
+    airportsSetting, googlemapSetting, mapforfreeSetting, openstreetSetting, opentopoSetting, opentopographySetting, OACISetting,
     USIFRHighSetting, USIFRLowSetting, USSectionalSetting, azbaSetting, germanySetting, openflightmapsSettings,
     openaipmapsSettings, openflightmapsBaseSettings, planeSetting,
     getSIAAZBA, getSIAPDF, setPage,

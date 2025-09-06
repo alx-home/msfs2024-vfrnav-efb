@@ -65,6 +65,7 @@ export type GlobalSettings = Settings & SharedSettings & {
   USIFRHigh: LayerSettingSetter & SharedSettings['USIFRHigh'],
   USIFRLow: LayerSettingSetter & SharedSettings['USIFRLow'],
   opentopo: LayerSettingSetter & SharedSettings['opentopo'],
+  opentopography: LayerSettingSetter & SharedSettings['opentopography'],
   mapforfree: LayerSettingSetter & SharedSettings['mapforfree'],
   googlemap: LayerSettingSetter & SharedSettings['googlemap'],
   openstreet: LayerSettingSetter & SharedSettings['openstreet'],

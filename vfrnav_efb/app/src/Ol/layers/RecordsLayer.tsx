@@ -154,7 +154,7 @@ export const RecordsLayer = ({
               // Curvature change => Close Polygon
 
               console.assert(i > 0);
-              console.assert(segment.length);
+              console.assert(segment.length !== 0);
 
               const last = segment[segment.length - 1];
               for (let k = i; k >= begIndex; --k) {

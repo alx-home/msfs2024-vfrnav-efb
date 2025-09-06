@@ -54,6 +54,7 @@ import osmImg from '@efb-images/osm.jpg';
 import { Input } from "@alx-home/Utils";
 import { Icaos, LatLon } from "@shared/Facilities";
 import { RecordViewpoint } from "./RecordViewpoint";
+import { OlMVTLayer } from "@Ol/layers/OlMVT";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -218,6 +219,12 @@ export const MapPage = ({ active }: {
       src: opentopoImg,
       alt: 'open topo layer',
       getSettings: (_settings: GlobalSettings) => _settings.opentopo
+    },
+    {
+      olLayer: <OlMVTLayer key="opentopography" url="https://api.maptiler.com/tiles/contours-v2/{z}/{x}/{y}.pbf?key=VqFHlpkkVe2LUhxSjHpx" crossOrigin={null} />,
+      src: opentopoImg,
+      alt: 'opentopography layer',
+      getSettings: (_settings: GlobalSettings) => _settings.opentopography
     },
     {
       olLayer: <OlOSMLayer key="ifr low" url="https://maps.iflightplanner.com/Maps/Tiles/IFRLow/Z{z}/{y}/{x}.png" crossOrigin={null} />,

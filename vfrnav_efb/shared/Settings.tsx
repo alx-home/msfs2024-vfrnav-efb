@@ -58,6 +58,7 @@ export type SharedSettings = {
   USIFRHigh: LayerSetting,
   USIFRLow: LayerSetting,
   opentopo: LayerSetting,
+  opentopography: LayerSetting,
   mapforfree: LayerSetting,
   googlemap: LayerSetting,
   openstreet: LayerSetting,
@@ -156,6 +157,10 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
     enabled: true,
     active: false
   },
+  opentopography: {
+    enabled: true,
+    active: false
+  },
   mapforfree: {
     enabled: true,
     active: false
@@ -229,6 +234,7 @@ export const SharedSettingsRecord = GenRecord<SharedSettings>({
   USIFRHigh: LayerRecord,
   USIFRLow: LayerRecord,
   opentopo: LayerRecord,
+  opentopography: LayerRecord,
   mapforfree: LayerRecord,
   googlemap: LayerRecord,
   openstreet: LayerRecord,
