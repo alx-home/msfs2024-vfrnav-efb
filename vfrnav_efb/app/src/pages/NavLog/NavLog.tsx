@@ -156,7 +156,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    edit: boolean,
    navData: NavData
 }) => {
-   const { editNavProperties, activeNav, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useContext(MapContext)!;
+   const { editNavProperties, activeNav, setActiveLeg, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useContext(MapContext)!;
    const { properties, waypoints, departureTime, link, taxiTime, taxiConso, loadedFuel, id } = navData;
    const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);
    const toUnit = useCallback((value: number) =>
@@ -647,6 +647,10 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    }, [departureTime, taxiTime, loadedFuel, taxiConso, coords, waypoints, collapseWaypoints, updateWaypoints, id, actives, properties, toUnit, reset, editNavProperties, fromUnit, setActive])
 
    const legs = useMemo(() => getLegs(mode, edit, false), [edit, getLegs, mode]);
+
+   useEffect(() => {
+      setActiveLeg(setActive);
+   }, [setActive, setActiveLeg])
 
    useEffect(() => {
       setReset(true)

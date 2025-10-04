@@ -103,6 +103,9 @@ export const MapContext = createContext<{
   editRecord: (_id: number, _newName: string) => void,
   reorderNav: (_orders: number[]) => void,
 
+  activeLeg: (_index: number) => void,
+  setActiveLeg: (_callback: (_index: number) => void) => void
+
   updateNavProps: (_props: Properties, _prevCoords: Coordinate, _coords: Coordinate, _withFuel?: boolean) => Properties
 
   fuelUnit: FuelUnit,
@@ -418,6 +421,8 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const counter = useRef(0);
   const [flash, setFlash] = useState(false);
   const [flashKey, setFlashKey] = useState(0);
+
+  const [activeLeg, setActiveLeg] = useState<((_index: number) => void)>(() => { });
 
   const [cancelRequest, setCancelRequest] = useState(false);
   const [addNavRequest, setAddNavRequest] = useState(false);
@@ -843,6 +848,10 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         return orders.map((order, index) => ({ ...data[index], order: order }))
       });
     },
+
+    activeLeg: activeLeg,
+    setActiveLeg: setActiveLeg,
+
     removeRecord: (id: number) => {
       messageHandler.send({
         __REMOVE_RECORD__: true,
@@ -918,7 +927,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
     importNavRef: importNavRef,
     importNav: importNav
-  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav, activeRecords]);
+  }), [map, navData, records, flash, flashKey, activeLeg, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav, activeRecords]);
 
   return (
     <MapContext.Provider
