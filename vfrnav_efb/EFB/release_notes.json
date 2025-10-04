@@ -490,6 +490,18 @@
             "     - Add the possibility to enter floating values for variation.",
             "       Ajoute la possibilité de saisir des valeurs décimales pour la variation."
          ]
+      },
+      {
+         "version": "1.7.1",
+         "date": "OCT 04, 2025",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Stack text layers vertically on the map to improve visibility.",
+            "       Les couches de texte sont maintenant empilées verticalement sur la carte pour améliorer la visibilité.",
+            "     - Automatically hide navigation path upon completion and switch to the linked ones (if available).",
+            "       Le tracé de navigation est maintenant automatiquement désactivé une fois terminé, et les tracés liés sont activés (si disponibles)."
+         ]
       }
    ]
 }
