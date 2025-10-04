@@ -156,7 +156,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    edit: boolean,
    navData: NavData
 }) => {
-   const { editNavProperties, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useContext(MapContext)!;
+   const { editNavProperties, activeNav, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useContext(MapContext)!;
    const { properties, waypoints, departureTime, link, taxiTime, taxiConso, loadedFuel, id } = navData;
    const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);
    const toUnit = useCallback((value: number) =>
@@ -243,12 +243,22 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
             }).catch(() => { });
 
             editNavProperties(id, properties);
+
+            if (index === actives.length - 1) {
+               activeNav(id, false);
+               for (const nav of navDatas) {
+                  if (+nav.link === id) {
+                     activeNav(nav.id, true);
+                  }
+
+               }
+            }
             setReset(true)
          }
       }
 
       editNavProperties(id, properties);
-   }, [actives, editNavProperties, id, properties, fromUnit, getFuel]);
+   }, [actives, editNavProperties, id, properties, getFuel, fromUnit, activeNav, navDatas]);
 
    const getHeader = useCallback((mode: Modes, edit: boolean, dry: boolean) => {
       return [
