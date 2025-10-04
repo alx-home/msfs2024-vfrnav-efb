@@ -498,32 +498,58 @@ export const OlRouteLayer = ({
                      const center = [(clippedCoords[0][0] + clippedCoords[1][0]) >> 1, (clippedCoords[0][1] + clippedCoords[1][1]) >> 1];
                      const distance = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
 
-                     const drawText = (text: string, background: boolean, bottom?: boolean) => {
+
+                     const drawText_ = (text: string[], background: boolean, bottom: boolean, index: number): boolean => {
                         context.save();
 
                         context.lineJoin = 'round';
                         context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
                         context.lineWidth = Math.floor(settings.map.text.borderSize);
                         context.font = "900 " + maxSize.toFixed(0) + "px Inter-bold, sans-serif";
-                        const textWidth = context.measureText(text).width;
-                        const textSize = Math.min(maxSize, maxSize * (distance - settings.map.markerSize * 1.5) / textWidth);
-                        context.font = "900 " + textSize.toFixed(0) + "px Inter-bold, sans-serif";
+                        const text_str = text.join(' ');
+                        const textWidth = context.measureText(text_str).width;
+                        let drawned = false;
 
-                        if (textSize >= settings.map.text.minSize) {
-                           context.textAlign = "center";
-                           context.translate(center[0], center[1]);
-                           context.rotate(angle * Math.PI / 180);
-                           context.translate(offset, ((bottom ?? false) ? textSize + settings.map.text.borderSize * 0.25 : -settings.map.text.borderSize * 0.25 - 5));
+                        if (text.length === 1) {
+                           const textSize = Math.min(maxSize, maxSize * (distance - settings.map.markerSize * 1.5) / textWidth);
+                           context.font = "900 " + textSize.toFixed(0) + "px Inter-bold, sans-serif";
 
-                           if (background) {
-                              context.strokeText(text, 0, 0);
-                           } else {
-                              context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
-                              context.fillText(text, 0, 0);
+                           if (textSize >= settings.map.text.minSize) {
+                              drawned = true;
+
+                              context.textAlign = "center";
+                              context.translate(center[0], center[1]);
+                              context.rotate(angle * Math.PI / 180);
+                              context.translate(offset, (bottom
+                                 ? textSize + settings.map.text.borderSize * 0.25 + index * maxSize
+                                 : -settings.map.text.borderSize * 0.25 - 5 - index * maxSize));
+
+                              if (background) {
+                                 context.strokeText(text_str, 0, 0);
+                              } else {
+                                 context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
+                                 context.fillText(text_str, 0, 0);
+                              }
+                           }
+                        } else if (textWidth < (distance - settings.map.markerSize * 1.5)) {
+                           drawned = drawText_([text.join("  ")], background, bottom, 0)
+                        } else {
+                           console.assert(index === 0);
+
+                           let sub_index = 0;
+                           for (const subtext of text) {
+                              if (drawText_([subtext], background, bottom, sub_index)) {
+                                 ++sub_index;
+                              }
                            }
                         }
 
                         context.restore();
+                        return drawned;
+                     }
+
+                     const drawText = (text: string[], background: boolean, bottom?: boolean, index?: number) => {
+                        drawText_(text, background, bottom ?? false, index ?? 0)
                      }
 
 
@@ -533,17 +559,19 @@ export const OlRouteLayer = ({
                         const delta_str = cDelta === 0 ? '' : (cDelta > 0 ? ' +' : ' ') + cDelta.toFixed() + '';
                         const seconds_str = (seconds < 10 ? '0' : '') + seconds.toString();
 
-                        drawText(ch.toString() + delta_str + "\u00b0 "
-                           + Math.round(dist).toString() + " nm  "
-                           + (days ? days.toString() + 'd ' : '')
-                           + ((days || hours) ? (hours_str + ":") : "")
-                           + ((days || hours || minutes) ? (minutes_str + ":") : "")
-                           + seconds_str, background);
+                        drawText([ch.toString() + delta_str + "\u00b0 "
+                           + Math.round(dist).toString() + " nm",
+                        (days ? days.toString() + 'd ' : '')
+                        + ((days || hours) ? (hours_str + ":") : "")
+                        + ((days || hours || minutes) ? (minutes_str + ":") : "")
+                        + seconds_str], background);
 
-                        drawText(waypoint + (waypoint.length ? " " : "")
-                           + (waypoint.length || nextWaypoint.length ? "→ " : '') + nextWaypoint + (nextWaypoint.length ? ' ' : '')
-                           + "↑" + (altitude < 10000 ? altitude : "FL" + (altitude / 100).toFixed(0))
-                           + (remark.length ? " @" + remark : ""), background, true)
+                        const waypoint_str = waypoint + (waypoint.length ? " " : "")
+                           + (waypoint.length || nextWaypoint.length ? "→ " : '') + nextWaypoint + (nextWaypoint.length ? ' ' : '');
+
+                        drawText(["↑" + (altitude < 10000 ? altitude : "FL" + (altitude / 100).toFixed(0)),
+                        ...(waypoint_str.length ? [waypoint_str] : []),
+                        ...(remark.length ? ["@" + remark] : [])], background, true)
                      }
                   });
 
