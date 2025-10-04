@@ -566,11 +566,12 @@ export const OlRouteLayer = ({
                         + ((days || hours || minutes) ? (minutes_str + ":") : "")
                         + seconds_str], background);
 
-                        const waypoint_str = waypoint + (waypoint.length ? " " : "")
-                           + (waypoint.length || nextWaypoint.length ? "→ " : '') + nextWaypoint + (nextWaypoint.length ? ' ' : '');
+                        const from = waypoint + (waypoint.length && !nextWaypoint.length ? " →" : "");
+                        const to = (nextWaypoint.length ? "→ " : "") + nextWaypoint;
 
                         drawText(["↑" + (altitude < 10000 ? altitude : "FL" + (altitude / 100).toFixed(0)),
-                        ...(waypoint_str.length ? [waypoint_str] : []),
+                        ...(from.length ? [from] : []),
+                        ...(to.length ? [to] : []),
                         ...(remark.length ? ["@" + remark] : [])], background, true)
                      }
                   });
