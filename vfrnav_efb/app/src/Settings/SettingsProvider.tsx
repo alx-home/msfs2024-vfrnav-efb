@@ -250,6 +250,8 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
 
   useEffect(() => {
     if (__MSFS_EMBEDED__) {
+      document.documentElement.style.setProperty('--resize-ratio', '1');
+
       const obj = parent.document.getElementsByClassName("efb")[0];
       const observer = new ResizeObserver(() => {
         const [width, height, baseWidth, baseHeight] = [
@@ -259,22 +261,18 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
           window.getComputedStyle(obj).getPropertyValue('--base-height')
         ];
 
-        document.body.style.setProperty('--panel-width', width)
-        document.body.style.setProperty('--panel-height', height)
-        document.body.style.setProperty('--base-width', baseWidth)
-        document.body.style.setProperty('--base-height', baseHeight)
+        document.documentElement.style.setProperty('--panel-width', width)
+        document.documentElement.style.setProperty('--panel-height', height)
+        document.documentElement.style.setProperty('--base-width', baseWidth)
+        document.documentElement.style.setProperty('--base-height', baseHeight)
 
         if (+height < 790) {
-          document.body.style.setProperty('--menu-padding', '35px')
+          document.documentElement.style.setProperty('--menu-padding', '35px')
         } else {
-          document.body.style.setProperty('--menu-padding', 'calc(35px*var(--panel-height)/var(--base-height))')
+          document.documentElement.style.setProperty('--menu-padding', 'calc(35px*var(--panel-height)/var(--base-height))')
         }
 
-        if (+baseWidth === 516) {
-          document.body.style.setProperty('--button-height', 'calc(1.75rem*var(--panel-width)/var(--base-width,516))')
-        } else {
-          document.body.style.setProperty('--button-height', 'calc(1.5rem*var(--panel-width)/var(--base-width,516))')
-        }
+        document.documentElement.style.setProperty('--button-height', '1.7em')
       });
 
       observer.observe(obj);

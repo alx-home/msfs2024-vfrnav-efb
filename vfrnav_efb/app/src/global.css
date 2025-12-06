@@ -36,17 +36,25 @@
    animation-iteration-count: 1;
 }
 
-html,
-.map,
-#root,
-#root>*,
-body {
-   height: 100%;
+:root {
    --menu-padding: 35px;
    --panel-height: 714;
    --panel-width: 714;
    --base-width: 517;
    --base-height: 714;
-   --button-height: calc(1.75rem*var(--panel-width)/var(--base-width, 516));
+   --button-height: 1.7em;
+   --resize-ratio: 1.4;
+   
+   font-size: calc(var(--font-size) * var(--panel-width) / var(--base-width, 516));
 }
 
+html,
+.map,
+#root,
+#root>*,
+body,
+:before,
+:after,
+:root {
+   height: 100%;
+}

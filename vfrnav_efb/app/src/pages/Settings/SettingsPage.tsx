@@ -19,7 +19,7 @@ import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, useStat
 
 import { AirportLayerOptions, LayerSetting, SharedSettingsRecord } from "@shared/Settings";
 
-import { SettingsContext } from "@Settings/SettingsProvider";
+import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 import { AirportLayerSettingSetter, LayerSettingSetter } from "@Settings/Settings";
 
 import { List } from "./List";
@@ -67,6 +67,7 @@ const AirortLayerOption = ({ setting, defaultSetting, reset, children, settingKe
    </CheckBox>
 }
 
+
 export const SettingsPage = ({ active }: {
    active: boolean
 }) => {
@@ -74,6 +75,41 @@ export const SettingsPage = ({ active }: {
    const [opacity, setOpacity] = useState(' opacity-0');
    const [advanced, setAdvanced] = useState(false);
    const setSpeed = useCallback((value: string) => settings.setDefaultSpeed(+value), [settings]);
+   const [panelWidth, setPanelWidth] = useState(1);
+   const [panelHeight, setPanelHeight] = useState(1);
+   const [dpiScale, setDpiScale] = useState(1);
+
+   useEffect(() => {
+      if (__MSFS_EMBEDED__) {
+         document.documentElement.style.setProperty('--resize-ratio', (1 / (dpiScale * panelWidth)).toString());
+         document.documentElement.style.setProperty('--font-size', (dpiScale * 100).toFixed(0) + '%');
+      }
+   }, [dpiScale, panelWidth]);
+
+   useEffect(() => {
+      if (__MSFS_EMBEDED__) {
+         const obj = parent.document.getElementsByClassName("efb")[0];
+
+         messageHandler.send({
+            __SET_PANEL_SIZE__: true,
+
+            width: panelWidth,
+            height: panelHeight
+         });
+
+         const observer = new ResizeObserver(() => {
+            messageHandler.send({
+               __SET_PANEL_SIZE__: true,
+
+               width: panelWidth,
+               height: panelHeight
+            });
+         });
+
+         observer.observe(obj);
+         return () => observer?.unobserve(obj);
+      }
+   }, [panelWidth, panelHeight]);
 
    useEffect(() => {
       if (active) {
@@ -174,6 +210,33 @@ export const SettingsPage = ({ active }: {
                   </ErrorMessage>
                </InputItem>
             </Group>
+            {
+               __MSFS_EMBEDED__ &&
+               <Group name="EFB">
+                  <SliderItem category="Panel" name="Width"
+                     range={{ min: 0.05, max: 1 }}
+                     defaultValue={1}
+                     value={panelWidth}
+                     onChange={setPanelWidth}
+                     oneShot={true}>
+                     Set the EFB panel width as a percentage of the default size.
+                  </SliderItem>
+                  <SliderItem category="Panel" name="Height"
+                     range={{ min: 0.05, max: 1 }}
+                     defaultValue={1}
+                     value={panelHeight}
+                     onChange={setPanelHeight}>
+                     Set the EFB panel height as a percentage of the default size.
+                  </SliderItem>
+                  <SliderItem category="Panel" name="DPI Scale"
+                     range={{ min: 0.1, max: 2 }}
+                     defaultValue={1}
+                     value={dpiScale}
+                     onChange={setDpiScale}>
+                     Set the DPI Scale.
+                  </SliderItem>
+               </Group>
+            }
             <Group name="Map">
                <Items name="Airports" category="Layers">
                   <LayerActivation setting={settings.airports} defaultSetting={SharedSettingsRecord.defaultValues.airports}>

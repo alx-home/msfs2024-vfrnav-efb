@@ -17,12 +17,13 @@ import { Children, isValidElement, PropsWithChildren, useEffect, useMemo, useSta
 import { Item } from "./Item";
 import { Slider } from "@alx-home/Utils";
 
-export const SliderItem = ({ name, category, className, onChange, defaultValue, value, range, bounds, children }: PropsWithChildren<{
+export const SliderItem = ({ name, category, className, onChange, defaultValue, value, range, bounds, children, oneShot }: PropsWithChildren<{
    name: string,
    category?: string,
    className?: string,
    defaultValue?: number,
    value: number,
+   oneShot?: boolean,
    bounds?: {
       min: number,
       max: number
@@ -43,6 +44,6 @@ export const SliderItem = ({ name, category, className, onChange, defaultValue, 
    return <Item name={name} category={category} onReset={resetCallback}>
       {childs.filter(child => isValidElement<{ type: string }>(child) ? child.props.type !== 'Error' : true)}
       <Slider reset={reset} defaultValue={defaultValue} value={value} className={"max-w-3xl peer " + (className ?? '')}
-         onChange={onChange} bounds={bounds} active={true} range={range} />
+         onChange={onChange} oneShot={oneShot} bounds={bounds} active={true} range={range} />
    </Item>;
 }

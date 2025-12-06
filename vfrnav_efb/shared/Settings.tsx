@@ -81,6 +81,20 @@ export type SharedSettings = {
   },
 };
 
+export type SetPanelSize = {
+  __SET_PANEL_SIZE__: true,
+
+  width: number,
+  height: number
+};
+
+export const SetPanelSizeRecord = GenRecord<SetPanelSize>({
+  __SET_PANEL_SIZE__: true,
+
+  width: 1,
+  height: 1
+}, {});
+
 const LayerRecord = GenRecord<LayerSetting>({
   active: true,
   enabled: true

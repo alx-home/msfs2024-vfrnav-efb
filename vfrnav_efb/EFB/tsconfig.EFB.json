@@ -19,7 +19,6 @@
       { "path": "../shared/tsconfig.json" }
    ],
    "compilerOptions": {
-      "baseUrl": ".",
       "rootDir": "../../",
       "outDir": "../../build/vfrnav_efb/ts-dist/efb/",
       "jsx": "react",
