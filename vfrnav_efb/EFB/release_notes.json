@@ -10,7 +10,7 @@
    "package_order_hint": "UI_PATCH",
    "release_notes": [
       {
-         "version": "0.1.1",
+         "version": "alpha-0.1.1",
          "date": "JANUARY 5, 2025",
          "notes": [
             "***🔧 Improvements / Améliorations:***",
@@ -24,7 +24,7 @@
          ]
       },
       {
-         "version": "0.1.2",
+         "version": "alpha-0.1.2",
          "date": "JANUARY 21, 2025",
          "notes": [
             "***🔧 Improvements / Améliorations:***",
@@ -35,7 +35,7 @@
          ]
       },
       {
-         "version": "0.2.0",
+         "version": "alpha-0.2.0",
          "date": "JANUARY 26, 2025",
          "notes": [
             "***🔧 Improvements / Améliorations:***",
@@ -45,7 +45,7 @@
          ]
       },
       {
-         "version": "0.2.1",
+         "version": "alpha-0.2.1",
          "date": "FEBRUARY 1, 2025",
          "notes": [
             "***🔧 Improvements / Améliorations:***",
@@ -56,7 +56,7 @@
          ]
       },
       {
-         "version": "0.2.2",
+         "version": "alpha-0.2.2",
          "date": "FEBRUARY 5, 2025",
          "notes": [
             "***🔧 Improvements / Améliorations:***",
@@ -68,7 +68,7 @@
          ]
       },
       {
-         "version": "0.3.0",
+         "version": "alpha-0.3.0",
          "date": "FEBRUARY 9, 2025",
          "notes": [
             "***🔧 Improvements / Améliorations:***",
@@ -80,7 +80,7 @@
          ]
       },
       {
-         "version": "0.3.1",
+         "version": "alpha-0.3.1",
          "date": "FEBRUARY 16, 2025",
          "notes": [
             "***🐞 Fixes / Corrections:***",
@@ -89,7 +89,7 @@
          ]
       },
       {
-         "version": "0.3.2",
+         "version": "alpha-0.3.2",
          "date": "FEBRUARY 17, 2025",
          "notes": [
             "***🐞 Fixes / Corrections:***",
@@ -97,7 +97,7 @@
          ]
       },
       {
-         "version": "0.3.3",
+         "version": "alpha-0.3.3",
          "date": "FEBRUARY 24, 2025",
          "notes": [
             "***🔧 Improvements / Améliorations:***",
@@ -108,7 +108,7 @@
          ]
       },
       {
-         "version": "0.4.0",
+         "version": "alpha-0.4.0",
          "date": "MARCH 17, 2025",
          "notes": [
             "***🔧 Improvements / Améliorations:***",
@@ -122,7 +122,7 @@
          ]
       },
       {
-         "version": "0.4.1",
+         "version": "alpha-0.4.1",
          "date": "MARCH 19, 2025",
          "notes": [
             "***🔧 Improvements / Améliorations:***",
@@ -135,7 +135,7 @@
          ]
       },
       {
-         "version": "1.0.0",
+         "version": "alpha-1.0.0",
          "date": "MAY 25, 2025",
          "notes": [
             "### ALL ###",
@@ -159,7 +159,7 @@
          ]
       },
       {
-         "version": "1.0.1",
+         "version": "alpha-1.0.1",
          "date": "MAY 26, 2025",
          "notes": [
             "### EFB ###",
@@ -169,7 +169,7 @@
          ]
       },
       {
-         "version": "1.1.0",
+         "version": "alpha-1.1.0",
          "date": "MAY 27, 2025",
          "notes": [
             "### Installer/Server (new) ###",
@@ -179,7 +179,7 @@
          ]
       },
       {
-         "version": "1.2.0",
+         "version": "alpha-1.2.0",
          "date": "JUN 15, 2025",
          "notes": [
             "### EFB ###",
@@ -188,7 +188,7 @@
          ]
       },
       {
-         "version": "1.3.0",
+         "version": "alpha-1.3.0",
          "date": "JUL 6, 2025",
          "notes": [
             "### EFB ###",
@@ -208,7 +208,7 @@
          ]
       },
       {
-         "version": "1.3.1",
+         "version": "alpha-1.3.1",
          "date": "JUL 13, 2025",
          "notes": [
             "### EFB ###",
@@ -226,7 +226,7 @@
          ]
       },
       {
-         "version": "1.3.2",
+         "version": "alpha-1.3.2",
          "date": "JUL 14, 2025",
          "notes": [
             "### EFB ###",
@@ -242,7 +242,7 @@
          ]
       },
       {
-         "version": "1.4.0",
+         "version": "alpha-1.4.0",
          "date": "AUG 04, 2025",
          "notes": [
             "### EFB ###",
@@ -260,7 +260,7 @@
          ]
       },
       {
-         "version": "1.4.1",
+         "version": "alpha-1.4.1",
          "date": "AUG 04, 2025",
          "notes": [
             "### EFB ###",
@@ -272,7 +272,7 @@
          ]
       },
       {
-         "version": "1.4.2",
+         "version": "alpha-1.4.2",
          "date": "AUG 05, 2025",
          "notes": [
             "### EFB ###",
@@ -284,7 +284,7 @@
          ]
       },
       {
-         "version": "1.4.3",
+         "version": "alpha-1.4.3",
          "date": "AUG 05, 2025",
          "notes": [
             "### EFB ###",
@@ -298,7 +298,7 @@
          ]
       },
       {
-         "version": "1.4.4",
+         "version": "alpha-1.4.4",
          "date": "AUG 06, 2025",
          "notes": [
             "### EFB ###",
@@ -320,7 +320,7 @@
          ]
       },
       {
-         "version": "1.4.5",
+         "version": "alpha-1.4.5",
          "date": "AUG 07, 2025",
          "notes": [
             "### EFB ###",
@@ -334,7 +334,7 @@
          ]
       },
       {
-         "version": "1.4.6",
+         "version": "alpha-1.4.6",
          "date": "AUG 07, 2025",
          "notes": [
             "### EFB ###",
@@ -350,7 +350,7 @@
          ]
       },
       {
-         "version": "1.5.0",
+         "version": "alpha-1.5.0",
          "date": "AUG 09, 2025",
          "notes": [
             "### Installer/Server (new) ###",
@@ -368,7 +368,7 @@
          ]
       },
       {
-         "version": "1.5.1",
+         "version": "alpha-1.5.1",
          "date": "AUG 09, 2025",
          "notes": [
             "### Installer/Server (new) ###",
@@ -394,7 +394,7 @@
          ]
       },
       {
-         "version": "1.5.2",
+         "version": "alpha-1.5.2",
          "date": "AUG 09, 2025",
          "notes": [
             "### EFB ###",
@@ -404,7 +404,7 @@
          ]
       },
       {
-         "version": "1.5.3",
+         "version": "alpha-1.5.3",
          "date": "AUG 09, 2025",
          "notes": [
             "### EFB ###",
@@ -420,7 +420,7 @@
          ]
       },
       {
-         "version": "1.6.0",
+         "version": "alpha-1.6.0",
          "date": "AUG 23, 2025",
          "notes": [
             "### Installer/Server (new) ###",
@@ -444,7 +444,7 @@
          ]
       },
       {
-         "version": "1.6.1",
+         "version": "alpha-1.6.1",
          "date": "AUG 23, 2025",
          "notes": [
             "### Installer/Server (new) ###",
@@ -454,7 +454,7 @@
          ]
       },
       {
-         "version": "1.6.2",
+         "version": "alpha-1.6.2",
          "date": "AUG 24, 2025",
          "notes": [
             "### Installer/Server (new) ###",
@@ -474,7 +474,7 @@
          ]
       },
       {
-         "version": "1.7.0",
+         "version": "alpha-1.7.0",
          "date": "AUG 31, 2025",
          "notes": [
             "### Installer/Server (new) ###",
@@ -492,7 +492,7 @@
          ]
       },
       {
-         "version": "1.7.1",
+         "version": "alpha-1.7.1",
          "date": "OCT 04, 2025",
          "notes": [
             "### EFB ###",
@@ -501,6 +501,20 @@
             "       Les couches de texte sont maintenant empilées verticalement sur la carte pour améliorer la visibilité.",
             "     - Automatically hide navigation path upon completion and switch to the linked ones (if available).",
             "       Le tracé de navigation est maintenant automatiquement désactivé une fois terminé, et les tracés liés sont activés (si disponibles)."
+         ]
+      },
+      {
+         "version": "1.0.0",
+         "date": "DEC 06, 2025",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Added window resizing capability for the EFB (hack; display accuracy may vary).",
+            "       Ajout de la possibilité de redimensionner la fenêtre de l'EFB (hack; la précision d'affichage peut varier).",
+            "     - EFB can now be fully reloaded by Alt+clicking the top bar (requires VFR Nav app to be open).",
+            "       L'EFB peut désormais être entièrement rechargé en cliquant sur la barre supérieure tout en maintenant Alt enfoncé (nécessite que l'application VFR Nav soit ouverte).",
+            "     - Added DPI scaling setting to adjust overall display size.",
+            "       Ajout d'un paramètre d'échelle DPI pour ajuster la taille globale de l'affichage."
          ]
       }
    ]
