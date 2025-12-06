@@ -16,7 +16,6 @@
    "extends": "../tsconfig.base.json",
    "references": [{ "path": "../../packages/ts-utils/tsconfig.json" }],
    "compilerOptions": {
-      "baseUrl": ".",
       "rootDir": "../../",
       "outDir": "../../build/vfrnav_efb/ts-dist/efb/app/",
       "composite": true,

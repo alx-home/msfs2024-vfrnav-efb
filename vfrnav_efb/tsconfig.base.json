@@ -17,7 +17,6 @@
    "compilerOptions": {
       "outDir": "../build/vfrnav_efb/ts-dist",
       "rootDir": "../",
-      "baseUrl": ".",
       "paths": {
          "@alx-home/fonts/*": ["../packages/ts-utils/src/fonts/*"],
          "@alx-home/images/*": ["../packages/ts-utils/src/images/*"],

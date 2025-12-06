@@ -22,7 +22,6 @@
       { "path": "./vfrnav_efb/tsconfig.json" }
    ],
    "compilerOptions": {
-      "baseUrl": ".",
       "composite": true,
       "resolveJsonModule": true,
       "outDir": "./build/ts-dist/",

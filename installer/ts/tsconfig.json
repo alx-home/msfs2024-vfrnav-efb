@@ -19,8 +19,5 @@
       { "path": "../../common/ts/tsconfig.json" },
       { "path": "./tsconfig.build.json" },
       { "path": "./app/tsconfig.json" }
-   ],
-   "compilerOptions": {
-      "baseUrl": "."
-   }
+   ]
 }
