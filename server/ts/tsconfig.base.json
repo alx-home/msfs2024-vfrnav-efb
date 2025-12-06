@@ -17,7 +17,6 @@
    "compilerOptions": {
       "outDir": "../../build/server/ts-dist",
       "rootDir": "../../",
-      "baseUrl": ".",
       "paths": {
          "@alx-home/global.css": ["../../packages/ts-utils/src/global.css"],
 

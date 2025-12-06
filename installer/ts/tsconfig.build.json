@@ -17,7 +17,6 @@
    "references": [{ "path": "../../packages/ts-utils/tsconfig.json" }],
    "compilerOptions": {
       "outDir": "../../build/installer/ts-dist",
-      "baseUrl": ".",
       "composite": true,
       "paths": {
          "@alx-home/build": ["../../packages/ts-utils/build_template.ts"]

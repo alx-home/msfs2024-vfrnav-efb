@@ -19,8 +19,5 @@
       { "path": "./shared/tsconfig.json" },
       { "path": "./app/tsconfig.json" },
       { "path": "./EFB/tsconfig.json" }
-   ],
-   "compilerOptions": {
-      "baseUrl": "."
-   }
+   ]
 }

@@ -23,7 +23,6 @@
       { "path": "./common/tsconfig.json" }
    ],
    "compilerOptions": {
-      "baseUrl": ".",
       "paths": {
          "@alx-home/build": ["../../packages/ts-utils/build_template.ts"]
       }

@@ -20,7 +20,6 @@
    ],
    "compilerOptions": {
       "rootDir": "../../",
-      "baseUrl": ".",
       "outDir": "../../build/vfrnav_efb/ts-dist/efb/app/",
       "types": ["@types/wicg-file-system-access"],
       "paths": {

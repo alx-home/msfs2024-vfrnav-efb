@@ -17,7 +17,6 @@
    "extends": "../tsconfig.base.json",
    "references": [{ "path": "../../packages/ts-utils/tsconfig.json" }],
    "compilerOptions": {
-      "baseUrl": ".",
       "outDir": "../../build/vfrnav_efb/ts-dist/common/",
       "paths": {
          "@alx-home/types": ["../../packages/ts-utils/src/env.d.ts"]
