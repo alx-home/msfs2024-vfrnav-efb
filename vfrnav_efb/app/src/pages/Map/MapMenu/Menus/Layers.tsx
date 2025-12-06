@@ -90,7 +90,7 @@ export const Layers = ({ layers, onLayerChange, className, style }: {
       Layers
     </div>
     <Scroll className={className} style={style}>
-      <Draggable className='@container flex flex-col p-4 [&>*:not(:first-child):has(>:not(.hidden))]:mt-[7px] w-full'
+      <Draggable className='@container flex flex-col p-2 [&>*:not(:first-child):has(>:not(.hidden))]:mt-[7px] w-full'
         vertical={true}
         onOrdersChange={onOrdersChange}>
         {childs}

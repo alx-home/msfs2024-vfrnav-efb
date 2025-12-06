@@ -82,9 +82,7 @@ Chart.register(...registerables);
 
     await import('@alx-home/pdfjs-dist/build/pdf.worker.min.mjs');
   } else {
-    if (window.__WEB_SERVER__ === undefined) {
-      window.__WEB_SERVER__ = true;
-    }
+    window.__WEB_SERVER__ ??= true;
 
     await import("pdfjs-dist/build/pdf.worker.min.mjs");
 
@@ -141,7 +139,7 @@ Chart.register(...registerables);
 
       messageHandler.subscribe("__FILE_EXISTS_RESPONSE__", message => {
         const resolver = resolvers.get(message.id);
-        console.assert(resolver);
+        console.assert(!!resolver);
 
         resolver?.resolve(message.result);
         resolvers.delete(message.id);
@@ -179,7 +177,7 @@ Chart.register(...registerables);
 
       messageHandler.subscribe("__OPEN_FILE_RESPONSE__", message => {
         const resolver = resolvers.get(message.id);
-        console.assert(resolver);
+        console.assert(!!resolver);
 
         if (message.path.length) {
           resolver?.resolve(message.path);
@@ -224,7 +222,7 @@ Chart.register(...registerables);
 
       messageHandler.subscribe("__GET_FILE_RESPONSE__", message => {
         const resolver = resolvers.get(message.id);
-        console.assert(resolver);
+        console.assert(!!resolver);
 
         if (message.data.length) {
           resolver?.resolve(message.data);

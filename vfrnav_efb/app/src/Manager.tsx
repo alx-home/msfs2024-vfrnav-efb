@@ -4,7 +4,7 @@ export class Manager {
    private id = 2;
 
    private socket: WebSocket | undefined = undefined;
-   private socketTimeout: NodeJS.Timeout | undefined;
+   private socketTimeout: ReturnType<typeof setTimeout> | undefined;
    private readonly messageHandler = (message: MessageType) => window.vfrnav_onmessage!(message)
    private serverMessageHandler: ((_id: number, _message: MessageType) => void) | undefined = undefined
    private defaultFuelPreset: { name: string, date: number } | undefined = undefined

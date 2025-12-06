@@ -23,16 +23,16 @@ const State = ({ state, name, icon }: {
    name: string,
    icon: string
 }) => {
-   return <div className={"group flex relative transition-all hocus:opacity-100 max-w-8 overflow-hidden max-h-7 hocus:max-w-96 pointer-events-auto"
-      + " border-solid border-1 [--tw-shadow-opacity:0.6] shadow-md mb-1 m-auto"}
+   return <div className={"group flex relative transition-all hocus:opacity-100 max-w-[2em] overflow-hidden max-h-[1.75em] hocus:max-w-[24em] pointer-events-auto"
+      + " border-solid border-1 [--tw-shadow-opacity:0.6] shadow-md mb-[0.25em] m-auto"}
    >
       <div className={'flex transition-colors group-hocus:opacity-100 duration-1000' + (state ? " bg-msfs" : " bg-gray-700")}>
-         <div className='relative transition-all opacity-0 group-hocus:opacity-100 text-nowrap whitespace-nowrap px-2'>
+         <div className='relative transition-all opacity-0 group-hocus:opacity-100 text-nowrap whitespace-nowrap px-[0.5em]'>
             {`${name} ${state ? "C" : "Disc"}onnected`}
          </div>
          <div className='absolute flex flex-col transition-all opacity-100 group-hocus:opacity-0 w-full h-full'>
             <div className='relative flex flex-col w-full h-full'>
-               <div className='m-auto w-5'>
+               <div className='m-auto w-[1.25em]'>
                   <img className="flex invert" src={icon} alt={name} width={'100%'} height={'100%'} />
                </div>
             </div>

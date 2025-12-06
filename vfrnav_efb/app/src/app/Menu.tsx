@@ -20,16 +20,16 @@ import { useRef } from "react";
 export const Menu = ({ setPage, pages, activePage }: { pages: (Page | Space)[], setPage: (_page: string) => void, activePage: string }) => {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  return <div className={'relative z-10 shrink-0 min-w-0 bg-menu shadow-smd flex flex-col first:pt-[var(--menu-padding)]'
-    + ' [&>*]:mb-[calc(.25rem*(var(--panel-width)/var(--base-width)))] w-[calc(40px*var(--panel-width)/var(--base-width,516))]'}>
+  return <div className={'relative z-10 shrink-0 min-w-0 bg-menu shadow-smd flex flex-col first:pt-[var(--menu-padding)] [&_*]:text-[calc(1rem*var(--resize-ratio))] text-[calc(1rem*var(--resize-ratio))]'
+    + ' [&>*]:mb-[.31em] w-[2.5em]'}>
     {pages.map((_page, index) => {
       if (_page.type === 'page') {
         const page = (_page as Page);
         return <button key={page.name}
           disabled={page.disabled}
           className={'shadow-md mx-auto border-r-transparent transition-colors group flex min-w-0 cursor-pointer'
-            + ' w-[calc(1.75rem*var(--panel-width)/var(--base-width,516))] h-[var(--button-height)]'
-            + ' items-center rounded-[2px] text-left text-sm border-l-[calc(2px*var(--panel-width)/var(--base-width,516))]'
+            + ' w-[1.95em] h-[var(--button-height)]'
+            + ' items-center rounded-[2px] text-left text-sm border-l-[0.15em]'
             + (page.name === activePage ? ' bg-active-item border-l-white' : ' bg-item border-l-msfs')
             + (page.disabled ? ' opacity-30' : (' hocus:bg-item-hocus hocus:text-gray-600 [&_*]:hocus:invert-0'))}
           onClick={() => setPage(page.name)}
@@ -39,7 +39,7 @@ export const Menu = ({ setPage, pages, activePage }: { pages: (Page | Space)[], 
             {{
               ...page.icon, props: {
                 ...page.icon.props,
-                className: ('h-[calc(0.875rem*var(--panel-width)/var(--base-width,516))] w-[calc(0.875rem*var(--panel-width)/var(--base-width,516))] shrink-0 m-auto ' + (page.name === activePage ? '' : 'invert ') + (page.icon.props.className ?? ''))
+                className: ('h-[0.95em] w-[0.95em] shrink-0 m-auto ' + (page.name === activePage ? '' : 'invert ') + (page.icon.props.className ?? ''))
               }
             }}
           </div>

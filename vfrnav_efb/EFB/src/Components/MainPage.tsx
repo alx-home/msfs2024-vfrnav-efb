@@ -22,6 +22,7 @@ import { Manager } from "../Manager";
 import { FileExist, GetFile, OpenFile } from "@shared/Files";
 import { DefaultFuelPreset, FuelPresets, SetFuelCurve } from "@shared/Fuel";
 import { DefaultDeviationPreset, DeviationPresets, SetDeviationCurve } from "@shared/Deviation";
+import { SetPanelSize } from "@shared/Settings";
 
 interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
   /** The page title */
@@ -40,6 +41,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private readonly elementRef = FSComponent.createRef<HTMLIFrameElement>();
 
   private readonly messageHandle = (message: MessageType) => { messageHandler?.send(message) };
+  private reloadCallback: ((_event: MouseEvent) => void) | undefined = undefined;
 
   constructor(props: MainPageProps) {
     super(props);
@@ -101,6 +103,17 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onFileExists(message);
   }
 
+  onSetPanelSize({ width, height }: SetPanelSize) {
+    const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
+    const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
+    const panelWidth = viewportWidth * width;
+    const panelHeight = viewportHeight * height;
+
+    (document.body.lastChild as HTMLElement).style.setProperty('--panel-width', panelWidth.toFixed(0));
+    (document.body.lastChild as HTMLElement).style.setProperty('--panel-height', panelHeight.toFixed(0));
+    (document.body.firstElementChild as HTMLElement).style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
+  }
+
   onFuelPresets(message: FuelPresets) {
     this.props.manager.onFuelPresets(0, message);
   }
@@ -126,6 +139,11 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   destroy(): void {
+    if (this.reloadCallback) {
+      window.removeEventListener('mouseup', this.reloadCallback);
+      this.reloadCallback = undefined;
+    }
+
     if (messageHandler !== undefined) {
       this.props.manager.closeEFB();
 
@@ -167,6 +185,16 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   public onAfterRender(): void {
+    if (!this.reloadCallback) {
+      this.reloadCallback = (event: MouseEvent) => {
+        if (event.altKey) {
+          location.reload();
+        }
+      };
+
+      window.addEventListener('mouseup', this.reloadCallback);
+    }
+
     if (messageHandler === undefined) {
       messageHandler = new MessageHandler(this.elementRef.instance);
 
@@ -187,6 +215,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__GET_FILE__", this.onGetFile.bind(this))
       messageHandler.subscribe("__OPEN_FILE__", this.onOpenFile.bind(this))
       messageHandler.subscribe("__FILE_EXISTS__", this.onFileExists.bind(this))
+      messageHandler.subscribe("__SET_PANEL_SIZE__", this.onSetPanelSize.bind(this))
 
       messageHandler.subscribe("__FUEL_PRESETS__", this.onFuelPresets.bind(this))
       messageHandler.subscribe("__FUEL_CURVE__", this.onFuelCurve.bind(this))
