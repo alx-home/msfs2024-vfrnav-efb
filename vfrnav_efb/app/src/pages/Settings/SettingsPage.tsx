@@ -78,13 +78,14 @@ export const SettingsPage = ({ active }: {
    const [panelWidth, setPanelWidth] = useState(1);
    const [panelHeight, setPanelHeight] = useState(1);
    const [dpiScale, setDpiScale] = useState(1);
+   const [menuDpi, setMenuDpi] = useState(1);
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
-         document.documentElement.style.setProperty('--resize-ratio', (1 / (dpiScale * panelWidth)).toString());
+         document.documentElement.style.setProperty('--resize-ratio', (menuDpi / (dpiScale * panelWidth)).toString());
          document.documentElement.style.setProperty('--font-size', (dpiScale * 100).toFixed(0) + '%');
       }
-   }, [dpiScale, panelWidth]);
+   }, [dpiScale, panelWidth, menuDpi]);
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
@@ -216,9 +217,9 @@ export const SettingsPage = ({ active }: {
                   <SliderItem category="Panel" name="Width"
                      range={{ min: 0.05, max: 1 }}
                      defaultValue={1}
+                     oneShot={true}
                      value={panelWidth}
-                     onChange={setPanelWidth}
-                     oneShot={true}>
+                     onChange={setPanelWidth}>
                      Set the EFB panel width as a percentage of the default size.
                   </SliderItem>
                   <SliderItem category="Panel" name="Height"
@@ -231,9 +232,18 @@ export const SettingsPage = ({ active }: {
                   <SliderItem category="Panel" name="DPI Scale"
                      range={{ min: 0.1, max: 2 }}
                      defaultValue={1}
+                     oneShot={true}
                      value={dpiScale}
                      onChange={setDpiScale}>
-                     Set the DPI Scale.
+                     Adjust the DPI scale for the VfrNav app.
+                  </SliderItem>
+                  <SliderItem category="Panel" name="Menu DPI Scale"
+                     range={{ min: 0.1, max: 1 }}
+                     defaultValue={1}
+                     oneShot={true}
+                     value={menuDpi}
+                     onChange={setMenuDpi}>
+                     Adjust the DPI scale for the left menu panel.
                   </SliderItem>
                </Group>
             }
