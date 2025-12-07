@@ -210,17 +210,18 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
         }
         this.resizeTimer = setTimeout(() => {
           this.resizeTimer = undefined;
+          const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
+          const mode = this.props.settings.getSetting('mode').value === 0 ? '2D' : '3D';
           const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
           const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
-          const panelWidth = viewportWidth * this.widthRatio;
-          const panelHeight = viewportHeight * this.heightRatio;
-
-          const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
+          const panelWidth = viewportWidth * (mode == '2D' ? this.widthRatio : 1);
+          const panelHeight = viewportHeight * (mode == '2D' ? this.heightRatio : 1);
 
           for (const element of document.body.children) {
             (element as HTMLElement).style.setProperty('--panel-width', panelWidth.toFixed(0));
             (element as HTMLElement).style.setProperty('--panel-height', panelHeight.toFixed(0));
             (element as HTMLElement).style.setProperty('--orientation', orientation);
+            (element as HTMLElement).style.setProperty('--mode', mode);
           }
           (document.body.firstElementChild as HTMLElement).style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
           (document.body.lastElementChild as HTMLElement).style.borderWidth = `calc(1px * ${this.borderScale} * var(--border-height)) calc(1px * ${this.borderScale} * var(--border-width))`;
