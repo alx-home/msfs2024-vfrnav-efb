@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { GamepadUiView, RequiredProps, TVNode, UiViewProps } from "@alx-home/efb-api";
+import { EfbSettingsManager, GamepadUiView, RequiredProps, TVNode, UiViewProps } from "@alx-home/efb-api";
 import { FSComponent } from "@microsoft/msfs-sdk";
 import { GetFacilities, GetICAOS as GetIcaos, GetLatLon, GetMetar } from "@shared/Facilities";
 import { MessageHandler, MessageType } from "@shared/MessageHandler";
@@ -32,6 +32,8 @@ interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
   color: string;
 
   manager: Manager;
+
+  settings: EfbSettingsManager;
 }
 
 let messageHandler: MessageHandler | undefined = undefined;
@@ -42,6 +44,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
   private readonly messageHandle = (message: MessageType) => { messageHandler?.send(message) };
   private reloadCallback: ((_event: MouseEvent) => void) | undefined = undefined;
+  private resizeCallback: (() => void) | undefined = undefined;
+  private resizeTimer: NodeJS.Timeout | undefined = undefined;
+  private widthRatio = 1;
+  private heightRatio = 1;
 
   constructor(props: MainPageProps) {
     super(props);
@@ -104,14 +110,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   onSetPanelSize({ width, height }: SetPanelSize) {
-    const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
-    const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
-    const panelWidth = viewportWidth * width;
-    const panelHeight = viewportHeight * height;
+    this.widthRatio = width;
+    this.heightRatio = height;
 
-    (document.body.lastChild as HTMLElement).style.setProperty('--panel-width', panelWidth.toFixed(0));
-    (document.body.lastChild as HTMLElement).style.setProperty('--panel-height', panelHeight.toFixed(0));
-    (document.body.firstElementChild as HTMLElement).style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
+    this.resizeCallback?.();
   }
 
   onFuelPresets(message: FuelPresets) {
@@ -142,6 +144,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     if (this.reloadCallback) {
       window.removeEventListener('mouseup', this.reloadCallback);
       this.reloadCallback = undefined;
+    }
+    if (this.resizeCallback) {
+      window.removeEventListener('resize', this.resizeCallback);
+      this.resizeCallback = undefined;
     }
 
     if (messageHandler !== undefined) {
@@ -193,6 +199,34 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       };
 
       window.addEventListener('mouseup', this.reloadCallback);
+    }
+
+    if (!this.resizeCallback) {
+      this.resizeCallback = () => {
+        if (this.resizeTimer) {
+          clearTimeout(this.resizeTimer);
+        }
+        this.resizeTimer = setTimeout(() => {
+          this.resizeTimer = undefined;
+          const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
+          const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
+          const panelWidth = viewportWidth * this.widthRatio;
+          const panelHeight = viewportHeight * this.heightRatio;
+
+          const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
+
+          for (const element of document.body.children) {
+            (element as HTMLElement).style.setProperty('--panel-width', panelWidth.toFixed(0));
+            (element as HTMLElement).style.setProperty('--panel-height', panelHeight.toFixed(0));
+            (element as HTMLElement).style.setProperty('--orientation', orientation);
+          }
+          (document.body.firstElementChild as HTMLElement).style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
+
+        }, 100);
+      }
+
+      window.addEventListener('resize', this.resizeCallback);
+      this.resizeCallback()
     }
 
     if (messageHandler === undefined) {

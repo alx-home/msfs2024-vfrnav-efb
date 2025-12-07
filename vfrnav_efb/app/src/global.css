@@ -42,10 +42,14 @@
    --panel-width: 714;
    --base-width: 517;
    --base-height: 714;
-   --button-height: 1.7em;
-   --resize-ratio: 1.4;
+   --dpi-scale: 1;
+   --resize-ratio: 1;
+   --base-ratio: calc(var(--viewportWidth, 750) * var(--resize-ratio) / var(--panel-width));
+   --menu-margin: calc(.25em * var(--base-ratio));
+   --button-height: calc(1.5em * var(--base-ratio));
+   --button-width: calc(1.75em * var(--base-ratio));
    
-   font-size: calc(var(--font-size) * var(--panel-width) / var(--base-width, 516));
+   font-size: calc(var(--font-size) * var(--panel-width) / var(--base-width));
 }
 
 html,

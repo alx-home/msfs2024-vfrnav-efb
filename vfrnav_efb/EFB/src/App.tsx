@@ -28,7 +28,7 @@ import { FSComponent, VNode } from "@microsoft/msfs-sdk";
 import { MainPage } from "./Components/MainPage";
 import { Manager } from './Manager';
 
-class VfrNavAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
+class VfrNavAppView extends AppView<RequiredProps<AppViewProps & { manager: Manager }, "bus">> {
   /**
    * Optional property
    * Default view key to show if using AppViewService
@@ -42,7 +42,7 @@ class VfrNavAppView extends AppView<RequiredProps<AppViewProps, "bus">> {
    */
   protected registerViews(): void {
     this.appViewService.registerPage("main", () => (
-      <MainPage manager={this.props.manager} appViewService={this.appViewService} color="#7f8fa6" title="main" />
+      <MainPage manager={this.props.manager} settings={this.props.efbSettingsManager!} appViewService={this.appViewService} color="#7f8fa6" title="main" />
     ));
   }
 
@@ -124,7 +124,7 @@ export class VfrNavApp extends App {
    * WARM : App -> AppView are loaded but not rendered into DOM
    * HOT : App -> AppView -> Pages are rendered and injected into DOM
    */
-  public BootMode = AppBootMode.COLD;
+  public BootMode = AppBootMode.HOT;
 
   /**
    * Optional attribute
@@ -165,6 +165,6 @@ export class VfrNavApp extends App {
    * @returns {AppView} created above
    */
   public render(): TVNode<VfrNavAppView> {
-    return <VfrNavAppView manager={this.manager!} bus={this.bus} />;
+    return <VfrNavAppView efbSettingsManager={this.efbSettingsManager} manager={this.manager!} bus={this.bus} />;
   }
 }
