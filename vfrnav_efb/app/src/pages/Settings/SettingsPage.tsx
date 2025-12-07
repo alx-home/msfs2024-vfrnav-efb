@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { CheckBox } from "@alx-home/Utils";
+import { Button, CheckBox } from "@alx-home/Utils";
 
 import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -68,9 +68,38 @@ const AirortLayerOption = ({ setting, defaultSetting, reset, children, settingKe
 }
 
 
+
+export const WarnPopup = ({ resolve }: {
+   resolve: () => void
+}) => {
+   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+   const close = useCallback(() => {
+      setPopup(emptyPopup);
+      resolve();
+   }, [setPopup, emptyPopup, resolve]);
+
+   return <div className='flex flex-col grow'>
+      <div className='text-2xl text-yellow-500'>Warning !</div>
+      <div className='text-sm overflow-hidden my-5'>
+         <div className="flex flex-col m-auto">
+            <div>If you can&apos;t access the resize buttons because the UI is too small,</div>
+            <div>
+               Alt+Click on the top of the EFB to reload the EFB OS and restore the default size.
+            </div>
+         </div>
+      </div>
+      <div className='flex flex-row grow'>
+         <Button active={true} onClick={close}>OK</Button>
+      </div>
+   </div >
+};
+
+
 export const SettingsPage = ({ active }: {
    active: boolean
 }) => {
+   const { setPopup } = useContext(SettingsContext)!;
+
    const settings = useContext(SettingsContext)!;
    const [opacity, setOpacity] = useState(' opacity-0');
    const [advanced, setAdvanced] = useState(false);
@@ -82,6 +111,35 @@ export const SettingsPage = ({ active }: {
    const [borderScale, setBorderScale] = useState(1);
    const [mode2D, setMode2D] = useState(true);
    const [initialized, setInitialized] = useState(false);
+   const [warned, setWarned] = useState(false);
+
+   const warn = useCallback(async () => {
+      if (!warned) {
+         const promise = new Promise<void>((resolve) => {
+            setPopup(<WarnPopup resolve={resolve} />);
+         });
+
+         await promise;
+         setWarned(true);
+      }
+   }, [setPopup, warned]);
+
+   const setPanelWidthCallback = useCallback(async (value: number) => {
+      await warn();
+      setPanelWidth(value);
+   }, [warn]);
+   const setPanelHeightCallback = useCallback(async (value: number) => {
+      await warn();
+      setPanelHeight(value);
+   }, [warn]);
+   const setDpiScaleCallback = useCallback(async (value: number) => {
+      await warn();
+      setDpiScale(value);
+   }, [warn]);
+   const setMenuDpiCallback = useCallback(async (value: number) => {
+      await warn();
+      setMenuDpi(value);
+   }, [warn]);
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
@@ -119,7 +177,7 @@ export const SettingsPage = ({ active }: {
       messageHandler.subscribe("__SET_PANEL_SIZE__", callback);
 
       return () => messageHandler.unsubscribe("__SET_PANEL_SIZE__", callback);
-   }, []);
+   }, [setInitialized, setPanelWidth, setPanelHeight, setBorderScale, setDpiScale, setMenuDpi]);
 
    useEffect(() => {
       const callback = (msg: SetEfbMode) => {
@@ -237,14 +295,14 @@ export const SettingsPage = ({ active }: {
                      defaultValue={1}
                      oneShot={true}
                      value={panelWidth}
-                     onChange={setPanelWidth}>
+                     onChange={setPanelWidthCallback}>
                      Set the EFB panel width as a percentage of the default size.
                   </SliderItem>
                   <SliderItem category="Panel" name="Height"
                      range={{ min: 0.05, max: 1 }}
                      defaultValue={1}
                      value={panelHeight}
-                     onChange={setPanelHeight}>
+                     onChange={setPanelHeightCallback}>
                      Set the EFB panel height as a percentage of the default size.
                   </SliderItem>
                   <SliderItem category="Panel" name="DPI Scale"
@@ -252,7 +310,7 @@ export const SettingsPage = ({ active }: {
                      defaultValue={1}
                      oneShot={true}
                      value={dpiScale}
-                     onChange={setDpiScale}>
+                     onChange={setDpiScaleCallback}>
                      Adjust the DPI scale for the VfrNav app.
                   </SliderItem>
                   <SliderItem category="Panel" name="Menu DPI Scale"
@@ -260,7 +318,7 @@ export const SettingsPage = ({ active }: {
                      defaultValue={1}
                      oneShot={true}
                      value={menuDpi}
-                     onChange={setMenuDpi}>
+                     onChange={setMenuDpiCallback}>
                      Adjust the DPI scale for the left menu panel.
                   </SliderItem>
                   <SliderItem category="Panel" name="EFB Border"
