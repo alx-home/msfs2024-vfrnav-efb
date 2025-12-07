@@ -250,29 +250,37 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
 
   useEffect(() => {
     if (__MSFS_EMBEDED__) {
-      document.documentElement.style.setProperty('--resize-ratio', '1');
+      document.documentElement.style.setProperty('--dpi-scale', '1');
 
-      const obj = parent.document.getElementsByClassName("efb")[0];
+      const obj = parent.document.body.lastChild as HTMLElement;
       const observer = new ResizeObserver(() => {
-        const [width, height, baseWidth, baseHeight] = [
-          window.getComputedStyle(obj).getPropertyValue('--panel-width'),
-          window.getComputedStyle(obj).getPropertyValue('--panel-height'),
-          window.getComputedStyle(obj).getPropertyValue('--base-width'),
-          window.getComputedStyle(obj).getPropertyValue('--base-height')
+        const parentBody = window.getComputedStyle(obj);
+        const [width, height, baseWidth, baseHeight, viewportWidth, orientation] = [
+          parentBody.getPropertyValue('--panel-width'),
+          parentBody.getPropertyValue('--panel-height'),
+          parentBody.getPropertyValue('--base-width'),
+          parentBody.getPropertyValue('--base-height'),
+          parentBody.getPropertyValue('--viewportWidth'),
+          parentBody.getPropertyValue('--orientation'),
         ];
 
         document.documentElement.style.setProperty('--panel-width', width)
         document.documentElement.style.setProperty('--panel-height', height)
         document.documentElement.style.setProperty('--base-width', baseWidth)
         document.documentElement.style.setProperty('--base-height', baseHeight)
+        document.documentElement.style.setProperty('--viewportWidth', viewportWidth)
 
-        if (+height < 790) {
+        if (+height < 700) {
           document.documentElement.style.setProperty('--menu-padding', '35px')
         } else {
           document.documentElement.style.setProperty('--menu-padding', 'calc(35px*var(--panel-height)/var(--base-height))')
         }
 
-        document.documentElement.style.setProperty('--button-height', '1.7em')
+        if (orientation === 'vertical') {
+          document.documentElement.style.setProperty('--button-height', 'calc(1.75em * var(--base-ratio))')
+        } else {
+          document.documentElement.style.setProperty('--button-height', 'calc(1.5em * var(--base-ratio))')
+        }
       });
 
       observer.observe(obj);

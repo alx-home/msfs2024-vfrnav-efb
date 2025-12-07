@@ -82,33 +82,20 @@ export const SettingsPage = ({ active }: {
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
-         document.documentElement.style.setProperty('--resize-ratio', (menuDpi / (dpiScale * panelWidth)).toString());
+         document.documentElement.style.setProperty('--dpi-scale', (menuDpi / (dpiScale * panelWidth)).toString());
+         document.documentElement.style.setProperty('--resize-ratio', panelWidth.toFixed(2));
          document.documentElement.style.setProperty('--font-size', (dpiScale * 100).toFixed(0) + '%');
       }
    }, [dpiScale, panelWidth, menuDpi]);
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
-         const obj = parent.document.getElementsByClassName("efb")[0];
-
          messageHandler.send({
             __SET_PANEL_SIZE__: true,
 
             width: panelWidth,
             height: panelHeight
          });
-
-         const observer = new ResizeObserver(() => {
-            messageHandler.send({
-               __SET_PANEL_SIZE__: true,
-
-               width: panelWidth,
-               height: panelHeight
-            });
-         });
-
-         observer.observe(obj);
-         return () => observer?.unobserve(obj);
       }
    }, [panelWidth, panelHeight]);
 

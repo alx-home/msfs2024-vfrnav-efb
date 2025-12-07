@@ -20,16 +20,20 @@ import { useRef } from "react";
 export const Menu = ({ setPage, pages, activePage }: { pages: (Page | Space)[], setPage: (_page: string) => void, activePage: string }) => {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  return <div className={'relative z-10 shrink-0 min-w-0 bg-menu shadow-smd flex flex-col first:pt-[var(--menu-padding)] [&_*]:text-[calc(1rem*var(--resize-ratio))] text-[calc(1rem*var(--resize-ratio))]'
-    + ' [&>*]:mb-[.31em] w-[2.5em]'}>
+  return <div className={'relative z-10 shrink-0 min-w-0 bg-menu shadow-smd flex flex-col'
+    + (__MSFS_EMBEDED__ ?
+      ' [&_*]:text-[calc(1rem*var(--dpi-scale))] text-[calc(1rem*var(--dpi-scale))]'
+      : ' [&_*]:text-[calc(1.5rem*var(--dpi-scale))] text-[calc(1.5rem*var(--dpi-scale))]')
+    + ' [&>*]:mb-[--menu-margin] w-[2.5em] first:pt-[var(--menu-padding)]'
+  }>
     {pages.map((_page, index) => {
       if (_page.type === 'page') {
         const page = (_page as Page);
         return <button key={page.name}
           disabled={page.disabled}
           className={'shadow-md mx-auto border-r-transparent transition-colors group flex min-w-0 cursor-pointer'
-            + ' w-[1.95em] h-[var(--button-height)]'
-            + ' items-center rounded-[2px] text-left text-sm border-l-[0.15em]'
+            + ' w-[var(--button-width)] h-[var(--button-height)]'
+            + ' items-center rounded-[2px] text-left text-sm border-l-[0.12em]'
             + (page.name === activePage ? ' bg-active-item border-l-white' : ' bg-item border-l-msfs')
             + (page.disabled ? ' opacity-30' : (' hocus:bg-item-hocus hocus:text-gray-600 [&_*]:hocus:invert-0'))}
           onClick={() => setPage(page.name)}
