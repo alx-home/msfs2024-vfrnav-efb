@@ -143,9 +143,9 @@ export const SettingsPage = ({ active }: {
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
-         document.documentElement.style.setProperty('--dpi-scale', mode2D ? '1' : (menuDpi / (dpiScale * panelWidth)).toString());
-         document.documentElement.style.setProperty('--resize-ratio', mode2D ? '1' : panelWidth.toFixed(2));
-         document.documentElement.style.setProperty('--font-size', mode2D ? '100%' : (dpiScale * 100).toFixed(0) + '%');
+         document.documentElement.style.setProperty('--dpi-scale', mode2D ? (menuDpi / (dpiScale * panelWidth)).toString() : '1');
+         document.documentElement.style.setProperty('--resize-ratio', mode2D ? panelWidth.toFixed(2) : '1');
+         document.documentElement.style.setProperty('--font-size', mode2D ? (dpiScale * 100).toFixed(0) + '%' : '100%');
       }
    }, [dpiScale, panelWidth, menuDpi, mode2D]);
 

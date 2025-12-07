@@ -17,6 +17,7 @@
 #include "utils/Scoped.h"
 #include "utils/String.h"
 
+#include <ShObjIdl_core.h>
 #include <array>
 #include <combaseapi.h>
 #include <exception>
@@ -25,11 +26,10 @@
 #include <mutex>
 #include <objbase.h>
 #include <promise/promise.h>
-#include <ShObjIdl_core.h>
 #include <ranges>
 #include <span>
-#include <string_view>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <unordered_map>
 #include <windows/Env.h>
@@ -192,9 +192,10 @@ Open(std::string_view path, std::vector<Filter> filters) {
                            | std::ranges::to<std::string>()
                          )
                        );
-
-                       auto const& [wname, wfilter] = wfilters.back();
-                       file_types.emplace_back(COMDLG_FILTERSPEC{wname.c_str(), wfilter.c_str()});
+                    }
+                    for (auto const& wfilter : wfilters) {
+                       auto const& [name, filter] = wfilter;
+                       file_types.emplace_back(COMDLG_FILTERSPEC{name.c_str(), filter.c_str()});
                     }
                     fdialog.SetFileTypes(file_types);
                  } else {
