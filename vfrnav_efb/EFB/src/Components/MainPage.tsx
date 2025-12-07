@@ -49,13 +49,35 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private widthRatio = 1;
   private heightRatio = 1;
   private borderScale = 1;
+  private dpiScale = 1;
+  private menuDpiScale = 1;
 
   constructor(props: MainPageProps) {
     super(props);
+
+    const resizeData = GetStoredData(`efb-resize`);
+    if (resizeData) {
+      const resize = JSON.parse(resizeData as string);
+      this.widthRatio = resize.width;
+      this.heightRatio = resize.height;
+      this.borderScale = resize.borderScale;
+      this.dpiScale = resize.dpiScale;
+      this.menuDpiScale = resize.menuDpiScale;
+    }
   }
 
   onGetSettings() {
     this.props.manager.onGetSettings(0);
+
+    messageHandler!.send({
+      __SET_PANEL_SIZE__: true,
+
+      width: this.widthRatio,
+      height: this.heightRatio,
+      borderScale: this.borderScale,
+      dpiScale: this.dpiScale,
+      menuDpiScale: this.menuDpiScale
+    });
   }
 
   onGetServerState() {
@@ -110,10 +132,20 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onFileExists(message);
   }
 
-  onSetPanelSize({ width, height, borderScale }: SetPanelSize) {
+  onSetPanelSize({ width, height, dpiScale, menuDpiScale, borderScale }: SetPanelSize) {
     this.widthRatio = width;
     this.heightRatio = height;
     this.borderScale = borderScale;
+    this.dpiScale = dpiScale;
+    this.menuDpiScale = menuDpiScale;
+
+    SetStoredData(`efb-resize`, JSON.stringify({
+      width: this.widthRatio,
+      height: this.heightRatio,
+      borderScale: this.borderScale,
+      dpiScale: this.dpiScale,
+      menuDpiScale: this.menuDpiScale
+    }))
 
     this.resizeCallback?.();
   }
@@ -196,6 +228,14 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     if (!this.reloadCallback) {
       this.reloadCallback = (event: MouseEvent) => {
         if (event.altKey) {
+          this.onSetPanelSize({
+            __SET_PANEL_SIZE__: true,
+            width: 1,
+            height: 1,
+            borderScale: this.borderScale,
+            dpiScale: 1,
+            menuDpiScale: 1
+          });
           location.reload();
         }
       };
@@ -228,6 +268,11 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
           (document.body.lastElementChild as HTMLElement).style.borderRadius = `calc(var(--tablet-border-radius) * ${this.borderScale})`;
           (document.body.lastElementChild as HTMLElement).style.borderImageWidth = `calc(22px * ${this.borderScale})`;
 
+
+          messageHandler!.send({
+            __SET_EFB_MODE__: true,
+            mode2D: mode === '2D'
+          });
         }, 100);
       }
 

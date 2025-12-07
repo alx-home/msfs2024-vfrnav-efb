@@ -17,7 +17,7 @@ import { CheckBox } from "@alx-home/Utils";
 
 import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { AirportLayerOptions, LayerSetting, SharedSettingsRecord } from "@shared/Settings";
+import { AirportLayerOptions, LayerSetting, SetEfbMode, SetPanelSize, SharedSettingsRecord } from "@shared/Settings";
 
 import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 import { AirportLayerSettingSetter, LayerSettingSetter } from "@Settings/Settings";
@@ -80,6 +80,8 @@ export const SettingsPage = ({ active }: {
    const [dpiScale, setDpiScale] = useState(1);
    const [menuDpi, setMenuDpi] = useState(1);
    const [borderScale, setBorderScale] = useState(1);
+   const [mode2D, setMode2D] = useState(true);
+   const [initialized, setInitialized] = useState(false);
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
@@ -91,15 +93,42 @@ export const SettingsPage = ({ active }: {
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
-         messageHandler.send({
-            __SET_PANEL_SIZE__: true,
+         if (initialized) {
+            messageHandler.send({
+               __SET_PANEL_SIZE__: true,
 
-            width: panelWidth,
-            height: panelHeight,
-            borderScale: borderScale
-         });
+               width: panelWidth,
+               height: panelHeight,
+               borderScale: borderScale,
+               dpiScale: dpiScale,
+               menuDpiScale: menuDpi
+            });
+         }
       }
-   }, [panelWidth, panelHeight, borderScale]);
+   }, [panelWidth, panelHeight, borderScale, dpiScale, menuDpi, initialized]);
+
+   useEffect(() => {
+      const callback = (msg: SetPanelSize) => {
+         setPanelWidth(msg.width);
+         setPanelHeight(msg.height);
+         setBorderScale(msg.borderScale);
+         setDpiScale(msg.dpiScale);
+         setMenuDpi(msg.menuDpiScale);
+         setInitialized(true);
+      }
+      messageHandler.subscribe("__SET_PANEL_SIZE__", callback);
+
+      return () => messageHandler.unsubscribe("__SET_PANEL_SIZE__", callback);
+   }, []);
+
+   useEffect(() => {
+      const callback = (msg: SetEfbMode) => {
+         setMode2D(msg.mode2D);
+      }
+      messageHandler.subscribe("__SET_EFB_MODE__", callback);
+
+      return () => messageHandler.unsubscribe("__SET_EFB_MODE__", callback);
+   }, []);
 
    useEffect(() => {
       if (active) {
@@ -201,7 +230,7 @@ export const SettingsPage = ({ active }: {
                </InputItem>
             </Group>
             {
-               __MSFS_EMBEDED__ &&
+               __MSFS_EMBEDED__ && mode2D &&
                <Group name="EFB">
                   <SliderItem category="Panel" name="Width"
                      range={{ min: 0.05, max: 1 }}
