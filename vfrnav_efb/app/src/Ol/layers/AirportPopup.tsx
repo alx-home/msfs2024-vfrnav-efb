@@ -191,7 +191,7 @@ const Charts = ({ data }: {
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<boolean>(false);
    const [errorMsg, setErrorMsg] = useState<string | undefined>();
-   const timeout = useRef<NodeJS.Timeout>(undefined);
+   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
    const download = useCallback(() => {
       setLoading(true);
