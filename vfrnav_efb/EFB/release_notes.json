@@ -516,6 +516,26 @@
             "     - Added DPI scaling setting to adjust overall display size.",
             "       Ajout d'un paramètre d'échelle DPI pour ajuster la taille globale de l'affichage."
          ]
+      },
+      {
+         "version": "1.0.1",
+         "date": "DEC 08, 2025",
+         "notes": [
+            "### EFB ###",
+            "***🐞 Fixes / Corrections:***",
+            "     - Resolved issue where EFB resize was not updated on detached 2D panel.",
+            "       Correction du problème de redimensionnement de l'EFB sur le panneau 2D détaché.",
+            "",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Allow setting border scale in addition to panel width and height.",
+            "       Permet de définir l'échelle de la bordure en plus de la largeur et de la hauteur du panneau.",
+            "     - Do not scale the panel in 3D mode.",
+            "       Ne pas redimensionner le panneau en mode 3D.",
+            "     - Warn users that if scaling makes the UI unusable, they can Alt+click the top bar to reset scaling.",
+            "       Avertir les utilisateurs que si la mise à l'échelle rend l'UI inutilisable, un Alt+clic sur la barre supérieure réinitialise l'échelle.",
+            "     - Persist scaling settings with a reset option on Alt+click.",
+            "       Conserver les paramètres d'échelle avec une option de réinitialisation via Alt+clic."
+         ]
       }
    ]
 }
