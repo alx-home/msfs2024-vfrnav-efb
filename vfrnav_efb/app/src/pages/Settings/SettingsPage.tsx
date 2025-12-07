@@ -143,11 +143,11 @@ export const SettingsPage = ({ active }: {
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
-         document.documentElement.style.setProperty('--dpi-scale', (menuDpi / (dpiScale * panelWidth)).toString());
-         document.documentElement.style.setProperty('--resize-ratio', panelWidth.toFixed(2));
-         document.documentElement.style.setProperty('--font-size', (dpiScale * 100).toFixed(0) + '%');
+         document.documentElement.style.setProperty('--dpi-scale', mode2D ? '1' : (menuDpi / (dpiScale * panelWidth)).toString());
+         document.documentElement.style.setProperty('--resize-ratio', mode2D ? '1' : panelWidth.toFixed(2));
+         document.documentElement.style.setProperty('--font-size', mode2D ? '100%' : (dpiScale * 100).toFixed(0) + '%');
       }
-   }, [dpiScale, panelWidth, menuDpi]);
+   }, [dpiScale, panelWidth, menuDpi, mode2D]);
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
