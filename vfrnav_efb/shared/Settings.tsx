@@ -85,14 +85,16 @@ export type SetPanelSize = {
   __SET_PANEL_SIZE__: true,
 
   width: number,
-  height: number
+  height: number,
+  borderScale: number
 };
 
 export const SetPanelSizeRecord = GenRecord<SetPanelSize>({
   __SET_PANEL_SIZE__: true,
 
   width: 1,
-  height: 1
+  height: 1,
+  borderScale: 1
 }, {});
 
 const LayerRecord = GenRecord<LayerSetting>({
