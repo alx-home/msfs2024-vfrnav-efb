@@ -48,6 +48,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private resizeTimer: NodeJS.Timeout | undefined = undefined;
   private widthRatio = 1;
   private heightRatio = 1;
+  private borderScale = 1;
 
   constructor(props: MainPageProps) {
     super(props);
@@ -109,9 +110,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onFileExists(message);
   }
 
-  onSetPanelSize({ width, height }: SetPanelSize) {
+  onSetPanelSize({ width, height, borderScale }: SetPanelSize) {
     this.widthRatio = width;
     this.heightRatio = height;
+    this.borderScale = borderScale;
 
     this.resizeCallback?.();
   }
@@ -221,6 +223,9 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
             (element as HTMLElement).style.setProperty('--orientation', orientation);
           }
           (document.body.firstElementChild as HTMLElement).style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
+          (document.body.lastElementChild as HTMLElement).style.borderWidth = `calc(1px * ${this.borderScale} * var(--border-height)) calc(1px * ${this.borderScale} * var(--border-width))`;
+          (document.body.lastElementChild as HTMLElement).style.borderRadius = `calc(var(--tablet-border-radius) * ${this.borderScale})`;
+          (document.body.lastElementChild as HTMLElement).style.borderImageWidth = `calc(22px * ${this.borderScale})`;
 
         }, 100);
       }

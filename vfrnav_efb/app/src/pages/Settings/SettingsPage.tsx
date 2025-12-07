@@ -79,6 +79,7 @@ export const SettingsPage = ({ active }: {
    const [panelHeight, setPanelHeight] = useState(1);
    const [dpiScale, setDpiScale] = useState(1);
    const [menuDpi, setMenuDpi] = useState(1);
+   const [borderScale, setBorderScale] = useState(1);
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
@@ -94,10 +95,11 @@ export const SettingsPage = ({ active }: {
             __SET_PANEL_SIZE__: true,
 
             width: panelWidth,
-            height: panelHeight
+            height: panelHeight,
+            borderScale: borderScale
          });
       }
-   }, [panelWidth, panelHeight]);
+   }, [panelWidth, panelHeight, borderScale]);
 
    useEffect(() => {
       if (active) {
@@ -231,6 +233,14 @@ export const SettingsPage = ({ active }: {
                      value={menuDpi}
                      onChange={setMenuDpi}>
                      Adjust the DPI scale for the left menu panel.
+                  </SliderItem>
+                  <SliderItem category="Panel" name="EFB Border"
+                     range={{ min: 0.1, max: 1 }}
+                     defaultValue={1}
+                     oneShot={true}
+                     value={borderScale}
+                     onChange={setBorderScale}>
+                     Adjust the Border size of the EFB.
                   </SliderItem>
                </Group>
             }
