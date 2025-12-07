@@ -81,12 +81,24 @@ export type SharedSettings = {
   },
 };
 
+export type SetEfbMode = {
+  __SET_EFB_MODE__: true,
+  mode2D: boolean
+};
+
+export const SetEfbModeRecord = GenRecord<SetEfbMode>({
+  __SET_EFB_MODE__: true,
+  mode2D: true
+}, {});
+
 export type SetPanelSize = {
   __SET_PANEL_SIZE__: true,
 
   width: number,
   height: number,
-  borderScale: number
+  borderScale: number,
+  dpiScale: number,
+  menuDpiScale: number
 };
 
 export const SetPanelSizeRecord = GenRecord<SetPanelSize>({
@@ -94,7 +106,9 @@ export const SetPanelSizeRecord = GenRecord<SetPanelSize>({
 
   width: 1,
   height: 1,
-  borderScale: 1
+  borderScale: 1,
+  dpiScale: 1,
+  menuDpiScale: 1
 }, {});
 
 const LayerRecord = GenRecord<LayerSetting>({

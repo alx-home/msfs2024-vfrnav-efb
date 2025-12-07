@@ -15,7 +15,7 @@
 
 import { GenRecord, reduce, TypeRecord } from './Types';
 import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetICAOS, GetICAOSRecord as GetIcaosRecord, GetLatLon, GetLatLonRecord, GetMetar, GetMetarRecord, Icaos, IcaosRecord, LatLon, LatLonRecord, Metar, MetarRecord } from './Facilities';
-import { SharedSettingsRecord, SharedSettings, SetPanelSize, SetPanelSizeRecord } from './Settings';
+import { SharedSettingsRecord, SharedSettings, SetPanelSize, SetPanelSizeRecord, SetEfbMode, SetEfbModeRecord } from './Settings';
 import { EditRecord, EditRecordRecord, GetRecord, GetRecordRecord, PlanePos, PlanePoses, PlanePosesRecord, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
 import { ByeBye, ByeByeRecord, HelloWorld, HelloWorldRecord, SetId, SetIdRecord } from './HelloWorld';
 import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord, GetFile, GetFileRecord, GetFileResponse, GetFileResponseRecord, OpenFile, OpenFileRecord, OpenFileResponse, OpenFileResponseRecord } from './Files';
@@ -71,6 +71,7 @@ const MessageIdValues = [
    "__RECORDS__",
    "__REMOVE_RECORD__",
    "__SERVER_STATE__",
+   "__SET_EFB_MODE__",
    "__SET_ID__",
    "__SET_PANEL_SIZE__",
    "__SETTINGS__",
@@ -133,6 +134,7 @@ type MessageTypes = {
    "__RECORDS__": PlaneRecords,
    "__REMOVE_RECORD__": RemoveRecord,
    "__SERVER_STATE__": ServerState,
+   "__SET_EFB_MODE__": SetEfbMode,
    "__SET_ID__": SetId,
    "__SET_PANEL_SIZE__": SetPanelSize,
    "__SETTINGS__": SharedSettings,
@@ -185,6 +187,7 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__RECORDS__": PlaneRecordsRecord,
    "__REMOVE_RECORD__": RemoveRecordRecord,
    "__SERVER_STATE__": ServerStateRecord,
+   "__SET_EFB_MODE__": SetEfbModeRecord,
    "__SET_ID__": SetIdRecord,
    "__SET_PANEL_SIZE__": SetPanelSizeRecord,
    "__SETTINGS__": SharedSettingsRecord,
