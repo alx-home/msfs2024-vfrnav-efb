@@ -308,8 +308,8 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
             });
          }
       }
-   } catch (std::runtime_error e) {
-      std::cerr << e.what() << std::endl;
+   } catch (std::exception const& e) {
+      std::cerr << "Message parsing error: " << e.what() << std::endl;
    }
 
    Read();

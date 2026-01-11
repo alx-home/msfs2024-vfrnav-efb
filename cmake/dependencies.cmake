@@ -60,7 +60,7 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 
-message(STATUS "Fetching zlib...")
+message(STATUS "Fetching upx...")
 FetchContent_Declare(
     upx
     GIT_REPOSITORY https://github.com/upx/upx.git
