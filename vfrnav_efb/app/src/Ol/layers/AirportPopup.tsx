@@ -329,9 +329,8 @@ const Metar = ({ data }: {
 };
 
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const tabs = ['Frequencies', 'Transitions', 'Runways', 'Fuels', 'Metar', 'Charts'] as const;
-type Tab = typeof tabs[number];
+const _tabs = ['Frequencies', 'Transitions', 'Runways', 'Fuels', 'Metar', 'Charts'] as const;
+type Tab = typeof _tabs[number];
 const TabStr: Record<Tab, string> = {
    'Frequencies': 'Frequencies',
    'Transitions': 'Transitions',

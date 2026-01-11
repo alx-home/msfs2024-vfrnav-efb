@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-/* eslint-disable no-unused-vars */
 export interface Point {
     x: number;
     y: number;

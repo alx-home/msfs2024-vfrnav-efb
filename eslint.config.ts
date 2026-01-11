@@ -82,19 +82,23 @@ export default [...fixupConfigRules(compat.extends(
     },
     rules: {
         "react-hooks/exhaustive-deps": "error",
-        "no-unused-vars": ["error", {
-            vars: "all",
-            args: "after-used",
-            ignoreRestSiblings: true,
-            argsIgnorePattern: "^_",
-        }],
+        "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": ["error", {
             vars: "all",
             args: "after-used",
             ignoreRestSiblings: true,
+            ignoreClassWithStaticInitBlock: true,
             argsIgnorePattern: "^_",
+            varsIgnorePattern: "^_",
+            caughtErrorsIgnorePattern: "^_",
         }],
+        "react-hooks/set-state-in-render": "warn",
+        "react-hooks/set-state-in-effect": "warn",
+        "react-hooks/refs": "warn",
         "react/react-in-jsx-scope": "off",
+        "react-hooks/immutability": "warn",
+        "react-hooks/globals": "warn",
+        "react-hooks/use-memo": "warn", // @todo fix all warnings...
     },
 }];
 

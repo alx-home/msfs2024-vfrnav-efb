@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { DataTransfer, DragDataStore } from "./drag-data-store";
 export declare function tryFindDraggableTarget(event: TouchEvent): HTMLElement | undefined;
 export declare function determineDropEffect(effectAllowed: string, sourceNode: Element): string;

@@ -32,33 +32,33 @@ import { Properties } from '@shared/NavData';
 import { Coordinate } from 'ol/coordinate';
 
 export class NavData {
-  // eslint-disable-next-line no-unused-vars
+
   constructor(public id: number,
-    // eslint-disable-next-line no-unused-vars
+
     public order: number,
-    // eslint-disable-next-line no-unused-vars
+
     public name: string,
-    // eslint-disable-next-line no-unused-vars
+
     public active: boolean,
-    // eslint-disable-next-line no-unused-vars
+
     public shortName: string,
-    // eslint-disable-next-line no-unused-vars
+
     public coords: Coordinate[],
-    // eslint-disable-next-line no-unused-vars
+
     public loadedFuel: number,
-    // eslint-disable-next-line no-unused-vars
+
     public departureTime: number,
-    // eslint-disable-next-line no-unused-vars
+
     public taxiTime: number,
-    // eslint-disable-next-line no-unused-vars
+
     public taxiConso: number,
-    // eslint-disable-next-line no-unused-vars
+
     public link: string,
-    // eslint-disable-next-line no-unused-vars
+
     public properties: Properties[],
-    // eslint-disable-next-line no-unused-vars
+
     public waypoints: string[],
-    // eslint-disable-next-line no-unused-vars
+
     public layer: VectorLayer) { }
 };
 

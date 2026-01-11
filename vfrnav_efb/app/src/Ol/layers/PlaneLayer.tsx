@@ -46,6 +46,7 @@ export const PlaneLayer = ({
   const [pos, setPos] = useState<PlanePos>({
     __PLANE_POS__: true,
 
+    // eslint-disable-next-line react-hooks/purity
     date: Date.now(),
     lon: 2.3941664695739746, lat: 47.48055648803711,
     heading: 45,

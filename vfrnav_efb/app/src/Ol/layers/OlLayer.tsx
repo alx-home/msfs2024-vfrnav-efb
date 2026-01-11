@@ -29,11 +29,11 @@ import Layer from "ol/layer/Layer";
 import LayerGroup from "ol/layer/Group";
 
 export class OlLayerProp {
-  // eslint-disable-next-line no-unused-vars
+
   constructor(public order?: number, public active?: boolean,
-    // eslint-disable-next-line no-unused-vars
+
     public maxZoom?: number, public minZoom?: number,
-    // eslint-disable-next-line no-unused-vars
+
     public clipAera?: Coordinate[]) { }
 }
 

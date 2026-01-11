@@ -311,7 +311,7 @@ Server::Accept(const boost_error& error, tcp::socket socket) {
                   res.set(http::field::content_type, "text/plain");
                   res.body() = "Not Found";
                   res.prepare_payload();
-               }
+               } 
             } else {
                res.result(http::status::method_not_allowed);
                res.set(http::field::content_type, "text/plain");
@@ -323,8 +323,8 @@ Server::Accept(const boost_error& error, tcp::socket socket) {
             http::write(socket, res);
          }
       }
-   } catch (const std::exception& e) {
-      std::cerr << "Error in session: " << e.what() << '\n';
+   } catch (std::exception const& e) {
+      std::cerr << "Error in accept handler: " << e.what() << '\n';
    }
 
    if (want_run_) {

@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 export declare const CLASS_PREFIX = "dnd-poly-";
 export declare const CLASS_DRAG_IMAGE: string;
 export declare const CLASS_DRAG_IMAGE_SNAPBACK: string;

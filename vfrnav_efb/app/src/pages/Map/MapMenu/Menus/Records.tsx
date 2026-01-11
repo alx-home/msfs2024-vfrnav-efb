@@ -28,7 +28,6 @@ import undoImg from '@alx-home/images/undo.svg';
 
 
 export class RecordData {
-  // eslint-disable-next-line no-unused-vars
   constructor(public id: number, public name: string, public active: boolean, public shortName: string, public feature: Feature, public layer: VectorLayer) { }
 };
 

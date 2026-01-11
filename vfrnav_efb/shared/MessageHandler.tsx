@@ -203,7 +203,6 @@ export class MessageHandler {
       return JSON.parse(`{${record_str}}`)
    })();
 
-   // eslint-disable-next-line no-unused-vars
    constructor(private readonly iframe?: HTMLIFrameElement) {
       const onmessage = window.onmessage;
 

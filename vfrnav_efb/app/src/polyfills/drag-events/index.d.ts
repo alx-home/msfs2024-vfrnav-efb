@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Point } from "./internal/dom-utils.js";
 export { Point } from "./internal/dom-utils.js";
 export { supportsPassiveEventListener } from "./internal/feature-detection.js";

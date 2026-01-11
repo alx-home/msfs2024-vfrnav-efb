@@ -38,7 +38,6 @@ export class Manager {
    private defaultDeviationPreset: { name: string, date: number } | undefined = undefined
    private deviationPresetsInit = true
 
-   /* eslint-disable no-unused-vars */
    constructor(private readonly bus: EventBus) {
       this.facilityLoader = new FacilityLoader(FacilityRepository.getRepository(this.bus));
       this.facilityManager.set(0, new FacilityManager(this.facilityLoader));

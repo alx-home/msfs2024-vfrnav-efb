@@ -30,6 +30,7 @@
 #include <windef.h>
 #include <winnt.h>
 #include <winuser.h>
+#include <chrono>
 #include <condition_variable>
 #include <cstdint>
 #include <functional>
@@ -78,10 +79,10 @@ public:
    void SetServerPort(uint32_t port);
 
 private:
-   void Run();
+   bool ShouldStop(std::stop_token const& stoken) const noexcept;
+   void Run(std::stop_token const& stoken);
    void Dispatch(SIMCONNECT_RECV const& data);
 
-   bool                       connected_ = false;
    SIMCONNECT_DATA_REQUEST_ID request_id_{100};
 
    struct WaitingRequest : std::map<SIMCONNECT_DATA_REQUEST_ID, std::unique_ptr<Request>> {
@@ -108,19 +109,12 @@ private:
       }
    } waiting_requests_{};
 
-   win32::Event event_{win32::CreateEvent()};
-   double       server_port_{48578};
+   win32::Event                          event_{win32::CreateEvent()};
+   double                                server_port_{48578};
+   double                                sent_port_{-1};
+   std::chrono::steady_clock::time_point last_port_send_{};
 
-   std::unique_ptr<HANDLE, void (*)(HANDLE*)> handle_{
-     nullptr,
-     [](HANDLE* ptr) constexpr {
-        SimConnect_Close(*ptr);
-        delete ptr;
-     },
-   };
+   std::weak_ptr<HANDLE> handle_{};
 
-   bool                    stop_{false};
-   std::condition_variable cv_{};
-   std::mutex              mutex_{};
-   std::jthread            thread_{};
+   std::jthread thread_{};
 };

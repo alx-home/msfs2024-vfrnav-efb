@@ -22,7 +22,6 @@ import { Nav } from './Menus/Nav';
 
 import { Records } from './Menus/Records';
 
-// eslint-disable-next-line no-unused-vars
 export enum Menu { layers, nav, records };
 
 export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {

@@ -22,7 +22,7 @@ import { LayerSetting } from "@shared/Settings";
 import { CSSProperties, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 export class Layer {
-  // eslint-disable-next-line no-unused-vars
+
   constructor(public src: string, public alt: string, public order: number, public getSettings: (_settings: GlobalSettings) => LayerSetting & LayerSettingSetter) { }
 };
 
