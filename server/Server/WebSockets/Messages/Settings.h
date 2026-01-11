@@ -84,6 +84,7 @@ struct Settings {
 
    LayerSetting oaci_{};
    LayerSetting germany_{};
+   LayerSetting openaipmaps_{};
    LayerSetting openflightmaps_{};
    LayerSetting openflightmaps_base_{};
    LayerSetting us_sectional_{};
@@ -154,6 +155,7 @@ struct Settings {
      js::_{"airports", &Settings::airports_},
      js::_{"OACI", &Settings::oaci_},
      js::_{"germany", &Settings::germany_},
+     js::_{"openaipmaps", &Settings::openaipmaps_},
      js::_{"openflightmaps", &Settings::openflightmaps_},
      js::_{"openflightmapsBase", &Settings::openflightmaps_base_},
      js::_{"USSectional", &Settings::us_sectional_},

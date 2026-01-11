@@ -127,34 +127,38 @@ Main::Main()
 #ifndef WATCH_MODE
 void
 Main::InstallResourceHandler() {
-   webview_.RegisterUrlHandler("*", [](webview::http::request_t const& request) {
-      if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
-         auto const file = request.uri.substr(origin.size());
+   webview_.RegisterUrlHandler(
+     "*",
+     [](webview::http::request_t const& request, std::unique_ptr<webview::MakeDeferred>) constexpr
+       -> std::optional<webview::http::response_t> {
+        if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
+           auto const file = request.uri.substr(origin.size());
 
-         auto const resource = EMBEDED_RESOURCES.find(file);
-         if (resource != EMBEDED_RESOURCES.end()) {
-            std::vector<char> data{};
-            data.resize(resource->second.size());
-            std::ranges::copy(resource->second, reinterpret_cast<std::byte*>(data.data()));
+           auto const resource = EMBEDED_RESOURCES.find(file);
+           if (resource != EMBEDED_RESOURCES.end()) {
+              std::vector<char> data{};
+              data.resize(resource->second.size());
+              std::ranges::copy(resource->second, reinterpret_cast<std::byte*>(data.data()));
 
-            auto const ext         = file.substr(file.find_last_of('.') + 1);
-            auto const contentType = ext == "js" ? "text/javascript" : "text/html";
+              auto const ext         = file.substr(file.find_last_of('.') + 1);
+              auto const contentType = ext == "js" ? "text/javascript" : "text/html";
 
-            webview::http::response_t response{
-              .body         = data,
-              .reasonPhrase = "Ok",
-              .statusCode   = 200,
-              .headers      = {{"Content-Type", contentType}, {"Access-Control-Allow-Origin", "*"}}
-            };
+              webview::http::response_t response{
+                .body         = data,
+                .reasonPhrase = "Ok",
+                .statusCode   = 200,
+                .headers = {{"Content-Type", contentType}, {"Access-Control-Allow-Origin", "*"}}
+              };
 
-            return response;
-         }
-      }
+              return response;
+           }
+        }
 
-      return webview::http::response_t{
-        .body = {}, .reasonPhrase = "Not Found", .statusCode = 404, .headers = {}
-      };
-   });
+        return webview::http::response_t{
+          .body = {}, .reasonPhrase = "Not Found", .statusCode = 404, .headers = {}
+        };
+     }
+   );
 
    webview_.InstallResourceHandler();
 }

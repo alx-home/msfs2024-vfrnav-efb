@@ -18,6 +18,7 @@
 #include "main.h"
 #include "Server/WebSockets/Messages/Messages.h"
 #include "utils/Scoped.h"
+#include "webview/detail/engine_base.h"
 #include "windows/SystemTray.h"
 
 #include <json/json.h>
@@ -316,39 +317,41 @@ Window<WINDOW>::InstallResourceHandler() {
          return {"*"};
       }
    }();
-   webview_->RegisterUrlHandlers(filters, [](webview::http::request_t const& request) constexpr {
-      std::string file;
-      bool        found{false};
-      if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
-         file  = request.uri.substr(origin.size());
-         found = true;
-      }
-      if (found) {
-         auto const& resources = Params<WINDOW>::s__resources;
-         auto const  resource  = resources.find(file);
-         if (resource != resources.end()) {
-            std::vector<char> data{};
-            data.resize(resource->second.size());
-            std::ranges::copy(resource->second, reinterpret_cast<std::byte*>(data.data()));
+   webview_->RegisterUrlHandlers(
+     filters,
+     [](webview::http::request_t const& request, std::unique_ptr<webview::MakeDeferred>) constexpr
+       -> std::optional<webview::http::response_t> {
+        std::string file;
+        bool        found{false};
+        if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
+           file  = request.uri.substr(origin.size());
+           found = true;
+        }
+        if (found) {
+           auto const& resources = Params<WINDOW>::s__resources;
+           auto const  resource  = resources.find(file);
+           if (resource != resources.end()) {
+              std::vector<char> data{};
+              data.resize(resource->second.size());
+              std::ranges::copy(resource->second, reinterpret_cast<std::byte*>(data.data()));
 
-            auto const ext         = file.substr(file.find_last_of('.') + 1);
-            auto const contentType = ext == "js" ? "text/javascript" : "text/html";
+              auto const ext         = file.substr(file.find_last_of('.') + 1);
+              auto const contentType = ext == "js" ? "text/javascript" : "text/html";
 
-            webview::http::response_t response{
-              .body         = data,
-              .reasonPhrase = "Ok",
-              .statusCode   = 200,
-              .headers      = {{"Content-Type", contentType}, {"Access-Control-Allow-Origin", "*"}}
-            };
+              return webview::http::response_t{
+                .body         = data,
+                .reasonPhrase = "Ok",
+                .statusCode   = 200,
+                .headers = {{"Content-Type", contentType}, {"Access-Control-Allow-Origin", "*"}}
+              };
+           }
+        }
 
-            return response;
-         }
-      }
-
-      return webview::http::response_t{
-        .body = {}, .reasonPhrase = "Not Found", .statusCode = 404, .headers = {}
-      };
-   });
+        return webview::http::response_t{
+          .body = {}, .reasonPhrase = "Not Found", .statusCode = 404, .headers = {}
+        };
+     }
+   );
 
    webview_->InstallResourceHandler();
 }

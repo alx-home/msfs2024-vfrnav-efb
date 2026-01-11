@@ -23,7 +23,9 @@
 #include <synchapi.h>
 #include <winuser.h>
 #include <chrono>
+#include <condition_variable>
 #include <functional>
+#include <ios>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
@@ -31,88 +33,62 @@
 
 enum class DataId : uint32_t {
    SET_PORT,
+   EVENT_FRAME,
 };
 
 SimConnect::SimConnect()
    : MessageQueue{"SimConnect"}
-   , thread_{[this]() {
+   , thread_{[this](std::stop_token stoken) {
       if (!event_) {
          throw std::runtime_error("Couldn't create event");
       }
 
-      if (::WaitForSingleObject(event_, INFINITE) != WAIT_OBJECT_0) {
-         throw std::runtime_error("Unexpected event error");
-      }
-
-      while (Main::Running() && !stop_) {
+      while (Main::Running() && !stoken.stop_requested()) {
          HANDLE handle;
          if (SUCCEEDED(SimConnect_Open(&handle, "MSFS VFRNav'", nullptr, 0, event_, 0))) {
-            handle_.reset(new HANDLE(handle));
-            Run();
-
-            // Disconnect
-            handle_ = nullptr;
+            std::shared_ptr<HANDLE> handle_ptr{
+              new HANDLE(handle),
+              [](HANDLE* ptr) constexpr {
+                 SimConnect_Close(*ptr);
+                 delete ptr;
+              },
+            };
+            handle_ = handle_ptr;
+            Run(stoken);
          }
 
-         std::unique_lock lock{mutex_};
-         cv_.wait_for(lock, std::chrono::seconds{5}, [this]() { return stop_; });
+         // Wait 5 seconds before retrying
+         std::mutex       mutex{};
+         std::unique_lock lock{mutex};
+         std::condition_variable_any{}.wait_for(lock, stoken, std::chrono::seconds{5}, []() {
+            return false;
+         });
       }
-   }} {
-   MessageQueue::Dispatch([this]() { SetEvent(event_); });
-}
+   }} {}
 
 SimConnect::~SimConnect() {
    MessageQueue::Dispatch([this]() {
-      std::unique_lock lock{mutex_};
-      stop_      = true;
-      connected_ = false;
-      cv_.notify_all();
-      lock.unlock();
+      thread_.request_stop();
 
       if (event_) {
          SetEvent(event_);
       }
-
-      thread_.request_stop();
    });
 }
 
 void
 SimConnect::SetServerPort(uint32_t port) {
-   MessageQueue::Dispatch([this, port]() {
-      server_port_ = port;
-
-      if (connected_) {
-         SimConnect_SetDataOnSimObject(
-           *handle_,
-           static_cast<uint32_t>(DataId::SET_PORT),
-           SIMCONNECT_OBJECT_ID_USER,
-           0,
-           0,
-           sizeof(server_port_),
-           &server_port_
-         );
-      }
-   });
+   server_port_ = port;
 }
 
 void
-SimConnect::Run() {
-   connected_ = true;
+SimConnect::Run(std::stop_token const& stoken) {
+   auto handle = handle_.lock();
 
-   SimConnect_AddToDataDefinition(
-     *handle_,
-     static_cast<uint32_t>(DataId::SET_PORT),
-     "L:VFRNAV_SET_PORT",
-     "Number",
-     SIMCONNECT_DATATYPE_FLOAT64
-   );
-
-   while ((::WaitForSingleObject(event_, INFINITE) == WAIT_OBJECT_0) && Main::Running() && !stop_
-          && connected_) {
-      MessageQueue::Dispatch([this]() {
+   while ((::WaitForSingleObject(event_, INFINITE) == WAIT_OBJECT_0) && !ShouldStop(stoken)) {
+      MessageQueue::Dispatch([this, handle]() {
          SimConnect_CallDispatch(
-           *handle_,
+           *handle,
            [](SIMCONNECT_RECV* data, DWORD, void* self) constexpr {
               reinterpret_cast<SimConnect*>(self)->Dispatch(*data);
            },
@@ -122,24 +98,72 @@ SimConnect::Run() {
    }
 }
 
+bool
+SimConnect::ShouldStop(std::stop_token const& stoken) const noexcept {
+   return !Main::Running() || stoken.stop_requested() || !handle_.lock();
+}
+
 void
 SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
    switch (data.dwID) {
       case SIMCONNECT_RECV_ID_OPEN: {
-         /// @todo better
-         std::this_thread::sleep_for(std::chrono::seconds{5});
-         SetServerPort(server_port_);
+         auto const handle = handle_.lock();
+
+         if (handle) {
+            SimConnect_AddToDataDefinition(
+              *handle,
+              static_cast<uint32_t>(DataId::SET_PORT),
+              "L:VFRNAV_SET_PORT",
+              "Number",
+              SIMCONNECT_DATATYPE_FLOAT64
+            );
+            sent_port_ = -1;
+            SimConnect_SubscribeToSystemEvent(
+              *handle, static_cast<uint32_t>(DataId::EVENT_FRAME), "Frame"
+            );
+         }
+      } break;
+
+      case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
+      case SIMCONNECT_RECV_ID_EVENT_FRAME: {
+         using namespace std::chrono_literals;
+
+         auto const now = std::chrono::steady_clock::now();
+         if ((sent_port_ != server_port_) && ((now - last_port_send_) > 5s)) {
+            last_port_send_   = now;
+            auto const handle = handle_.lock();
+
+            sent_port_ = server_port_;
+            std::cout << "SimConnect: Setting server port to " << sent_port_
+                      << " (connected: " << std::boolalpha << static_cast<bool>(handle) << ")"
+                      << std::endl;
+            if (handle) {
+               SimConnect_SetDataOnSimObject(
+                 *handle,
+                 static_cast<uint32_t>(DataId::SET_PORT),
+                 SIMCONNECT_OBJECT_ID_USER,
+                 0,
+                 0,
+                 sizeof(sent_port_),
+                 &sent_port_
+               );
+            }
+         }
       } break;
 
       case SIMCONNECT_RECV_ID_EXCEPTION: {
-         [[maybe_unused]] auto const& exception =
-           static_cast<SIMCONNECT_RECV_EXCEPTION const&>(data);
+         // Retry sending the port on exception
+         sent_port_ = -1;
+
+         auto const& exception = static_cast<SIMCONNECT_RECV_EXCEPTION const&>(data);
          std::cerr << "SimConnect: Exception (" << exception.dwException << ")" << std::endl;
       } break;
 
       case SIMCONNECT_RECV_ID_QUIT: {
-         connected_ = false;
-         SetEvent(event_);
+         MessageQueue::Dispatch([this]() {
+            handle_ = std::shared_ptr<HANDLE>{nullptr};
+            SetEvent(event_);
+         });
          break;
       }
    }

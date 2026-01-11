@@ -97,13 +97,18 @@ Server::WebSocket::OnRead(error_code ec, size_t n) {
             auto const& hello_world = std::get<ws::msg::HelloWorld>(message);
 
             if (*hello_world.type_ == "EFB") {
-               if (!self->server_.efb_socket_) {
-                  auto& server = self->server_;
-                  server.efb_socket_ =
-                    std::make_shared<EFBWebSocket>(std::move(*self.get()), false);
-                  self = nullptr;
-                  server.efb_socket_->Start();
+               auto& server = self->server_;
+
+               // Close existing EFB connection if present before creating new one
+               if (server.efb_socket_) {
+                  std::cout << "Replacing existing EFB connection with new one" << std::endl;
+                  server.efb_socket_->Stop();
+                  server.efb_socket_ = nullptr;
                }
+
+               server.efb_socket_ = std::make_shared<EFBWebSocket>(std::move(*self.get()), false);
+               self               = nullptr;
+               server.efb_socket_->Start();
             } else {
                assert(*hello_world.type_ == "Web");
                auto const socket = self->server_.web_sockets_.emplace_back(
