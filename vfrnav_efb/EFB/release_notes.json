@@ -536,6 +536,16 @@
             "     - Persist scaling settings with a reset option on Alt+click.",
             "       Conserver les paramètres d'échelle avec une option de réinitialisation via Alt+clic."
          ]
+      },
+      {
+         "version": "1.0.2",
+         "date": "JAN 11, 2026",
+         "notes": [
+            "### EFB ###",
+            "***🐞 Fixes / Corrections:***",
+            "     - Fixed SimConnect not connecting when MSFS is started after the App.",
+            "       Correction de la connexion SimConnect lorsque MSFS est lancé après l'application."
+         ]
       }
    ]
 }
