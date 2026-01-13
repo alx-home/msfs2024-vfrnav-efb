@@ -546,6 +546,20 @@
             "     - Fixed SimConnect not connecting when MSFS is started after the App.",
             "       Correction de la connexion SimConnect lorsque MSFS est lancé après l'application."
          ]
+      },
+      {
+         "version": "1.0.3",
+         "date": "JAN 15, 2026",
+         "notes": [
+            "### EFB ###",
+            "***🐞 Fixes / Corrections:***",
+            "     - Fixed sim jitters introduced by the previous SimConnect fix (release 1.0.2).",
+            "       Correction des saccades du simulateur introduites par la correction SimConnect précédente (version 1.0.2).",
+            "",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Click on EFB border to resize panel.",
+            "       Cliquez sur la bordure de l'EFB pour redimensionner le panneau."
+         ]
       }
    ]
 }
