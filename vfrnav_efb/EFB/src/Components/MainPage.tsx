@@ -294,6 +294,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       (document.body.lastElementChild as HTMLElement).addEventListener('mouseup', this.setRatioCallback);
 
       this.resizeCallback = (delayed?: boolean) => {
+        return; // @todo
         const resizeCallback = () => {
           const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
           const mode = this.props.settings.getSetting('mode').value === 0 ? '2D' : '3D';
@@ -331,7 +332,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
         setTimeout(() => {
           this.resizeCallback!(false);
           resolve();
-        }, 1000);
+        }, 100);
       });
 
       window.addEventListener('resize', this.resizeCallback as () => void);
