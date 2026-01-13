@@ -331,7 +331,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
         setTimeout(() => {
           this.resizeCallback!(false);
           resolve();
-        }, 100);
+        }, 1000);
       });
 
       window.addEventListener('resize', this.resizeCallback as () => void);
