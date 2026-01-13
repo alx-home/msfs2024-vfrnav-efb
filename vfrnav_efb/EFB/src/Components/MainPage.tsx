@@ -181,6 +181,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     }
     if (this.resizeCallback) {
       window.removeEventListener('resize', this.resizeCallback);
+      (document.body.lastElementChild as HTMLElement).removeEventListener('mouseup', this.setRatioCallback);
       this.resizeCallback = undefined;
     }
 
@@ -224,6 +225,48 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     );
   }
 
+  public setRatioCallback = (event: MouseEvent) => {
+    const element = (document.body.lastElementChild as HTMLElement);
+    const child = element.firstChild;
+
+    const rect = (child as HTMLElement).getBoundingClientRect();
+    const { clientX: x, clientY: y } = event;
+
+    const xResize = x < rect.left || x > rect.right;
+    const yResize = y < rect.top || y > rect.bottom;
+
+    if (xResize && yResize) {
+      // Diagonal resize
+
+      this.onSetPanelSize({
+        __SET_PANEL_SIZE__: true,
+        width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
+        height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
+        borderScale: this.borderScale,
+        dpiScale: this.dpiScale,
+        menuDpiScale: this.menuDpiScale
+      });
+    } else if (xResize) {
+      this.onSetPanelSize({
+        __SET_PANEL_SIZE__: true,
+        width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
+        height: this.heightRatio,
+        borderScale: this.borderScale,
+        dpiScale: this.dpiScale,
+        menuDpiScale: this.menuDpiScale
+      });
+    } else if (yResize) {
+      this.onSetPanelSize({
+        __SET_PANEL_SIZE__: true,
+        width: this.widthRatio,
+        height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
+        borderScale: this.borderScale,
+        dpiScale: this.dpiScale,
+        menuDpiScale: this.menuDpiScale
+      });
+    }
+  };
+
   public onAfterRender(): void {
     if (!this.reloadCallback) {
       this.reloadCallback = (event: MouseEvent) => {
@@ -232,7 +275,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
             __SET_PANEL_SIZE__: true,
             width: 1,
             height: 1,
-            borderScale: this.borderScale,
+            borderScale: 1,
             dpiScale: 1,
             menuDpiScale: 1
           });
@@ -244,11 +287,15 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     }
 
     if (!this.resizeCallback) {
+      // Add onClick callback to set widthRatio based on mouse X position
+      (document.body.lastElementChild as HTMLElement).addEventListener('mouseup', this.setRatioCallback);
+
       this.resizeCallback = () => {
         if (this.resizeTimer) {
           clearTimeout(this.resizeTimer);
         }
-        this.resizeTimer = setTimeout(() => {
+
+        const apply = () => {
           this.resizeTimer = undefined;
           const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
           const mode = this.props.settings.getSetting('mode').value === 0 ? '2D' : '3D';
@@ -268,16 +315,24 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
           (document.body.lastElementChild as HTMLElement).style.borderRadius = `calc(var(--tablet-border-radius) * ${this.borderScale})`;
           (document.body.lastElementChild as HTMLElement).style.borderImageWidth = `calc(22px * ${this.borderScale})`;
 
-
           messageHandler!.send({
             __SET_EFB_MODE__: true,
             mode2D: mode === '2D'
           });
+        }
+        this.resizeTimer = setTimeout(() => {
+          apply()
+
+          // Re-apply after 2 seconds to handle any late changes
+          this.resizeTimer = setTimeout(() => {
+            apply()
+          }, 2000);
         }, 100);
       }
 
       window.addEventListener('resize', this.resizeCallback);
-      this.resizeCallback()
+
+      this.resizeCallback();
     }
 
     if (messageHandler === undefined) {
