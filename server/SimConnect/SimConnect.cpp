@@ -21,6 +21,7 @@
 #include <Windows.h>
 #include <SimConnect.h>
 #include <synchapi.h>
+#include <winbase.h>
 #include <winuser.h>
 #include <chrono>
 #include <condition_variable>
@@ -78,14 +79,37 @@ SimConnect::~SimConnect() {
 
 void
 SimConnect::SetServerPort(uint32_t port) {
-   server_port_ = port;
+   MessageQueue::Dispatch([this, port]() {
+      server_port_ = port;
+      next_event_  = 1000;  // Check every 1 seconds
+   });
 }
 
 void
 SimConnect::Run(std::stop_token const& stoken) {
    auto handle = handle_.lock();
 
-   while ((::WaitForSingleObject(event_, INFINITE) == WAIT_OBJECT_0) && !ShouldStop(stoken)) {
+   while ((::WaitForSingleObject(event_, next_event_) == WAIT_OBJECT_0) && !ShouldStop(stoken)) {
+      MessageQueue::Dispatch([this, handle]() {
+         if (sent_port_ != server_port_) {
+            next_event_ = INFINITE;
+            sent_port_  = server_port_;
+
+            std::cout << "SimConnect: Setting server port to " << server_port_
+                      << " (connected: " << std::boolalpha << static_cast<bool>(handle) << ")"
+                      << std::endl;
+            SimConnect_SetDataOnSimObject(
+              *handle,
+              static_cast<uint32_t>(DataId::SET_PORT),
+              SIMCONNECT_OBJECT_ID_USER,
+              0,
+              0,
+              sizeof(server_port_),
+              &server_port_
+            );
+         }
+      });
+
       MessageQueue::Dispatch([this, handle]() {
          SimConnect_CallDispatch(
            *handle,
@@ -117,53 +141,23 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
               "Number",
               SIMCONNECT_DATATYPE_FLOAT64
             );
-            sent_port_ = -1;
-            SimConnect_SubscribeToSystemEvent(
-              *handle, static_cast<uint32_t>(DataId::EVENT_FRAME), "Frame"
-            );
-         }
-      } break;
-
-      case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
-      case SIMCONNECT_RECV_ID_EVENT_FRAME: {
-         using namespace std::chrono_literals;
-
-         auto const now = std::chrono::steady_clock::now();
-         if ((sent_port_ != server_port_) && ((now - last_port_send_) > 5s)) {
-            last_port_send_   = now;
-            auto const handle = handle_.lock();
-
-            sent_port_ = server_port_;
-            std::cout << "SimConnect: Setting server port to " << sent_port_
-                      << " (connected: " << std::boolalpha << static_cast<bool>(handle) << ")"
-                      << std::endl;
-            if (handle) {
-               SimConnect_SetDataOnSimObject(
-                 *handle,
-                 static_cast<uint32_t>(DataId::SET_PORT),
-                 SIMCONNECT_OBJECT_ID_USER,
-                 0,
-                 0,
-                 sizeof(sent_port_),
-                 &sent_port_
-               );
-            }
+            sent_port_  = -1;
+            next_event_ = 1000;  // Check every 1 seconds
          }
       } break;
 
       case SIMCONNECT_RECV_ID_EXCEPTION: {
          // Retry sending the port on exception
-         sent_port_ = -1;
+         sent_port_  = -1;
+         next_event_ = 1000;  // Check every 1 seconds
 
          auto const& exception = static_cast<SIMCONNECT_RECV_EXCEPTION const&>(data);
          std::cerr << "SimConnect: Exception (" << exception.dwException << ")" << std::endl;
       } break;
 
       case SIMCONNECT_RECV_ID_QUIT: {
-         MessageQueue::Dispatch([this]() {
-            handle_ = std::shared_ptr<HANDLE>{nullptr};
-            SetEvent(event_);
-         });
+         handle_ = std::shared_ptr<HANDLE>{nullptr};
+         SetEvent(event_);
          break;
       }
    }
