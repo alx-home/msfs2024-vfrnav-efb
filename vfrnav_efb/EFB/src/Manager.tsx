@@ -184,123 +184,128 @@ export class Manager {
          return;
       }
 
-      const serverPort = SimVar.GetSimVarValue('L:VFRNAV_SET_PORT', 'number');
+      const serverPort = parseInt(SimVar.GetSimVarValue('L:VFRNAV_SET_PORT', 'number'));
 
       if (serverPort) {
-         this.socket = new WebSocket("ws://localhost:" + serverPort);
+         try {
+            this.socket = new WebSocket("ws://localhost:" + serverPort);
 
-         const onClose = () => {
-            if (!state.done) {
-               state.done = true;
-               this.serverMessageHandler = undefined;
-               this.messageHandler?.({
-                  "__SERVER_STATE__": true,
+            const onClose = () => {
+               if (!state.done) {
+                  state.done = true;
+                  this.serverMessageHandler = undefined;
+                  this.messageHandler?.({
+                     "__SERVER_STATE__": true,
 
-                  state: false
-               });
+                     state: false
+                  });
 
-               this.socket = undefined;
-               if (this.socketTimeout) {
-                  clearTimeout(this.socketTimeout)
+                  this.socket = undefined;
+                  if (this.socketTimeout) {
+                     clearTimeout(this.socketTimeout)
+                  }
+                  this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
                }
-               this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
             }
-         }
 
-         const state = {
-            done: false
-         };
+            const state = {
+               done: false
+            };
 
-         this.socket.onmessage = (event) => {
-            const data = (JSON.parse(event.data) as {
-               id: number,
-               content: MessageType
-            });
-
-            if (isMessage("__HELLO_WORLD__", data.content)) {
-               console.assert(data.id === 1);
-               // Message sent by the Server
-
-               this.serverMessageHandler = (id: number, message: MessageType) => {
-                  this.socket?.send(JSON.stringify({
-                     id: id,
-                     content: message
-                  }))
-               };
-
-               this.messageHandler?.({
-                  "__SERVER_STATE__": true,
-
-                  state: true
+            this.socket.onmessage = (event) => {
+               const data = (JSON.parse(event.data) as {
+                  id: number,
+                  content: MessageType
                });
 
-               this.onGetPlaneRecords(1);
-            } else if (isMessage("__SETTINGS__", data.content)) {
-               console.assert(false);
-            } else if (isMessage("__GET_SETTINGS__", data.content)) {
-               console.assert(false);
-            } else if (isMessage("__GET_FUEL__", data.content)) {
-               this.onGetFuel(data.id);
-            } else if (isMessage("__GET_RECORDS__", data.content)) {
-               this.onGetPlaneRecords(data.id);
-            } else if (isMessage("__GET_FACILITIES__", data.content)) {
-               this.onGetFacilities(data.id, data.content);
-            } else if (isMessage("__GET_ICAOS__", data.content)) {
-               this.onGetIcaos(data.id, data.content);
-            } else if (isMessage("__GET_LAT_LON__", data.content)) {
-               this.onGetLatLon(data.id, data.content);
-            } else if (isMessage("__GET_METAR__", data.content)) {
-               this.onGetMetar(data.id, data.content);
-            } else if (isMessage("__REMOVE_RECORD__", data.content)) {
-               this.onRemoveRecord(data.content);
-            } else if (isMessage("__EDIT_RECORD__", data.content)) {
-               this.onEditRecord(data.content);
-            } else if (isMessage("__GET_RECORD__", data.content)) {
-               this.onGetRecord(data.id, data.content);
-            } else if (isMessage("__EXPORT_NAV__", data.content)) {
-               this.onExportNav(data.content);
-            } else if (isMessage("__FUEL_PRESETS__", data.content)) {
-               this.onFuelPresets(data.id, data.content);
-            } else if (isMessage("__GET_FUEL_PRESETS__", data.content)) {
-               this.onGetFuelPresets(data.id, data.content);
-            } else if (isMessage("__DELETE_FUEL_PRESET__", data.content)) {
-               this.onDeleteFuelPreset(data.content);
-            } else if (isMessage("__FUEL_CURVE__", data.content)) {
-               this.onFuelCurve(data.id, data.content);
-            } else if (isMessage("__DEFAULT_FUEL_PRESET__", data.content)) {
-               this.onDefaultFuelPreset(data.id, data.content)
-            } else if (isMessage("__DEVIATION_PRESETS__", data.content)) {
-               this.onDeviationPresets(data.id, data.content);
-            } else if (isMessage("__GET_DEVIATION_PRESETS__", data.content)) {
-               this.onGetDeviationPresets(data.id, data.content);
-            } else if (isMessage("__DELETE_DEVIATION_PRESET__", data.content)) {
-               this.onDeleteDeviationPreset(data.content);
-            } else if (isMessage("__DEVIATION_CURVE__", data.content)) {
-               this.onDeviationCurve(data.id, data.content);
-            } else if (isMessage("__DEFAULT_DEVIATION_PRESET__", data.content)) {
-               this.onDefaultDeviationPreset(data.id, data.content)
-            } else if (isMessage("__EXPORT_PDFS__", data.content)) {
-               this.onExportPdfs(data.content);
-            } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
-               || isMessage("__OPEN_FILE_RESPONSE__", data.content)
-               || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
-               this.onFileResponse(data.content);
+               if (isMessage("__HELLO_WORLD__", data.content)) {
+                  console.assert(data.id === 1);
+                  // Message sent by the Server
+
+                  this.serverMessageHandler = (id: number, message: MessageType) => {
+                     this.socket?.send(JSON.stringify({
+                        id: id,
+                        content: message
+                     }))
+                  };
+
+                  this.messageHandler?.({
+                     "__SERVER_STATE__": true,
+
+                     state: true
+                  });
+
+                  this.onGetPlaneRecords(1);
+               } else if (isMessage("__SETTINGS__", data.content)) {
+                  console.assert(false);
+               } else if (isMessage("__GET_SETTINGS__", data.content)) {
+                  console.assert(false);
+               } else if (isMessage("__GET_FUEL__", data.content)) {
+                  this.onGetFuel(data.id);
+               } else if (isMessage("__GET_RECORDS__", data.content)) {
+                  this.onGetPlaneRecords(data.id);
+               } else if (isMessage("__GET_FACILITIES__", data.content)) {
+                  this.onGetFacilities(data.id, data.content);
+               } else if (isMessage("__GET_ICAOS__", data.content)) {
+                  this.onGetIcaos(data.id, data.content);
+               } else if (isMessage("__GET_LAT_LON__", data.content)) {
+                  this.onGetLatLon(data.id, data.content);
+               } else if (isMessage("__GET_METAR__", data.content)) {
+                  this.onGetMetar(data.id, data.content);
+               } else if (isMessage("__REMOVE_RECORD__", data.content)) {
+                  this.onRemoveRecord(data.content);
+               } else if (isMessage("__EDIT_RECORD__", data.content)) {
+                  this.onEditRecord(data.content);
+               } else if (isMessage("__GET_RECORD__", data.content)) {
+                  this.onGetRecord(data.id, data.content);
+               } else if (isMessage("__EXPORT_NAV__", data.content)) {
+                  this.onExportNav(data.content);
+               } else if (isMessage("__FUEL_PRESETS__", data.content)) {
+                  this.onFuelPresets(data.id, data.content);
+               } else if (isMessage("__GET_FUEL_PRESETS__", data.content)) {
+                  this.onGetFuelPresets(data.id, data.content);
+               } else if (isMessage("__DELETE_FUEL_PRESET__", data.content)) {
+                  this.onDeleteFuelPreset(data.content);
+               } else if (isMessage("__FUEL_CURVE__", data.content)) {
+                  this.onFuelCurve(data.id, data.content);
+               } else if (isMessage("__DEFAULT_FUEL_PRESET__", data.content)) {
+                  this.onDefaultFuelPreset(data.id, data.content)
+               } else if (isMessage("__DEVIATION_PRESETS__", data.content)) {
+                  this.onDeviationPresets(data.id, data.content);
+               } else if (isMessage("__GET_DEVIATION_PRESETS__", data.content)) {
+                  this.onGetDeviationPresets(data.id, data.content);
+               } else if (isMessage("__DELETE_DEVIATION_PRESET__", data.content)) {
+                  this.onDeleteDeviationPreset(data.content);
+               } else if (isMessage("__DEVIATION_CURVE__", data.content)) {
+                  this.onDeviationCurve(data.id, data.content);
+               } else if (isMessage("__DEFAULT_DEVIATION_PRESET__", data.content)) {
+                  this.onDefaultDeviationPreset(data.id, data.content)
+               } else if (isMessage("__EXPORT_PDFS__", data.content)) {
+                  this.onExportPdfs(data.content);
+               } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
+                  || isMessage("__OPEN_FILE_RESPONSE__", data.content)
+                  || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
+                  this.onFileResponse(data.content);
+               }
+            };
+
+            this.socket.onclose = () => {
+               onClose()
+            };
+
+            this.socket.onerror = () => {
+               onClose();
             }
-         };
 
-         this.socket.onclose = () => {
-            onClose()
-         };
-
-         this.socket.onerror = () => {
-            onClose();
+            this.socket.onopen = () => {
+               this.socket?.send(JSON.stringify({
+                  __HELLO_WORLD__: "EFB"
+               }));
+            };
+         } catch (e) {
+            console.error(e);
+            this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
          }
-
-         this.socket.onopen = () => {
-            this.socket?.send(JSON.stringify({
-               __HELLO_WORLD__: "EFB"
-            }));
-         };
       } else {
          this.socketTimeout = setTimeout(this.connectToServer.bind(this), 5000);
       }

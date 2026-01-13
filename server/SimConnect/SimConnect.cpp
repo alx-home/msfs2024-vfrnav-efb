@@ -27,6 +27,7 @@
 #include <condition_variable>
 #include <functional>
 #include <ios>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
@@ -81,7 +82,8 @@ void
 SimConnect::SetServerPort(uint32_t port) {
    MessageQueue::Dispatch([this, port]() {
       server_port_ = port;
-      next_event_  = 1000;  // Check every 1 seconds
+      next_check_  = std::chrono::steady_clock::now();
+      SetEvent(event_);
    });
 }
 
@@ -89,24 +91,58 @@ void
 SimConnect::Run(std::stop_token const& stoken) {
    auto handle = handle_.lock();
 
-   while ((::WaitForSingleObject(event_, next_event_) == WAIT_OBJECT_0) && !ShouldStop(stoken)) {
-      MessageQueue::Dispatch([this, handle]() {
-         if (sent_port_ != server_port_) {
-            next_event_ = INFINITE;
-            sent_port_  = server_port_;
+   SimConnect_AddToDataDefinition(
+     *handle,
+     static_cast<uint32_t>(DataId::SET_PORT),
+     "L:VFRNAV_SET_PORT",
+     "Number",
+     SIMCONNECT_DATATYPE_FLOAT64
+   );
 
-            std::cout << "SimConnect: Setting server port to " << server_port_
-                      << " (connected: " << std::boolalpha << static_cast<bool>(handle) << ")"
-                      << std::endl;
-            SimConnect_SetDataOnSimObject(
-              *handle,
-              static_cast<uint32_t>(DataId::SET_PORT),
-              SIMCONNECT_OBJECT_ID_USER,
-              0,
-              0,
-              sizeof(server_port_),
-              &server_port_
-            );
+   sent_port_  = -1;
+   next_check_ = std::chrono::steady_clock::now();
+   while ((::WaitForSingleObject(
+             event_,
+             std::max(
+               0ll,
+               next_check_ == time_point::max()
+                 ? INFINITE
+                 : 100
+                     + std::chrono::duration_cast<std::chrono::milliseconds>(
+                         next_check_ - std::chrono::steady_clock::now()
+                     )
+                         .count()
+             )
+           )
+           == WAIT_OBJECT_0)
+          && !ShouldStop(stoken)) {
+      MessageQueue::Dispatch([this, handle]() {
+         if ((std::chrono::steady_clock::now() >= next_check_) && (sent_port_ != server_port_)) {
+            next_check_      = time_point::max();
+            sent_port_       = server_port_;
+            auto server_port = static_cast<double>(server_port_);
+
+            std::cout << "SimConnect: Setting server port to " << server_port_ << " sent port "
+                      << sent_port_ << " (connected: " << std::boolalpha
+                      << static_cast<bool>(handle) << ")" << std::endl;
+            if (E_FAIL
+                == SimConnect_SetDataOnSimObject(
+                  *handle,
+                  static_cast<uint32_t>(DataId::SET_PORT),
+                  SIMCONNECT_OBJECT_ID_USER,
+                  0,
+                  0,
+                  sizeof(server_port),
+                  &server_port
+                )) {
+               std::cerr << "SimConnect: Failed to set server port to " << server_port_
+                         << std::endl;
+
+               // Retry sending the port on failure after 5 seconds
+               sent_port_  = -1;
+               next_check_ = std::chrono::steady_clock::now() + std::chrono::seconds{1};
+               SetEvent(event_);
+            }
          }
       });
 
@@ -129,30 +165,24 @@ SimConnect::ShouldStop(std::stop_token const& stoken) const noexcept {
 
 void
 SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
+   auto const handle = handle_.lock();
+   if (!handle) {
+      return;
+   }
+
    switch (data.dwID) {
       case SIMCONNECT_RECV_ID_OPEN: {
-         auto const handle = handle_.lock();
-
-         if (handle) {
-            SimConnect_AddToDataDefinition(
-              *handle,
-              static_cast<uint32_t>(DataId::SET_PORT),
-              "L:VFRNAV_SET_PORT",
-              "Number",
-              SIMCONNECT_DATATYPE_FLOAT64
-            );
-            sent_port_  = -1;
-            next_event_ = 1000;  // Check every 1 seconds
-         }
+         std::cout << "SimConnect: Connection opened" << std::endl;
       } break;
 
       case SIMCONNECT_RECV_ID_EXCEPTION: {
-         // Retry sending the port on exception
-         sent_port_  = -1;
-         next_event_ = 1000;  // Check every 1 seconds
-
          auto const& exception = static_cast<SIMCONNECT_RECV_EXCEPTION const&>(data);
          std::cerr << "SimConnect: Exception (" << exception.dwException << ")" << std::endl;
+
+         // Retry sending the port on exception after 5 seconds
+         sent_port_  = -1;
+         next_check_ = std::chrono::steady_clock::now() + std::chrono::seconds{1};
+         SetEvent(event_);
       } break;
 
       case SIMCONNECT_RECV_ID_QUIT: {

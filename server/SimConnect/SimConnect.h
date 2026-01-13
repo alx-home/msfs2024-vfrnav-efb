@@ -109,10 +109,12 @@ private:
       }
    } waiting_requests_{};
 
-   DWORD        next_event_{INFINITE};
+   using time_point = std::chrono::steady_clock::time_point;
+
    win32::Event event_{win32::CreateEvent()};
-   double       server_port_{48578};
-   double       sent_port_{-1};
+   int64_t      server_port_{48578};
+   int64_t      sent_port_{-1};
+   time_point   next_check_{};
 
    std::weak_ptr<HANDLE> handle_{};
 
