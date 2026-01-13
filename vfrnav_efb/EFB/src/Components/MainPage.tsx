@@ -326,7 +326,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
         }
       }
 
-      // Initial call after 5 seconds to ensure proper sizing
+      // Initial call after 100 milliseconds to ensure proper sizing
       this.resizePromise = new Promise<void>((resolve) => {
         setTimeout(() => {
           this.resizeCallback!(false);
