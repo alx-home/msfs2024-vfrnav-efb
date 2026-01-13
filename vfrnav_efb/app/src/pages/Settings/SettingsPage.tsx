@@ -288,7 +288,7 @@ export const SettingsPage = ({ active }: {
                </InputItem>
             </Group>
             {
-               __MSFS_EMBEDED__ && mode2D &&
+               __MSFS_EMBEDED__ &&
                <Group name="EFB">
                   <SliderItem category="Panel" name="Width"
                      range={{ min: 0.05, max: 1 }}
