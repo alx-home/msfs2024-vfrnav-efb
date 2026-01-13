@@ -44,13 +44,13 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
   private readonly messageHandle = (message: MessageType) => { messageHandler?.send(message) };
   private reloadCallback: ((_event: MouseEvent) => void) | undefined = undefined;
-  private resizeCallback: (() => void) | undefined = undefined;
-  private resizeTimer: NodeJS.Timeout | undefined = undefined;
+  private resizeCallback: ((_delayed?: boolean) => void) | undefined = undefined;
   private widthRatio = 1;
   private heightRatio = 1;
   private borderScale = 1;
   private dpiScale = 1;
   private menuDpiScale = 1;
+  private resizePromise: Promise<void> | undefined = undefined;
 
   constructor(props: MainPageProps) {
     super(props);
@@ -175,12 +175,15 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   destroy(): void {
+    this.resizePromise = undefined;
+
     if (this.reloadCallback) {
       window.removeEventListener('mouseup', this.reloadCallback);
       this.reloadCallback = undefined;
     }
+
     if (this.resizeCallback) {
-      window.removeEventListener('resize', this.resizeCallback);
+      window.removeEventListener('resize', this.resizeCallback as () => void);
       (document.body.lastElementChild as HTMLElement).removeEventListener('mouseup', this.setRatioCallback);
       this.resizeCallback = undefined;
     }
@@ -290,13 +293,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       // Add onClick callback to set widthRatio based on mouse X position
       (document.body.lastElementChild as HTMLElement).addEventListener('mouseup', this.setRatioCallback);
 
-      this.resizeCallback = () => {
-        if (this.resizeTimer) {
-          clearTimeout(this.resizeTimer);
-        }
-
-        const apply = () => {
-          this.resizeTimer = undefined;
+      this.resizeCallback = (delayed?: boolean) => {
+        const resizeCallback = () => {
           const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
           const mode = this.props.settings.getSetting('mode').value === 0 ? '2D' : '3D';
           const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
@@ -320,19 +318,23 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
             mode2D: mode === '2D'
           });
         }
-        this.resizeTimer = setTimeout(() => {
-          apply()
 
-          // Re-apply after 2 seconds to handle any late changes
-          this.resizeTimer = setTimeout(() => {
-            apply()
-          }, 2000);
-        }, 100);
+        if (delayed ?? true) {
+          this.resizePromise = this.resizePromise?.then(resizeCallback);
+        } else {
+          resizeCallback();
+        }
       }
 
-      window.addEventListener('resize', this.resizeCallback);
+      // Initial call after 5 seconds to ensure proper sizing
+      this.resizePromise = new Promise<void>((resolve) => {
+        setTimeout(() => {
+          this.resizeCallback!(false);
+          resolve();
+        }, 100);
+      });
 
-      this.resizeCallback();
+      window.addEventListener('resize', this.resizeCallback as () => void);
     }
 
     if (messageHandler === undefined) {
