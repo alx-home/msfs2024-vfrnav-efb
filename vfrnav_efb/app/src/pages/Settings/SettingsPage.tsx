@@ -17,7 +17,7 @@ import { Button, CheckBox } from "@alx-home/Utils";
 
 import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { AirportLayerOptions, LayerSetting, SetEfbMode, SetPanelSize, SharedSettingsRecord } from "@shared/Settings";
+import { AirportLayerOptions, LayerSetting, SetPanelSize, SharedSettingsRecord } from "@shared/Settings";
 
 import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 import { AirportLayerSettingSetter, LayerSettingSetter } from "@Settings/Settings";
@@ -109,7 +109,6 @@ export const SettingsPage = ({ active }: {
    const [dpiScale, setDpiScale] = useState(1);
    const [menuDpi, setMenuDpi] = useState(1);
    const [borderScale, setBorderScale] = useState(1);
-   const [mode2D, setMode2D] = useState(true);
    const [initialized, setInitialized] = useState(false);
    const [warned, setWarned] = useState(false);
 
@@ -143,14 +142,6 @@ export const SettingsPage = ({ active }: {
 
    useEffect(() => {
       if (__MSFS_EMBEDED__) {
-         document.documentElement.style.setProperty('--dpi-scale', mode2D ? (menuDpi / (dpiScale * panelWidth)).toString() : '1');
-         document.documentElement.style.setProperty('--resize-ratio', mode2D ? panelWidth.toFixed(2) : '1');
-         document.documentElement.style.setProperty('--font-size', mode2D ? (dpiScale * 100).toFixed(0) + '%' : '100%');
-      }
-   }, [dpiScale, panelWidth, menuDpi, mode2D]);
-
-   useEffect(() => {
-      if (__MSFS_EMBEDED__) {
          if (initialized) {
             messageHandler.send({
                __SET_PANEL_SIZE__: true,
@@ -178,15 +169,6 @@ export const SettingsPage = ({ active }: {
 
       return () => messageHandler.unsubscribe("__SET_PANEL_SIZE__", callback);
    }, [setInitialized, setPanelWidth, setPanelHeight, setBorderScale, setDpiScale, setMenuDpi]);
-
-   useEffect(() => {
-      const callback = (msg: SetEfbMode) => {
-         setMode2D(msg.mode2D);
-      }
-      messageHandler.subscribe("__SET_EFB_MODE__", callback);
-
-      return () => messageHandler.unsubscribe("__SET_EFB_MODE__", callback);
-   }, []);
 
    useEffect(() => {
       if (active) {
