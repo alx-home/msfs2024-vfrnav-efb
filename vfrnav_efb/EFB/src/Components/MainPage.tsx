@@ -52,6 +52,12 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private menuDpiScale = 1;
   private onHideObserver: MutationObserver | undefined = undefined;
   private setRatioCallback: ((_event: MouseEvent) => void) | undefined = undefined;
+  private mouseMoveCallback: ((_event: MouseEvent) => void) | undefined = undefined;
+  private mouseDownCallback: ((_event: MouseEvent) => void) | undefined = undefined;
+  private resizing: {
+    x: number;
+    y: number;
+  } | undefined = undefined;
 
   constructor(props: MainPageProps) {
     super(props);
@@ -187,6 +193,18 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       this.resizeCallback = undefined;
     }
 
+    if (this.mouseDownCallback) {
+      this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mousedown', this.mouseDownCallback);
+      (document.body.lastElementChild as HTMLElement | null)?.removeEventListener('mousedown', this.mouseDownCallback);
+      this.mouseDownCallback = undefined;
+    }
+
+    if (this.mouseMoveCallback) {
+      this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mousemove', this.mouseMoveCallback);
+      (document.body.lastElementChild as HTMLElement | null)?.removeEventListener('mousemove', this.mouseMoveCallback);
+      this.mouseMoveCallback = undefined;
+    }
+
     if (this.setRatioCallback) {
       (document.body.lastElementChild as HTMLElement).removeEventListener('mouseup', this.setRatioCallback);
       this.setRatioCallback = undefined;
@@ -244,6 +262,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   public addReloadCallback = () => {
     if (!this.reloadCallback) {
       this.reloadCallback = (event: MouseEvent) => {
+        this.resizing = undefined;
+
         if (event.ctrlKey) {
           if (event.shiftKey) {
             event.stopPropagation();
@@ -352,6 +372,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
             (element as HTMLElement).style.setProperty('--mode', mode);
           }
 
+          this.elementRef.getOrDefault()?.contentWindow?.document.documentElement.style.setProperty('--dpi-scale', mode == '2D' ? (this.menuDpiScale / (this.dpiScale * this.widthRatio)).toString() : '1');
+          this.elementRef.getOrDefault()?.contentWindow?.document.documentElement.style.setProperty('--resize-ratio', mode == '2D' ? this.widthRatio.toFixed(2) : '1');
+          this.elementRef.getOrDefault()?.contentWindow?.document.documentElement.style.setProperty('--font-size', mode == '2D' ? (this.dpiScale * 100).toFixed(0) + '%' : '100%');
+
           const firstChild = document.body.firstElementChild as HTMLElement | null;
           const lastChild = document.body.lastElementChild as HTMLElement | null;
           console.assert(firstChild !== null);
@@ -365,11 +389,6 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
             lastChild.style.borderRadius = `calc(var(--tablet-border-radius) * ${this.borderScale})`;
             lastChild.style.borderImageWidth = `calc(22px * ${this.borderScale})`;
           }
-
-          messageHandler!.send({
-            __SET_EFB_MODE__: true,
-            mode2D: mode === '2D'
-          });
         }, 100);
       };
 
@@ -383,6 +402,44 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     // Delay to ensure EFB is fully loaded
     setTimeout(() => {
       this.addReloadCallback();
+
+      if (!this.mouseDownCallback) {
+        this.mouseDownCallback = (event: MouseEvent) => {
+          if (event.ctrlKey && !event.altKey && !event.shiftKey) {
+            event.stopPropagation();
+            this.resizing = { x: event.clientX, y: event.clientY };
+          } else {
+            this.resizing = undefined;
+          }
+        };
+
+        this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mousedown', this.mouseDownCallback, { capture: true });
+        (document.body.lastElementChild as HTMLElement | null)?.addEventListener('mousedown', this.mouseDownCallback, { capture: true });
+      }
+
+      if (!this.mouseMoveCallback) {
+        this.mouseMoveCallback = (event: MouseEvent) => {
+          if (this.resizing) {
+            event.stopPropagation();
+
+            const deltaX = event.clientX - this.resizing.x;
+            const deltaY = event.clientY - this.resizing.y;
+
+            this.resizing = { x: event.clientX, y: event.clientY };
+            this.onSetPanelSize({
+              __SET_PANEL_SIZE__: true,
+              width: Math.max(0.1, Math.min(1.0, this.widthRatio * (1 + deltaX / 500))),
+              height: Math.max(0.1, Math.min(1.0, this.heightRatio * (1 + deltaY / 500))),
+              borderScale: this.borderScale,
+              dpiScale: this.dpiScale,
+              menuDpiScale: this.menuDpiScale
+            });
+          }
+        };
+
+        this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mousemove', this.mouseMoveCallback, { capture: true });
+        (document.body.lastElementChild as HTMLElement | null)?.addEventListener('mousemove', this.mouseMoveCallback, { capture: true });
+      }
     }, 1000);
 
     const firstChild = document.body.firstElementChild as HTMLElement | null;
