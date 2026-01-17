@@ -167,6 +167,10 @@ export const SettingsPage = ({ active }: {
          sendEfbSize();
       }
    });
+   const setBorderScaleCallback = useEvent(async (value: number) => {
+      setBorderScale(value);
+      sendEfbSize();
+   });
 
 
    useEffect(() => {
@@ -321,7 +325,7 @@ export const SettingsPage = ({ active }: {
                      defaultValue={1}
                      oneShot={true}
                      value={borderScale}
-                     onChange={setBorderScale}>
+                     onChange={setBorderScaleCallback}>
                      Adjust the Border size of the EFB.
                   </SliderItem>
                </Group>
