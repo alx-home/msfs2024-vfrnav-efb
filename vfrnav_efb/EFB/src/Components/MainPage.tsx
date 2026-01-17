@@ -44,13 +44,13 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
   private readonly messageHandle = (message: MessageType) => { messageHandler?.send(message) };
   private reloadCallback: ((_event: MouseEvent) => void) | undefined = undefined;
-  private resizeCallback: ((_delayed?: boolean) => void) | undefined = undefined;
+  private resizeCallback: (() => void) | undefined = undefined;
   private widthRatio = 1;
   private heightRatio = 1;
   private borderScale = 1;
   private dpiScale = 1;
   private menuDpiScale = 1;
-  private resizePromise: Promise<void> | undefined = undefined;
+  private onHideObserver: MutationObserver | undefined = undefined;
 
   constructor(props: MainPageProps) {
     super(props);
@@ -175,8 +175,6 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   destroy(): void {
-    this.resizePromise = undefined;
-
     if (this.reloadCallback) {
       window.removeEventListener('mouseup', this.reloadCallback);
       this.reloadCallback = undefined;
@@ -184,6 +182,9 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
     if (this.resizeCallback) {
       window.removeEventListener('resize', this.resizeCallback as () => void);
+      this.onHideObserver?.disconnect();
+      this.onHideObserver = undefined;
+
       (document.body.lastElementChild as HTMLElement).removeEventListener('mouseup', this.setRatioCallback);
       this.resizeCallback = undefined;
     }
@@ -222,7 +223,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   public render(): TVNode<HTMLDivElement> {
     return (
       <div ref={this.gamepadUiViewRef} className="sample-page" style={`height: 100%; --color: ${this.props.color}`}>
-        <iframe ref={this.elementRef} title="msfs2024-vfrnav" height="100%" width="100%" src={`${BASE_URL}/efb/index.html`}>
+        <iframe ref={this.elementRef} title="msfs2024-vfrnav" height="100%" width="100%"
+          src={`${BASE_URL}/efb/index.html`}>
         </iframe>
       </div>
     );
@@ -289,53 +291,63 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       window.addEventListener('mouseup', this.reloadCallback);
     }
 
-    if (!this.resizeCallback) {
-      // Add onClick callback to set widthRatio based on mouse X position
-      (document.body.lastElementChild as HTMLElement).addEventListener('mouseup', this.setRatioCallback);
-
-      this.resizeCallback = (delayed?: boolean) => {
-        return; // @todo
-        const resizeCallback = () => {
-          const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
-          const mode = this.props.settings.getSetting('mode').value === 0 ? '2D' : '3D';
-          const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
-          const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
-          const panelWidth = viewportWidth * (mode == '2D' ? this.widthRatio : 1);
-          const panelHeight = viewportHeight * (mode == '2D' ? this.heightRatio : 1);
-
-          for (const element of document.body.children) {
-            (element as HTMLElement).style.setProperty('--panel-width', panelWidth.toFixed(0));
-            (element as HTMLElement).style.setProperty('--panel-height', panelHeight.toFixed(0));
-            (element as HTMLElement).style.setProperty('--orientation', orientation);
-            (element as HTMLElement).style.setProperty('--mode', mode);
-          }
-          (document.body.firstElementChild as HTMLElement).style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
-          (document.body.lastElementChild as HTMLElement).style.borderWidth = `calc(1px * ${this.borderScale} * var(--border-height)) calc(1px * ${this.borderScale} * var(--border-width))`;
-          (document.body.lastElementChild as HTMLElement).style.borderRadius = `calc(var(--tablet-border-radius) * ${this.borderScale})`;
-          (document.body.lastElementChild as HTMLElement).style.borderImageWidth = `calc(22px * ${this.borderScale})`;
-
-          messageHandler!.send({
-            __SET_EFB_MODE__: true,
-            mode2D: mode === '2D'
-          });
+    this.resizeCallback ??= () => {
+      // Delay to ensure EFB is fully loaded
+      setTimeout(() => {
+        const mode = this.props.settings.getSetting('mode').value === 0 ? '2D' : '3D';
+        if (mode == '2D' &&
+          ((document.body.firstElementChild as HTMLElement || null)?.classList.contains('panel-ui-actions--hidden') ?? true)) {
+          return;
         }
 
-        if (delayed ?? true) {
-          this.resizePromise = this.resizePromise?.then(resizeCallback);
-        } else {
-          resizeCallback();
-        }
-      }
+        const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
+        const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
+        const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
+        const panelWidth = viewportWidth * (mode == '2D' ? this.widthRatio : 1);
+        const panelHeight = viewportHeight * (mode == '2D' ? this.heightRatio : 1);
 
-      // Initial call after 100 milliseconds to ensure proper sizing
-      this.resizePromise = new Promise<void>((resolve) => {
-        setTimeout(() => {
-          this.resizeCallback!(false);
-          resolve();
-        }, 100);
+        for (const element of document.body.children) {
+          (element as HTMLElement).style.setProperty('--panel-width', panelWidth.toFixed(0));
+          (element as HTMLElement).style.setProperty('--panel-height', panelHeight.toFixed(0));
+          (element as HTMLElement).style.setProperty('--orientation', orientation);
+          (element as HTMLElement).style.setProperty('--mode', mode);
+        }
+
+        const firstChild = document.body.firstElementChild as HTMLElement | null;
+        const lastChild = document.body.lastElementChild as HTMLElement | null;
+        console.assert(firstChild !== null);
+        console.assert(lastChild !== null);
+
+        if (firstChild) {
+          firstChild.style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
+        }
+        if (lastChild) {
+          lastChild.style.borderWidth = `calc(1px * ${this.borderScale} * var(--border-height)) calc(1px * ${this.borderScale} * var(--border-width))`;
+          lastChild.style.borderRadius = `calc(var(--tablet-border-radius) * ${this.borderScale})`;
+          lastChild.style.borderImageWidth = `calc(22px * ${this.borderScale})`;
+        }
+
+        messageHandler!.send({
+          __SET_EFB_MODE__: true,
+          mode2D: mode === '2D'
+        });
+      }, 100);
+    };
+
+    const firstChild = document.body.firstElementChild as HTMLElement | null;
+    const lastChild = document.body.lastElementChild as HTMLElement | null;
+    console.assert(firstChild !== null);
+    console.assert(lastChild !== null);
+
+    // Add onClick callback to set widthRatio based on mouse X position
+    lastChild?.addEventListener('mouseup', this.setRatioCallback);
+    window.addEventListener('resize', this.resizeCallback as () => void);
+
+    if (firstChild) {
+      this.onHideObserver = new MutationObserver(() => {
+        this.resizeCallback?.();
       });
-
-      window.addEventListener('resize', this.resizeCallback as () => void);
+      this.onHideObserver.observe(firstChild, { attributes: true, attributeFilter: ['class'] });
     }
 
     if (messageHandler === undefined) {
