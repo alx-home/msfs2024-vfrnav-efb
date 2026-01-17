@@ -560,6 +560,23 @@
             "     - Click on EFB border to resize panel.",
             "       Cliquez sur la bordure de l'EFB pour redimensionner le panneau."
          ]
+      },
+      {
+         "version": "1.1.0",
+         "date": "FEB 10, 2026",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Enable EFB resizing by dragging while holding the Ctrl key.",
+            "       Permet de redimensionner l'EFB en faisant glisser tout en maintenant la touche Ctrl.",
+            "     - Allow refreshing EFB on Ctrl+Alt+Click everywhere.",
+            "       Permet d'actualiser l'EFB par Ctrl+Alt+Clic partout.",
+            "     - Allow resetting EFB size/DPI by Ctrl+Shift+Click everywhere.",
+            "       Permet de réinitialiser la taille/DPI de l'EFB par Ctrl+Maj+clic partout.",
+            "***🐞 Fixes / Corrections:***",
+            "     - Fix EFB not resizing correctly on startup in 2D mode when UI actions are hidden.",
+            "       Correction du redimensionnement de l'EFB au démarrage en mode 2D lorsque les actions UI sont masquées."
+         ]
       }
    ]
 }
