@@ -57,6 +57,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private resizing: {
     x: number;
     y: number;
+    widthRatio: number;
+    heightRatio: number;
   } | undefined = undefined;
 
   constructor(props: MainPageProps) {
@@ -137,6 +139,11 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
   onFileExists(message: FileExist) {
     this.props.manager.onFileExists(message);
+  }
+
+  setPanelSize(message: SetPanelSize) {
+    this.onSetPanelSize(message);
+    messageHandler!.send(message);
   }
 
   onSetPanelSize({ width, height, dpiScale, menuDpiScale, borderScale }: SetPanelSize) {
@@ -268,7 +275,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
           if (event.shiftKey) {
             event.stopPropagation();
 
-            this.onSetPanelSize({
+            this.setPanelSize({
               __SET_PANEL_SIZE__: true,
               width: 1,
               height: 1,
@@ -313,7 +320,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
         if (xResize && yResize) {
           // Diagonal resize
 
-          this.onSetPanelSize({
+          this.setPanelSize({
             __SET_PANEL_SIZE__: true,
             width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
             height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
@@ -322,7 +329,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
             menuDpiScale: this.menuDpiScale
           });
         } else if (xResize) {
-          this.onSetPanelSize({
+          this.setPanelSize({
             __SET_PANEL_SIZE__: true,
             width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
             height: this.heightRatio,
@@ -331,7 +338,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
             menuDpiScale: this.menuDpiScale
           });
         } else if (yResize) {
-          this.onSetPanelSize({
+          this.setPanelSize({
             __SET_PANEL_SIZE__: true,
             width: this.widthRatio,
             height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
@@ -407,7 +414,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
         this.mouseDownCallback = (event: MouseEvent) => {
           if (event.ctrlKey && !event.altKey && !event.shiftKey) {
             event.stopPropagation();
-            this.resizing = { x: event.clientX, y: event.clientY };
+            this.resizing = { x: event.clientX, y: event.clientY, widthRatio: this.widthRatio, heightRatio: this.heightRatio };
           } else {
             this.resizing = undefined;
           }
@@ -424,12 +431,13 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
             const deltaX = event.clientX - this.resizing.x;
             const deltaY = event.clientY - this.resizing.y;
+            const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
+            const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
 
-            this.resizing = { x: event.clientX, y: event.clientY };
-            this.onSetPanelSize({
+            this.setPanelSize({
               __SET_PANEL_SIZE__: true,
-              width: Math.max(0.1, Math.min(1.0, this.widthRatio * (1 + deltaX / 500))),
-              height: Math.max(0.1, Math.min(1.0, this.heightRatio * (1 + deltaY / 500))),
+              width: Math.max(0.1, Math.min(1.0, this.resizing.widthRatio * (1 + 2 * deltaX / viewportWidth))),
+              height: Math.max(0.1, Math.min(1.0, this.resizing.heightRatio * (1 + 2 * deltaY / viewportHeight))),
               borderScale: this.borderScale,
               dpiScale: this.dpiScale,
               menuDpiScale: this.menuDpiScale

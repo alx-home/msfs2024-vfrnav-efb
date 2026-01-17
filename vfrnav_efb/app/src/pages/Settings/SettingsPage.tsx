@@ -13,9 +13,10 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Button, CheckBox } from "@alx-home/Utils";
+import { Button, CheckBox, useBatch } from "@alx-home/Utils";
 
 import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useEvent } from "react-use-event-hook";
 
 import { AirportLayerOptions, LayerSetting, SetPanelSize, SharedSettingsRecord } from "@shared/Settings";
 
@@ -84,7 +85,7 @@ export const WarnPopup = ({ resolve }: {
          <div className="flex flex-col m-auto">
             <div>If you can&apos;t access the resize buttons because the UI is too small,</div>
             <div>
-               Alt+Click on the top of the EFB to reload the EFB OS and restore the default size.
+               Ctrl+Shift+Click on the EFB to reset to the default size.
             </div>
          </div>
       </div>
@@ -120,27 +121,13 @@ export const SettingsPage = ({ active }: {
 
          await promise;
          setWarned(true);
+         return false;
       }
+
+      return true;
    }, [setPopup, warned]);
 
-   const setPanelWidthCallback = useCallback(async (value: number) => {
-      await warn();
-      setPanelWidth(value);
-   }, [warn]);
-   const setPanelHeightCallback = useCallback(async (value: number) => {
-      await warn();
-      setPanelHeight(value);
-   }, [warn]);
-   const setDpiScaleCallback = useCallback(async (value: number) => {
-      await warn();
-      setDpiScale(value);
-   }, [warn]);
-   const setMenuDpiCallback = useCallback(async (value: number) => {
-      await warn();
-      setMenuDpi(value);
-   }, [warn]);
-
-   useEffect(() => {
+   const sendEfbSize = useBatch(() => {
       if (__MSFS_EMBEDED__) {
          if (initialized) {
             messageHandler.send({
@@ -154,7 +141,33 @@ export const SettingsPage = ({ active }: {
             });
          }
       }
-   }, [panelWidth, panelHeight, borderScale, dpiScale, menuDpi, initialized]);
+   });
+
+   const setPanelWidthCallback = useEvent(async (value: number) => {
+      if (await warn()) {
+         setPanelWidth(value);
+         sendEfbSize();
+      }
+   });
+   const setPanelHeightCallback = useEvent(async (value: number) => {
+      if (await warn()) {
+         setPanelHeight(value);
+         sendEfbSize();
+      }
+   });
+   const setDpiScaleCallback = useEvent(async (value: number) => {
+      if (await warn()) {
+         setDpiScale(value);
+         sendEfbSize();
+      }
+   });
+   const setMenuDpiCallback = useEvent(async (value: number) => {
+      if (await warn()) {
+         setMenuDpi(value);
+         sendEfbSize();
+      }
+   });
+
 
    useEffect(() => {
       const callback = (msg: SetPanelSize) => {
