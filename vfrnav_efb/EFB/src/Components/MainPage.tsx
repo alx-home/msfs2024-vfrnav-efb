@@ -51,6 +51,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private dpiScale = 1;
   private menuDpiScale = 1;
   private onHideObserver: MutationObserver | undefined = undefined;
+  private setRatioCallback: ((_event: MouseEvent) => void) | undefined = undefined;
 
   constructor(props: MainPageProps) {
     super(props);
@@ -176,17 +177,19 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
   destroy(): void {
     if (this.reloadCallback) {
-      window.removeEventListener('mouseup', this.reloadCallback);
-      this.reloadCallback = undefined;
+      this.removeReloadCallback();
     }
 
     if (this.resizeCallback) {
       window.removeEventListener('resize', this.resizeCallback as () => void);
       this.onHideObserver?.disconnect();
       this.onHideObserver = undefined;
-
-      (document.body.lastElementChild as HTMLElement).removeEventListener('mouseup', this.setRatioCallback);
       this.resizeCallback = undefined;
+    }
+
+    if (this.setRatioCallback) {
+      (document.body.lastElementChild as HTMLElement).removeEventListener('mouseup', this.setRatioCallback);
+      this.setRatioCallback = undefined;
     }
 
     if (messageHandler !== undefined) {
@@ -230,120 +233,166 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     );
   }
 
-  public setRatioCallback = (event: MouseEvent) => {
-    const element = (document.body.lastElementChild as HTMLElement);
-    const child = element.firstChild;
+  public removeReloadCallback = () => {
+    if (this.reloadCallback) {
+      this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mouseup', this.reloadCallback);
+      (document.body.lastElementChild as HTMLElement | null)?.removeEventListener('mouseup', this.reloadCallback);
+      this.reloadCallback = undefined;
+    }
+  };
 
-    const rect = (child as HTMLElement).getBoundingClientRect();
-    const { clientX: x, clientY: y } = event;
+  public addReloadCallback = () => {
+    if (!this.reloadCallback) {
+      this.reloadCallback = (event: MouseEvent) => {
+        if (event.ctrlKey) {
+          if (event.shiftKey) {
+            event.stopPropagation();
 
-    const xResize = x < rect.left || x > rect.right;
-    const yResize = y < rect.top || y > rect.bottom;
+            this.onSetPanelSize({
+              __SET_PANEL_SIZE__: true,
+              width: 1,
+              height: 1,
+              borderScale: 1,
+              dpiScale: 1,
+              menuDpiScale: 1
+            });
+          }
 
-    if (xResize && yResize) {
-      // Diagonal resize
+          if (event.altKey) {
+            event.stopPropagation();
 
-      this.onSetPanelSize({
-        __SET_PANEL_SIZE__: true,
-        width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
-        height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
-        borderScale: this.borderScale,
-        dpiScale: this.dpiScale,
-        menuDpiScale: this.menuDpiScale
-      });
-    } else if (xResize) {
-      this.onSetPanelSize({
-        __SET_PANEL_SIZE__: true,
-        width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
-        height: this.heightRatio,
-        borderScale: this.borderScale,
-        dpiScale: this.dpiScale,
-        menuDpiScale: this.menuDpiScale
-      });
-    } else if (yResize) {
-      this.onSetPanelSize({
-        __SET_PANEL_SIZE__: true,
-        width: this.widthRatio,
-        height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
-        borderScale: this.borderScale,
-        dpiScale: this.dpiScale,
-        menuDpiScale: this.menuDpiScale
-      });
+            location.reload();
+          }
+        }
+      };
+
+      this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mouseup', this.reloadCallback, { capture: true });
+      (document.body.lastElementChild as HTMLElement | null)?.addEventListener('mouseup', this.reloadCallback, { capture: true });
+    }
+  };
+
+  public resetReloadCallback = () => {
+    this.removeReloadCallback();
+    this.addReloadCallback();
+  };
+
+  public addRatioCallback = () => {
+    const lastChild = document.body.lastElementChild as HTMLElement | null;
+
+    if (!this.setRatioCallback && lastChild) {
+      this.setRatioCallback = (event: MouseEvent) => {
+        const element = (document.body.lastElementChild as HTMLElement);
+        const child = element.firstChild;
+
+        const rect = (child as HTMLElement).getBoundingClientRect();
+        const { clientX: x, clientY: y } = event;
+
+        const xResize = x < rect.left || x > rect.right;
+        const yResize = y < rect.top || y > rect.bottom;
+
+        if (xResize && yResize) {
+          // Diagonal resize
+
+          this.onSetPanelSize({
+            __SET_PANEL_SIZE__: true,
+            width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
+            height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
+            borderScale: this.borderScale,
+            dpiScale: this.dpiScale,
+            menuDpiScale: this.menuDpiScale
+          });
+        } else if (xResize) {
+          this.onSetPanelSize({
+            __SET_PANEL_SIZE__: true,
+            width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
+            height: this.heightRatio,
+            borderScale: this.borderScale,
+            dpiScale: this.dpiScale,
+            menuDpiScale: this.menuDpiScale
+          });
+        } else if (yResize) {
+          this.onSetPanelSize({
+            __SET_PANEL_SIZE__: true,
+            width: this.widthRatio,
+            height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
+            borderScale: this.borderScale,
+            dpiScale: this.dpiScale,
+            menuDpiScale: this.menuDpiScale
+          });
+        }
+      };
+
+      // Add onClick callback to set widthRatio based on mouse X position
+      lastChild?.addEventListener('mouseup', this.setRatioCallback);
+    }
+  };
+
+  public addResizeCallback = () => {
+    if (!this.resizeCallback) {
+      this.resizeCallback = () => {
+        // Delay to ensure EFB is fully loaded
+        setTimeout(() => {
+          const hidden = (document.body.firstElementChild as HTMLElement || null)?.classList.contains('panel-ui-actions--hidden') ?? true;
+          const mode = this.props.settings.getSetting('mode').value === 0 ? '2D' : '3D';
+
+          if (mode == '2D' && hidden) {
+            return;
+          }
+
+          const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
+          const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
+          const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
+          const panelWidth = viewportWidth * (mode == '2D' ? this.widthRatio : 1);
+          const panelHeight = viewportHeight * (mode == '2D' ? this.heightRatio : 1);
+
+          for (const element of document.body.children) {
+            (element as HTMLElement).style.setProperty('--panel-width', panelWidth.toFixed(0));
+            (element as HTMLElement).style.setProperty('--panel-height', panelHeight.toFixed(0));
+            (element as HTMLElement).style.setProperty('--orientation', orientation);
+            (element as HTMLElement).style.setProperty('--mode', mode);
+          }
+
+          const firstChild = document.body.firstElementChild as HTMLElement | null;
+          const lastChild = document.body.lastElementChild as HTMLElement | null;
+          console.assert(firstChild !== null);
+          console.assert(lastChild !== null);
+
+          if (firstChild) {
+            firstChild.style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
+          }
+          if (lastChild) {
+            lastChild.style.borderWidth = `calc(1px * ${this.borderScale} * var(--border-height)) calc(1px * ${this.borderScale} * var(--border-width))`;
+            lastChild.style.borderRadius = `calc(var(--tablet-border-radius) * ${this.borderScale})`;
+            lastChild.style.borderImageWidth = `calc(22px * ${this.borderScale})`;
+          }
+
+          messageHandler!.send({
+            __SET_EFB_MODE__: true,
+            mode2D: mode === '2D'
+          });
+        }, 100);
+      };
+
+      window.addEventListener('resize', this.resizeCallback as () => void);
     }
   };
 
   public onAfterRender(): void {
-    if (!this.reloadCallback) {
-      this.reloadCallback = (event: MouseEvent) => {
-        if (event.altKey) {
-          this.onSetPanelSize({
-            __SET_PANEL_SIZE__: true,
-            width: 1,
-            height: 1,
-            borderScale: 1,
-            dpiScale: 1,
-            menuDpiScale: 1
-          });
-          location.reload();
-        }
-      };
+    this.addResizeCallback();
 
-      window.addEventListener('mouseup', this.reloadCallback);
-    }
-
-    this.resizeCallback ??= () => {
-      // Delay to ensure EFB is fully loaded
-      setTimeout(() => {
-        const mode = this.props.settings.getSetting('mode').value === 0 ? '2D' : '3D';
-        if (mode == '2D' &&
-          ((document.body.firstElementChild as HTMLElement || null)?.classList.contains('panel-ui-actions--hidden') ?? true)) {
-          return;
-        }
-
-        const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
-        const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
-        const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
-        const panelWidth = viewportWidth * (mode == '2D' ? this.widthRatio : 1);
-        const panelHeight = viewportHeight * (mode == '2D' ? this.heightRatio : 1);
-
-        for (const element of document.body.children) {
-          (element as HTMLElement).style.setProperty('--panel-width', panelWidth.toFixed(0));
-          (element as HTMLElement).style.setProperty('--panel-height', panelHeight.toFixed(0));
-          (element as HTMLElement).style.setProperty('--orientation', orientation);
-          (element as HTMLElement).style.setProperty('--mode', mode);
-        }
-
-        const firstChild = document.body.firstElementChild as HTMLElement | null;
-        const lastChild = document.body.lastElementChild as HTMLElement | null;
-        console.assert(firstChild !== null);
-        console.assert(lastChild !== null);
-
-        if (firstChild) {
-          firstChild.style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
-        }
-        if (lastChild) {
-          lastChild.style.borderWidth = `calc(1px * ${this.borderScale} * var(--border-height)) calc(1px * ${this.borderScale} * var(--border-width))`;
-          lastChild.style.borderRadius = `calc(var(--tablet-border-radius) * ${this.borderScale})`;
-          lastChild.style.borderImageWidth = `calc(22px * ${this.borderScale})`;
-        }
-
-        messageHandler!.send({
-          __SET_EFB_MODE__: true,
-          mode2D: mode === '2D'
-        });
-      }, 100);
-    };
+    // Delay to ensure EFB is fully loaded
+    setTimeout(() => {
+      this.addReloadCallback();
+    }, 1000);
 
     const firstChild = document.body.firstElementChild as HTMLElement | null;
     const lastChild = document.body.lastElementChild as HTMLElement | null;
     console.assert(firstChild !== null);
     console.assert(lastChild !== null);
 
-    // Add onClick callback to set widthRatio based on mouse X position
-    lastChild?.addEventListener('mouseup', this.setRatioCallback);
-    window.addEventListener('resize', this.resizeCallback as () => void);
+    this.addRatioCallback();
 
-    if (firstChild) {
+    if (firstChild && !this.onHideObserver) {
       this.onHideObserver = new MutationObserver(() => {
         this.resizeCallback?.();
       });
