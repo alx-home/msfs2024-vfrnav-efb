@@ -107,6 +107,8 @@ export const SettingsPage = ({ active }: {
    const setSpeed = useCallback((value: string) => settings.setDefaultSpeed(+value), [settings]);
    const [panelWidth, setPanelWidth] = useState(1);
    const [panelHeight, setPanelHeight] = useState(1);
+   const [panelOffsetX, setPanelOffsetX] = useState(0);
+   const [panelOffsetY, setPanelOffsetY] = useState(0);
    const [dpiScale, setDpiScale] = useState(1);
    const [menuDpi, setMenuDpi] = useState(1);
    const [borderScale, setBorderScale] = useState(1);
@@ -133,6 +135,8 @@ export const SettingsPage = ({ active }: {
             messageHandler.send({
                __SET_PANEL_SIZE__: true,
 
+               x: panelOffsetX,
+               y: panelOffsetY,
                width: panelWidth,
                height: panelHeight,
                borderScale: borderScale,
@@ -155,6 +159,14 @@ export const SettingsPage = ({ active }: {
          sendEfbSize();
       }
    });
+   const setPanelOffsetYCallback = useEvent(async (value: number) => {
+      setPanelOffsetY(value);
+      sendEfbSize();
+   });
+   const setPanelOffsetXCallback = useEvent(async (value: number) => {
+      setPanelOffsetX(value);
+      sendEfbSize();
+   });
    const setDpiScaleCallback = useEvent(async (value: number) => {
       if (await warn()) {
          setDpiScale(value);
@@ -175,6 +187,8 @@ export const SettingsPage = ({ active }: {
 
    useEffect(() => {
       const callback = (msg: SetPanelSize) => {
+         setPanelOffsetX(msg.x);
+         setPanelOffsetY(msg.y);
          setPanelWidth(msg.width);
          setPanelHeight(msg.height);
          setBorderScale(msg.borderScale);
@@ -185,7 +199,7 @@ export const SettingsPage = ({ active }: {
       messageHandler.subscribe("__SET_PANEL_SIZE__", callback);
 
       return () => messageHandler.unsubscribe("__SET_PANEL_SIZE__", callback);
-   }, [setInitialized, setPanelWidth, setPanelHeight, setBorderScale, setDpiScale, setMenuDpi]);
+   }, [setInitialized, setPanelOffsetX, setPanelOffsetY, setPanelWidth, setPanelHeight, setBorderScale, setDpiScale, setMenuDpi]);
 
    useEffect(() => {
       if (active) {
@@ -289,6 +303,20 @@ export const SettingsPage = ({ active }: {
             {
                __MSFS_EMBEDED__ &&
                <Group name="EFB">
+                  <SliderItem category="Panel" name="x Offset"
+                     range={{ min: 0., max: 1. }}
+                     defaultValue={0}
+                     value={panelOffsetX}
+                     onChange={setPanelOffsetXCallback}>
+                     Set the EFB panel X offset as a percentage of the available area.
+                  </SliderItem>
+                  <SliderItem category="Panel" name="y Offset"
+                     range={{ min: 0., max: 1. }}
+                     defaultValue={0}
+                     value={panelOffsetY}
+                     onChange={setPanelOffsetYCallback}>
+                     Set the EFB panel Y offset as a percentage of the available area.
+                  </SliderItem>
                   <SliderItem category="Panel" name="Width"
                      range={{ min: 0.05, max: 1 }}
                      defaultValue={1}
