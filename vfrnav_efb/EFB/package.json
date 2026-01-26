@@ -15,6 +15,10 @@
     "@microsoft/msfs-types": "1.14.6"
   },
   "dependencies": {
-    "@alx-home/efb-api": "^1.0.2"
+    "@alx-home/efb-api": "^1.0.2",
+    "html2canvas": "^1.4.1"
+  },
+  "devDependencies": {
+    "@types/html2canvas": "^0.5.35"
   }
 }
