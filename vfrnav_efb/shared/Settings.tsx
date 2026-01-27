@@ -101,6 +101,7 @@ export type SetPanelSize = {
   borderScale: number,
   dpiScale: number,
   menuDpiScale: number
+  captionBar: boolean
 };
 
 export const SetPanelSizeRecord = GenRecord<SetPanelSize>({
@@ -112,7 +113,8 @@ export const SetPanelSizeRecord = GenRecord<SetPanelSize>({
   height: 1,
   borderScale: 1,
   dpiScale: 1,
-  menuDpiScale: 1
+  menuDpiScale: 1,
+  captionBar: true
 }, {});
 
 const LayerRecord = GenRecord<LayerSetting>({

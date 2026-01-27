@@ -46,6 +46,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private resizeCallback: (() => void) | undefined = undefined;
   private widthRatio = 1;
   private heightRatio = 1;
+  private captionBar = true;
   private xRatio = 0;
   private yRatio = 0;
   private borderScale = 1;
@@ -70,6 +71,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     const resizeData = GetStoredData(`efb-resize`);
     if (resizeData) {
       const resize = JSON.parse(resizeData as string);
+      this.captionBar = resize.captionBar ?? true;
       this.xRatio = resize.x ?? 0;
       this.yRatio = resize.y ?? 0;
       this.widthRatio = resize.width;
@@ -86,6 +88,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     messageHandler!.send({
       __SET_PANEL_SIZE__: true,
 
+      captionBar: this.captionBar,
       x: this.xRatio,
       y: this.yRatio,
       width: this.widthRatio,
@@ -153,7 +156,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     messageHandler!.send(message);
   }
 
-  onSetPanelSize({ width, height, x, y, dpiScale, menuDpiScale, borderScale }: SetPanelSize) {
+  onSetPanelSize({ width, height, x, y, dpiScale, menuDpiScale, borderScale, captionBar }: SetPanelSize) {
+    this.captionBar = captionBar;
     this.xRatio = x;
     this.yRatio = y;
     this.widthRatio = width;
@@ -169,7 +173,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       y: this.yRatio,
       borderScale: this.borderScale,
       dpiScale: this.dpiScale,
-      menuDpiScale: this.menuDpiScale
+      menuDpiScale: this.menuDpiScale,
+      captionBar: this.captionBar
     }));
     this.resizeCallback?.();
   }
@@ -278,6 +283,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
             this.setPanelSize({
               __SET_PANEL_SIZE__: true,
+              captionBar: this.captionBar,
               x: Math.max(0, Math.min(1.0, this.xRatio)),
               y: Math.max(0, Math.min(1.0, this.yRatio)),
               width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
@@ -289,6 +295,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
           } else if (xResize) {
             this.setPanelSize({
               __SET_PANEL_SIZE__: true,
+              captionBar: this.captionBar,
               x: Math.max(0, Math.min(1.0, this.xRatio)),
               y: Math.max(0, Math.min(1.0, this.yRatio)),
               width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
@@ -300,6 +307,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
           } else if (yResize) {
             this.setPanelSize({
               __SET_PANEL_SIZE__: true,
+              captionBar: this.captionBar,
               x: Math.max(0, Math.min(1.0, this.xRatio)),
               y: Math.max(0, Math.min(1.0, this.yRatio)),
               width: this.widthRatio,
@@ -356,6 +364,12 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
           if (firstChild && lastChild) {
             const borderWidth = document.body.style.getPropertyValue('--border-width');
+
+            if (this.captionBar) {
+              firstChild.style.display = '';
+            } else {
+              firstChild.style.display = 'none';
+            }
 
             firstChild.style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
             firstChild.style.transform = `translate(${panelOffsetX.toFixed(0)}px, ${panelOffsetY.toFixed(0)}px)`;
@@ -416,6 +430,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       if (this.resizing.type === 'move') {
         this.setPanelSize({
           __SET_PANEL_SIZE__: true,
+          captionBar: this.captionBar,
           x: Math.max(0, Math.min(1.0, this.resizing.xRatio + deltaX / (panelWidth - this.resizing.widthRatio * panelWidth))),
           y: Math.max(0, Math.min(1.0, this.resizing.yRatio + deltaY / (panelHeight - this.resizing.heightRatio * panelHeight))),
           width: this.widthRatio,
@@ -438,6 +453,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
         this.setPanelSize({
           __SET_PANEL_SIZE__: true,
+          captionBar: this.captionBar,
           x: Math.max(0, Math.min(1.0, x)),
           y: Math.max(0, Math.min(1.0, y)),
           width,
@@ -473,6 +489,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
         this.setPanelSize({
           __SET_PANEL_SIZE__: true,
+          captionBar: true,
           x: 0,
           y: 0,
           width: 1,

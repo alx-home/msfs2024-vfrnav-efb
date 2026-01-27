@@ -112,6 +112,7 @@ export const SettingsPage = ({ active }: {
    const [dpiScale, setDpiScale] = useState(1);
    const [menuDpi, setMenuDpi] = useState(1);
    const [borderScale, setBorderScale] = useState(1);
+   const [showEFBCaption, setShowEFBCaption] = useState(true);
    const [initialized, setInitialized] = useState(false);
    const [warned, setWarned] = useState(false);
 
@@ -141,7 +142,8 @@ export const SettingsPage = ({ active }: {
                height: panelHeight,
                borderScale: borderScale,
                dpiScale: dpiScale,
-               menuDpiScale: menuDpi
+               menuDpiScale: menuDpi,
+               captionBar: showEFBCaption
             });
          }
       }
@@ -165,6 +167,10 @@ export const SettingsPage = ({ active }: {
    });
    const setPanelOffsetXCallback = useEvent(async (value: number) => {
       setPanelOffsetX(value);
+      sendEfbSize();
+   });
+   const setShowEFBCaptionCallback = useEvent(async (value: boolean) => {
+      setShowEFBCaption(value);
       sendEfbSize();
    });
    const setDpiScaleCallback = useEvent(async (value: number) => {
@@ -303,6 +309,9 @@ export const SettingsPage = ({ active }: {
             {
                __MSFS_EMBEDED__ &&
                <Group name="EFB">
+                  <CheckItem category="Panel" name="EFB Caption bar" value={showEFBCaption} onChange={setShowEFBCaptionCallback} defaultValue={true} >
+                     Show the EFB caption bar.
+                  </CheckItem>
                   <SliderItem category="Panel" name="x Offset"
                      range={{ min: 0., max: 1. }}
                      defaultValue={0}
