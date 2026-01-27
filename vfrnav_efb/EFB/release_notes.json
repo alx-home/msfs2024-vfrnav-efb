@@ -563,7 +563,7 @@
       },
       {
          "version": "1.1.0",
-         "date": "FEB 10, 2026",
+         "date": "JAN 17, 2026",
          "notes": [
             "### EFB ###",
             "***🔧 Improvements / Améliorations:***",
@@ -576,6 +576,20 @@
             "***🐞 Fixes / Corrections:***",
             "     - Fix EFB not resizing correctly on startup in 2D mode when UI actions are hidden.",
             "       Correction du redimensionnement de l'EFB au démarrage en mode 2D lorsque les actions UI sont masquées."
+         ]
+      },
+      {
+         "version": "1.1.1",
+         "date": "JAN 28, 2026",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Added the option to show/hide caption bar of the EFB in 2D mode.",
+            "       Ajout de l'option pour afficher/masquer la barre de titre de l'EFB en mode 2D.",
+            "     - Added the possibility to move the EFB panel position over the viewport.",
+            "       Ajout de la possibilité de déplacer la position du panneau EFB sur la fenêtre.",
+            "     - Improved slider usability by preventing scroll conflict.",
+            "       Amélioration de l'utilisation des curseurs en évitant les conflits de défilement."
          ]
       }
    ]
