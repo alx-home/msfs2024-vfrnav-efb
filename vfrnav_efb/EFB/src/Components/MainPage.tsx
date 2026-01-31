@@ -356,7 +356,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
           this.elementRef.getOrDefault()?.contentWindow?.document.documentElement.style.setProperty('--resize-ratio', mode == '2D' ? this.widthRatio.toFixed(2) : '1');
           this.elementRef.getOrDefault()?.contentWindow?.document.documentElement.style.setProperty('--font-size', mode == '2D' ? (this.dpiScale * 100).toFixed(0) + '%' : '100%');
 
-          const firstChild: HTMLElement | null = document.body.querySelector('.panel-ui-actions--top');
+          const firstChild: HTMLElement | null = document.body.querySelector('.panel-ui-actions');
           const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
           console.assert(firstChild !== null);
           console.assert(lastChild !== null);
@@ -523,8 +523,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   private mouseDownCallback(event: MouseEvent) {
-    const resizing = event.ctrlKey && !event.altKey && !event.shiftKey;
-    const moving = event.altKey && !event.ctrlKey && !event.shiftKey;
+    const resizing = event.ctrlKey && !event.altKey && !event.shiftKey && (event.button === 2);
+    const moving = event.altKey && !event.ctrlKey && !event.shiftKey && (event.button === 2);
 
     if (resizing || moving) {
       event.stopPropagation();
@@ -571,7 +571,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       this.listenMouseMove();
     }, 1000);
 
-    const firstChild: HTMLElement | null = document.body.querySelector('.panel-ui-actions--top');
+    const firstChild: HTMLElement | null = document.body.querySelector('.panel-ui-actions');
     const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
     console.assert(firstChild !== null);
     console.assert(lastChild !== null);
