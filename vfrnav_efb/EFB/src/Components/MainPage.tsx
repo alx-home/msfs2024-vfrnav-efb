@@ -277,7 +277,6 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
           const xResize = x < rect.left || x > rect.right;
           const yResize = y < rect.top || y > rect.bottom;
-
           if (xResize && yResize) {
             // Diagonal resize
 
@@ -463,6 +462,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
           menuDpiScale: this.menuDpiScale
         });
       }
+    } else {
+      Coherent.trigger("CAN_DRAG", !event.ctrlKey && !event.shiftKey && event.altKey);
     }
   }
 
@@ -478,14 +479,19 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
 
   private mouseUpCallback(event: MouseEvent) {
+    this.resizing = undefined;
+
     const efb = document.body.querySelector('.panel-ui')!.firstChild as HTMLElement;
     efb.style.display = "";
 
-    this.resizing = undefined;
+    if (event.button !== 2) {
+      return;
+    }
 
     if (event.ctrlKey) {
       if (event.shiftKey) {
         event.stopPropagation();
+        event.preventDefault();
 
         this.setPanelSize({
           __SET_PANEL_SIZE__: true,
@@ -502,6 +508,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
       if (event.altKey) {
         event.stopPropagation();
+        event.preventDefault();
 
         location.reload();
       }
@@ -522,12 +529,17 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     }
   }
 
+  private mouseOutCallback() {
+    Coherent.trigger("CAN_DRAG", false);
+  }
+
   private mouseDownCallback(event: MouseEvent) {
-    const resizing = event.ctrlKey && !event.altKey && !event.shiftKey && (event.button === 1);
-    const moving = event.altKey && !event.ctrlKey && !event.shiftKey && (event.button === 1);
+    const resizing = event.ctrlKey && event.shiftKey && !event.altKey && (event.button === 0);
+    const moving = event.ctrlKey && !event.shiftKey && !event.altKey && (event.button === 0);
 
     if (resizing || moving) {
       event.stopPropagation();
+      event.preventDefault();
 
       // Disable efb to avoid iframe capturing mouse events
       const efb = document.body.querySelector('.panel-ui')!.firstChild as HTMLElement;
@@ -550,6 +562,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
     this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mousedown', this.mouseDownCallback.bind(this), { capture: true });
     lastChild?.addEventListener('mousedown', this.mouseDownCallback.bind(this), { capture: true });
+    lastChild?.addEventListener('mouseout', this.mouseOutCallback.bind(this));
   }
 
   private stopListenMouseDown(): void {
@@ -558,6 +571,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
       this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mousedown', this.mouseDownCallback);
       lastChild?.removeEventListener('mousedown', this.mouseDownCallback);
+      lastChild?.removeEventListener('mouseout', this.mouseOutCallback);
     }
   }
 

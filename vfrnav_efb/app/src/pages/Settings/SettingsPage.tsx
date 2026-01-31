@@ -85,7 +85,7 @@ export const WarnPopup = ({ resolve }: {
          <div className="flex flex-col m-auto">
             <div>If you can&apos;t access the resize buttons because the UI is too small,</div>
             <div>
-               Ctrl+Shift+Click on the EFB to reset to the default size.
+               Ctrl+Shift+Right Click on the EFB to reset to the default size.
             </div>
          </div>
       </div>

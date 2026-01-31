@@ -589,7 +589,19 @@
             "     - Added the possibility to move the EFB panel position over the viewport.",
             "       Ajout de la possibilité de déplacer la position du panneau EFB sur la fenêtre.",
             "     - Improved slider usability by preventing scroll conflict.",
-            "       Amélioration de l'utilisation des curseurs en évitant les conflits de défilement."
+            "       Amélioration de l'utilisation des curseurs en évitant les conflits de défilement.",
+            "     - EFB window shortcut controls updated for more intuitive operation:",
+            "           - Ctrl + Left Click + Drag: Move EFB within visible area",
+            "           - Ctrl + Shift + Left Click + Drag: Resize EFB within visible area",
+            "           - Ctrl + Shift + Right Click: Reset EFB size and position to default",
+            "           - Ctrl + Alt + Right Click: Reload EFB os",
+            "           - Alt + Drag: Move the EFB in simulator area",
+            "       Les raccourcis de la fenêtre EFB ont été mis à jour pour une utilisation plus intuitive :",
+            "           - Ctrl + Clic gauche + Glisser : Déplacer l'EFB dans la zone visible",
+            "           - Ctrl + Maj + Clic gauche + Glisser : Redimensionner l'EFB dans la zone visible",
+            "           - Ctrl + Maj + Clic droit : Réinitialiser la taille et la position de l'EFB par défaut",
+            "           - Ctrl + Alt + Clic droit : Recharger l'os de l'EFB",
+            "           - Alt + Glisser : Déplacer l'EFB dans la zone du simulateur"
          ]
       }
    ]
