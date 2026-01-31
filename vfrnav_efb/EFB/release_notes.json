@@ -580,7 +580,7 @@
       },
       {
          "version": "1.1.1",
-         "date": "JAN 28, 2026",
+         "date": "JAN 31, 2026",
          "notes": [
             "### EFB ###",
             "***🔧 Improvements / Améliorations:***",
@@ -591,17 +591,19 @@
             "     - Improved slider usability by preventing scroll conflict.",
             "       Amélioration de l'utilisation des curseurs en évitant les conflits de défilement.",
             "     - EFB window shortcut controls updated for more intuitive operation:",
-            "           - Ctrl + Left Click + Drag: Move EFB within visible area",
-            "           - Ctrl + Shift + Left Click + Drag: Resize EFB within visible area",
-            "           - Ctrl + Shift + Right Click: Reset EFB size and position to default",
+            "           - Ctrl + Left Click + Drag: Move EFB within visible area in 2D mode",
+            "           - Ctrl + Shift + Left Click + Drag: Resize EFB within visible area in 2D mode",
+            "           - Ctrl + Shift + Right Click: Reset EFB size and position to default in 2D mode",
             "           - Ctrl + Alt + Right Click: Reload EFB os",
-            "           - Alt + Drag: Move the EFB in simulator area",
+            "           - Alt + Drag: Move the EFB in simulator area in 2D mode",
+            "           - Border clicks removed",
             "       Les raccourcis de la fenêtre EFB ont été mis à jour pour une utilisation plus intuitive :",
-            "           - Ctrl + Clic gauche + Glisser : Déplacer l'EFB dans la zone visible",
-            "           - Ctrl + Maj + Clic gauche + Glisser : Redimensionner l'EFB dans la zone visible",
-            "           - Ctrl + Maj + Clic droit : Réinitialiser la taille et la position de l'EFB par défaut",
+            "           - Ctrl + Clic gauche + Glisser : Déplacer l'EFB dans la zone visible en mode 2D",
+            "           - Ctrl + Maj + Clic gauche + Glisser : Redimensionner l'EFB dans la zone visible en mode 2D",
+            "           - Ctrl + Maj + Clic droit : Réinitialiser la taille et la position de l'EFB par défaut en mode 2D",
             "           - Ctrl + Alt + Clic droit : Recharger l'os de l'EFB",
-            "           - Alt + Glisser : Déplacer l'EFB dans la zone du simulateur"
+            "           - Alt + Glisser : Déplacer l'EFB dans la zone du simulateur en mode 2D",
+            "           - Clics sur la bordure supprimés"
          ]
       }
    ]

@@ -53,7 +53,6 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   private dpiScale = 1;
   private menuDpiScale = 1;
   private onHideObserver: MutationObserver | undefined = undefined;
-  private setRatioCallback: ((_event: MouseEvent) => void) | undefined = undefined;
   private resizeOutline: HTMLDivElement | null = null;
   private resizing: {
     type: 'move' | 'resize';
@@ -204,8 +203,6 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   destroy(): void {
-    const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
-
     if (this.resizeCallback) {
       window.removeEventListener('resize', this.resizeCallback as () => void);
       this.onHideObserver?.disconnect();
@@ -216,11 +213,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.stopListenMouseMove();
     this.stopListenMouseUp();
     this.stopListenMouseDown();
-
-    if (this.setRatioCallback) {
-      lastChild?.removeEventListener('mousedown', this.setRatioCallback);
-      this.setRatioCallback = undefined;
-    }
+    this.stopListenCanDrag();
 
     if (messageHandler !== undefined) {
       this.props.manager.closeEFB();
@@ -263,66 +256,6 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     );
   }
 
-  public addRatioCallback = () => {
-    const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
-
-    if (!this.setRatioCallback && lastChild) {
-      this.setRatioCallback = (event: MouseEvent) => {
-        if (event.altKey) {
-          const element = (document.body.querySelector('.panel-ui') as HTMLElement);
-          const child = element.firstChild;
-
-          const rect = (child as HTMLElement).getBoundingClientRect();
-          const { clientX: x, clientY: y } = event;
-
-          const xResize = x < rect.left || x > rect.right;
-          const yResize = y < rect.top || y > rect.bottom;
-          if (xResize && yResize) {
-            // Diagonal resize
-
-            this.setPanelSize({
-              __SET_PANEL_SIZE__: true,
-              captionBar: this.captionBar,
-              x: Math.max(0, Math.min(1.0, this.xRatio)),
-              y: Math.max(0, Math.min(1.0, this.yRatio)),
-              width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
-              height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
-              borderScale: this.borderScale,
-              dpiScale: this.dpiScale,
-              menuDpiScale: this.menuDpiScale
-            });
-          } else if (xResize) {
-            this.setPanelSize({
-              __SET_PANEL_SIZE__: true,
-              captionBar: this.captionBar,
-              x: Math.max(0, Math.min(1.0, this.xRatio)),
-              y: Math.max(0, Math.min(1.0, this.yRatio)),
-              width: Math.max(0.1, Math.min(1.0, this.widthRatio * (event.button == 0 ? 1.1 : 0.9))),
-              height: this.heightRatio,
-              borderScale: this.borderScale,
-              dpiScale: this.dpiScale,
-              menuDpiScale: this.menuDpiScale
-            });
-          } else if (yResize) {
-            this.setPanelSize({
-              __SET_PANEL_SIZE__: true,
-              captionBar: this.captionBar,
-              x: Math.max(0, Math.min(1.0, this.xRatio)),
-              y: Math.max(0, Math.min(1.0, this.yRatio)),
-              width: this.widthRatio,
-              height: Math.max(0.1, Math.min(1.0, this.heightRatio * (event.button == 0 ? 1.1 : 0.9))),
-              borderScale: this.borderScale,
-              dpiScale: this.dpiScale,
-              menuDpiScale: this.menuDpiScale
-            });
-          }
-        }
-      };
-
-      // Add onClick callback to set widthRatio based on mouse X position
-      lastChild?.addEventListener('mousedown', this.setRatioCallback);
-    }
-  };
 
   public addResizeCallback = () => {
     if (!this.resizeCallback) {
@@ -462,8 +395,24 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
           menuDpiScale: this.menuDpiScale
         });
       }
-    } else {
-      Coherent.trigger("CAN_DRAG", !event.ctrlKey && !event.shiftKey && event.altKey);
+    }
+  }
+
+  private canDragCallback(event: MouseEvent) {
+    Coherent.trigger("CAN_DRAG", !event.ctrlKey && !event.shiftKey && event.altKey && !this.resizing);
+  }
+
+  public listenCanDrag = () => {
+    const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
+    lastChild?.addEventListener('mousemove', this.canDragCallback.bind(this));
+    this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mousemove', this.canDragCallback.bind(this));
+  };
+
+  private stopListenCanDrag(): void {
+    if (this.canDragCallback) {
+      const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
+      lastChild?.removeEventListener('mousemove', this.canDragCallback);
+      this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mousemove', this.canDragCallback);
     }
   }
 
@@ -583,14 +532,13 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       this.listenMouseUp();
       this.listenMouseDown();
       this.listenMouseMove();
+      this.listenCanDrag();
     }, 1000);
 
     const firstChild: HTMLElement | null = document.body.querySelector('.panel-ui-actions');
     const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
     console.assert(firstChild !== null);
     console.assert(lastChild !== null);
-
-    this.addRatioCallback();
 
     if (firstChild && !this.onHideObserver) {
       this.onHideObserver = new MutationObserver(() => {
