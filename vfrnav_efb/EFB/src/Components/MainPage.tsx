@@ -523,8 +523,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   private mouseDownCallback(event: MouseEvent) {
-    const resizing = event.ctrlKey && !event.altKey && !event.shiftKey && (event.button === 2);
-    const moving = event.altKey && !event.ctrlKey && !event.shiftKey && (event.button === 2);
+    const resizing = event.ctrlKey && !event.altKey && !event.shiftKey && (event.button === 1);
+    const moving = event.altKey && !event.ctrlKey && !event.shiftKey && (event.button === 1);
 
     if (resizing || moving) {
       event.stopPropagation();
