@@ -1,3 +1,6 @@
+# IMPORTANT: If you use vcpkg for package management, always configure CMake with:
+# -DCMAKE_TOOLCHAIN_FILE=PATH_TO_VCPKG/scripts/buildsystems/vcpkg.cmake
+# This enables CMake to find vcpkg-installed packages like OpenSSL, Boost, etc.
 include(FetchContent)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
@@ -89,7 +92,7 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 
-# Configure Boost
+# Configure Boost and OpenSSL
 find_program(MASM_EXECUTABLE ml64 REQUIRED)
 
 FetchContent_MakeAvailable(zlib)
@@ -105,7 +108,21 @@ endif()
 
 set(BOOST_IOSTREAMS_ENABLE_ZLIB TRUE)
 set(BOOST_ENABLE_CMAKE ON)
-set(BOOST_LIBRARIES iostreams)
+set(BOOST_LIBRARIES iostreams asio beast)
+
+# Find or fetch OpenSSL for Boost::asio SSL
+find_package(OpenSSL REQUIRED)
+
+# vcpkg toolchain is already active
+find_package(Iconv REQUIRED)
+find_package(libjpeg-turbo CONFIG REQUIRED)
+find_package(PNG REQUIRED)
+find_package(PkgConfig)
+pkg_check_modules(POPPLER_CPP REQUIRED IMPORTED_TARGET poppler-cpp)
+find_package(lcms2 CONFIG REQUIRED)
+find_package(Freetype CONFIG REQUIRED)
+find_package(JPEG REQUIRED)
+find_package(OpenJPEG CONFIG REQUIRED)
 
 # @TODO first configure failed...
 FetchContent_MakeAvailable(Boost upx build_tools cpp_utils windows promise json webview ts_utils)

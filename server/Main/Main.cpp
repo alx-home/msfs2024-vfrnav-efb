@@ -283,6 +283,57 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
       OpenToolTip();
    }
 
+   ia_handler_.GetFrequency("LFPM")
+     .Then([](std::vector<ia::Frequency> const& freqs) constexpr {
+        for (const auto& freq : freqs) {
+           std::cout << "Frequency: " << freq.name_.local_ << " (" << freq.name_.english_ << ") - "
+                     << freq.value_ << " MHz (" << freq.type_ << ")" << std::endl;
+        }
+     })
+     .Catch([](std::exception const& exc) constexpr {
+        std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+     })
+     .Detach();
+
+   promise::All(
+     ia_handler_.GetFrequency("LFPN").Catch([](std::exception const& exc) constexpr {
+        std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+     }),
+     ia_handler_.GetFrequency("TOTO").Catch([](std::exception const& exc) constexpr {
+        std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+     }),
+     ia_handler_.GetFrequency("LFPG").Catch([](std::exception const& exc) constexpr {
+        std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+     }),
+     ia_handler_.GetFrequency("LFPO").Catch([](std::exception const& exc) constexpr {
+        std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+     })
+   )
+     .Then([](std::tuple<
+              std::optional<std::vector<ia::Frequency>>,
+              std::optional<std::vector<ia::Frequency>>,
+              std::optional<std::vector<ia::Frequency>>,
+              std::optional<std::vector<ia::Frequency>>> const& results) constexpr {
+        std::apply(
+          [](auto const&... freqs) constexpr {
+             (
+               [](auto const& freq) constexpr {
+                  if (freq.has_value()) {
+                     std::cout << "------------------------\n";
+                     for (const auto& f : freq.value()) {
+                        std::cout << "Frequency: " << f.name_.local_ << " (" << f.name_.english_
+                                  << ") - " << f.value_ << " MHz (" << f.type_ << ")" << std::endl;
+                     }
+                  }
+               }(freqs),
+               ...
+             );
+          },
+          results
+        );
+     })
+     .Detach();
+
    MSG msg;
    while (GetMessageW(&msg, nullptr, 0, 0) > 0) {
       TranslateMessage(&msg);

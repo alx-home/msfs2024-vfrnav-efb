@@ -258,24 +258,21 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
 
          ++promises_;
          dialog::OpenFile(msg.path_, {{.name_ = "Pdf File", .value_ = {"*.pdf"}}})
-           .Then(
-             [self = shared_from_this(), id = message.id_, req_id = msg.id_](std::string const& path
-             ) -> Promise<void> {
-                self->server_.Dispatch([self = std::move(self), id, req_id, path]() {
-                   self->VSendMessage(id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path});
-                   std::shared_lock lock{self->mutex_};
-                   --self->promises_;
-                   self->cv_.notify_all();
-                });
-                co_return;
-             }
-           )
-           .Catch([self = shared_from_this()](std::exception_ptr const& exc) -> Promise<void> {
+           .Then([self   = shared_from_this(),
+                  id     = message.id_,
+                  req_id = msg.id_](std::string const& path) constexpr {
+              self->server_.Dispatch([self = std::move(self), id, req_id, path]() {
+                 self->VSendMessage(id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path});
+                 std::shared_lock lock{self->mutex_};
+                 --self->promises_;
+                 self->cv_.notify_all();
+              });
+           })
+           .Catch([self = shared_from_this()](std::exception_ptr const& exc) constexpr {
               std::shared_lock lock{self->mutex_};
               --self->promises_;
               self->cv_.notify_all();
               std::rethrow_exception(exc);
-              co_return;
            })
            .Detach();
       } else if (std::holds_alternative<ws::msg::GetFile>(message.content_)) {

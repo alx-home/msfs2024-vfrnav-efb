@@ -25,12 +25,17 @@ set(SOURCES
     Server/WebSockets/WebSocket.cpp
     Server/WebSockets/EFBWebSocket.cpp
 
+    ATC/IAHandler.cpp
+    ATC/PdfExtract.cpp
+    ATC/SiaPdfFetch.cpp
+
     SimConnect/SimConnect.cpp
 
     Window/template/Bindings/log.cpp
     Window/template/Bindings/Files.cpp
 )
 
+set(LLM_API_KEY CACHE STRING "API key for the IA service. If not set, IA features will be disabled.")
 win32_executable(TARGET_NAME server
     FILES
         ${SOURCES}
@@ -51,6 +56,24 @@ target_link_libraries(server
         Boost::asio
         boost_beast
         boost_url
+        OpenSSL::SSL
+        OpenSSL::Crypto
+
+    # Poppler dependencies
+    PkgConfig::POPPLER_CPP
+        Iconv::Iconv
+        $<IF:$<TARGET_EXISTS:libjpeg-turbo::turbojpeg>,libjpeg-turbo::turbojpeg,libjpeg-turbo::turbojpeg-static>
+        PNG::PNG
+        Freetype::Freetype
+        lcms2::lcms2
+        openjp2
+        JPEG::JPEG
+)
+
+target_compile_definitions(server PRIVATE LLM_API_KEY="${LLM_API_KEY}")
+
+target_include_directories(server PRIVATE
+    ${POPPLER_ROOT}/include
 )
 
 if(NOT WATCH_MODE)

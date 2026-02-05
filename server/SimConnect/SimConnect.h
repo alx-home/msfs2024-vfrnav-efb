@@ -31,11 +31,9 @@
 #include <winnt.h>
 #include <winuser.h>
 #include <chrono>
-#include <condition_variable>
 #include <cstdint>
-#include <functional>
 #include <map>
-#include <mutex>
+#include <memory>
 #include <stdexcept>
 #include <thread>
 
@@ -69,6 +67,15 @@ struct Parameter<Message::SIMCONNECT_SET_SERVER_PORT> {
 
 using ServerPortParam = sim_connect::Parameter<sim_connect::Message::SIMCONNECT_SET_SERVER_PORT>;
 
+enum class DataId : uint32_t {
+   SET_PORT,
+   EVENT_FRAME,
+   TRAFFIC,
+   TRAFFIC_INFO,
+   HELI_TRAFFIC_INFO,
+   USER_INFO,
+};
+
 class SimConnect : public MessageQueue {
 public:
    SimConnect();
@@ -81,6 +88,35 @@ public:
 private:
    bool ShouldStop(std::stop_token const& stoken) const noexcept;
    void Run(std::stop_token const& stoken);
+
+   template <DataId ID>
+   void AddToDataDefinition(
+     std::string_view                datumName,
+     SIMCONNECT_DATATYPE             datumType,
+     std::optional<std::string_view> unitsName = std::nullopt
+   );
+   template <DataId ID>
+   void AddToDataDefinition(
+     std::shared_ptr<void*> const&   handle,
+     std::string_view                datumName,
+     SIMCONNECT_DATATYPE             datumType,
+     std::optional<std::string_view> unitsName = std::nullopt
+   );
+   template <DataId ID, class T>
+   void AddToDataDefinition(std::shared_ptr<void*> const& handle);
+   template <DataId ID, class T>
+   void AddToDataDefinition();
+
+   template <DataId ID>
+   void RequestDataOnSimObjectType(
+     SIMCONNECT_SIMOBJECT_TYPE objectType,
+     uint32_t                  radius = 0,
+     std::shared_ptr<void*>    handle = nullptr
+   );
+
+   template <class T>
+   T StaticCast(DWORD const& data);
+
    void Dispatch(SIMCONNECT_RECV const& data);
 
    SIMCONNECT_DATA_REQUEST_ID request_id_{100};

@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "ATC/IAHandler.h"
 #include "Server/Server.h"
 #include "Server/WebSockets/Messages/Messages.h"
 #include "SimConnect/SimConnect.h"
@@ -87,6 +88,7 @@ private:
    std::unique_ptr<SimConnect> sim_connect_{};
    // Must be afters windows to resolve every promises
    std::unique_ptr<Server> server_{};
+   ia::Handler             ia_handler_{};
 
    static std::atomic<bool>   s__running;
    static std::weak_ptr<Main> s__instance;
