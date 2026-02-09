@@ -28,6 +28,7 @@ set(SOURCES
     ATC/IAHandler.cpp
     ATC/PdfExtract.cpp
     ATC/SiaPdfFetch.cpp
+    ATC/SIAExtractor.cpp
 
     SimConnect/SimConnect.cpp
 

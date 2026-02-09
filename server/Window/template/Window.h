@@ -37,7 +37,7 @@ struct WinRefCount {
    static std::atomic<std::size_t> s__refcount;
 };
 
-enum class WIN { MAIN, TASKBAR, TASKBAR_TOOLTIP, EFB };
+enum class WIN { MAIN, TASKBAR, TASKBAR_TOOLTIP, EFB, PROCESSING };
 template <WIN WINDOW>
 class Window : private WinRefCount {
 public:
@@ -57,6 +57,8 @@ public:
    webview::Bounds GetBounds() const;
 
    void Dispatch(std::function<void()>) const;
+
+   webview::webview& Webview() const;
 
 private:
 #ifndef WATCH_MODE

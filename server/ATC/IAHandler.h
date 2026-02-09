@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "SIAExtractor.h"
 #include <utils/MessageQueue.h>
 #include <utils/Poll.h>
 #include <json/json.h>
@@ -60,6 +61,8 @@ private:
    std::size_t                                       pending_requests_{0};
 
    std::unique_ptr<Poll<50>> poll_{std::make_unique<Poll<50>>("IAH Poll")};
+
+   sia::Extractor extractor_{};
 };
 
 }  // namespace ia

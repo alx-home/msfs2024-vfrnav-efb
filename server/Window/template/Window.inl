@@ -19,6 +19,7 @@
 #include "Server/WebSockets/Messages/Messages.h"
 #include "utils/Scoped.h"
 #include "webview/detail/engine_base.h"
+#include "webview/errors.h"
 #include "windows/SystemTray.h"
 
 #include <json/json.h>
@@ -55,8 +56,9 @@ struct Params<WINDOW> {
 #ifndef WATCH_MODE
    static constexpr AppResources const& s__resources = MAIN_WINDOW_RESOURCES;
 #endif
-   static constexpr bool           MODAL = true;
-   static constexpr wchar_t const* NAME  = L"Main Webview";
+   static constexpr bool           MODAL  = true;
+   static constexpr bool           HIDDEN = false;
+   static constexpr wchar_t const* NAME   = L"Main Webview";
 };
 
 template <WIN WINDOW>
@@ -66,8 +68,9 @@ struct Params<WINDOW> {
 #ifndef WATCH_MODE
    static constexpr AppResources const& s__resources = TASKBAR_WINDOW_RESOURCES;
 #endif
-   static constexpr bool           MODAL = false;
-   static constexpr wchar_t const* NAME  = L"Taskbar Webview";
+   static constexpr bool           MODAL  = false;
+   static constexpr bool           HIDDEN = false;
+   static constexpr wchar_t const* NAME   = L"Taskbar Webview";
 };
 
 template <WIN WINDOW>
@@ -77,8 +80,9 @@ struct Params<WINDOW> {
 #ifndef WATCH_MODE
    static constexpr AppResources const& s__resources = TASKBAR_TOOLTIP_WINDOW_RESOURCES;
 #endif
-   static constexpr bool           MODAL = false;
-   static constexpr wchar_t const* NAME  = L"Tooltip Webview";
+   static constexpr bool           MODAL  = false;
+   static constexpr bool           HIDDEN = false;
+   static constexpr wchar_t const* NAME   = L"Tooltip Webview";
 };
 
 template <WIN WINDOW>
@@ -88,8 +92,17 @@ struct Params<WINDOW> {
 #ifndef WATCH_MODE
    static constexpr AppResources const& s__resources = EFB_RESOURCES;
 #endif
-   static constexpr bool           MODAL = true;
-   static constexpr wchar_t const* NAME  = L"EFB Webview";
+   static constexpr bool           MODAL  = true;
+   static constexpr bool           HIDDEN = false;
+   static constexpr wchar_t const* NAME   = L"EFB Webview";
+};
+
+template <WIN WINDOW>
+   requires(WINDOW == WIN::PROCESSING)
+struct Params<WINDOW> {
+   static constexpr bool           MODAL  = false;
+   static constexpr bool           HIDDEN = true;
+   static constexpr wchar_t const* NAME   = L"Processing Webview";
 };
 
 }  // namespace
@@ -105,13 +118,10 @@ Window<WINDOW>::Window(std::function<void()> on_terminate)
           }};
 
           {
-             struct Unlock {
-                Window& self_;
-                ~Unlock() {
-                   std::lock_guard lock{self_.mutex_};
-                   self_.cv_.notify_all();
-                }
-             } _{.self_ = *this};
+             ScopeExit _{[this] constexpr {
+                std::lock_guard lock{mutex_};
+                cv_.notify_all();
+             }};
 
              SetThreadDescription(GetCurrentThread(), Params<WINDOW>::NAME);
 
@@ -130,17 +140,22 @@ Window<WINDOW>::Window(std::function<void()> on_terminate)
                USER_DATA_DIR,
                0,
                Params<WINDOW>::MODAL ? WS_EX_DLGMODALFRAME : WS_EX_TOOLWINDOW,
-               std::move(on_terminate)
+               std::move(on_terminate),
+               Params<WINDOW>::HIDDEN
              );
 
-             if constexpr (Params<WINDOW>::MODAL) {
+             if constexpr (Params<WINDOW>::HIDDEN) {
+                // Nothing to do, the window remains hidden
+             } else if constexpr (Params<WINDOW>::MODAL) {
                 webview_->SetTitleBarColor(0, 0xb4, 0xff, 255);
              } else if constexpr (WINDOW == WIN::TASKBAR_TOOLTIP) {
                 webview_->SetBackgroung(255, 255, 255, 0);
              }
 
 #ifndef WATCH_MODE
-             InstallResourceHandler();
+             if constexpr (WINDOW != WIN::SIA) {
+                InstallResourceHandler();
+             }
 #endif
 
 #ifndef DEBUG
@@ -175,13 +190,15 @@ Window<WINDOW>::Window(std::function<void()> on_terminate)
                 webview_->SetTopMost();
              }
 
-             InstallBindings();
+             if constexpr (WINDOW != WIN::PROCESSING) {
+                InstallBindings();
 
 #ifdef WATCH_MODE
-             webview_->Navigate("http://localhost:" + std::to_string(Params<WINDOW>::PORT));
+                webview_->Navigate("http://localhost:" + std::to_string(Params<WINDOW>::PORT));
 #else
-             webview_->Navigate("app://app/index.html");
+                webview_->Navigate("app://app/index.html");
 #endif
+             }
           };
 
           webview_->Run();
@@ -421,6 +438,18 @@ Window<WINDOW>::Fatal(STR&&... message) {
         + js::Stringify(std::vector<std::string_view>{std::forward<STR>(message)...}) + R"();)"
       );
    }
+}
+
+template <WIN WINDOW>
+webview::webview&
+Window<WINDOW>::Webview() const {
+   if (webview_) {
+      return *webview_;
+   }
+
+   throw webview::Exception{
+     webview::error_t::WEBVIEW_ERROR_INVALID_STATE, "Webview is not available"
+   };
 }
 
 template <WIN WINDOW>
