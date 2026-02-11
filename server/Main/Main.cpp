@@ -284,7 +284,7 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
    }
 
    ia_handler_.GetFrequency("LFPM")
-     .Then([](std::vector<ia::Frequency> const& freqs) constexpr {
+     .Then([](std::vector<Frequency> const& freqs) constexpr {
         for (const auto& freq : freqs) {
            std::cout << "Frequency: " << freq.name_.local_ << " (" << freq.name_.english_ << ") - "
                      << freq.value_ << " MHz (" << freq.type_ << ")" << std::endl;
@@ -310,10 +310,10 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
      })
    )
      .Then([](std::tuple<
-              std::optional<std::vector<ia::Frequency>>,
-              std::optional<std::vector<ia::Frequency>>,
-              std::optional<std::vector<ia::Frequency>>,
-              std::optional<std::vector<ia::Frequency>>> const& results) constexpr {
+              std::optional<std::vector<Frequency>>,
+              std::optional<std::vector<Frequency>>,
+              std::optional<std::vector<Frequency>>,
+              std::optional<std::vector<Frequency>>> const& results) constexpr {
         std::apply(
           [](auto const&... freqs) constexpr {
              (
@@ -322,7 +322,8 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
                      std::cout << "------------------------\n";
                      for (const auto& f : freq.value()) {
                         std::cout << "Frequency: " << f.name_.local_ << " (" << f.name_.english_
-                                  << ") - " << f.value_ << " MHz (" << f.type_ << ")" << std::endl;
+                                  << ") - " << f.value_ << " MHz (" << f.type_
+                                  << ") HOR: " << f.hor_ << " -- " << f.comment_ << std::endl;
                      }
                   }
                }(freqs),

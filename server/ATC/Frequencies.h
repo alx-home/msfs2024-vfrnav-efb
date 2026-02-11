@@ -15,30 +15,30 @@
 
 #pragma once
 
-#include "SIAExtractor.h"
-
-#include "Frequencies.h"
-
-#include <utils/MessageQueue.h>
-#include <utils/Poll.h>
+#include <string>
 #include <json/json.h>
-#include <promise/promise.h>
-#include <memory>
 
-namespace ia {
+struct Frequency {
+   struct Name {
+      std::string local_{"unknown"};
+      std::string english_{"unknown"};
 
-class Handler : private MessageQueue {
-public:
-   Handler();
-   virtual ~Handler();
+      static constexpr js::Proto PROTOTYPE{
+        js::_{"local", &Name::local_},
+        js::_{"english", &Name::english_},
+      };
+   };
+   Name        name_{};
+   double      value_{0};
+   std::string type_{"UNKNOWN"};
+   std::string hor_{"UNKNOWN"};
+   std::string comment_{"UNKNOWN"};
 
-   Promise<std::vector<Frequency>, false> GetFrequency(std::string const& icao);
-
-private:
-   // std::size_t pending_requests_{0};
-
-   std::unique_ptr<Poll<50>> poll_{std::make_unique<Poll<50>>("IAH Poll")};
-   sia::Extractor            sia_extractor_{};
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"name", &Frequency::name_},
+     js::_{"frequency", &Frequency::value_},
+     js::_{"type", &Frequency::type_},
+     js::_{"hor", &Frequency::hor_},
+     js::_{"comment", &Frequency::comment_},
+   };
 };
-
-}  // namespace ia
