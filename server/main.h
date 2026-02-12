@@ -19,12 +19,12 @@
 #include "Server/Server.h"
 #include "Server/WebSockets/Messages/Messages.h"
 #include "SimConnect/SimConnect.h"
-#include "promise/promise.h"
 #include "Window/template/Window.h"
 
 #include <memory>
-#include <memory>
+#include <promise/promise.h>
 #include <unordered_map>
+#include <utility>
 #include <webview/webview.h>
 #include <windows/Env.h>
 #include <windows/SystemTray.h>
@@ -66,13 +66,59 @@ public:
 
    void SendServerPortToEFB(uint32_t port);
 
+   template <class FUN>
+   auto Dispatch(FUN&& func) {
+      if constexpr (promise::IS_FUNCTION<FUN>) {
+         if constexpr (std::is_same_v<void, promise::return_t<FUN>>) {
+            return DispatchImp(std::forward<FUN>(func));
+         } else {
+            return DispatchImp(std::forward<FUN>(func));
+         }
+      } else {
+         return Dispatch(std::function{std::forward<FUN>(func)});
+      }
+   }
+
+   Promise<std::string, true> PostHttpRequest(
+     std::string const&                host,
+     std::string const&                port,
+     std::string const&                target,
+     std::optional<std::string> const& body         = std::nullopt,
+     std::optional<std::string> const& content_type = std::nullopt,
+     std::optional<std::string> const& api_key      = std::nullopt
+   );
+
 private:
+   Poll<50>     poll_{"Poll"};
    std::jthread mouse_watcher_;
    LRESULT      OnTrayNotification(WPARAM wParam, LPARAM lParam) override;
    LRESULT      OnMessageImpl(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) override;
 
    template <WIN WINDOW>
    void OnTerminate();
+
+   bool DispatchImp(std::function<void()>);
+
+   template <class RETURN>
+   auto DispatchImp(std::function<void(Resolve<RETURN> const&, Reject const&)>&& func) {
+      return MakePromise(
+        [this, func = std::move(func)](
+          Resolve<std::string> const& resolve, Reject const& reject
+        ) -> Promise<std::string, true> {
+           poll_.Dispatch([resolve = resolve.shared_from_this(),
+                           reject  = reject.shared_from_this(),
+                           func    = std::move(func)]() {
+              try {
+                 (func)(*resolve, *reject);
+              } catch (...) {
+                 (*reject)(std::current_exception());
+              }
+           });
+
+           co_return;
+        }
+      );
+   }
 
    // Delay window creation to ensure Main::Get() is ready
    using TaskbarPtr = std::unique_ptr<Window<WIN::TASKBAR>>;
@@ -88,7 +134,7 @@ private:
    std::unique_ptr<SimConnect> sim_connect_{};
    // Must be afters windows to resolve every promises
    std::unique_ptr<Server> server_{};
-   ia::Handler             ia_handler_{};
+   ia::Handler             ia_handler_{*this};
 
    static std::atomic<bool>   s__running;
    static std::weak_ptr<Main> s__instance;

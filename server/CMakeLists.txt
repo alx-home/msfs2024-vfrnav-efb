@@ -16,6 +16,7 @@ set(SOURCES
 
     Main/Main.cpp
 
+    HttpRequest.cpp
     Base64Utils.cpp
 
     Window/template/Window.cpp

@@ -15,15 +15,17 @@
 
 #pragma once
 
-#include "Window/template/Window.h"
 #include "Frequencies.h"
 
 #include <promise/promise.h>
+#include <map>
+
+class Main;
 
 namespace sia {
 class Extractor {
 public:
-   Extractor();
+   Extractor(Main& main);
    virtual ~Extractor() = default;
 
    using Frequencies = std::map<std::string, std::vector<Frequency>>;
@@ -31,16 +33,15 @@ public:
    Promise<std::vector<Frequency>, false> GetFrequencies(std::string const& icao) const;
 
 private:
+   Main& main_;
+
    Promise<Frequencies, false> LoadFrequencies() const;
    void SaveFrequencies(Frequencies const& frequencies, std::string const& eaip_cycle) const;
-   Promise<std::string, true>              RetrieveUrl() const;
-   Promise<std::vector<std::string>, true> RetrieveIcaos(std::string const& url) const;
-   Promise<std::vector<Frequency>, true>
-   RetrieveFrequencies(std::string const& url, std::string const& icao) const;
+   Promise<std::string, false>              RetrieveUrl() const;
+   Promise<std::vector<std::string>, false> RetrieveIcaos() const;
+   Promise<std::vector<Frequency>, false>   RetrieveFrequencies(std::string const& icao) const;
 
-   // Must be declared before frequencies_
-   Window<WIN::PROCESSING> window_{};
-
+   Promise<std::string, false> url_{RetrieveUrl()};
    Promise<Frequencies, false> frequencies_{LoadFrequencies()};
 };
 }  // namespace sia

@@ -283,19 +283,10 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
       OpenToolTip();
    }
 
-   ia_handler_.GetFrequency("LFPM")
-     .Then([](std::vector<Frequency> const& freqs) constexpr {
-        for (const auto& freq : freqs) {
-           std::cout << "Frequency: " << freq.name_.local_ << " (" << freq.name_.english_ << ") - "
-                     << freq.value_ << " MHz (" << freq.type_ << ")" << std::endl;
-        }
-     })
-     .Catch([](std::exception const& exc) constexpr {
-        std::cerr << "Error getting frequency: " << exc.what() << std::endl;
-     })
-     .Detach();
-
    promise::All(
+     ia_handler_.GetFrequency("LFPM").Catch([](std::exception const& exc) constexpr {
+        std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+     }),
      ia_handler_.GetFrequency("LFPN").Catch([](std::exception const& exc) constexpr {
         std::cerr << "Error getting frequency: " << exc.what() << std::endl;
      }),
@@ -310,6 +301,7 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
      })
    )
      .Then([](std::tuple<
+              std::optional<std::vector<Frequency>>,
               std::optional<std::vector<Frequency>>,
               std::optional<std::vector<Frequency>>,
               std::optional<std::vector<Frequency>>,
@@ -340,6 +332,11 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
       TranslateMessage(&msg);
       DispatchMessageW(&msg);
    }
+}
+
+bool
+Main::DispatchImp(std::function<void()> func) {
+   return poll_.Dispatch(std::move(func));
 }
 
 void

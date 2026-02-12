@@ -23,13 +23,14 @@
 #include <utils/Poll.h>
 #include <json/json.h>
 #include <promise/promise.h>
-#include <memory>
+
+class Main;
 
 namespace ia {
 
 class Handler : private MessageQueue {
 public:
-   Handler();
+   Handler(Main& main);
    virtual ~Handler();
 
    Promise<std::vector<Frequency>, false> GetFrequency(std::string const& icao);
@@ -37,8 +38,8 @@ public:
 private:
    // std::size_t pending_requests_{0};
 
-   std::unique_ptr<Poll<50>> poll_{std::make_unique<Poll<50>>("IAH Poll")};
-   sia::Extractor            sia_extractor_{};
+   Main&          main_;
+   sia::Extractor sia_extractor_{main_};
 };
 
 }  // namespace ia

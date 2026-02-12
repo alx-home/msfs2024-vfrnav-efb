@@ -14,16 +14,7 @@
  */
 
 #include "IAHandler.h"
-#include "PdfExtract.h"
-#include "SiaPdfFetch.h"
-#include "Registry/Registry.h"
-#include "json/json.h"
-#include "utils/Scoped.h"
-#include "utils/String.h"
 
-#include <codecvt>
-#include <exception>
-#include <filesystem>
 #include <json/json.inl>
 #include <variant>
 #include <promise/promise.h>
@@ -61,13 +52,11 @@
 
 namespace ia {
 
-Handler::Handler()
-   : MessageQueue{"IAH Main"} {}
+Handler::Handler(Main& main)
+   : MessageQueue{"IAH Main"}
+   , main_(main) {}
 
-Handler::~Handler() {
-   // Ensure all pending tasks are completed before writing to disk
-   poll_ = nullptr;
-};
+Handler::~Handler() {};
 
 struct AiResponseOk {
    std::string id_;

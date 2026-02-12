@@ -13,6 +13,10 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "Frequencies.h"
+#include "main.h"
+#include "utils/Scoped.h"
+
 #include "SIAExtractor.h"
 
 #include <Registry/Registry.h>
@@ -21,12 +25,14 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <vector>
 
 namespace sia {
 
-Extractor::Extractor() {}
+Extractor::Extractor(Main& main)
+   : main_(main) {}
 
 std::string
 ExtractEAIP(std::string const& url) {
@@ -96,7 +102,7 @@ Promise<Extractor::Frequencies, false>
 Extractor::LoadFrequencies() const {
    return MakePromise([this] -> Promise<Frequencies, false> {
       try {
-         auto const url = co_await RetrieveUrl();
+         auto const url = co_await url_;
 
          auto const eaip_cycle = ExtractEAIP(url);
          if (eaip_cycle.empty()) {
@@ -132,13 +138,11 @@ Extractor::LoadFrequencies() const {
          // If AiRAC cycle has changed or file doesn't exist, fetch frequencies from SIA website
          Frequencies frequencies{};
 
-         auto const icaos = co_await RetrieveIcaos(url + "FR-menu-fr-FR.html");
+         auto const icaos = co_await RetrieveIcaos();
 
          for (auto const& icao : icaos) {
             try {
-               auto const frequency = co_await RetrieveFrequencies(
-                 std::format("{}FR-AD-2.{}-fr-FR.html#AD-2.eAIP.{}", url, icao, icao), icao
-               );
+               auto const frequency = co_await RetrieveFrequencies(icao);
 
                frequencies.emplace(icao, std::move(frequency));
             } catch (std::exception const& e) {
@@ -156,142 +160,215 @@ Extractor::LoadFrequencies() const {
    });
 }
 
-Promise<std::string, true>
+Promise<std::string, false>
 Extractor::RetrieveUrl() const {
-   auto [promise, resolve, reject] = promise::Pure<std::string>();
+   return MakePromise([this]() -> Promise<std::string, false> {
+      auto const data = co_await main_.PostHttpRequest(
+        "www.sia.aviation-civile.gouv.fr", "443", "/customer/section/load/?sections=custom_menu"
+      );
 
-   window_.Dispatch([this, resolve = std::move(resolve), reject = std::move(reject)]() {
-      window_.Webview().Navigate("https://www.sia.aviation-civile.gouv.fr/#");
-      window_.Webview().WaitNavigationCompleted([this,
-                                                 resolve = std::move(resolve),
-                                                 reject  = std::move(reject)]() constexpr {
-         window_.Webview().Eval(
-           R"(document.querySelector('#menusite').firstChild.childNodes[1].childNodes[1].firstChild.href.match('eAIP[^/]*')[0])",
-           [resolve = std::move(resolve),
-            reject  = std::move(reject)](std::optional<std::string> const& result) {
-              if (result.has_value()) {
+      auto const index = data.find("eAIP_");
+      if (index == std::string::npos) {
+         throw std::runtime_error("Failed to find AIRAC cycle in SIA homepage");
+      }
 
-                 auto const airac = js::Parse<std::string>(*result);
+      auto const url_start =
+        data.rfind("https://www.sia.aviation-civile.gouv.fr/media/dvd/", index);
+      if (url_start != std::string::npos || data.size() - index < 16) {
+         throw std::runtime_error("Unexpected AIRAC url format in SIA homepage");
+      }
 
-                 if (airac.size() != 16 || airac.substr(0, 5) != "eAIP_") {
-                    MakeReject<std::runtime_error>(
-                      *reject, "Unexpected AIRAC string format: " + airac
-                    );
-                    return;
-                 }
+      auto const airac = data.substr(index, 16);
+      //   eAIP_22_JAN_2026 -> 2026-01-22
+      auto const  day  = airac.substr(5, 2);
+      auto const  mon  = airac.substr(8, 3);
+      auto const  year = airac.substr(12, 4);
+      std::string mon_num =
+        (mon == "JAN"   ? "01"
+         : mon == "FEB" ? "02"
+         : mon == "MAR" ? "03"
+         : mon == "APR" ? "04"
+         : mon == "MAY" ? "05"
+         : mon == "JUN" ? "06"
+         : mon == "JUL" ? "07"
+         : mon == "AUG" ? "08"
+         : mon == "SEP" ? "09"
+         : mon == "OCT" ? "10"
+         : mon == "NOV" ? "11"
+         : mon == "DEC" ? "12"
+                        : "");
 
-                 //   eAIP_22_JAN_2026 -> 2026-01-22
-                 auto const  day  = airac.substr(5, 2);
-                 auto const  mon  = airac.substr(8, 3);
-                 auto const  year = airac.substr(12, 4);
-                 std::string mon_num =
-                   (mon == "JAN"   ? "01"
-                    : mon == "FEB" ? "02"
-                    : mon == "MAR" ? "03"
-                    : mon == "APR" ? "04"
-                    : mon == "MAY" ? "05"
-                    : mon == "JUN" ? "06"
-                    : mon == "JUL" ? "07"
-                    : mon == "AUG" ? "08"
-                    : mon == "SEP" ? "09"
-                    : mon == "OCT" ? "10"
-                    : mon == "NOV" ? "11"
-                    : mon == "DEC"
-                      ? "12"
-                      : throw std::runtime_error("Invalid month in AIRAC string: " + mon));
+      if (mon_num.empty()) {
+         throw std::runtime_error("Unexpected month format in AIRAC cycle: " + mon);
+      }
 
-                 (*resolve)(std::format(
-                   "https://www.sia.aviation-civile.gouv.fr/media/dvd/{}/FRANCE/AIRAC-{}/"
-                   "html/eAIP/",
-                   airac,
-                   year + "-" + mon_num + "-" + day
-                 ));
-
-              } else {
-                 MakeReject<std::runtime_error>(
-                   *reject, "Failed to retrieve Airac cycle URL from SIA website"
-                 );
-              }
-           }
-         );
-      });
-   });
-
-   return promise;
-}
-
-Promise<std::vector<std::string>, true>
-Extractor::RetrieveIcaos(std::string const& url) const {
-   auto [promise, resolve, reject] = promise::Pure<std::vector<std::string>>();
-
-   window_.Dispatch([this, url, resolve = std::move(resolve), reject = std::move(reject)]() {
-      window_.Webview().Navigate(url);
-      window_.Webview().WaitNavigationCompleted([this,
-                                                 resolve = std::move(resolve),
-                                                 reject  = std::move(reject)]() constexpr {
-         window_.Webview().Eval(
-           R"([...document.body.querySelectorAll("[id*='AD-2.18']").values()].map(e => e.id.split('-')[0]).toSorted())",
-           [resolve = std::move(resolve),
-            reject  = std::move(reject)](std::optional<std::string> const& result) {
-              if (result.has_value()) {
-                 (*resolve)(js::Parse<std::vector<std::string>>(*result));
-
-              } else {
-                 MakeReject<std::runtime_error>(
-                   *reject, "Failed to retrieve ICAO codes from SIA website"
-                 );
-              }
-           }
-         );
-      });
-   });
-
-   return promise;
-}
-
-Promise<std::vector<Frequency>, true>
-Extractor::RetrieveFrequencies(std::string const& url, std::string const& icao) const {
-   auto [promise, resolve, reject] = promise::Pure<std::vector<Frequency>>();
-
-   window_.Dispatch([this, url, icao, resolve = std::move(resolve), reject = std::move(reject)]() {
-      window_.Webview().Navigate(url);
-      window_.Webview().WaitNavigationCompleted(
-        [this, icao, url, resolve = std::move(resolve), reject = std::move(reject)]() constexpr {
-           window_.Webview().Eval(
-             R"([...document.querySelectorAll('#)" + icao
-               + R"(-AD-2\\.18>table>tbody>tr').values()]
-                           .filter(e => e.firstElementChild.firstElementChild.outerText !== "D-ATIS")
-                           .map(e => [...e.children]
-                           .reduce((res, e, i) => i === 1 
-                              ? [...res, e.firstElementChild.outerText.substr(0, e.firstElementChild.outerText.length - 5), 
-                                         e.lastElementChild.outerText.substr(0, e.lastElementChild.outerText.length - 5).replaceAll('\n', '')]
-                              : [...res, i === 2 ? +e.firstElementChild.outerText : e.firstElementChild.outerText], []))
-                           .map(e=>({type: e[0], name:{local:e[1], english:e[2]}, frequency:e[3], hor:e[4], comment:e[5]})))",
-             [icao,
-              resolve = std::move(resolve),
-              reject  = std::move(reject)](std::optional<std::string> const& result) {
-                if (result.has_value()) {
-                   auto const parsed =
-                     js::Parse<std::variant<std::vector<Frequency>, js::null>>(*result);
-                   if (std::holds_alternative<js::null>(parsed)) {
-                      MakeReject<std::runtime_error>(
-                        *reject, "Failed to parse frequencies for " + icao + " from SIA website"
-                      );
-                   } else {
-                      (*resolve)(std::move(std::get<std::vector<Frequency>>(parsed)));
-                   }
-                } else {
-                   MakeReject<std::runtime_error>(
-                     *reject, "Failed to retrieve Frequencies for " + icao + " from SIA website"
-                   );
-                }
-             }
-           );
-        }
+      co_return std::format(
+        "/media/dvd/{}/FRANCE/AIRAC-{}/html/eAIP/", airac, year + "-" + mon_num + "-" + day
       );
    });
+}
 
-   return promise;
+Promise<std::vector<std::string>, false>
+Extractor::RetrieveIcaos() const {
+   return MakePromise([this]() -> Promise<std::vector<std::string>, false> {
+      auto const data = co_await main_.PostHttpRequest(
+        "www.sia.aviation-civile.gouv.fr", "443", (co_await url_) + "FR-menu-fr-FR.html"
+      );
+
+      auto const icao_start = data.find("AD-2.18");
+      if (icao_start == std::string::npos) {
+         throw std::runtime_error("Failed to find ICAO codes in SIA menu page");
+      }
+
+      std::vector<std::string> icaos{};
+
+      for (size_t pos = icao_start; pos != std::string::npos;
+           pos = data.find("/a", pos), pos = data.find("AD-2.18", pos + 1)) {
+
+         auto const icao = data.substr(pos - 5, 4);
+         if (std::ranges::all_of(icao, ::isupper)) {
+            // Found a valid ICAO code
+            icaos.emplace_back(icao);
+            continue;
+         } else {
+            throw std::runtime_error("Unexpected ICAO code format in SIA menu page");
+         }
+      }
+
+      co_return icaos;
+   });
+}
+
+Promise<std::vector<Frequency>, false>
+Extractor::RetrieveFrequencies(std::string const& icao) const {
+   return MakePromise([this, icao]() -> Promise<std::vector<Frequency>, false> {
+      auto const data = co_await main_.PostHttpRequest(
+        "www.sia.aviation-civile.gouv.fr",
+        "443",
+        std::format("{}FR-AD-2.{}-fr-FR.html#AD-2.eAIP.{}", co_await url_, icao, icao)
+      );
+
+      std::vector<Frequency> frequencies{};
+
+      auto index = data.find("AD-2.18");
+      if (index == std::string::npos) {
+         throw std::runtime_error("Failed to find frequencies table for ICAO " + icao);
+      }
+
+      index = data.find("tbody", index);
+      if (index == std::string::npos) {
+         throw std::runtime_error("Failed to find frequencies table body for ICAO " + icao);
+      }
+
+      auto const tbody_end = data.find("/tbody", index);
+      if (tbody_end == std::string::npos) {
+         throw std::runtime_error("Failed to find frequencies table body end for ICAO " + icao);
+      }
+      std::string_view tbody{data.data() + index + 5, tbody_end - index - 6};
+      index = 0;
+
+      // Arbitrary limit to prevent infinite loop in case of unexpected format
+      for (std::size_t limit = 0; limit < 100; ++limit) {
+         index = tbody.find("tr", index);
+         if (index == std::string::npos) {
+            break;
+         }
+         index += 2;
+
+         auto const trend = tbody.find("/tr", index);
+         ScopeExit  _{[&] { index = trend + 2; }};
+
+         Frequency frequency{};
+
+         for (std::size_t i = 0; i < 5; ++i) {
+            auto const beg = tbody.find("td", index);
+            auto const end = tbody.find("/td", index);
+            ScopeExit  _{[&] { index = end + 4; }};
+
+            if (beg == std::string::npos || end == std::string::npos || end < beg) {
+               throw std::runtime_error(
+                 "Failed to find frequency table cell for ICAO " + icao + " at index "
+                 + std::to_string(i)
+               );
+            }
+
+            std::string_view td_span{tbody.data() + beg + 2, end - beg - 3};
+
+            index = td_span.find("gaixm");
+            for (std::size_t j = 0; index != std::string::npos;
+                 index         = td_span.find("gaixm", index + 5), ++j) {
+               auto       freq_beg = td_span.find(">", index);
+               auto const freq_end = td_span.find("</", freq_beg);
+               if (freq_beg == std::string::npos || freq_end == std::string::npos
+                   || freq_end < freq_beg) {
+
+                  if (i < 3) {
+                     throw std::runtime_error(
+                       "Failed to find frequency value for ICAO " + icao + " at index "
+                       + std::to_string(i)
+                     );
+                  } else {
+                     // Some cells may not have a frequency value, it's not an error
+                     continue;
+                  }
+               }
+
+               auto const elem = td_span.substr(freq_beg + 1, freq_end - freq_beg - 1);
+
+               auto const parsed = std::regex_replace(
+                 std::regex_replace(std::string{elem}, std::regex(R"( *<br [^>]+/>\n? *)"), " "),
+                 std::regex(R"(\n *)"),
+                 ""
+               );
+
+               if (i == 1) {
+                  if (j > 1) {
+                     throw std::runtime_error(
+                       "Unexpected multiple elements in frequency name cell for ICAO " + icao
+                     );
+                  }
+                  if (j == 0) {
+                     frequency.name_.local_ =
+                       parsed.substr(0, parsed.size() - 5);  // Remove " (FR)"
+                  } else if (j == 1) {
+                     frequency.name_.english_ =
+                       parsed.substr(0, parsed.size() - 5);  // Remove " (EN)"
+                  }
+               } else if (i == 2) {
+                  if (j > 1) {
+                     throw std::runtime_error(
+                       "Unexpected multiple elements in frequency cell for ICAO " + icao
+                     );
+                  } else if (j == 0) {
+                     frequency.value_ = std::stod(std::string{parsed});
+                  }
+               } else {
+                  if (j != 0) {
+                     if (i == 4) {
+                        break;  // Comment cell may have multiple elements, Use only the first
+                                // one and ignore the rest
+                     }
+                     throw std::runtime_error(
+                       "Unexpected multiple elements in frequency cell for ICAO " + icao
+                     );
+                  }
+
+                  if (i == 0) {
+                     frequency.type_ = parsed;
+                  } else if (i == 3) {
+                     frequency.hor_ = parsed;
+                  } else if (i == 4) {
+                     frequency.comment_ = parsed;
+                  }
+               }
+            }
+         }
+
+         frequencies.emplace_back(std::move(frequency));
+      }
+
+      co_return frequencies;
+   });
 }
 
 }  // namespace sia
