@@ -33,7 +33,7 @@ public:
    Handler(Main& main);
    virtual ~Handler();
 
-   Promise<std::vector<Frequency>, false> GetFrequency(std::string const& icao);
+   WPromise<std::vector<Frequency>> GetFrequency(std::string const& icao);
 
 private:
    // std::size_t pending_requests_{0};

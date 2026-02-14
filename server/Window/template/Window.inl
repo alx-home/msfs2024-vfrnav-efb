@@ -152,12 +152,6 @@ Window<WINDOW>::Window(std::function<void()> on_terminate)
                 webview_->SetBackgroung(255, 255, 255, 0);
              }
 
-#ifndef WATCH_MODE
-             if constexpr (WINDOW != WIN::SIA) {
-                InstallResourceHandler();
-             }
-#endif
-
 #ifndef DEBUG
              webview_->AddUserScript(R"_(document.addEventListener("contextmenu", (e) => {
       e.preventDefault();
@@ -326,51 +320,53 @@ Window<WINDOW>::GetBounds() const {
 template <WIN WINDOW>
 void
 Window<WINDOW>::InstallResourceHandler() {
-   auto const filters = []() constexpr -> std::vector<std::string_view> {
-      if constexpr (WINDOW == WIN::EFB) {
-         // Passthrough other requests
-         return {"app://*"};
-      } else {
-         return {"*"};
-      }
-   }();
-   webview_->RegisterUrlHandlers(
-     filters,
-     [](webview::http::request_t const& request, std::unique_ptr<webview::MakeDeferred>) constexpr
-       -> std::optional<webview::http::response_t> {
-        std::string file;
-        bool        found{false};
-        if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
-           file  = request.uri.substr(origin.size());
-           found = true;
-        }
-        if (found) {
-           auto const& resources = Params<WINDOW>::s__resources;
-           auto const  resource  = resources.find(file);
-           if (resource != resources.end()) {
-              std::vector<char> data{};
-              data.resize(resource->second.size());
-              std::ranges::copy(resource->second, reinterpret_cast<std::byte*>(data.data()));
-
-              auto const ext         = file.substr(file.find_last_of('.') + 1);
-              auto const contentType = ext == "js" ? "text/javascript" : "text/html";
-
-              return webview::http::response_t{
-                .body         = data,
-                .reasonPhrase = "Ok",
-                .statusCode   = 200,
-                .headers = {{"Content-Type", contentType}, {"Access-Control-Allow-Origin", "*"}}
-              };
+   if constexpr (WINDOW != WIN::PROCESSING) {
+      auto const filters = []() constexpr -> std::vector<std::string_view> {
+         if constexpr (WINDOW == WIN::EFB) {
+            // Passthrough other requests
+            return {"app://*"};
+         } else {
+            return {"*"};
+         }
+      }();
+      webview_->RegisterUrlHandlers(
+        filters,
+        [](webview::http::request_t const& request, std::unique_ptr<webview::MakeDeferred>) constexpr
+          -> std::optional<webview::http::response_t> {
+           std::string file;
+           bool        found{false};
+           if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
+              file  = request.uri.substr(origin.size());
+              found = true;
            }
+           if (found) {
+              auto const& resources = Params<WINDOW>::s__resources;
+              auto const  resource  = resources.find(file);
+              if (resource != resources.end()) {
+                 std::vector<char> data{};
+                 data.resize(resource->second.size());
+                 std::ranges::copy(resource->second, reinterpret_cast<std::byte*>(data.data()));
+
+                 auto const ext         = file.substr(file.find_last_of('.') + 1);
+                 auto const contentType = ext == "js" ? "text/javascript" : "text/html";
+
+                 return webview::http::response_t{
+                   .body         = data,
+                   .reasonPhrase = "Ok",
+                   .statusCode   = 200,
+                   .headers = {{"Content-Type", contentType}, {"Access-Control-Allow-Origin", "*"}}
+                 };
+              }
+           }
+
+           return webview::http::response_t{
+             .body = {}, .reasonPhrase = "Not Found", .statusCode = 404, .headers = {}
+           };
         }
+      );
 
-        return webview::http::response_t{
-          .body = {}, .reasonPhrase = "Not Found", .statusCode = 404, .headers = {}
-        };
-     }
-   );
-
-   webview_->InstallResourceHandler();
+      webview_->InstallResourceHandler();
+   }
 }
 #endif
 

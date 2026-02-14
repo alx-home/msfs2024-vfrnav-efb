@@ -37,27 +37,20 @@
 #pragma clang diagnostic pop
 
 // Function: Perform HTTP POST to AI API using Boost.Asio/Beast
-Promise<std::string, true>
+WPromise<std::string>
 Main::PostHttpRequest(
-  std::string const&                host,
-  std::string const&                port,
-  std::string const&                target,
-  std::optional<std::string> const& body,
-  std::optional<std::string> const& content_type,
-  std::optional<std::string> const& api_key
+  std::string const&                                                    host,
+  std::string const&                                                    port,
+  std::string const&                                                    target,
+  std::optional<std::function<void(http::request<http::string_body>&)>> build_request,
+  http::verb                                                            verb
 ) {
-   return Dispatch([host         = std::move(host),
-                    port         = std::move(port),
-                    target       = std::move(target),
-                    body         = std::move(body),
-                    content_type = std::move(content_type),
-                    api_key      = std::move(api_key
-                    )](Resolve<std::string> const& resolve, Reject const& reject) {
-      namespace beast = boost::beast;
-      namespace http  = beast::http;
-      namespace asio  = boost::asio;
-      using tcp       = asio::ip::tcp;
-
+   return Dispatch([host          = std::move(host),
+                    port          = std::move(port),
+                    target        = std::move(target),
+                    build_request = std::move(build_request),
+                    verb =
+                      std::move(verb)](Resolve<std::string> const& resolve, Reject const& reject) {
       asio::io_context   ioc;
       asio::ssl::context ctx(asio::ssl::context::tlsv12_client);
 
@@ -110,21 +103,15 @@ Main::PostHttpRequest(
          throw beast::system_error{handshake_ec};
       }
 
-      auto const                       verb = body.has_value() ? http::verb::post : http::verb::get;
       http::request<http::string_body> req{verb, target, 11};
       req.set(http::field::host, host);
       req.set(http::field::user_agent, "vfrnav-msfs/1.0 (Boost.Beast)");
-      if (api_key.has_value()) {
-         req.set(http::field::authorization, "Bearer " + *api_key);
+
+      if (build_request) {
+         build_request.value()(req);
       }
 
-      if (body.has_value()) {
-         req.body() = *body;
-         if (content_type.has_value()) {
-            req.set(http::field::content_type, *content_type);
-         }
-         req.prepare_payload();
-      }
+      req.prepare_payload();
 
       http::write(stream, req);
 

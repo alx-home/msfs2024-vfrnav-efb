@@ -21,10 +21,16 @@
 
 #include <Registry/Registry.h>
 #include <json/json.h>
+#include <openssl/sha.h>
+#include <poppler-document.h>
+#include <poppler-page.h>
+#include <poppler-rectangle.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ranges>
 #include <regex>
 #include <string>
 #include <vector>
@@ -61,7 +67,7 @@ struct FrequenciesFile {
    };
 };
 
-Promise<std::vector<Frequency>, false>
+WPromise<std::vector<Frequency>>
 Extractor::GetFrequencies(std::string const& icao) const {
    return MakePromise([this, icao] -> Promise<std::vector<Frequency>, false> {
       auto const frequencies = co_await frequencies_;
@@ -98,7 +104,7 @@ Extractor::SaveFrequencies(Frequencies const& frequencies, std::string const& ea
    }
 }
 
-Promise<Extractor::Frequencies, false>
+WPromise<Extractor::Frequencies>
 Extractor::LoadFrequencies() const {
    return MakePromise([this] -> Promise<Frequencies, false> {
       try {
@@ -142,9 +148,13 @@ Extractor::LoadFrequencies() const {
 
          for (auto const& icao : icaos) {
             try {
-               auto const frequency = co_await RetrieveFrequencies(icao);
+               // auto const frequency = co_await RetrieveFrequencies(icao);
 
-               frequencies.emplace(icao, std::move(frequency));
+               // frequencies.emplace(icao, std::move(frequency));
+
+               co_await RetrieveHoldingPoint(icao
+               );  // Fire and forget, we don't need holding points for now
+                   // and it can be slow to retrieve
             } catch (std::exception const& e) {
                std::cerr << "Failed to retrieve frequencies for " << icao << ": " << e.what()
                          << std::endl;
@@ -160,7 +170,7 @@ Extractor::LoadFrequencies() const {
    });
 }
 
-Promise<std::string, false>
+WPromise<std::string>
 Extractor::RetrieveUrl() const {
    return MakePromise([this]() -> Promise<std::string, false> {
       auto const data = co_await main_.PostHttpRequest(
@@ -208,7 +218,7 @@ Extractor::RetrieveUrl() const {
    });
 }
 
-Promise<std::vector<std::string>, false>
+WPromise<std::vector<std::string>>
 Extractor::RetrieveIcaos() const {
    return MakePromise([this]() -> Promise<std::vector<std::string>, false> {
       auto const data = co_await main_.PostHttpRequest(
@@ -239,7 +249,7 @@ Extractor::RetrieveIcaos() const {
    });
 }
 
-Promise<std::vector<Frequency>, false>
+WPromise<std::vector<Frequency>>
 Extractor::RetrieveFrequencies(std::string const& icao) const {
    return MakePromise([this, icao]() -> Promise<std::vector<Frequency>, false> {
       auto const data = co_await main_.PostHttpRequest(
@@ -317,8 +327,8 @@ Extractor::RetrieveFrequencies(std::string const& icao) const {
 
                auto const parsed = std::regex_replace(
                  std::regex_replace(std::string{elem}, std::regex(R"( *<br [^>]+/>\n? *)"), " "),
-                 std::regex(R"(\n *)"),
-                 ""
+                 std::regex(R"( +)"),
+                 " "
                );
 
                if (i == 1) {
@@ -327,12 +337,17 @@ Extractor::RetrieveFrequencies(std::string const& icao) const {
                        "Unexpected multiple elements in frequency name cell for ICAO " + icao
                      );
                   }
+
                   if (j == 0) {
-                     frequency.name_.local_ =
-                       parsed.substr(0, parsed.size() - 5);  // Remove " (FR)"
+                     frequency.name_.local_ = std::regex_replace(
+                                                parsed, std::regex(R"(\n *)"), ""
+                     )  // Remove newlines and spaces
+                                                .substr(0, parsed.size() - 5);  // Remove " (FR)"
                   } else if (j == 1) {
-                     frequency.name_.english_ =
-                       parsed.substr(0, parsed.size() - 5);  // Remove " (EN)"
+                     frequency.name_.english_ = std::regex_replace(
+                                                  parsed, std::regex(R"(\n *)"), ""
+                     )  // Remove newlines and spaces
+                                                  .substr(0, parsed.size() - 5);  // Remove " (EN)"
                   }
                } else if (i == 2) {
                   if (j > 1) {
@@ -368,6 +383,115 @@ Extractor::RetrieveFrequencies(std::string const& icao) const {
       }
 
       co_return frequencies;
+   });
+}
+
+struct OverPassResponse {
+   double      version_;
+   std::string generator_;
+
+   struct Osm3s {
+      std::string timestamp_osm_base_;
+      std::string copyright_;
+
+      static constexpr js::Proto PROTOTYPE{
+        js::_{"timestamp_osm_base", &Osm3s::timestamp_osm_base_},
+        js::_{"copyright", &Osm3s::copyright_},
+      };
+   } osm3s_;
+
+   struct Element {
+      std::string type_;
+      int64_t     id_;
+      struct Center {
+         double lat_;
+         double lon_;
+
+         static constexpr js::Proto PROTOTYPE{
+           js::_{"lat", &Center::lat_},
+           js::_{"lon", &Center::lon_},
+         };
+      } center_;
+      std::vector<int64_t>               nodes_;
+      std::map<std::string, std::string> tags_;
+
+      static constexpr js::Proto PROTOTYPE{
+        js::_{"type", &Element::type_},
+        js::_{"id", &Element::id_},
+        js::_{"center", &Element::center_},
+        js::_{"nodes", &Element::nodes_},
+        js::_{"tags", &Element::tags_},
+      };
+   };
+
+   std::vector<Element> elements_;
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"version", &OverPassResponse::version_},
+     js::_{"generator", &OverPassResponse::generator_},
+     js::_{"osm3s", &OverPassResponse::osm3s_},
+     js::_{"elements", &OverPassResponse::elements_},
+   };
+};
+
+WPromise<void>
+Extractor::RetrieveHoldingPoint(std::string const& icao) const {
+   return MakePromise([this, icao]() -> Promise<void, false> {
+      throw std::runtime_error("TEST_EXCEPTION");
+      auto const response = co_await main_.PostHttpRequest(
+        "overpass.kumi.systems",
+        "443",
+        "/api/interpreter",
+        [&](http::request<http::string_body>& req) {
+           req.set(http::field::accept, "application/json");
+           req.set(http::field::content_type, "application/x-www-form-urlencoded");
+
+           std::string query =
+             R"(data=[out:json][timeout:60];(node["aeroway"="aerodrome"]["icao"=")" + icao
+             + R"("]; way["aeroway"="aerodrome"]["icao"=")" + icao
+             + R"("]; relation["aeroway"="aerodrome"]["icao"=")" + icao + R"("];); out center;)";
+
+           std::cout << "Retrieving holding point data for ICAO " << icao
+                     << " with query: " << query << std::endl;
+           req.body() = query;
+           req.prepare_payload();
+        }
+      );
+      auto const lat_lon = js::Parse<OverPassResponse>(response);
+
+      if (lat_lon.elements_.empty()) {
+         throw std::runtime_error("No holding point found for ICAO " + icao);
+      }
+
+      auto const holding = co_await main_.PostHttpRequest(
+        "overpass.kumi.systems",
+        "443",
+        "/api/interpreter",
+        [&](http::request<http::string_body>& req) {
+           req.set(http::field::accept, "application/json");
+           req.set(http::field::content_type, "application/x-www-form-urlencoded");
+
+           double lat = lat_lon.elements_[0].center_.lat_;
+           double lon = lat_lon.elements_[0].center_.lon_;
+
+           double d = 0.01;  // ~1 km
+
+           double min_lat = lat - d;
+           double max_lat = lat + d;
+           double min_lon = lon - d;
+           double max_lon = lon + d;
+
+           std::string query =
+             std::string{R"(data=[out:json][timeout:60];node["aeroway"="holding_position"]()"}
+             + std::to_string(min_lat) + "," + std::to_string(min_lon) + ","
+             + std::to_string(max_lat) + "," + std::to_string(max_lon) + R"();out;)";
+
+           req.body() = query;
+           req.prepare_payload();
+        }
+      );
+
+      std::cout << "Received holding point data for ICAO " << icao << ": " << holding << std::endl;
    });
 }
 

@@ -30,6 +30,11 @@
 #include <windows/SystemTray.h>
 #include <wrl/client.h>
 
+namespace beast = boost::beast;
+namespace http  = beast::http;
+namespace asio  = boost::asio;
+using tcp       = asio::ip::tcp;
+
 class Main : public win32::SystemTray {
 private:
    Main();
@@ -79,13 +84,13 @@ public:
       }
    }
 
-   Promise<std::string, true> PostHttpRequest(
-     std::string const&                host,
-     std::string const&                port,
-     std::string const&                target,
-     std::optional<std::string> const& body         = std::nullopt,
-     std::optional<std::string> const& content_type = std::nullopt,
-     std::optional<std::string> const& api_key      = std::nullopt
+   WPromise<std::string> PostHttpRequest(
+     std::string const&                                                    host,
+     std::string const&                                                    port,
+     std::string const&                                                    target,
+     std::optional<std::function<void(http::request<http::string_body>&)>> build_request =
+       std::nullopt,
+     http::verb verb = http::verb::get
    );
 
 private:

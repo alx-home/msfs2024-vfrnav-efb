@@ -288,7 +288,7 @@ ReplaceAll(std::string& s, std::string_view from, std::string_view to) {
    }
 }
 
-Promise<std::vector<Frequency>, false>
+WPromise<std::vector<Frequency>>
 Handler::GetFrequency(std::string const& icao) {
    return sia_extractor_.GetFrequencies(icao);
 }

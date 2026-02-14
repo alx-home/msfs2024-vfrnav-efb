@@ -30,18 +30,19 @@ public:
 
    using Frequencies = std::map<std::string, std::vector<Frequency>>;
 
-   Promise<std::vector<Frequency>, false> GetFrequencies(std::string const& icao) const;
+   WPromise<std::vector<Frequency>> GetFrequencies(std::string const& icao) const;
 
 private:
    Main& main_;
 
-   Promise<Frequencies, false> LoadFrequencies() const;
+   WPromise<Frequencies> LoadFrequencies() const;
    void SaveFrequencies(Frequencies const& frequencies, std::string const& eaip_cycle) const;
-   Promise<std::string, false>              RetrieveUrl() const;
-   Promise<std::vector<std::string>, false> RetrieveIcaos() const;
-   Promise<std::vector<Frequency>, false>   RetrieveFrequencies(std::string const& icao) const;
+   WPromise<std::string>              RetrieveUrl() const;
+   WPromise<std::vector<std::string>> RetrieveIcaos() const;
+   WPromise<std::vector<Frequency>>   RetrieveFrequencies(std::string const& icao) const;
+   WPromise<void>                     RetrieveHoldingPoint(std::string const& icao) const;
 
-   Promise<std::string, false> url_{RetrieveUrl()};
-   Promise<Frequencies, false> frequencies_{LoadFrequencies()};
+   WPromise<std::string> url_{RetrieveUrl()};
+   WPromise<Frequencies> frequencies_{LoadFrequencies()};
 };
 }  // namespace sia
