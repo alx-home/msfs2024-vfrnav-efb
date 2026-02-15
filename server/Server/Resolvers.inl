@@ -52,6 +52,6 @@ Resolvers<TYPE>::RejectAll() {
    std::swap(*this, resolvers);
 
    for (auto const& [_, reject] : resolvers) {
-      MakeReject<AppStopping>(*reject);
+      reject->template Apply<AppStopping>();
    }
 }

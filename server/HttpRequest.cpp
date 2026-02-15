@@ -125,7 +125,7 @@ Main::PostHttpRequest(
       // Suppress harmless 'stream truncated' error (asio.ssl.stream:1) on shutdown if response
       // was received
       if (ec && ec != beast::errc::not_connected && ec.value() != 1 /* asio.ssl.stream:1 */) {
-         MakeReject<beast::system_error>(reject, ec);
+         reject.Apply<beast::system_error>(ec, "HTTP request failed");
          return;
       }
 

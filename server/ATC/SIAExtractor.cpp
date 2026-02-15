@@ -152,18 +152,18 @@ Extractor::LoadFrequencies() const {
 
                // frequencies.emplace(icao, std::move(frequency));
 
-               co_await RetrieveHoldingPoint(icao
-               );  // Fire and forget, we don't need holding points for now
-                   // and it can be slow to retrieve
+               co_await RetrieveHoldingPoint(icao);
+               // Fire and forget, we don't need holding points for now and it can be slow to
+               // retrieve
             } catch (std::exception const& e) {
-               std::cerr << "Failed to retrieve frequencies for " << icao << ": " << e.what()
+               std::cerr << "Failed to retrieve frequencies for " << icao << ": "  //<< e.what()
                          << std::endl;
             }
          }
 
          SaveFrequencies(frequencies, eaip_cycle);
          co_return frequencies;
-      } catch (const std::exception& e) {
+      } catch (std::exception const& e) {
          std::cerr << "Error loading frequencies: " << e.what() << std::endl;
          co_return Frequencies{};
       }
@@ -437,7 +437,6 @@ struct OverPassResponse {
 WPromise<void>
 Extractor::RetrieveHoldingPoint(std::string const& icao) const {
    return MakePromise([this, icao]() -> Promise<void, false> {
-      throw std::runtime_error("TEST_EXCEPTION");
       auto const response = co_await main_.PostHttpRequest(
         "overpass.kumi.systems",
         "443",

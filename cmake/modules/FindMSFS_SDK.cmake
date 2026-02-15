@@ -8,7 +8,7 @@ if(EXISTS "${MSFS_SDK_LOCATION}/SimConnect SDK/include/SimConnect.h"
       "${MSFS_SDK_INCLUDE_DIR}"
    )
 
-   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+   if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT ENABLE_ASAN)
       set_target_properties(msfs_sdk PROPERTIES
          IMPORTED_LOCATION
             "${MSFS_SDK_LOCATION}/SimConnect SDK/lib/static/SimConnect_debug.lib"
