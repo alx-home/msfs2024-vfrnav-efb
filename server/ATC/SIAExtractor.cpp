@@ -27,10 +27,10 @@
 #include <poppler-rectangle.h>
 
 #include <algorithm>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <ranges>
 #include <regex>
 #include <string>
 #include <vector>
@@ -106,67 +106,64 @@ Extractor::SaveFrequencies(Frequencies const& frequencies, std::string const& ea
 
 WPromise<Extractor::Frequencies>
 Extractor::LoadFrequencies() const {
-   return MakePromise([this] -> Promise<Frequencies, false> {
-      try {
-         auto const url = co_await url_;
+   return MakePromise(
+            [this] -> Promise<Frequencies, false> {
+               auto const url = co_await url_;
 
-         auto const eaip_cycle = ExtractEAIP(url);
-         if (eaip_cycle.empty()) {
-            throw std::runtime_error("Failed to extract eAIP cycle from URL: " + url);
-         }
-
-         // Load frequencies from disk
-         auto&      registry = registry::Get();
-         auto const path     = *registry.alx_home_->settings_->destination_ + "/Data";
-
-         std::string const filename = path + "/sia_frequencies.json";
-
-         if (std::filesystem::exists(filename)) {
-            std::ifstream file(filename);
-
-            if (file.is_open()) {
-               std::string content{
-                 (std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()
-               };
-               file.close();
-               auto const data = js::Parse<FrequenciesFile>(content);
-
-               if (data.airac_cycle_ == eaip_cycle) {
-                  co_return data.frequencies_;
+               auto const eaip_cycle = ExtractEAIP(url);
+               if (eaip_cycle.empty()) {
+                  throw std::runtime_error("Failed to extract eAIP cycle from URL: " + url);
                }
 
-            } else {
-               std::cerr << "Warning: Could not open file " << filename << " for reading."
-                         << std::endl;
+               // Load frequencies from disk
+               auto&      registry = registry::Get();
+               auto const path     = *registry.alx_home_->settings_->destination_ + "/Data";
+
+               std::string const filename = path + "/sia_frequencies.json";
+
+               if (std::filesystem::exists(filename)) {
+                  std::ifstream file(filename);
+
+                  if (file.is_open()) {
+                     std::string content{
+                       (std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()
+                     };
+                     file.close();
+                     auto const data = js::Parse<FrequenciesFile>(content);
+
+                     if (data.airac_cycle_ == eaip_cycle) {
+                        co_return data.frequencies_;
+                     }
+
+                  } else {
+                     std::cerr << "Warning: Could not open file " << filename << " for reading."
+                               << std::endl;
+                  }
+               }
+
+               // If AiRAC cycle has changed or file doesn't exist, fetch frequencies from SIA
+               // website
+               Frequencies frequencies{};
+
+               auto const icaos = co_await RetrieveIcaos();
+
+               for (auto const& icao : icaos) {
+                  // auto const frequency = co_await RetrieveFrequencies(icao);
+
+                  // frequencies.emplace(icao, std::move(frequency));
+
+                  co_await RetrieveHoldingPoint(icao).Catch([icao](std::exception const& exc) {
+                     std::cerr << "Failed to retrieve frequencies for " << icao << ": "
+                               << exc.what() << std::endl;
+                  });
+               }
+
+               SaveFrequencies(frequencies, eaip_cycle);
+               co_return frequencies;
             }
-         }
-
-         // If AiRAC cycle has changed or file doesn't exist, fetch frequencies from SIA website
-         Frequencies frequencies{};
-
-         auto const icaos = co_await RetrieveIcaos();
-
-         for (auto const& icao : icaos) {
-            try {
-               // auto const frequency = co_await RetrieveFrequencies(icao);
-
-               // frequencies.emplace(icao, std::move(frequency));
-
-               co_await RetrieveHoldingPoint(icao);
-               // Fire and forget, we don't need holding points for now and it can be slow to
-               // retrieve
-            } catch (std::exception const& e) {
-               std::cerr << "Failed to retrieve frequencies for " << icao << ": "  //<< e.what()
-                         << std::endl;
-            }
-         }
-
-         SaveFrequencies(frequencies, eaip_cycle);
-         co_return frequencies;
-      } catch (std::exception const& e) {
-         std::cerr << "Error loading frequencies: " << e.what() << std::endl;
-         co_return Frequencies{};
-      }
+   ).Catch([](std::exception const& exc) {
+      std::cerr << "Failed to load frequencies: " << exc.what() << std::endl;
+      return Frequencies{};
    });
 }
 
