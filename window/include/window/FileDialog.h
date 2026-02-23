@@ -31,7 +31,7 @@ struct Filter {
    };
 };
 
-Promise<std::string> OpenFile(std::string_view path, std::vector<Filter>);
-Promise<std::string> OpenFolder(std::string_view path);
+WPromise<std::string> OpenFile(std::string_view path, std::vector<Filter>);
+WPromise<std::string> OpenFolder(std::string_view path);
 
 }  // namespace dialog
