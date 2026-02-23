@@ -367,7 +367,8 @@ export class Manager {
             const touchDownSpeed = SimVar.GetSimVarValue('PLANE TOUCHDOWN NORMAL VELOCITY', 'feet per seconds') * 60;
 
             if (this.flights.length === 15) {
-               this.flights = this.flights.slice(1);
+               const oldestRecord = this.flights.splice(0, 1)[0];
+               DeleteStoredData(`record-${oldestRecord.id}`);
             }
 
             const record: PlaneRecord = {
