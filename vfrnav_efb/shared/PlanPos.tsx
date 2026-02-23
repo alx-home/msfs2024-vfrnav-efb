@@ -16,9 +16,7 @@
 import { GenRecord } from './Types';
 
 
-export type PlanePos = {
-  __PLANE_POS__: true,
-
+export type PlanePosContent = {
   date: number,
   lat: number,
   lon: number,
@@ -30,11 +28,15 @@ export type PlanePos = {
   windDirection: number
 }
 
-export type PlanePoses = {
-  __PLANE_POSES__: true,
+export type PlanePos = {
+  __PLANE_POS__: true,
+} & PlanePosContent;
+
+export type PlaneBlob = {
+  __PLANE_BLOB__: true,
 
   id: number,
-  value: PlanePos[]
+  value: PlanePosContent[]
 };
 
 export const PlanePosRecord = GenRecord<PlanePos>({
@@ -52,28 +54,47 @@ export const PlanePosRecord = GenRecord<PlanePos>({
 }, {});
 
 
-export const PlanePosesRecord = GenRecord<PlanePoses>({
-  __PLANE_POSES__: true,
+export const PlanePosContentRecord = GenRecord<PlanePosContent>({
+  date: -1,
+  lat: -1,
+  lon: -1,
+  altitude: -1,
+  ground: -1,
+  heading: -1,
+  verticalSpeed: -1,
+  windVelocity: -1,
+  windDirection: -1
+}, {});
+
+
+export const PlaneBlobRecord = GenRecord<PlaneBlob>({
+  __PLANE_BLOB__: true,
 
   id: 0,
   value: []
 }, {
-  value: { array: true, record: PlanePosRecord }
+  value: { array: true, record: PlanePosContentRecord }
 })
 
 export type PlaneRecord = {
   name: string,
   id: number,
   active: boolean,
-  touchdown: number
+  touchdown: number,
+  blobs: number[],
+  size: number
 }
 
 export const PlaneRecordRecord = GenRecord<PlaneRecord>({
   name: 'undef',
   id: -1,
   active: false,
-  touchdown: -1
-}, {})
+  touchdown: -1,
+  size: 0,
+  blobs: []
+}, {
+  blobs: { array: true, record: 'number' }
+});
 
 export type PlaneRecords = {
   __RECORDS__: true,
@@ -96,8 +117,8 @@ export type RemoveRecord = {
   id: number
 }
 
-export type GetRecord = {
-  __GET_RECORD__: true
+export type GetPlaneBlob = {
+  __GET_PLANE_BLOB__: true
 
   id: number
 }
@@ -109,11 +130,12 @@ export type EditRecord = {
   name: string
 }
 
-export const GetRecordRecord = GenRecord<GetRecord>({
-  __GET_RECORD__: true,
+export const GetPlaneBlobRecord = GenRecord<GetPlaneBlob>({
+  __GET_PLANE_BLOB__: true,
 
   id: -1
 }, {});
+
 
 export const RemoveRecordRecord = GenRecord<RemoveRecord>({
   __REMOVE_RECORD__: true,

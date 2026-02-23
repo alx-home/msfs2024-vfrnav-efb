@@ -15,8 +15,8 @@
 
 import { GenRecord, reduce, TypeRecord } from './Types';
 import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetICAOS, GetICAOSRecord as GetIcaosRecord, GetLatLon, GetLatLonRecord, GetMetar, GetMetarRecord, Icaos, IcaosRecord, LatLon, LatLonRecord, Metar, MetarRecord } from './Facilities';
-import { SharedSettingsRecord, SharedSettings, SetPanelSize, SetPanelSizeRecord, SetEfbMode, SetEfbModeRecord } from './Settings';
-import { EditRecord, EditRecordRecord, GetRecord, GetRecordRecord, PlanePos, PlanePoses, PlanePosesRecord, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
+import { SharedSettingsRecord, SharedSettings, SetPanelSize, SetPanelSizeRecord, SetEfbMode, SetEfbModeRecord, CleanPlaneRecordsRecord, CleanPlaneRecords } from './Settings';
+import { EditRecord, EditRecordRecord, GetPlaneBlob, GetPlaneBlobRecord, PlaneBlob, PlaneBlobRecord, PlanePos, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
 import { ByeBye, ByeByeRecord, HelloWorld, HelloWorldRecord, SetId, SetIdRecord } from './HelloWorld';
 import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord, GetFile, GetFileRecord, GetFileResponse, GetFileResponseRecord, OpenFile, OpenFileRecord, OpenFileResponse, OpenFileResponseRecord } from './Files';
 import { EfbState, EfbStateRecord, GetEFBState, GetEFBStateRecord, GetServerState, GetServerStateRecord, ServerState, ServerStateRecord } from './Server';
@@ -26,10 +26,8 @@ import { DefaultFuelPreset, DefaultFuelPresetRecord, DeleteFuelPreset, DeleteFue
 import { DefaultDeviationPreset, DefaultDeviationPresetRecord, DeleteDeviationPreset, DeleteDeviationPresetRecord, DeviationPresets, DeviationPresetsRecord, GetDeviationCurve, GetDeviationCurveRecord, GetDeviationPresets, GetDeviationPresetsRecord, SetDeviationCurve, SetDeviationCurveRecord } from './Deviation';
 
 const MessageIdValues = [
-   "__EXPORT_NAV__",
-   "__GET_RECORD__",
-   "__IMPORT_NAV__",
    "__BYE_BYE__",
+   "__CLEAN_PLANE_RECORDS__",
    "__DEFAULT_DEVIATION_PRESET__",
    "__DEFAULT_FUEL_PRESET__",
    "__DELETE_DEVIATION_PRESET__",
@@ -38,6 +36,7 @@ const MessageIdValues = [
    "__DEVIATION_PRESETS__",
    "__EDIT_RECORD__",
    "__EFB_STATE__",
+   "__EXPORT_NAV__",
    "__EXPORT_PDFS__",
    "__FACILITIES__",
    "__FILE_EXISTS__",
@@ -57,17 +56,19 @@ const MessageIdValues = [
    "__GET_ICAOS__",
    "__GET_LAT_LON__",
    "__GET_METAR__",
+   "__GET_PLANE_BLOB__",
    "__GET_RECORDS__",
    "__GET_SERVER_STATE__",
    "__GET_SETTINGS__",
    "__HELLO_WORLD__",
    "__ICAOS__",
+   "__IMPORT_NAV__",
    "__LAT_LON__",
    "__METAR__",
    "__OPEN_FILE__",
    "__OPEN_FILE_RESPONSE__",
+   "__PLANE_BLOB__",
    "__PLANE_POS__",
-   "__PLANE_POSES__",
    "__RECORDS__",
    "__REMOVE_RECORD__",
    "__SERVER_STATE__",
@@ -90,6 +91,7 @@ const GetRecordsRecord = GenRecord<GetRecords>({
 
 type MessageTypes = {
    "__BYE_BYE__": ByeBye,
+   "__CLEAN_PLANE_RECORDS__": CleanPlaneRecords,
    "__DEFAULT_DEVIATION_PRESET__": DefaultDeviationPreset,
    "__DEFAULT_FUEL_PRESET__": DefaultFuelPreset,
    "__DELETE_DEVIATION_PRESET__": DeleteDeviationPreset,
@@ -118,7 +120,7 @@ type MessageTypes = {
    "__GET_ICAOS__": GetICAOS,
    "__GET_LAT_LON__": GetLatLon,
    "__GET_METAR__": GetMetar,
-   "__GET_RECORD__": GetRecord,
+   "__GET_PLANE_BLOB__": GetPlaneBlob,
    "__GET_RECORDS__": GetRecords,
    "__GET_SERVER_STATE__": GetServerState,
    "__GET_SETTINGS__": GetSettings,
@@ -129,8 +131,8 @@ type MessageTypes = {
    "__METAR__": Metar,
    "__OPEN_FILE__": OpenFile,
    "__OPEN_FILE_RESPONSE__": OpenFileResponse,
+   "__PLANE_BLOB__": PlaneBlob,
    "__PLANE_POS__": PlanePos,
-   "__PLANE_POSES__": PlanePoses,
    "__RECORDS__": PlaneRecords,
    "__REMOVE_RECORD__": RemoveRecord,
    "__SERVER_STATE__": ServerState,
@@ -143,6 +145,7 @@ export type MessageType = MessageTypes[keyof MessageTypes];
 
 const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__BYE_BYE__": ByeByeRecord,
+   "__CLEAN_PLANE_RECORDS__": CleanPlaneRecordsRecord,
    "__DEFAULT_DEVIATION_PRESET__": DefaultDeviationPresetRecord,
    "__DEFAULT_FUEL_PRESET__": DefaultFuelPresetRecord,
    "__DELETE_DEVIATION_PRESET__": DeleteDeviationPresetRecord,
@@ -159,6 +162,7 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__FUEL__": FuelRecord,
    "__FUEL_CURVE__": SetFuelCurveRecord,
    "__FUEL_PRESETS__": FuelPresetsRecord,
+   "__GET_PLANE_BLOB__": GetPlaneBlobRecord,
    "__GET_DEVIATION_CURVE__": GetDeviationCurveRecord,
    "__GET_DEVIATION_PRESETS__": GetDeviationPresetsRecord,
    "__GET_EFB_STATE__": GetEFBStateRecord,
@@ -171,7 +175,6 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__GET_ICAOS__": GetIcaosRecord,
    "__GET_LAT_LON__": GetLatLonRecord,
    "__GET_METAR__": GetMetarRecord,
-   "__GET_RECORD__": GetRecordRecord,
    "__GET_RECORDS__": GetRecordsRecord,
    "__GET_SERVER_STATE__": GetServerStateRecord,
    "__GET_SETTINGS__": GetSettingsRecord,
@@ -182,8 +185,8 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__METAR__": MetarRecord,
    "__OPEN_FILE__": OpenFileRecord,
    "__OPEN_FILE_RESPONSE__": OpenFileResponseRecord,
+   "__PLANE_BLOB__": PlaneBlobRecord,
    "__PLANE_POS__": PlanePosRecord,
-   "__PLANE_POSES__": PlanePosesRecord,
    "__RECORDS__": PlaneRecordsRecord,
    "__REMOVE_RECORD__": RemoveRecordRecord,
    "__SERVER_STATE__": ServerStateRecord,

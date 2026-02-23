@@ -46,7 +46,7 @@ void JsonImpl<ws::msg::Metar>();
 template <>
 void JsonImpl<ws::msg::PlanePos>();
 template <>
-void JsonImpl<ws::msg::PlanePoses>();
+void JsonImpl<ws::msg::PlaneBlob>();
 template <>
 void JsonImpl<ws::msg::Records>();
 template <>
@@ -54,7 +54,7 @@ void JsonImpl<ws::msg::RemoveRecord>();
 template <>
 void JsonImpl<ws::msg::EditRecord>();
 template <>
-void JsonImpl<ws::msg::GetRecord>();
+void JsonImpl<ws::msg::GetPlaneBlob>();
 template <>
 void JsonImpl<ws::msg::FileExists>();
 template <>

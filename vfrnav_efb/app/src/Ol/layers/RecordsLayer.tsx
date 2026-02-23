@@ -29,24 +29,38 @@ import Fill from "ol/style/Fill";
 import { Coordinate } from "ol/coordinate";
 import { toContext } from "ol/render";
 import { messageHandler } from "@Settings/SettingsProvider";
-import { PlanePoses } from "@shared/PlanPos";
+import { PlaneBlob, PlanePosContent, PlaneRecord } from "@shared/PlanPos";
 import LayerGroup from "ol/layer/Group";
 import { getLength } from "ol/sphere";
 
-const fetchRecord = async (id: number) => new Promise<PlanePoses>(resolve => {
-  const callback = (poses: PlanePoses) => {
-    if (poses.id === id) {
-      messageHandler.unsubscribe('__PLANE_POSES__', callback)
-      resolve(poses)
+const fetchRecord = async (record: PlaneRecord) => new Promise<PlanePosContent[]>(resolve => {
+  const pending_blobs = new Set(record.blobs);
+  const result: PlanePosContent[][] = record.blobs.map(() => []);
+
+  // Receive blobs one by one, and resolve the promise when all blobs have been received
+  // Blobs may be received in any order, so we keep track of pending blobs and their corresponding index in the result array
+  const callback = (blob: PlaneBlob) => {
+    if (pending_blobs.has(blob.id)) {
+      pending_blobs.delete(blob.id);
+      result[record.blobs.indexOf(blob.id)] = blob.value;
+
+      if (pending_blobs.size === 0) {
+        // All blobs have been received, we can resolve the promise with the complete result
+        messageHandler.unsubscribe('__PLANE_BLOB__', callback)
+        resolve(result.flat());
+      }
     }
   }
 
-  messageHandler.subscribe('__PLANE_POSES__', callback)
-  messageHandler.send({
-    __GET_RECORD__: true,
+  messageHandler.subscribe('__PLANE_BLOB__', callback)
 
-    id: id
-  })
+  for (const blob of record.blobs) {
+    messageHandler.send({
+      __GET_PLANE_BLOB__: true,
+
+      id: blob
+    })
+  }
 })
 
 export const RecordsLayer = ({
@@ -75,11 +89,11 @@ export const RecordsLayer = ({
     }
   }, [map, mapSize, recordsCenter.x, recordsCenter.y])
 
-  const navData = useMemo(() => records.map(record => fetchRecord(record.id)), [records]);
+  const navData = useMemo(() => records.map(record => fetchRecord(record)), [records]);
 
   const navPath = useMemo(() => navData
     .map(async data => {
-      const feature = new Feature(new LineString((await data).value.map(pos => fromLonLat([pos.lon, pos.lat]))))
+      const feature = new Feature(new LineString((await data).map(pos => fromLonLat([pos.lon, pos.lat]))))
       feature.setStyle(new Style({
         renderer(coords_, state) {
           const ctx = state.context;
@@ -111,7 +125,7 @@ export const RecordsLayer = ({
         const res = 0.30480 / profileScale;
 
         const coords = (await (async () => {
-          const coords = (await data).value;
+          const coords = await data;
           return coords.filter((_coord, index) => (index >= profileRange.min * coords.length) && (index < profileRange.max * coords.length))
         })()).map(elem => [...fromLonLat([elem.lon, elem.lat]),
         Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res),
@@ -154,7 +168,7 @@ export const RecordsLayer = ({
               // Curvature change => Close Polygon
 
               console.assert(i > 0);
-              console.assert(segment.length);
+              console.assert(segment.length !== 0);
 
               const last = segment[segment.length - 1];
               for (let k = i; k >= begIndex; --k) {
@@ -281,7 +295,7 @@ export const RecordsLayer = ({
 
   const touchDowns = useMemo(() => records
     .map(async (record, index) => {
-      const data = (await navData[index]).value;
+      const data = await navData[index];
       const pos = data[data.length - 1];
       const coords = fromLonLat([pos.lon, pos.lat])
 

@@ -63,17 +63,17 @@ struct PlanePos2 : PlanePosContent {
    }};
 };
 
-struct PlanePoses {
+struct PlaneBlob {
    bool header_{true};
 
    std::size_t            id_{};
    std::vector<PlanePos2> value_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__PLANE_POSES__", &PlanePoses::header_},
+     js::_{"__PLANE_BLOB__", &PlaneBlob::header_},
 
-     js::_{"id", &PlanePoses::id_},
-     js::_{"value", &PlanePoses::value_},
+     js::_{"id", &PlaneBlob::id_},
+     js::_{"value", &PlaneBlob::value_},
    };
 };
 
