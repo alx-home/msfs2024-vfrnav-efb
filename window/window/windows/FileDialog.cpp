@@ -230,12 +230,12 @@ Open(std::string_view path, std::vector<Filter> filters) {
 }
 }  // namespace
 
-Promise<std::string>
+WPromise<std::string>
 OpenFile(std::string_view path, std::vector<Filter> filters) {
    return MakePromise(Open<Type::FILE>, path, std::move(filters));
 }
 
-Promise<std::string>
+WPromise<std::string>
 OpenFolder(std::string_view path) {
    return MakePromise(Open<Type::FOLDER>, path, std::vector<dialog::Filter>{});
 }
