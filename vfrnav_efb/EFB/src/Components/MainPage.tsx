@@ -17,7 +17,7 @@ import { EfbSettingsManager, GamepadUiView, RequiredProps, TVNode, UiViewProps }
 import { FSComponent } from "@microsoft/msfs-sdk";
 import { GetFacilities, GetICAOS as GetIcaos, GetLatLon, GetMetar } from "@shared/Facilities";
 import { MessageHandler, MessageType } from "@shared/MessageHandler";
-import { EditRecord, GetRecord, RemoveRecord } from "@shared/PlanPos";
+import { EditRecord, GetPlaneBlob, RemoveRecord } from "@shared/PlanPos";
 import { Manager } from "../Manager";
 import { FileExist, GetFile, OpenFile } from "@shared/Files";
 import { DefaultFuelPreset, FuelPresets, SetFuelCurve } from "@shared/Fuel";
@@ -102,6 +102,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onGetServerState(0);
   }
 
+  onCleanPlaneRecords() {
+    this.props.manager.onCleanPlaneRecords();
+  }
+
   onGetPlaneRecords() {
     this.props.manager.onGetPlaneRecords(0);
   }
@@ -130,8 +134,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.onRemoveRecord(message);
   }
 
-  onGetRecord(message: GetRecord) {
-    this.props.manager.onGetRecord(0, message);
+  onGetPlaneBlob(message: GetPlaneBlob) {
+    this.props.manager.onGetPlaneBlob(0, message);
   }
 
   onGetFuel() {
@@ -222,13 +226,14 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("__GET_SETTINGS__", this.onGetSettings)
       messageHandler.unsubscribe("__GET_SERVER_STATE__", this.onGetServerState)
       messageHandler.unsubscribe("__GET_RECORDS__", this.onGetPlaneRecords)
+      messageHandler.unsubscribe("__CLEAN_PLANE_RECORDS__", this.onCleanPlaneRecords)
       messageHandler.unsubscribe("__GET_FACILITIES__", this.onGetFacilities)
       messageHandler.unsubscribe("__GET_METAR__", this.onGetMetar)
       messageHandler.unsubscribe("__GET_LAT_LON__", this.onGetLatLon)
       messageHandler.unsubscribe("__GET_ICAOS__", this.onGetIcaos)
       messageHandler.unsubscribe("__REMOVE_RECORD__", this.onRemoveRecord)
       messageHandler.unsubscribe("__EDIT_RECORD__", this.onEditRecord)
-      messageHandler.unsubscribe("__GET_RECORD__", this.onGetRecord)
+      messageHandler.unsubscribe("__GET_PLANE_BLOB__", this.onGetPlaneBlob)
       messageHandler.unsubscribe("__GET_FUEL__", this.onGetFuel)
       messageHandler.unsubscribe("__GET_FILE__", this.onGetFile)
       messageHandler.unsubscribe("__OPEN_FILE__", this.onOpenFile)
@@ -555,6 +560,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__SETTINGS__", this.props.manager.onSharedSettings.bind(this.props.manager))
       messageHandler.subscribe("__GET_SETTINGS__", this.onGetSettings.bind(this))
       messageHandler.subscribe("__GET_SERVER_STATE__", this.onGetServerState.bind(this))
+      messageHandler.subscribe("__CLEAN_PLANE_RECORDS__", this.onCleanPlaneRecords.bind(this))
       messageHandler.subscribe("__GET_RECORDS__", this.onGetPlaneRecords.bind(this))
       messageHandler.subscribe("__GET_FACILITIES__", this.onGetFacilities.bind(this))
       messageHandler.subscribe("__GET_METAR__", this.onGetMetar.bind(this))
@@ -562,7 +568,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__GET_ICAOS__", this.onGetIcaos.bind(this))
       messageHandler.subscribe("__EDIT_RECORD__", this.onEditRecord.bind(this))
       messageHandler.subscribe("__REMOVE_RECORD__", this.onRemoveRecord.bind(this))
-      messageHandler.subscribe("__GET_RECORD__", this.onGetRecord.bind(this))
+      messageHandler.subscribe("__GET_PLANE_BLOB__", this.onGetPlaneBlob.bind(this))
       messageHandler.subscribe("__GET_FUEL__", this.onGetFuel.bind(this))
       messageHandler.subscribe("__GET_FILE__", this.onGetFile.bind(this))
       messageHandler.subscribe("__OPEN_FILE__", this.onOpenFile.bind(this))

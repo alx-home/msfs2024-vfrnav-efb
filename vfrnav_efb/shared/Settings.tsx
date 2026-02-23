@@ -117,6 +117,14 @@ export const SetPanelSizeRecord = GenRecord<SetPanelSize>({
   captionBar: true
 }, {});
 
+export type CleanPlaneRecords = {
+  __CLEAN_PLANE_RECORDS__: true
+};
+
+export const CleanPlaneRecordsRecord = GenRecord<CleanPlaneRecords>({
+  __CLEAN_PLANE_RECORDS__: true
+}, {});
+
 const LayerRecord = GenRecord<LayerSetting>({
   active: true,
   enabled: true

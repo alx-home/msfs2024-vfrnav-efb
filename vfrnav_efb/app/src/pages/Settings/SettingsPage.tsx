@@ -36,6 +36,7 @@ import { DualSliderItem } from "./DualSliderItem";
 
 import markerImg from '@efb-images/marker-icon-blue.svg';
 import oaciImg from '@efb-images/oaci.jpg';
+import { Item } from "./Item";
 
 const ErrorMessage = ({ children }: PropsWithChildren<{
    type: string
@@ -91,6 +92,38 @@ export const WarnPopup = ({ resolve }: {
       </div>
       <div className='flex flex-row grow'>
          <Button active={true} onClick={close}>OK</Button>
+      </div>
+   </div >
+};
+
+export const CleanupRecordsPopup = ({ resolve }: {
+   resolve: () => void
+}) => {
+   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+   const close = useEvent(() => {
+      setPopup(emptyPopup);
+      resolve();
+   });
+
+   const cleanRecords = useEvent(() => {
+      messageHandler.send({
+         __CLEAN_PLANE_RECORDS__: true
+      });
+   });
+
+   return <div className='flex flex-col grow'>
+      <div className='text-2xl text-yellow-500'>Warning !</div>
+      <div className='text-sm overflow-hidden my-5 mb-8'>
+         <div className="flex flex-col m-auto">
+            <div className="mb-1">You will lose all your plane records</div>
+            <div>Do you want to continue ?</div>
+         </div>
+      </div>
+      <div className='flex flex-row grow'>
+         <Button active={true} onClick={cleanRecords}>Yes do it</Button>
+         <div className='ml-1 flex flex-row grow [&>*]:bg-red-800 [&>*]:hover:bg-red-500 [&>*]:hover:border-white'>
+            <Button className='px-4' active={true} onClick={close}>Cancel</Button>
+         </div>
       </div>
    </div >
 };
@@ -188,6 +221,14 @@ export const SettingsPage = ({ active }: {
    const setBorderScaleCallback = useEvent(async (value: number) => {
       setBorderScale(value);
       sendEfbSize();
+   });
+
+   const cleanupPlaneRecords = useEvent(async () => {
+      const promise = new Promise<void>((resolve) => {
+         setPopup(<CleanupRecordsPopup resolve={resolve} />);
+      });
+
+      await promise;
    });
 
 
@@ -623,6 +664,18 @@ export const SettingsPage = ({ active }: {
                   </InputItem>
                </div>
             </Group>
+            {__MSFS_EMBEDED__ && <Group name="Data">
+               <Item name={"Cleanup"} category={"Record"} onReset={cleanupPlaneRecords} >
+                  <div>
+                     Cleanup stored data. Use this option to clear all plane records data stored in the simulator. Use this option in case of any issue related to plane records data (like a corrupted record or a &quot;Cloud save error&quot; due to the previous release not clearing data properly).
+                  </div>
+                  <div className="flex flex-row grow translate-y-4">
+                     <Button active={true} onClick={cleanupPlaneRecords}>
+                        Clean plane records
+                     </Button>
+                  </div>
+               </Item>
+            </Group>}
             <Group name="Expert">
                <CheckItem category="Settings" name="Advanced" value={advanced} onChange={setAdvanced} defaultValue={false} >
                   Display advanced settings.
@@ -630,5 +683,5 @@ export const SettingsPage = ({ active }: {
             </Group>
          </List>
       </div>
-   </div >;
+   </div>;
 }

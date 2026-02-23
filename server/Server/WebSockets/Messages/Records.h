@@ -21,16 +21,20 @@
 namespace ws::msg {
 
 struct Record {
-   std::string name_{};
-   std::size_t id_{};
-   bool        active_{};
-   double      touchdown_{};
+   std::string              name_{};
+   std::size_t              id_{};
+   bool                     active_{};
+   double                   touchdown_{};
+   std::vector<std::size_t> blobs_{};
+   double                   size_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"name", &Record::name_},
      js::_{"id", &Record::id_},
      js::_{"active", &Record::active_},
      js::_{"touchdown", &Record::touchdown_},
+     js::_{"blobs", &Record::blobs_},
+     js::_{"size", &Record::size_},
    };
 };
 
@@ -71,15 +75,15 @@ struct RemoveRecord {
    };
 };
 
-struct GetRecord {
+struct GetPlaneBlob {
    bool header_{true};
 
    std::size_t id_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__GET_RECORD__", &GetRecord::header_},
+     js::_{"__GET_PLANE_BLOB__", &GetPlaneBlob::header_},
 
-     js::_{"id", &GetRecord::id_},
+     js::_{"id", &GetPlaneBlob::id_},
    };
 };
 
