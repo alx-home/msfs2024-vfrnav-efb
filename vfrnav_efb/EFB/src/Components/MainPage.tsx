@@ -103,11 +103,11 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   onCleanPlaneRecords() {
-    this.props.manager.onCleanPlaneRecords();
+    this.props.manager.recordManager.onCleanPlaneRecords();
   }
 
   onGetPlaneRecords() {
-    this.props.manager.onGetPlaneRecords(0);
+    this.props.manager.recordManager.onGetPlaneRecords(0);
   }
 
   onGetFacilities(message: GetFacilities) {
@@ -127,15 +127,15 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   onEditRecord(message: EditRecord) {
-    this.props.manager.onEditRecord(message);
+    this.props.manager.recordManager.onEditRecord(message);
   }
 
   onRemoveRecord(message: RemoveRecord) {
-    this.props.manager.onRemoveRecord(message);
+    this.props.manager.recordManager.onRemoveRecord(message);
   }
 
   onGetPlaneBlob(message: GetPlaneBlob) {
-    this.props.manager.onGetPlaneBlob(0, message);
+    this.props.manager.recordManager.onGetPlaneBlob(0, message);
   }
 
   onGetFuel() {

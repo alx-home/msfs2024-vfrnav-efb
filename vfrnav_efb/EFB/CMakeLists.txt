@@ -39,3 +39,7 @@ ts_app(TARGET_NAME vfrnav_efb_msfs
       ${EFB_CONTENT_DEPENDS}
       ${SHARED_DEPENDS}
 )
+
+if(TARGET vfrnav_storage_wasm)
+   add_dependencies(vfrnav_efb_msfs vfrnav_storage_wasm)
+endif()

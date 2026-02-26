@@ -27,5 +27,6 @@ extern std::span<std::byte const> const EFB_RELEASE_NOTE;
 #endif
 
 extern std::span<std::byte const> const SERVER_BIN;
+extern std::span<std::byte const> const WASM_STORAGE;
 
 extern const std::chrono::file_clock::time_point TIMESTAMP;

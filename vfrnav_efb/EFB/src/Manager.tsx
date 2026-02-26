@@ -1,3 +1,18 @@
+/*
+ * SPDX-License-Identifier: (GNU General Public License v3.0 only)
+ * Copyright © 2024 Alexandre GARCIN
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
 import { DefaultDeviationPreset, DeleteDeviationPreset, SetDeviationCurve as DeviationCurve, DeviationPresets, GetDeviationPresets } from "@shared/Deviation";
 import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
@@ -6,10 +21,9 @@ import { DefaultFuelPreset, DeleteFuelPreset, SetFuelCurve as FuelCurve, FuelPre
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { ExportNav } from "@shared/NavData";
 import { ExportPdfs } from "@shared/Pdfs";
-import { EditRecord, GetPlaneBlob, PlanePos, PlanePosContent, PlaneRecord, PlaneRecordsRecord, RemoveRecord } from "@shared/PlanPos";
 import { SharedSettings, SharedSettingsRecord } from "@shared/Settings";
 import { fill } from "@shared/Types";
-import LZString from 'lz-string';
+import { RecordManager } from './RecordManager';
 
 class FacilityManager {
    readonly session: Promise<NearestAirportSearchSession<NearestIcaoSearchSessionDataType.StringV1>>;
@@ -37,7 +51,10 @@ export class Manager {
 
    private readonly deviationPresets = new Map<string, DeviationCurve>()
    private defaultDeviationPreset: { name: string, date: number } | undefined = undefined
-   private deviationPresetsInit = true
+   private deviationPresetsInit = true;
+
+   public readonly recordManager = new RecordManager(this);
+
 
    /* eslint-disable no-unused-vars */
    constructor(private readonly bus: EventBus) {
@@ -48,8 +65,6 @@ export class Manager {
       this.loadDefaultFuelPreset();
       this.loadDeviationPresets();
       this.loadDefaultDeviationPreset();
-
-      setInterval(this.fetchPosition.bind(this), 100);
 
       this.connectToServer();
    }
@@ -145,69 +160,6 @@ export class Manager {
       return !!this.serverMessageHandler;
    }
 
-   private readonly planePosBlob: PlanePos[] = [];
-   private currentRecord: PlaneRecord | undefined = undefined;
-   private flighStartDate: number | undefined = undefined;
-   private blob_id = (() => {
-      const storedBlobId = GetStoredData('current-blob-id');
-      if (storedBlobId) {
-         const lastSavedBlobId = GetStoredData('last-saved-blob-id');
-         if (lastSavedBlobId) {
-            // Delete dangling blobs from previous abnormally terminated sessions
-            for (let id = parseInt(lastSavedBlobId as string) + 1; id <= parseInt(storedBlobId as string); ++id) {
-               console.log(`Deleting dangling blob with id ${id} from previous session`);
-               DeleteStoredData(`blob-${id}`);
-            }
-
-            const currentBlobId = parseInt(lastSavedBlobId as string) + 1;
-            SetStoredData('current-blob-id', currentBlobId.toString());
-            return currentBlobId;
-         }
-
-         return parseInt(storedBlobId as string);
-      }
-      return 0;
-   })();
-   private flying: boolean = false;
-
-   private readonly flights: PlaneRecord[] = (() => {
-      const flightsStr = GetStoredData("flights");
-      if (flightsStr === '') {
-         return []
-      }
-
-      const flights = JSON.parse(flightsStr as string);
-
-      if (!Array.isArray(flights)) {
-         return []
-      }
-
-      if (!GetStoredData("cloud-error-fix")) {
-         console.log("Applying cloud error fix for plane records leaks");
-
-         // Fix for cloud error due to plane records leaks on previous versions
-         let max = flights.reduce((max, record) => record.id > max ? record.id : max, -1);
-         let start = 0;
-
-         // Recursively delete records in batches until all leaked records are deleted
-         do {
-            for (let id = start; id <= max; ++id) {
-               if (GetStoredData(`record-${id}`)) {
-                  DeleteStoredData(`record-${id}`);
-               }
-            }
-
-            start = max + 1;
-            max += 100;
-         } while ((SearchStoredData("record-") as string[]).length);
-
-         SetStoredData("cloud-error-fix", "true");
-         console.log("Cloud error fix applied");
-      }
-
-      return flights;
-   })();
-
    openEFB(messageHandler: (_: MessageType) => void) {
       this.messageHandler = messageHandler;
    }
@@ -281,7 +233,7 @@ export class Manager {
                      state: true
                   });
 
-                  this.onGetPlaneRecords(1);
+                  this.recordManager.onGetPlaneRecords(1);
                } else if (isMessage("__SETTINGS__", data.content)) {
                   console.assert(false);
                } else if (isMessage("__GET_SETTINGS__", data.content)) {
@@ -289,9 +241,9 @@ export class Manager {
                } else if (isMessage("__GET_FUEL__", data.content)) {
                   this.onGetFuel(data.id);
                } else if (isMessage("__CLEAN_PLANE_RECORDS__", data.content)) {
-                  this.onCleanPlaneRecords();
+                  this.recordManager.onCleanPlaneRecords();
                } else if (isMessage("__GET_RECORDS__", data.content)) {
-                  this.onGetPlaneRecords(data.id);
+                  this.recordManager.onGetPlaneRecords(data.id);
                } else if (isMessage("__GET_FACILITIES__", data.content)) {
                   this.onGetFacilities(data.id, data.content);
                } else if (isMessage("__GET_ICAOS__", data.content)) {
@@ -301,11 +253,11 @@ export class Manager {
                } else if (isMessage("__GET_METAR__", data.content)) {
                   this.onGetMetar(data.id, data.content);
                } else if (isMessage("__REMOVE_RECORD__", data.content)) {
-                  this.onRemoveRecord(data.content);
+                  this.recordManager.onRemoveRecord(data.content);
                } else if (isMessage("__EDIT_RECORD__", data.content)) {
-                  this.onEditRecord(data.content);
+                  this.recordManager.onEditRecord(data.content);
                } else if (isMessage("__GET_PLANE_BLOB__", data.content)) {
-                  this.onGetPlaneBlob(data.id, data.content);
+                  this.recordManager.onGetPlaneBlob(data.id, data.content);
                } else if (isMessage("__EXPORT_NAV__", data.content)) {
                   this.onExportNav(data.content);
                } else if (isMessage("__FUEL_PRESETS__", data.content)) {
@@ -376,149 +328,18 @@ export class Manager {
       return result
    }
 
-   private broadCastMessage(message: MessageType) {
+   public broadCastMessage(message: MessageType) {
       this.messageHandler?.(message);
       this.serverMessageHandler?.(1, message);
    }
 
-   private sendMessage(id: number, message: MessageType) {
+   public sendMessage(id: number, message: MessageType) {
       if (id == 0) {
          this.messageHandler?.(message);
       } else {
          this.serverMessageHandler?.(id, message);
       }
    }
-
-   private DeleteRecord(record: PlaneRecord) {
-      for (const blobId of record.blobs) {
-         DeleteStoredData(`blob-${blobId}`);
-      }
-
-      DeleteStoredData(`record-${record.id}`);
-   }
-
-   private SaveBlob() {
-      let lastDate = 0;
-      const buffer = new Float32Array(this.planePosBlob
-         .flatMap(pos => {
-            const result = [
-               (pos.date - lastDate),
-               pos.lat,
-               pos.lon,
-               pos.altitude,
-               pos.ground,
-               pos.heading,
-               pos.verticalSpeed,
-               pos.windVelocity,
-               pos.windDirection
-            ];
-            lastDate = pos.date;
-            return result;
-         }));
-      const bytes = new Uint8Array(buffer.buffer);
-      let binary = "";
-      for (const element of bytes) {
-         binary += String.fromCharCode(element);
-      }
-
-      const data = LZString.compressToUTF16(binary);
-      SetStoredData(`blob-${this.blob_id}`, data)
-      ++this.blob_id;
-
-      SetStoredData('current-blob-id', this.blob_id.toString());
-      this.currentRecord!.blobs.push(this.blob_id - 1);
-      this.currentRecord!.size += data.length;
-      this.planePosBlob.length = 0;
-   }
-
-   private fetchPosition() {
-      const info: PlanePos = {
-         __PLANE_POS__: true,
-
-         date: Date.now(),
-         lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degrees'),
-         lon: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degrees'),
-         altitude: SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet'),
-         ground: SimVar.GetSimVarValue('GROUND ALTITUDE', 'feet'),
-         heading: SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees'),
-         verticalSpeed: SimVar.GetSimVarValue('VELOCITY BODY Y', 'feet per seconds') * 60,
-         windVelocity: SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'knots'),
-         windDirection: SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'degrees'),
-      };
-
-      this.flying = !SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
-
-      if (this.flying) {
-         if (!this.flighStartDate) {
-            this.flighStartDate = info.date;
-            this.planePosBlob.length = 0;
-            this.currentRecord = {
-               name: new Date(info.date).toLocaleString(),
-               id: 0,
-               touchdown: 0,
-               active: false,
-               blobs: [],
-               size: 0
-            };
-         }
-
-         this.planePosBlob.push(info)
-
-         // Save plane position every 5 minutes to avoid filling up storage with plane positions
-         if (this.planePosBlob.length > 3000) {
-            this.SaveBlob();
-         }
-      } else if (this.flighStartDate) {
-         const touchDownSpeed = SimVar.GetSimVarValue('PLANE TOUCHDOWN NORMAL VELOCITY', 'feet per seconds') * 60;
-         // Save record if flight lasted more than 10 seconds to avoid saving very short flights due to plane on ground vibrations
-         // Also avoid saving records with 0 touchdown speed, as these are likely caused by the simulator just being launched (first on-ground position over sea)
-         if ((info.date - this.flighStartDate > 10000) && (touchDownSpeed !== 0)) {
-
-            // Keep only 15 last records to avoid filling up storage with plane records
-            if (this.flights.length === 15) {
-               const oldestRecord = this.flights.splice(0, 1)[0];
-               this.DeleteRecord(oldestRecord);
-            }
-
-            console.assert(this.currentRecord);
-            if (this.currentRecord) {
-               if (this.planePosBlob.length) {
-                  // Save remaining plane positions in a blob
-                  this.SaveBlob();
-               }
-
-               this.currentRecord.id = this.flights.length ? (+this.flights[this.flights.length - 1].id + 1) : 0;
-               this.currentRecord.touchdown = touchDownSpeed;
-               this.currentRecord.active = false;
-               this.flights.push(this.currentRecord);
-
-               SetStoredData(`record-${this.currentRecord.id}`, JSON.stringify(this.currentRecord))
-               SetStoredData("flights", JSON.stringify(this.flights))
-               SetStoredData('last-saved-blob-id', (this.blob_id - 1).toString());
-               console.log(`Saved flight record ${this.currentRecord.id} ${this.currentRecord.name} with ${this.currentRecord.blobs.length} blobs and size ${this.currentRecord.size} chars, touchdown speed: ${touchDownSpeed} fpm`);
-               console.log(`Flight duration: ${(info.date - this.flighStartDate) / 1000} seconds`);
-            }
-
-            console.log(JSON.stringify(this.flights))
-            this.broadCastMessage({ __RECORDS__: true, value: this.flights });
-         } else if (this.currentRecord?.blobs.length) {
-            // Delete blobs created during this flight as they are not valid due to short flight duration, 
-            // which is likely caused by plane on ground vibrations
-            for (const blobId of this.currentRecord.blobs) {
-               DeleteStoredData(`blob-${blobId}`);
-            }
-
-            this.blob_id = this.currentRecord.blobs[0];
-            SetStoredData('current-blob-id', this.blob_id.toString());
-         }
-
-         this.currentRecord = undefined;
-         this.planePosBlob.length = 0;
-         this.flighStartDate = undefined;
-      }
-
-      this.broadCastMessage(info);
-   };
 
    async getMetar(ident: string, lat: number, lon: number) {
       const result: Metar = {
@@ -542,7 +363,7 @@ export class Manager {
       }), this.facilityLoader.searchMetar(lat, lon).then(metar => {
          result.localMetar = metar?.metarString
       })]).catch(e => {
-         console.log(e)
+         console.error(e)
       }).then(() => result);
    }
 
@@ -679,21 +500,6 @@ export class Manager {
    onGetServerState(id: number) {
       this.sendMessage(id, { __SERVER_STATE__: true, state: !!this.serverMessageHandler })
    }
-
-   onGetPlaneRecords(id: number) {
-      this.sendMessage(id, fill({ __RECORDS__: true, value: this.flights }, PlaneRecordsRecord.defaultValues));
-   }
-
-   onCleanPlaneRecords() {
-      for (const record of this.flights) {
-         this.DeleteRecord(record);
-      }
-
-      this.flights.length = 0;
-      SetStoredData("flights", JSON.stringify(this.flights))
-      this.broadCastMessage({ __RECORDS__: true, value: this.flights });
-   }
-
    async onGetFacilities(id: number, message: GetFacilities) {
       const list = await this.getFacilitiesList(id, message.lat, message.lon);
       this.sendMessage(id, { __FACILITIES__: true, facilities: [...list.values()] });
@@ -715,61 +521,6 @@ export class Manager {
 
    onSharedSettings(message: SharedSettings) {
       SetStoredData("settings", JSON.stringify(message));
-   }
-
-   onEditRecord({ id, name }: EditRecord) {
-      this.flights.find(elem => elem.id === id)!.name = name
-      SetStoredData("flights", JSON.stringify(this.flights))
-
-      // Broadcast
-      this.broadCastMessage({ __RECORDS__: true, value: this.flights });
-   }
-
-   onRemoveRecord({ id }: RemoveRecord) {
-      const record = this.flights.splice(this.flights.findIndex(elem => elem.id === id), 1)[0];
-      if (record) {
-         this.DeleteRecord(record);
-      }
-
-      SetStoredData("flights", JSON.stringify(this.flights))
-
-      this.broadCastMessage({ __RECORDS__: true, value: this.flights });
-   }
-
-   GetRecord(id: number): PlaneRecord {
-      const data = GetStoredData(`record-${id}`) as string;
-      return JSON.parse(data);
-   }
-
-   onGetPlaneBlob(id: number, { id: blob_id }: GetPlaneBlob) {
-      const values: PlanePosContent[] = [];
-
-      const data = LZString.decompressFromUTF16(GetStoredData(`blob-${blob_id}`) as string);
-      const bytes = Uint8Array.from(data, c => c.charCodeAt(0));
-      const poses = Array.from(new Float32Array(bytes.buffer));
-
-      let date = 0;
-      for (let index = 0; index < poses.length; index += 9) {
-         if (index === 0) {
-            date = poses[0];
-         } else {
-            date += poses[index];
-         }
-
-         values.push({
-            date: date,
-            lat: poses[index + 1],
-            lon: poses[index + 2],
-            altitude: poses[index + 3],
-            ground: poses[index + 4],
-            heading: poses[index + 5],
-            verticalSpeed: poses[index + 6],
-            windVelocity: poses[index + 7],
-            windDirection: poses[index + 8],
-         });
-      }
-
-      this.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: values });
    }
 
    onExportNav(message: ExportNav) {

@@ -11,13 +11,12 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "@microsoft/msfs-sdk": "2.1.1",
+    "@microsoft/msfs-sdk": "2.3.3",
     "@microsoft/msfs-types": "1.14.6"
   },
   "dependencies": {
     "@alx-home/efb-api": "^1.0.2",
-    "html2canvas": "^1.4.1",
-    "lz-string": "^1.5.0"
+    "html2canvas": "^1.4.1"
   },
   "devDependencies": {
     "@types/html2canvas": "^0.5.35"

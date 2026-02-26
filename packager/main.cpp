@@ -275,7 +275,7 @@ std::unordered_map<std::string, std::span<std::byte const>> const {0} {{)_",
                }
             }
 
-            std::ofstream file{resource, std::ios::binary | std::ios::ate};
+            std::ofstream file{resource, std::ios::binary | std::ios::trunc};
 
             using namespace boost::iostreams;
 
