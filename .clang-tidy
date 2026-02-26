@@ -7,6 +7,14 @@ CheckOptions:
   - { key: readability-identifier-naming.MemberSuffix, value: "_" }
   - { key: readability-identifier-naming.StructCase, value: CamelCase }
   - { key: readability-identifier-naming.FunctionCase, value: CamelCase }
+  - {
+      key: readability-identifier-naming.FunctionIgnoredRegexp,
+      value: "^module_init$|^module_update$|^module_deinit$",
+    }
+  - {
+      key: readability-identifier-naming.GlobalFunctionIgnoredRegexp,
+      value: "^module_init$|^module_update$|^module_deinit$",
+    }
   - { key: readability-identifier-naming.MethodCase, value: CamelCase }
   - {
       key: readability-identifier-naming.MethodIgnoredRegexp,

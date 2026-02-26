@@ -26,3 +26,11 @@ declare function GetStoredData(_key: unknown): unknown;
 declare function SearchStoredData(_key: unknown): unknown;
 declare function SetStoredData(_key: unknown, _data: unknown): unknown;
 declare function DeleteStoredData(_key: unknown): unknown;
+
+interface CommBusListener {
+   callWasm: (_eventName: string, _data: string) => void;
+   on: (_eventName: string, _handler: (_data: string) => void) => void;
+   off: (_eventName: string, _handler: (_data: string) => void) => void;
+}
+
+declare function RegisterCommBusListener(_onConnected?: () => void): CommBusListener;

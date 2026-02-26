@@ -262,7 +262,7 @@ Main::Validate(
 
    {
       std::ofstream file(
-        installPath + "\\msfs2024-vfrnav_server.exe", std::ios::ate | std::ios::binary
+        installPath + "\\msfs2024-vfrnav_server.exe", std::ios::trunc | std::ios::binary
       );
 
       if (!file.is_open()) {
@@ -310,6 +310,27 @@ Main::Validate(
       }
    }
 
+   // Wasm modules
+   {
+      std::error_code ec{};
+      std::filesystem::create_directories(addonPath + "/modules", ec);
+      if (ec) {
+         co_return Fatal("Couldn't create community package folder:", ec.message(), addonPath);
+      }
+
+      std::ofstream file{
+        addonPath + "/modules/vfrnav_storage.wasm", std::ios::binary | std::ios::trunc
+      };
+      if (!file.is_open()) {
+         co_return Fatal("Couldn't create file:", addonPath + "/modules/vfrnav_storage.wasm");
+      }
+
+      file.write(reinterpret_cast<char const*>(WASM_STORAGE.data()), WASM_STORAGE.size());
+      if (file.tellp() != WASM_STORAGE.size()) {
+         co_return Fatal("Couldn't create file:", addonPath + "/modules/vfrnav_storage.wasm");
+      }
+   }
+
    {
       std::error_code ec{};
       std::filesystem::create_directories(addonPath + "/ContentInfo/alexhome-msfs2024-vfrnav", ec);
@@ -330,7 +351,7 @@ Main::Validate(
          co_return Fatal("Couldn't create directory:", ec.message(), directory);
       }
 
-      std::ofstream file{directory + "/" + file_name, std::ios::binary | std::ios::ate};
+      std::ofstream file{directory + "/" + file_name, std::ios::binary | std::ios::trunc};
       if (!file.is_open()) {
          co_return Fatal("Couldn't create file:", directory + "/" + file_name);
       }
@@ -344,7 +365,7 @@ Main::Validate(
    // Install thumbnail
 
    auto const    thumbnail = addonPath + "/ContentInfo/alexhome-msfs2024-vfrnav/Thumbnail.jpg";
-   std::ofstream file{thumbnail, std::ios::binary | std::ios::ate};
+   std::ofstream file{thumbnail, std::ios::binary | std::ios::trunc};
 
    if (!file.is_open()) {
       co_return Fatal("Couldn't create file:", thumbnail);
@@ -397,7 +418,7 @@ Main::Validate(
 
    auto const manifest_str = js::Stringify<2>(manifest, true);
    {
-      std::ofstream file{addonPath + "/manifest.json", std::ios::binary | std::ios::ate};
+      std::ofstream file{addonPath + "/manifest.json", std::ios::binary | std::ios::trunc};
       if (!file.is_open()) {
          co_return Fatal("Couldn't create file:", addonPath + "/manifest.json");
       }
@@ -414,7 +435,7 @@ Main::Validate(
       Layout     layout{addonPath};
       auto const layout_str = js::Stringify<2>(layout, true);
 
-      std::ofstream file{addonPath + "/layout.json", std::ios::binary | std::ios::ate};
+      std::ofstream file{addonPath + "/layout.json", std::ios::binary | std::ios::trunc};
 
       if (!file.is_open()) {
          co_return Fatal("Couldn't create file:", addonPath + "/layout.json");

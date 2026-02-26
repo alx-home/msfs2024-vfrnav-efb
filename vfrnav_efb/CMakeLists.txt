@@ -18,4 +18,5 @@ file(GLOB_RECURSE SHARED_DEPENDS LIST_DIRECTORIES false CONFIGURE_DEPENDS
 )
 
 add_subdirectory(app)
+add_subdirectory(comm_wasm)
 add_subdirectory(EFB)
