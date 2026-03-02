@@ -605,6 +605,28 @@
             "           - Alt + Glisser : Déplacer l'EFB dans la zone du simulateur en mode 2D",
             "           - Clics sur la bordure supprimés"
          ]
+      },
+      {
+         "version": "1.2.0",
+         "date": "MAR 02, 2026",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Records are now saved locally on your device using a high-performance WASM library, instead of cloud storage.",
+            "       Les enregistrements sont désormais sauvegardés localement sur votre appareil via une bibliothèque WASM performante, au lieu du cloud.",
+            "     - Record saving is optimized by splitting data into fixed-size chunks (5 min ≈ 140KB) for consistent performance.",
+            "       La sauvegarde des enregistrements est optimisée en découpant les données en morceaux de taille fixe (5 min ≈ 140KB) pour des performances constantes.",
+            "     - Record storage is now much more efficient by saving compact raw data instead of bulky JSON files.",
+            "       La sauvegarde des enregistrements est désormais bien plus efficace grâce à l'enregistrement de données brutes compactes au lieu de fichiers JSON volumineux.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Resolved cloud save error 2047.",
+            "       Correction de l'erreur de sauvegarde cloud 2047.",
+            "     - Fixed potential stuttering during landing on long flights.",
+            "       Correction d'éventuels problèmes de saccades lors de l'atterrissage après de longs vols.",
+            "     - All leftover records from previous versions are now automatically cleaned up (may take extra time on first launch).",
+            "       Tous les anciens enregistrements résiduels sont désormais supprimés automatiquement (cela peut prendre un certain temps au premier lancement)."
+         ]
       }
    ]
 }
