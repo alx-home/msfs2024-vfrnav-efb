@@ -19,9 +19,9 @@
 #include "Server/WebSockets/Messages/Messages.h"
 #include "WebSockets/Messages/Fuel.h"
 #include "Window/template/Window.h"
-#include "boost/beast/http/string_body_fwd.hpp"
-#include "utils/MessageQueue.h"
 
+#include <utils/MessageQueue.h>
+#include <utils/Poll.h>
 #include <promise/promise.h>
 #include <minwindef.h>
 
@@ -42,6 +42,7 @@
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
 #include <boost/beast/core/error.hpp>
+#include <boost/beast/http/string_body_fwd.hpp>
 #pragma clang diagnostic pop
 
 template <class TYPE>
@@ -209,6 +210,8 @@ private:
    boost::beast::flat_buffer                    buffer_;
    tcp::endpoint                                peer_;
    std::size_t                                  my_id_{1};
+
+   Poll<10> poll_{"ServPoll"};
 
    std::shared_mutex           mutex_{};
    std::condition_variable_any cv_{};

@@ -16,6 +16,7 @@
 #pragma once
 
 #include <json/json.h>
+#include <string>
 #include <vector>
 
 namespace ws::msg {
@@ -144,7 +145,7 @@ struct Facility {
 struct Facilities {
    bool header_{true};
 
-   std::vector<Facility> facilities_{};
+   std::string facilities_{};  // encoded std::vector<Facility>
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__FACILITIES__", &Facilities::header_},

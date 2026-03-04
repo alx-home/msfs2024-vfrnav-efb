@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { EditRecord, GetPlaneBlob, PlanePos, PlanePosContent, PlaneRecord, PlaneRecordsRecord, RemoveRecord } from "@shared/PlanPos";
+import { EditRecord, encodePlaneBlob, GetPlaneBlob, PlanePos, PlaneRecord, PlaneRecordsRecord, RemoveRecord } from "@shared/PlanPos";
 import { WasmComm } from "./WasmComm";
 import { Manager } from "./Manager";
 import { fill } from "@shared/Types";
@@ -69,7 +69,6 @@ export class RecordManager {
    })();
 
 
-   /* eslint-disable no-unused-vars */
    constructor(private readonly manager: Manager) {
       this.manager = manager;
 
@@ -164,37 +163,16 @@ export class RecordManager {
    }
 
    private async SaveBlob() {
-      let lastDate = 0;
-      const buffer = new Float32Array(this.planePosBlob
-         .flatMap(pos => {
-            const result = [
-               (pos.date - lastDate),
-               pos.lat,
-               pos.lon,
-               pos.altitude,
-               pos.ground,
-               pos.heading,
-               pos.verticalSpeed,
-               pos.windVelocity,
-               pos.windDirection
-            ];
-            lastDate = pos.date;
-            return result;
-         }));
-      const bytes = new Uint8Array(buffer.buffer);
-      let binary = "";
-      for (const element of bytes) {
-         binary += String.fromCharCode(element);
-      }
+      const encoded = encodePlaneBlob(this.planePosBlob);
 
       let blob_id = await this.blob_id;
-      await this.saveBlobToDisk(`blob-${blob_id}`, btoa(binary));
+      await this.saveBlobToDisk(`blob-${blob_id}`, encoded);
       ++blob_id;
       this.blob_id = Promise.resolve(blob_id);
 
       await this.StoreCurrentBlobID(blob_id);
       this.currentRecord!.blobs.push(blob_id - 1);
-      this.currentRecord!.size += binary.length;
+      this.currentRecord!.size += encoded.length;
       this.planePosBlob.length = 0;
    }
 
@@ -321,38 +299,13 @@ export class RecordManager {
 
    async onGetPlaneBlob(id: number, { id: blob_id }: GetPlaneBlob) {
       this.promise = this.promise.then(async () => {
-         const values: PlanePosContent[] = [];
-
-         const data = atob(await this.getBlobFromDisk(`blob-${blob_id}`) as string);
-         if (!data) {
-            this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: [] });
-            return;
+         const blob = await this.getBlobFromDisk(`blob-${blob_id}`);
+         if (blob) {
+            this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: blob });
+         } else {
+            console.error(`Blob with id ${blob_id} not found on disk`);
+            this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: encodePlaneBlob([]) });
          }
-         const bytes = Uint8Array.from(data, c => c.charCodeAt(0));
-         const poses = Array.from(new Float32Array(bytes.buffer));
-
-         let date = 0;
-         for (let index = 0; index < poses.length; index += 9) {
-            if (index === 0) {
-               date = poses[0];
-            } else {
-               date += poses[index];
-            }
-
-            values.push({
-               date: date,
-               lat: poses[index + 1],
-               lon: poses[index + 2],
-               altitude: poses[index + 3],
-               ground: poses[index + 4],
-               heading: poses[index + 5],
-               verticalSpeed: poses[index + 6],
-               windVelocity: poses[index + 7],
-               windDirection: poses[index + 8],
-            });
-         }
-
-         this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: values });
       });
    }
 

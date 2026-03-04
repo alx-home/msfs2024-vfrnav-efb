@@ -36,8 +36,72 @@ export type PlaneBlob = {
   __PLANE_BLOB__: true,
 
   id: number,
-  value: PlanePosContent[]
+  value: string // encoded PlanePosContent[]
 };
+
+export const decodePlaneBlob = (blob: string): PlanePosContent[] => {
+  const data = atob(blob);
+  if (!data) {
+    return [];
+  }
+
+  const values: PlanePosContent[] = [];
+
+  const bytes = Uint8Array.from(data, c => c.charCodeAt(0));
+  const poses = Array.from(new Float32Array(bytes.buffer));
+
+  let date = 0;
+  for (let index = 0; index < poses.length; index += 9) {
+    if (index === 0) {
+      date = poses[0];
+    } else {
+      date += poses[index];
+    }
+
+    values.push({
+      date: date,
+      lat: poses[index + 1],
+      lon: poses[index + 2],
+      altitude: poses[index + 3],
+      ground: poses[index + 4],
+      heading: poses[index + 5],
+      verticalSpeed: poses[index + 6],
+      windVelocity: poses[index + 7],
+      windDirection: poses[index + 8],
+    });
+  }
+
+  return values;
+}
+
+export const encodePlaneBlob = (data: PlanePosContent[]): string => {
+  let lastDate = 0;
+
+  const buffer = new Float32Array(data
+    .flatMap(pos => {
+      const result = [
+        (pos.date - lastDate),
+        pos.lat,
+        pos.lon,
+        pos.altitude,
+        pos.ground,
+        pos.heading,
+        pos.verticalSpeed,
+        pos.windVelocity,
+        pos.windDirection
+      ];
+      lastDate = pos.date;
+      return result;
+    }));
+
+  const bytes = new Uint8Array(buffer.buffer);
+  let binary = "";
+  for (const element of bytes) {
+    binary += String.fromCharCode(element);
+  }
+
+  return btoa(binary);
+}
 
 export const PlanePosRecord = GenRecord<PlanePos>({
   __PLANE_POS__: true,
@@ -71,10 +135,8 @@ export const PlaneBlobRecord = GenRecord<PlaneBlob>({
   __PLANE_BLOB__: true,
 
   id: 0,
-  value: []
-}, {
-  value: { array: true, record: PlanePosContentRecord }
-})
+  value: ""
+}, {});
 
 export type PlaneRecord = {
   name: string,

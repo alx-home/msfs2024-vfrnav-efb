@@ -228,16 +228,14 @@ export const AirportFacilityRecord = GenRecord<AirportFacility>({
 export type Facilities = {
   __FACILITIES__: true,
 
-  facilities: AirportFacility[]
+  facilities: string // encoded AirportFacility[]
 }
 
 export const FacilitiesRecord = GenRecord<Facilities>({
   __FACILITIES__: true,
 
-  facilities: []
-}, {
-  facilities: { array: true, record: AirportFacilityRecord }
-})
+  facilities: ""
+}, {})
 
 export type Icaos = {
   __ICAOS__: true,

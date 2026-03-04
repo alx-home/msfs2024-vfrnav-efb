@@ -214,100 +214,106 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
    std::string data{it, it + n};
    buffer_.consume(n);
 
-   try {
-      auto message = js::Parse<ws::Proxy>(data);
+   poll_.Dispatch([this, data = std::move(data)]() mutable {
+      try {
+         auto message = js::Parse<ws::Proxy>(data);
 
-      if (std::holds_alternative<ws::msg::fuel::Presets>(message.content_)) {
-         server_.HandleFuelPresets(my_id_, std::move(message.content_));
-      } else if (std::holds_alternative<ws::msg::fuel::Curves>(message.content_)) {
-         server_.HandleFuelCurve(my_id_, std::move(message.content_));
-      } else if (std::holds_alternative<ws::msg::fuel::DefaultPreset>(message.content_)) {
-         server_.HandleDefaultFuelPreset(my_id_, std::move(message.content_));
-      } else if (std::holds_alternative<ws::msg::fuel::GetPresets>(message.content_)) {
-         server_.HandleGetFuelPresets(my_id_);
-      } else if (std::holds_alternative<ws::msg::dev::Presets>(message.content_)) {
-         server_.HandleDeviationPresets(my_id_, std::move(message.content_));
-      } else if (std::holds_alternative<ws::msg::dev::Curve>(message.content_)) {
-         server_.HandleDeviationCurve(my_id_, std::move(message.content_));
-      } else if (std::holds_alternative<ws::msg::dev::DefaultPreset>(message.content_)) {
-         server_.HandleDefaultDeviationPreset(my_id_, std::move(message.content_));
-      } else if (std::holds_alternative<ws::msg::dev::GetPresets>(message.content_)) {
-         server_.HandleGetDeviationPresets(my_id_);
-      } else if (std::holds_alternative<ws::msg::GetEFBState>(message.content_)) {
-         assert(message.id_ != 2);
-         assert(message.id_ != 1);
+         if (std::holds_alternative<ws::msg::fuel::Presets>(message.content_)) {
+            server_.HandleFuelPresets(my_id_, std::move(message.content_));
+         } else if (std::holds_alternative<ws::msg::fuel::Curves>(message.content_)) {
+            server_.HandleFuelCurve(my_id_, std::move(message.content_));
+         } else if (std::holds_alternative<ws::msg::fuel::DefaultPreset>(message.content_)) {
+            server_.HandleDefaultFuelPreset(my_id_, std::move(message.content_));
+         } else if (std::holds_alternative<ws::msg::fuel::GetPresets>(message.content_)) {
+            server_.HandleGetFuelPresets(my_id_);
+         } else if (std::holds_alternative<ws::msg::dev::Presets>(message.content_)) {
+            server_.HandleDeviationPresets(my_id_, std::move(message.content_));
+         } else if (std::holds_alternative<ws::msg::dev::Curve>(message.content_)) {
+            server_.HandleDeviationCurve(my_id_, std::move(message.content_));
+         } else if (std::holds_alternative<ws::msg::dev::DefaultPreset>(message.content_)) {
+            server_.HandleDefaultDeviationPreset(my_id_, std::move(message.content_));
+         } else if (std::holds_alternative<ws::msg::dev::GetPresets>(message.content_)) {
+            server_.HandleGetDeviationPresets(my_id_);
+         } else if (std::holds_alternative<ws::msg::GetEFBState>(message.content_)) {
+            assert(message.id_ != 2);
+            assert(message.id_ != 1);
 
-         server_.Dispatch([self = shared_from_this(), id = my_id_]() {
-            self->VSendMessage(id, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
-         });
-      } else if (std::holds_alternative<ws::msg::GetServerState>(message.content_)) {
-         assert(false);
-      } else if (std::holds_alternative<ws::msg::FileExists>(message.content_)) {
-         assert(message.id_ == 1);
-         auto const& msg = std::get<ws::msg::FileExists>(message.content_);
+            server_.Dispatch([self = shared_from_this(), id = my_id_]() {
+               self->VSendMessage(id, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
+            });
+         } else if (std::holds_alternative<ws::msg::GetServerState>(message.content_)) {
+            assert(false);
+         } else if (std::holds_alternative<ws::msg::FileExists>(message.content_)) {
+            assert(message.id_ == 1);
+            auto const& msg = std::get<ws::msg::FileExists>(message.content_);
 
-         VDispatchMessage(
-           message.id_,
-           ws::msg::FileExistsResponse{
-             .id_ = msg.id_, .result_ = std::filesystem::is_regular_file(msg.path_)
-           }
-         );
-      } else if (std::holds_alternative<ws::msg::OpenFile>(message.content_)) {
-         assert(message.id_ == 1);
-         auto const& msg = std::get<ws::msg::OpenFile>(message.content_);
+            VDispatchMessage(
+              message.id_,
+              ws::msg::FileExistsResponse{
+                .id_ = msg.id_, .result_ = std::filesystem::is_regular_file(msg.path_)
+              }
+            );
+         } else if (std::holds_alternative<ws::msg::OpenFile>(message.content_)) {
+            assert(message.id_ == 1);
+            auto const& msg = std::get<ws::msg::OpenFile>(message.content_);
 
-         ++promises_;
-         dialog::OpenFile(msg.path_, {{.name_ = "Pdf File", .value_ = {"*.pdf"}}})
-           .Then([self   = shared_from_this(),
-                  id     = message.id_,
-                  req_id = msg.id_](std::string const& path) constexpr {
-              self->server_.Dispatch([self = std::move(self), id, req_id, path]() {
-                 self->VSendMessage(id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path});
+            ++promises_;
+            dialog::OpenFile(msg.path_, {{.name_ = "Pdf File", .value_ = {"*.pdf"}}})
+              .Then([self   = shared_from_this(),
+                     id     = message.id_,
+                     req_id = msg.id_](std::string const& path) constexpr {
+                 self->server_.Dispatch([self = std::move(self), id, req_id, path]() {
+                    self->VSendMessage(id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path});
+                    std::shared_lock lock{self->mutex_};
+                    --self->promises_;
+                    self->cv_.notify_all();
+                 });
+              })
+              .Catch([self = shared_from_this()](std::exception_ptr const& exc) constexpr {
                  std::shared_lock lock{self->mutex_};
                  --self->promises_;
                  self->cv_.notify_all();
-              });
-           })
-           .Catch([self = shared_from_this()](std::exception_ptr const& exc) constexpr {
-              std::shared_lock lock{self->mutex_};
-              --self->promises_;
-              self->cv_.notify_all();
-              std::rethrow_exception(exc);
-           })
-           .Detach();
-      } else if (std::holds_alternative<ws::msg::GetFile>(message.content_)) {
-         assert(message.id_ == 1);
-         auto const& msg = std::get<ws::msg::GetFile>(message.content_);
+                 std::rethrow_exception(exc);
+              })
+              .Detach();
+         } else if (std::holds_alternative<ws::msg::GetFile>(message.content_)) {
+            assert(message.id_ == 1);
+            auto const& msg = std::get<ws::msg::GetFile>(message.content_);
 
-         if (auto const data = Base64Open(msg.path_); data.empty()) {
-            VDispatchMessage(message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .data_ = ""});
+            if (auto const data = Base64Open(msg.path_); data.empty()) {
+               VDispatchMessage(message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .data_ = ""});
+            } else {
+               VDispatchMessage(
+                 message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .data_ = data}
+               );
+            }
          } else {
-            VDispatchMessage(message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .data_ = data});
-         }
-      } else {
-         assert(message.id_ != 2);
+            assert(message.id_ != 2);
 
-         if (message.id_ == 1) {
-            // Broadcast
-            server_.Dispatch([&server = server_, my_id = my_id_, message = std::move(message)]() {
-               for (auto const message_handler : server.message_handlers_) {
-                  if (message_handler.first != my_id) {
-                     message_handler.second(my_id, std::move(message.content_));
+            if (message.id_ == 1) {
+               // Broadcast
+               server_.Dispatch([&server = server_, my_id = my_id_, message = std::move(message)](
+                                ) {
+                  for (auto const message_handler : server.message_handlers_) {
+                     if (message_handler.first != my_id) {
+                        message_handler.second(my_id, std::move(message.content_));
+                     }
                   }
-               }
-            });
-         } else {
-            server_.Dispatch([&server = server_, my_id = my_id_, message = std::move(message)]() {
-               if (auto const message_handler = server.message_handlers_.find(message.id_);
-                   message_handler != server.message_handlers_.end()) {
-                  message_handler->second(my_id, std::move(message.content_));
-               }
-            });
+               });
+            } else {
+               server_.Dispatch([&server = server_, my_id = my_id_, message = std::move(message)](
+                                ) {
+                  if (auto const message_handler = server.message_handlers_.find(message.id_);
+                      message_handler != server.message_handlers_.end()) {
+                     message_handler->second(my_id, std::move(message.content_));
+                  }
+               });
+            }
          }
+      } catch (std::exception const& e) {
+         std::cerr << "Message parsing error: " << e.what() << std::endl;
       }
-   } catch (std::exception const& e) {
-      std::cerr << "Message parsing error: " << e.what() << std::endl;
-   }
+   });
 
    Read();
 }

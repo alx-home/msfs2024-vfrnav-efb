@@ -14,7 +14,7 @@
  */
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState, useRef } from 'react';
 import { Geometry, LineString, Point, Polygon, SimpleGeometry } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import VectorSource from "ol/source/Vector";
@@ -29,22 +29,49 @@ import Fill from "ol/style/Fill";
 import { Coordinate } from "ol/coordinate";
 import { toContext } from "ol/render";
 import { messageHandler } from "@Settings/SettingsProvider";
-import { PlaneBlob, PlanePosContent, PlaneRecord } from "@shared/PlanPos";
+import { decodePlaneBlob, PlaneBlob, PlanePosContent, PlaneRecord } from "@shared/PlanPos";
 import LayerGroup from "ol/layer/Group";
 import { getLength } from "ol/sphere";
 
-const fetchRecord = async (record: PlaneRecord) => new Promise<PlanePosContent[]>(resolve => {
+import { useEvent } from "react-use-event-hook";
+
+
+let cancelToken: { current: boolean } | undefined = undefined;
+const fetchRecord = async (record: PlaneRecord) => new Promise<PlanePosContent[]>((resolve, reject) => {
+  if (cancelToken) {
+    if (!cancelToken.current) {
+      cancelToken.current = true;
+      reject(new Error("Fetch cancelled"));
+    }
+  }
+  cancelToken = { current: false };
+  const timeout = setTimeout(() => {
+    cancelToken!.current = true;
+    reject(new Error("Fetch timeout"));
+  }, 10000);
+
+  const currentToken = cancelToken;
+
   const pending_blobs = new Set(record.blobs);
   const result: PlanePosContent[][] = record.blobs.map(() => []);
 
   // Receive blobs one by one, and resolve the promise when all blobs have been received
   // Blobs may be received in any order, so we keep track of pending blobs and their corresponding index in the result array
   const callback = (blob: PlaneBlob) => {
+    if (currentToken.current) {
+      // This fetch has been cancelled, we can ignore any received blobs
+      // The promise has already been resolved with an empty array, so we don't need to do anything else
+      return;
+    }
+
     if (pending_blobs.has(blob.id)) {
       pending_blobs.delete(blob.id);
-      result[record.blobs.indexOf(blob.id)] = blob.value;
+      result[record.blobs.indexOf(blob.id)] = decodePlaneBlob(blob.value);
 
       if (pending_blobs.size === 0) {
+        currentToken.current = true;
+        clearTimeout(timeout);
+
         // All blobs have been received, we can resolve the promise with the complete result
         messageHandler.unsubscribe('__PLANE_BLOB__', callback)
         resolve(result.flat());
@@ -61,7 +88,7 @@ const fetchRecord = async (record: PlaneRecord) => new Promise<PlanePosContent[]
       id: blob
     })
   }
-})
+});
 
 export const RecordsLayer = ({
   opacity,
@@ -89,11 +116,12 @@ export const RecordsLayer = ({
     }
   }, [map, mapSize, recordsCenter.x, recordsCenter.y])
 
-  const navData = useMemo(() => records.map(record => fetchRecord(record)), [records]);
 
+  const [navData, setNavData] = useState<PlanePosContent[][]>(records.map(() => []));
+  const lastNavData = useRef<[number, PlanePosContent[]][]>(undefined);
   const navPath = useMemo(() => navData
-    .map(async data => {
-      const feature = new Feature(new LineString((await data).map(pos => fromLonLat([pos.lon, pos.lat]))))
+    .map(data => {
+      const feature = new Feature(new LineString(data.map(pos => fromLonLat([pos.lon, pos.lat]))))
       feature.setStyle(new Style({
         renderer(coords_, state) {
           const ctx = state.context;
@@ -121,15 +149,18 @@ export const RecordsLayer = ({
 
   const profile = useMemo(() => navData
     .reduce((result, data) => {
-      const features = (async () => {
+      const features = (() => {
         const res = 0.30480 / profileScale;
 
-        const coords = (await (async () => {
-          const coords = await data;
-          return coords.filter((_coord, index) => (index >= profileRange.min * coords.length) && (index < profileRange.max * coords.length))
-        })()).map(elem => [...fromLonLat([elem.lon, elem.lat]),
-        Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res),
-        Math.max(0, (elem.ground - profileOffset) * res)]);
+        const coords = data
+          .filter((_coord, index) =>
+            (index >= profileRange.min * data.length)
+            && (index < profileRange.max * data.length)
+          ).map(elem => [
+            ...fromLonLat([elem.lon, elem.lat]),
+            Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res),
+            Math.max(0, (elem.ground - profileOffset) * res)
+          ]);
         const features: Feature[] = [];
         const polygonStyle = new Style({
           fill: new Fill({
@@ -290,25 +321,14 @@ export const RecordsLayer = ({
         return features;
       })();
 
-      return [...result, features] as Promise<Feature[]>[];
-    }, [] as Promise<Feature[]>[]), [navData, profileScale, center, profileRange.min, profileRange.max, withGround, profileOffset, zoom, profileSlopeOffset1, profileSlope1, profileRule1, profileSlopeOffset2, profileSlope2, profileRule2]);
-
-  const touchDowns = useMemo(() => records
-    .map(async (record, index) => {
-      const data = await navData[index];
-      const pos = data[data.length - 1];
-      const coords = fromLonLat([pos.lon, pos.lat])
-
-      const feature = new Feature(new Point(coords));
-      feature.set("speed", record.touchdown);
-      return feature;
-    }), [navData, records]);
+      return [...result, features] as Feature[][];
+    }, [] as Feature[][]), [navData, profileScale, center, profileRange.min, profileRange.max, withGround, profileOffset, zoom, profileSlopeOffset1, profileSlope1, profileRule1, profileSlopeOffset2, profileSlope2, profileRule2]);
 
   const projectionSource = useMemo(() => new VectorSource<Feature<Geometry>>({}), []);
   const pathSource = useMemo(() => new VectorSource<Feature<Geometry>>({}), []);
-  const touchDownSource = useMemo(async () => new VectorSource<Feature<Geometry>>({
-    features: [...await Promise.all(touchDowns)],
-  }), [touchDowns]);
+  const [touchDownSource, setTouchDownSource] = useState(new VectorSource<Feature<Geometry>>({
+    features: [],
+  }));
 
   const projectionLayer = useMemo(() => new VectorLayer(), []);
 
@@ -370,6 +390,69 @@ export const RecordsLayer = ({
     ]
   }), [touchdownLayer, projectionLayer, pathLayer])
 
+  const fetching = useRef(0);
+  const navDataPromise = useRef(Promise.resolve());
+  const updateNavData = useEvent(async () => {
+    if (fetching.current !== 0) {
+      // Already fetching nav data for a previous change, we can skip this update
+      return;
+    }
+
+    ++fetching.current;
+
+    const newData: Promise<PlanePosContent[]>[] = [];
+
+    const activeRecords = records.filter(record => record.active);
+    for (const record of activeRecords) {
+      const oldData = lastNavData.current?.find(([id,]) => id === record.id)
+      if (oldData) {
+        // Record already exists, we can keep its data
+        newData.push(Promise.resolve(oldData[1]));
+      } else {
+        // New record, we need to fetch its data
+        newData.push(fetchRecord(record));
+      }
+    }
+
+    console.assert(newData.length === activeRecords.length);
+    Promise.all(newData).then(results => {
+      lastNavData.current = activeRecords.map((record, index) => [record.id, results[index]]);
+      const touchdowns = activeRecords
+        .map((record, index) => {
+          const data = results[index];
+          const pos = data[data.length - 1];
+          const coords = fromLonLat([pos.lon, pos.lat])
+
+          const feature = new Feature(new Point(coords));
+          feature.set("speed", record.touchdown);
+          return feature;
+        });
+
+      setNavData(results);
+      setTouchDownSource(
+        new VectorSource<Feature<Geometry>>({
+          features: touchdowns
+        })
+      );
+    }).catch(error => {
+      console.error("Error fetching nav data", error);
+    }).finally(() => {
+      --fetching.current;
+    });
+  });
+
+  // Update nav data when records change if :
+  // - We are not already fetching nav data for a previous change
+  // - The number of active records has changed
+  // - Or if there is at least one active record that was not present in the previous nav data
+  // - Or if there is at least one record that was present in the previous nav data but is not active anymore
+  if ((fetching.current === 0) &&
+    ((records.filter(record => record.active).length !== lastNavData.current?.length)
+      || records.some((record) => record.active && !lastNavData.current!.find(([id,]) => id === record.id))
+      || records.some((record) => !record.active && lastNavData.current!.find(([id,]) => id === record.id)))) {
+    navDataPromise.current = navDataPromise.current.then(updateNavData);
+  }
+
   useEffect(() => {
     projectionLayer.setSource(projectionSource)
   }, [projectionLayer, projectionSource])
@@ -381,21 +464,19 @@ export const RecordsLayer = ({
   useEffect(() => {
     (async () => {
       projectionSource.clear();
-      projectionSource.addFeatures([...(await Promise.all(profile)).reduce((result, elem) => [...result, ...elem], [])])
+      projectionSource.addFeatures([...profile.reduce((result, elem) => [...result, ...elem], [])])
     })()
   }, [profile, projectionSource])
 
   useEffect(() => {
-    (async () => {
-      pathSource.clear();
-      pathSource.addFeatures(await Promise.all(navPath))
-    })()
+    pathSource.clear();
+    pathSource.addFeatures(navPath)
   }, [navPath, pathSource])
 
   useEffect(() => {
     (async () => {
       if (withTouchdown) {
-        touchdownLayer.setSource(await touchDownSource)
+        touchdownLayer.setSource(touchDownSource)
       } else {
         touchdownLayer.setSource(new VectorSource());
       }
