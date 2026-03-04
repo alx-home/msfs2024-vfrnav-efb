@@ -502,7 +502,7 @@ export class Manager {
    }
    async onGetFacilities(id: number, message: GetFacilities) {
       const list = await this.getFacilitiesList(id, message.lat, message.lon);
-      this.sendMessage(id, { __FACILITIES__: true, facilities: [...list.values()] });
+      this.sendMessage(id, { __FACILITIES__: true, facilities: JSON.stringify([...list.values()]) });
    }
 
    async onGetIcaos(id: number, message: GetICAOS) {

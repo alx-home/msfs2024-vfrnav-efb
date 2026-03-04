@@ -96,7 +96,7 @@ export const AirportsLayer = ({
 
   useEffect(() => {
     const onGetFacilities = (facilities: Facilities) => {
-      setFacilities(facilities.facilities);
+      setFacilities(JSON.parse(facilities.facilities));
     };
 
     messageHandler.subscribe("__FACILITIES__", onGetFacilities)
