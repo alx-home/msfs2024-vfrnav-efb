@@ -26,6 +26,8 @@ import UndoImg from '@alx-home/images/undo.svg?react';
 import { messageHandler } from "@Settings/SettingsProvider";
 import { Fuel } from "@shared/Fuel";
 import { useDelayed } from '../../../../../packages/ts-utils/src/Utils/Delayed';
+import { useSimDate } from "@Utils/SimDate";
+import { useEvent } from "react-use-event-hook";
 
 const modes = ['Enroute', 'Vor', 'Weather', 'Remarks', 'Full'] as const;
 type Modes = typeof modes[number];
@@ -158,6 +160,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
 }) => {
    const { editNavProperties, activeNav, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useContext(MapContext)!;
    const { properties, waypoints, departureTime, link, taxiTime, taxiConso, loadedFuel, id } = navData;
+   const getSimDate = useSimDate();
    const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);
    const toUnit = useCallback((value: number) =>
       fuelUnit === 'gal' ? value * 3.785411784 : value
@@ -209,7 +212,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
          .map(elem => <SelectOption key={elem.id} id={elem.id.toString()}>{elem.name}</SelectOption>)
    }, [navData, navDatas])
 
-   const setActive = useCallback((index: number) => {
+   const setActive = useEvent((index: number) => {
       const value = !actives[index];
 
       if (value) {
@@ -224,9 +227,13 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
          }
 
          if (properties[index].ata === -1) {
-            const now = new Date();
-            properties[index].ata = now.getHours() * 60 + now.getMinutes()
-
+            getSimDate().catch(() => new Date()).then(date => {
+               editNavProperties(id, props => {
+                  props[index].ata = date.getHours() * 60 + date.getMinutes();
+                  return props;
+               });
+               setReset(true)
+            })
          }
 
          if (properties[index].curFuel === 0) {
@@ -258,7 +265,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
       }
 
       editNavProperties(id, properties);
-   }, [actives, editNavProperties, id, properties, getFuel, fromUnit, activeNav, navDatas]);
+   });
 
    const getHeader = useCallback((mode: Modes, edit: boolean, dry: boolean) => {
       return [
@@ -747,8 +754,8 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                                  </div>
                                  <div className="flex flex-row text-sm justify-center">
                                     <div className="flex mr-2 m-auto grow">Departure Time : </div>
-                                    <Reset className="justify-end min-w-20" onReset={() => {
-                                       const date = new Date();
+                                    <Reset className="justify-end min-w-20" onReset={async () => {
+                                       const date = await getSimDate().catch(() => new Date());
                                        setDepartureTime(id, date.getHours() * 60 + date.getMinutes());
                                        setReset(true)
                                     }}>

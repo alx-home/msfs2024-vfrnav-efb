@@ -14,70 +14,17 @@
  */
 
 import { GenRecord, reduce, TypeRecord } from './Types';
-import { Facilities, FacilitiesRecord, GetFacilities, GetFacilitiesRecord, GetICAOS, GetICAOSRecord as GetIcaosRecord, GetLatLon, GetLatLonRecord, GetMetar, GetMetarRecord, Icaos, IcaosRecord, LatLon, LatLonRecord, Metar, MetarRecord } from './Facilities';
-import { SharedSettingsRecord, SharedSettings, SetPanelSize, SetPanelSizeRecord, SetEfbMode, SetEfbModeRecord, CleanPlaneRecordsRecord, CleanPlaneRecords } from './Settings';
-import { EditRecord, EditRecordRecord, GetPlaneBlob, GetPlaneBlobRecord, PlaneBlob, PlaneBlobRecord, PlanePos, PlanePosRecord, PlaneRecords, PlaneRecordsRecord, RemoveRecord, RemoveRecordRecord } from './PlanPos';
-import { ByeBye, ByeByeRecord, HelloWorld, HelloWorldRecord, SetId, SetIdRecord } from './HelloWorld';
-import { FileExist, FileExistRecord, FileExistResponse, FileExistResponseRecord, GetFile, GetFileRecord, GetFileResponse, GetFileResponseRecord, OpenFile, OpenFileRecord, OpenFileResponse, OpenFileResponseRecord } from './Files';
-import { EfbState, EfbStateRecord, GetEFBState, GetEFBStateRecord, GetServerState, GetServerStateRecord, ServerState, ServerStateRecord } from './Server';
-import { ExportNav, ExportNavRecord, ImportNav, ImportNavRecord } from './NavData';
-import { ExportPdfs, ExportPdfsRecord } from './Pdfs';
-import { DefaultFuelPreset, DefaultFuelPresetRecord, DeleteFuelPreset, DeleteFuelPresetRecord, Fuel, FuelPresets, FuelPresetsRecord, FuelRecord, GetFuel, GetFuelCurve, GetFuelCurveRecord, GetFuelPresets, GetFuelPresetsRecord, GetFuelRecord, SetFuelCurve, SetFuelCurveRecord } from './Fuel';
-import { DefaultDeviationPreset, DefaultDeviationPresetRecord, DeleteDeviationPreset, DeleteDeviationPresetRecord, DeviationPresets, DeviationPresetsRecord, GetDeviationCurve, GetDeviationCurveRecord, GetDeviationPresets, GetDeviationPresetsRecord, SetDeviationCurve, SetDeviationCurveRecord } from './Deviation';
-
-const MessageIdValues = [
-   "__BYE_BYE__",
-   "__CLEAN_PLANE_RECORDS__",
-   "__DEFAULT_DEVIATION_PRESET__",
-   "__DEFAULT_FUEL_PRESET__",
-   "__DELETE_DEVIATION_PRESET__",
-   "__DELETE_FUEL_PRESET__",
-   "__DEVIATION_CURVE__",
-   "__DEVIATION_PRESETS__",
-   "__EDIT_RECORD__",
-   "__EFB_STATE__",
-   "__EXPORT_NAV__",
-   "__EXPORT_PDFS__",
-   "__FACILITIES__",
-   "__FILE_EXISTS__",
-   "__FILE_EXISTS_RESPONSE__",
-   "__FUEL__",
-   "__FUEL_CURVE__",
-   "__FUEL_PRESETS__",
-   "__GET_DEVIATION_CURVE__",
-   "__GET_DEVIATION_PRESETS__",
-   "__GET_EFB_STATE__",
-   "__GET_FACILITIES__",
-   "__GET_FILE__",
-   "__GET_FILE_RESPONSE__",
-   "__GET_FUEL__",
-   "__GET_FUEL_CURVE__",
-   "__GET_FUEL_PRESETS__",
-   "__GET_ICAOS__",
-   "__GET_LAT_LON__",
-   "__GET_METAR__",
-   "__GET_PLANE_BLOB__",
-   "__GET_RECORDS__",
-   "__GET_SERVER_STATE__",
-   "__GET_SETTINGS__",
-   "__HELLO_WORLD__",
-   "__ICAOS__",
-   "__IMPORT_NAV__",
-   "__LAT_LON__",
-   "__METAR__",
-   "__OPEN_FILE__",
-   "__OPEN_FILE_RESPONSE__",
-   "__PLANE_BLOB__",
-   "__PLANE_POS__",
-   "__RECORDS__",
-   "__REMOVE_RECORD__",
-   "__SERVER_STATE__",
-   "__SET_EFB_MODE__",
-   "__SET_ID__",
-   "__SET_PANEL_SIZE__",
-   "__SETTINGS__",
-] as const;
-type MessageId = (typeof MessageIdValues)[number];
+import { FacilitiesRecord, GetFacilitiesRecord, GetICAOSRecord as GetIcaosRecord, GetLatLonRecord, GetMetarRecord, IcaosRecord, LatLonRecord, MetarRecord } from './Facilities';
+import { SharedSettingsRecord, SetPanelSizeRecord, SetEfbModeRecord, CleanPlaneRecordsRecord } from './Settings';
+import { EditRecordRecord, GetPlaneBlobRecord, PlaneBlobRecord, PlanePosRecord, PlaneRecordsRecord, RemoveRecordRecord } from './PlanPos';
+import { ByeByeRecord, HelloWorldRecord, SetIdRecord } from './HelloWorld';
+import { FileExistRecord, FileExistResponseRecord, GetFileRecord, GetFileResponseRecord, OpenFileRecord, OpenFileResponseRecord } from './Files';
+import { EfbStateRecord, GetEFBStateRecord, GetServerStateRecord, ServerStateRecord } from './Server';
+import { ExportNavRecord, ImportNavRecord } from './NavData';
+import { ExportPdfsRecord } from './Pdfs';
+import { DefaultFuelPresetRecord, DeleteFuelPresetRecord, FuelPresetsRecord, FuelRecord, GetFuelCurveRecord, GetFuelPresetsRecord, GetFuelRecord, SetFuelCurveRecord } from './Fuel';
+import { DefaultDeviationPresetRecord, DeleteDeviationPresetRecord, DeviationPresetsRecord, GetDeviationCurveRecord, GetDeviationPresetsRecord, SetDeviationCurveRecord } from './Deviation';
+import { DateResponseRecord, GetDateRecord } from './Date';
 
 export type GetSettings = { __GET_SETTINGS__: true };
 export type GetRecords = { __GET_RECORDS__: true };
@@ -89,62 +36,10 @@ const GetRecordsRecord = GenRecord<GetRecords>({
    __GET_RECORDS__: true
 }, {});
 
-type MessageTypes = {
-   "__BYE_BYE__": ByeBye,
-   "__CLEAN_PLANE_RECORDS__": CleanPlaneRecords,
-   "__DEFAULT_DEVIATION_PRESET__": DefaultDeviationPreset,
-   "__DEFAULT_FUEL_PRESET__": DefaultFuelPreset,
-   "__DELETE_DEVIATION_PRESET__": DeleteDeviationPreset,
-   "__DELETE_FUEL_PRESET__": DeleteFuelPreset,
-   "__DEVIATION_CURVE__": SetDeviationCurve,
-   "__DEVIATION_PRESETS__": DeviationPresets,
-   "__EDIT_RECORD__": EditRecord,
-   "__EFB_STATE__": EfbState,
-   "__EXPORT_NAV__": ExportNav,
-   "__EXPORT_PDFS__": ExportPdfs,
-   "__FACILITIES__": Facilities,
-   "__FILE_EXISTS__": FileExist,
-   "__FILE_EXISTS_RESPONSE__": FileExistResponse,
-   "__FUEL__": Fuel,
-   "__FUEL_CURVE__": SetFuelCurve,
-   "__FUEL_PRESETS__": FuelPresets,
-   "__GET_DEVIATION_CURVE__": GetDeviationCurve,
-   "__GET_DEVIATION_PRESETS__": GetDeviationPresets,
-   "__GET_EFB_STATE__": GetEFBState,
-   "__GET_FACILITIES__": GetFacilities,
-   "__GET_FILE__": GetFile,
-   "__GET_FILE_RESPONSE__": GetFileResponse,
-   "__GET_FUEL__": GetFuel,
-   "__GET_FUEL_CURVE__": GetFuelCurve,
-   "__GET_FUEL_PRESETS__": GetFuelPresets,
-   "__GET_ICAOS__": GetICAOS,
-   "__GET_LAT_LON__": GetLatLon,
-   "__GET_METAR__": GetMetar,
-   "__GET_PLANE_BLOB__": GetPlaneBlob,
-   "__GET_RECORDS__": GetRecords,
-   "__GET_SERVER_STATE__": GetServerState,
-   "__GET_SETTINGS__": GetSettings,
-   "__HELLO_WORLD__": HelloWorld,
-   "__ICAOS__": Icaos,
-   "__IMPORT_NAV__": ImportNav,
-   "__LAT_LON__": LatLon,
-   "__METAR__": Metar,
-   "__OPEN_FILE__": OpenFile,
-   "__OPEN_FILE_RESPONSE__": OpenFileResponse,
-   "__PLANE_BLOB__": PlaneBlob,
-   "__PLANE_POS__": PlanePos,
-   "__RECORDS__": PlaneRecords,
-   "__REMOVE_RECORD__": RemoveRecord,
-   "__SERVER_STATE__": ServerState,
-   "__SET_EFB_MODE__": SetEfbMode,
-   "__SET_ID__": SetId,
-   "__SET_PANEL_SIZE__": SetPanelSize,
-   "__SETTINGS__": SharedSettings,
-};
-export type MessageType = MessageTypes[keyof MessageTypes];
-
-const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
+const Messages = {
    "__BYE_BYE__": ByeByeRecord,
+   "__GET_DATE__": GetDateRecord,
+   "__DATE_RESPONSE__": DateResponseRecord,
    "__CLEAN_PLANE_RECORDS__": CleanPlaneRecordsRecord,
    "__DEFAULT_DEVIATION_PRESET__": DefaultDeviationPresetRecord,
    "__DEFAULT_FUEL_PRESET__": DefaultFuelPresetRecord,
@@ -162,7 +57,6 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__FUEL__": FuelRecord,
    "__FUEL_CURVE__": SetFuelCurveRecord,
    "__FUEL_PRESETS__": FuelPresetsRecord,
-   "__GET_PLANE_BLOB__": GetPlaneBlobRecord,
    "__GET_DEVIATION_CURVE__": GetDeviationCurveRecord,
    "__GET_DEVIATION_PRESETS__": GetDeviationPresetsRecord,
    "__GET_EFB_STATE__": GetEFBStateRecord,
@@ -175,6 +69,7 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__GET_ICAOS__": GetIcaosRecord,
    "__GET_LAT_LON__": GetLatLonRecord,
    "__GET_METAR__": GetMetarRecord,
+   "__GET_PLANE_BLOB__": GetPlaneBlobRecord,
    "__GET_RECORDS__": GetRecordsRecord,
    "__GET_SERVER_STATE__": GetServerStateRecord,
    "__GET_SETTINGS__": GetSettingsRecord,
@@ -195,8 +90,13 @@ const MessageRecord: Record<MessageId, TypeRecord<MessageType> | undefined> = {
    "__SET_PANEL_SIZE__": SetPanelSizeRecord,
    "__SETTINGS__": SharedSettingsRecord,
 };
+export type MessageType = {
+   [Id in keyof typeof Messages]: typeof Messages[Id]["defaultValues"]
+}[keyof typeof Messages];
+type MessageId = keyof typeof Messages;
+const MessageIdValues = Object.keys(Messages) as [MessageId];
 
-export const isMessage = <Id extends MessageId,>(id: Id, message: MessageType): message is MessageTypes[Id] => {
+export const isMessage = <Id extends MessageId,>(id: Id, message: MessageType): message is typeof Messages[Id]["defaultValues"] => {
    return id in message;
 };
 
@@ -246,7 +146,7 @@ export class MessageHandler {
       MessageIdValues.find(value => {
          // eslint-disable-next-line @typescript-eslint/no-explicit-any
          if ((data as any)[value]) {
-            this.sendImpl(data, MessageRecord[value]);
+            this.sendImpl(data, Messages[value]);
             return true
          }
 
@@ -254,7 +154,7 @@ export class MessageHandler {
       })
    }
 
-   subscribe<T extends MessageId>(uuid: T, callback: (_message: MessageTypes[T]) => void) {
+   subscribe<T extends MessageId>(uuid: T, callback: (_message: typeof Messages[T]["defaultValues"]) => void) {
       this.callbacks[uuid].push(callback as (_: unknown) => void);
    }
 

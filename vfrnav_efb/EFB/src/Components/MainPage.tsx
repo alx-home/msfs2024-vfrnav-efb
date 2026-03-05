@@ -98,6 +98,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     });
   }
 
+  onGetDate() {
+    this.props.manager.onGetDate(0);
+  }
+
   onGetServerState() {
     this.props.manager.onGetServerState(0);
   }
@@ -225,6 +229,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("__SETTINGS__", this.props.manager.onSharedSettings)
       messageHandler.unsubscribe("__GET_SETTINGS__", this.onGetSettings)
       messageHandler.unsubscribe("__GET_SERVER_STATE__", this.onGetServerState)
+      messageHandler.unsubscribe("__GET_DATE__", this.onGetDate)
       messageHandler.unsubscribe("__GET_RECORDS__", this.onGetPlaneRecords)
       messageHandler.unsubscribe("__CLEAN_PLANE_RECORDS__", this.onCleanPlaneRecords)
       messageHandler.unsubscribe("__GET_FACILITIES__", this.onGetFacilities)
@@ -560,6 +565,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__SETTINGS__", this.props.manager.onSharedSettings.bind(this.props.manager))
       messageHandler.subscribe("__GET_SETTINGS__", this.onGetSettings.bind(this))
       messageHandler.subscribe("__GET_SERVER_STATE__", this.onGetServerState.bind(this))
+      messageHandler.subscribe("__GET_DATE__", this.onGetDate.bind(this))
       messageHandler.subscribe("__CLEAN_PLANE_RECORDS__", this.onCleanPlaneRecords.bind(this))
       messageHandler.subscribe("__GET_RECORDS__", this.onGetPlaneRecords.bind(this))
       messageHandler.subscribe("__GET_FACILITIES__", this.onGetFacilities.bind(this))

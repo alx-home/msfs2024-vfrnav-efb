@@ -92,11 +92,19 @@ struct GetEFBState {
 #include "PlanePos.h"
 #include "Records.h"
 #include "Settings.h"
+#include "Date.h"
 
 namespace ws {
 
 using Message = std::variant<
   msg::ByeBye,
+  msg::Date,
+  msg::dev::Curve,
+  msg::dev::DefaultPreset,
+  msg::dev::DeletePreset,
+  msg::dev::GetCurve,
+  msg::dev::GetPresets,
+  msg::dev::Presets,
   msg::EditRecord,
   msg::EFBState,
   msg::ExportNav,
@@ -111,12 +119,7 @@ using Message = std::variant<
   msg::fuel::GetCurve,
   msg::fuel::GetPresets,
   msg::fuel::Presets,
-  msg::dev::Curve,
-  msg::dev::DefaultPreset,
-  msg::dev::DeletePreset,
-  msg::dev::GetCurve,
-  msg::dev::GetPresets,
-  msg::dev::Presets,
+  msg::GetDate,
   msg::GetEFBState,
   msg::GetFacilities,
   msg::GetFile,
@@ -136,8 +139,8 @@ using Message = std::variant<
   msg::Metar,
   msg::OpenFile,
   msg::OpenFileResponse,
-  msg::PlanePos,
   msg::PlaneBlob,
+  msg::PlanePos,
   msg::Records,
   msg::RemoveRecord,
   msg::ServerState,
