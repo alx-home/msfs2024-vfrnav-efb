@@ -244,6 +244,8 @@ export class Manager {
                   this.recordManager.onCleanPlaneRecords();
                } else if (isMessage("__GET_RECORDS__", data.content)) {
                   this.recordManager.onGetPlaneRecords(data.id);
+               } else if (isMessage("__GET_DATE__", data.content)) {
+                  this.onGetDate(data.id);
                } else if (isMessage("__GET_FACILITIES__", data.content)) {
                   this.onGetFacilities(data.id, data.content);
                } else if (isMessage("__GET_ICAOS__", data.content)) {
@@ -497,9 +499,18 @@ export class Manager {
       });
    }
 
+   onGetDate(id: number) {
+      // Offset between year 1 and Unix epoch (1970-01-01)
+      const EPOCH_OFFSET_SECONDS = 62135596800;
+      const unixSeconds = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "Seconds") - EPOCH_OFFSET_SECONDS;
+
+      this.sendMessage(id, { __DATE_RESPONSE__: true, date: unixSeconds * 1000 });
+   }
+
    onGetServerState(id: number) {
       this.sendMessage(id, { __SERVER_STATE__: true, state: !!this.serverMessageHandler })
    }
+
    async onGetFacilities(id: number, message: GetFacilities) {
       const list = await this.getFacilitiesList(id, message.lat, message.lon);
       this.sendMessage(id, { __FACILITIES__: true, facilities: JSON.stringify([...list.values()]) });
