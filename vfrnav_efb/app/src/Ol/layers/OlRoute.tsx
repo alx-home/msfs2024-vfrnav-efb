@@ -34,6 +34,7 @@ import redMarker from '@efb-images/marker-icon-red.svg';
 import blueMarker from '@efb-images/marker-icon-blue.svg';
 import { ExportNav, Properties, PropertiesRecord } from "@shared/NavData";
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
+import { useEvent } from "react-use-event-hook";
 
 
 const useMap = () => {
@@ -300,7 +301,7 @@ const useDraw = (source?: VectorSource<Feature<Geometry>>) => {
    const { map, setAddNav, triggerFlash } = useContext(MapContext)!;
    const [draw, setDraw] = useState<Draw>();
 
-   const updateDraw = useCallback((draw: Draw | undefined) => {
+   const updateDraw = useEvent((draw: Draw | undefined) => {
       setDraw(oldDraw => {
          if (oldDraw) {
             map.removeInteraction(oldDraw);
@@ -312,7 +313,7 @@ const useDraw = (source?: VectorSource<Feature<Geometry>>) => {
 
          return draw;
       });
-   }, [setDraw, map]);
+   });
 
    useEffect(() => {
       setAddNav(() => () => {

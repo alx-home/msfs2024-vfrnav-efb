@@ -171,8 +171,9 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
 
    const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gal' : 'l', [fuelUnit])
    const departureTimeStr = useMemo(() => {
-      const hours = Math.floor(departureTime / 60);
-      const minutes = Math.round(departureTime - 60 * hours);
+      const time = departureTime;
+      const hours = Math.floor(time / 60);
+      const minutes = Math.round(time - 60 * hours);
 
       return (hours % 24) + 'h' + (minutes < 10 ? '0' + minutes : minutes)
    }, [departureTime])
@@ -188,7 +189,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
    const { getFuel } = useFuel();
 
    const [mode, setMode] = useState<Modes>('Enroute');
-   const [reset, setReset] = useState(false);
+   const [reset, setReset] = useState(0);
    const [collapseWaypoints, setCollapseWaypoints] = useState(true);
    const delayedRef = useRef<(() => void)[]>([])
    const [delayed, setDelayed] = useState(false)
@@ -232,7 +233,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                   props[index].ata = date.getHours() * 60 + date.getMinutes();
                   return props;
                });
-               setReset(true)
+               setReset(value => value + 1)
             })
          }
 
@@ -243,7 +244,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                      props[index].curFuel = fromUnit(fuel)
                      return props;
                   });
-                  setReset(true)
+                  setReset(value => value + 1)
                })
 
                setDelayed(true)
@@ -260,16 +261,16 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
 
                }
             }
-            setReset(true)
+            setReset(value => value + 1)
          }
       }
 
       editNavProperties(id, properties);
    });
 
-   const getHeader = useCallback((mode: Modes, edit: boolean, dry: boolean) => {
+   const header = useMemo(() => {
       return [
-         <GridElem key="Waypoint" active={true} edit={edit} currentMode={mode}>{(collapseWaypoints && !dry) ? "" : "Waypoint"}</GridElem>,
+         <GridElem key="Waypoint" active={true} edit={edit} currentMode={mode}>{(collapseWaypoints) ? "" : "Waypoint"}</GridElem>,
          <GridElem key="Altitude" active={true} edit={edit} mode="Enroute" currentMode={mode}>Altitude</GridElem>,
          ...(edit ? [] : [<GridElem key="Dist" active={true} edit={edit} mode="Enroute" currentMode={mode}>Dist</GridElem>]),
          <GridElem key="VOR Ind/Freq" active={true} edit={edit} mode="Vor" currentMode={mode}>VOR Ind/Freq</GridElem>,
@@ -300,12 +301,10 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
          <GridElem key="Fuel" active={true} edit={edit} mode="Enroute" currentMode={mode}>Fuel ({fuelUnit === 'gal' ? 'gal' : 'l'})</GridElem>,
          <GridElem key="Remarks" active={true} edit={edit} mode="Remarks" currentMode={mode}>Remarks</GridElem>
       ].filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full').map((elem, index, all) => <elem.type key={elem.key} {...elem.props} col={index} size={all.length} />)
-   }, [fuelUnit, collapseWaypoints]);
+   }, [collapseWaypoints, edit, fuelUnit, mode]);
 
-   const header = useMemo(() => getHeader(mode, edit, false), [edit, getHeader, mode]);
-
-   const getLegs = useCallback((mode: Modes, edit: boolean, dry: boolean) => {
-      let time = (departureTime + taxiTime) * 60;
+   const legs = useMemo(() => {
+      let time = (departureTime - new Date().getTimezoneOffset() + taxiTime) * 60;
       let estfuel = (loadedFuel - taxiConso);
       let estfuel2 = estfuel;
       let deltaEta = 0;
@@ -321,7 +320,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                      waypoints[row] = value
                      updateWaypoints(id, waypoints);
                   }} />
-                  : <div className={"m-auto text-center transition-all " + ((collapseWaypoints && !dry) ? "w-0" : "w-36")}>{name}</div>
+                  : <div className={"m-auto text-center transition-all " + ((collapseWaypoints) ? "w-0" : "w-36")}>{name}</div>
             }
          </GridElem>)
 
@@ -362,8 +361,9 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
             time += navProps.dur.full;
 
             const eta = (() => {
-               let h = Math.floor(time / 3600);
-               const m = Math.floor((time / 60 - h * 60))
+               const time_ = time + new Date().getTimezoneOffset() * 60;
+               let h = Math.floor(time_ / 3600);
+               const m = Math.floor((time_ / 60 - h * 60))
                h %= 24;
 
                return (h < 10 ? '0' : '') + h + "h" + ((h || m) ? (m < 10 ? '0' : '') + m : '')
@@ -385,7 +385,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                   return ''
                }
 
-               const time2 = time - deltaEta;
+               const time2 = time - deltaEta + new Date().getTimezoneOffset() * 60;
                let h = Math.floor(time2 / 3600);
                const m = Math.floor((time2 / 60 - h * 60))
                h %= 24;
@@ -512,7 +512,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
 
                      <Reset className="flex-row justify-end" onReset={() => {
                         navProps.ata = -1;
-                        setReset(true)
+                        setReset(value => value + 1)
                      }}>
                         <Input active={true} className="w-16" onChange={(value) => {
                            if (value.length) {
@@ -523,7 +523,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                            }
 
                            editNavProperties(id, properties);
-                        }} reload={reset} value={ataStr}
+                        }} reload={reset > 0} value={ataStr}
                            validate={async (value) => {
                               if (!value.length) {
                                  return true
@@ -602,12 +602,12 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                         <Reset className="flex-row justify-end" onReset={() => {
                            navProps.curFuel = 0;
                            editNavProperties(id, properties);
-                           setReset(true)
+                           setReset(value => value + 1)
                         }}>
                            <Input active={true} className="w-12" onChange={(value) => {
                               navProps.curFuel = fromUnit(+value);
                               editNavProperties(id, properties);
-                           }} value={toUnit(curFuel).toString()} reload={reset} validate={async (value) => {
+                           }} value={toUnit(curFuel).toString()} reload={reset > 0} validate={async (value) => {
                               return /^[+]?\d*$/.test(value);
                            }} inputMode='decimal' />
                         </Reset>
@@ -651,17 +651,15 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
             .filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full')
             .map((elem, index, all) => <elem.type key={elem.key} {...elem.props} row={row + 1} col={index} size={all.length} />);
       })
-   }, [departureTime, taxiTime, loadedFuel, taxiConso, coords, waypoints, collapseWaypoints, updateWaypoints, id, actives, properties, toUnit, reset, editNavProperties, fromUnit, setActive])
-
-   const legs = useMemo(() => getLegs(mode, edit, false), [edit, getLegs, mode]);
+   }, [actives, collapseWaypoints, coords, departureTime, edit, editNavProperties, fromUnit, id, loadedFuel, mode, properties, reset, setActive, taxiConso, taxiTime, toUnit, updateWaypoints, waypoints]);
 
    useEffect(() => {
-      setReset(true)
+      setReset(value => value + 1)
    }, [fuelUnit])
 
    useEffect(() => {
       if (reset) {
-         setReset(false)
+         setReset(0)
       }
    }, [reset])
 
@@ -718,7 +716,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                               <Select active={true} value={link} className="my-1 max-w-32"
                                  onChange={(value) => {
                                     setLinks(id, value);
-                                    setReset(true)
+                                    setReset(value => value + 1)
                                  }} >
                                  <SelectOption id='None'>
                                     None
@@ -736,13 +734,13 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                                        getFuel().then((fuel) => {
                                           delayedRef.current.push(() => {
                                              setLoadedFuel(id, fuel)
-                                             setReset(true)
+                                             setReset(value => value + 1)
                                           })
                                           setDelayed(true)
                                        }).catch()
                                     }}>
                                        <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset} inputMode="decimal"
+                                          <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset > 0} inputMode="decimal"
                                              onChange={(value) => {
                                                 setLoadedFuel(id, fromUnit(+value));
                                              }} validate={async (value) => {
@@ -756,11 +754,11 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                                     <div className="flex mr-2 m-auto grow">Departure Time : </div>
                                     <Reset className="justify-end min-w-20" onReset={async () => {
                                        const date = await getSimDate().catch(() => new Date());
-                                       setDepartureTime(id, date.getHours() * 60 + date.getMinutes());
-                                       setReset(true)
+                                       setDepartureTime(id, date.getHours() * 60 + date.getMinutes() + new Date().getTimezoneOffset());
+                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={departureTimeStr}
+                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={departureTimeStr}
                                              onChange={(value) => {
                                                 const data = value.split('h');
                                                 setDepartureTime(id, +data[0] * 60 + +data[1]);
@@ -780,10 +778,10 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                                     <div className="flex mr-2 m-auto grow">Taxi Duration : </div>
                                     <Reset className="justify-end min-w-20" onReset={() => {
                                        setTaxiTime(id, 15);
-                                       setReset(true)
+                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={taxiTimeStr}
+                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={taxiTimeStr}
                                              onChange={(value) => {
                                                 if (/^\d+h\d*$/.test(value)) {
                                                    const data = value.split('h');
@@ -809,10 +807,10 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                                     <div className="flex mr-2 m-auto grow">Taxi Conso : </div>
                                     <Reset className="justify-end min-w-20" onReset={() => {
                                        setTaxiConso(id, 30);
-                                       setReset(true)
+                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={taxiFuelStr} inputMode="decimal"
+                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={taxiFuelStr} inputMode="decimal"
                                              onChange={(value) => {
                                                 setTaxiConso(id, fromUnit(+value));
                                              }} validate={async (value) => {
@@ -828,10 +826,10 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                                     <div className="flex mr-2 m-auto grow">Time Offset : </div>
                                     <Reset className="justify-end min-w-20" onReset={() => {
                                        setTaxiTime(id, 0);
-                                       setReset(true)
+                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={taxiTimeStr}
+                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={taxiTimeStr}
                                              onChange={(value) => {
                                                 if (/^\d+h\d*$/.test(value)) {
                                                    const data = value.split('h');
@@ -857,10 +855,10 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
                                     <div className="flex mr-2 m-auto grow">Conso Offset : </div>
                                     <Reset className="justify-end min-w-20" onReset={() => {
                                        setTaxiConso(id, 30);
-                                       setReset(true)
+                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset} value={taxiFuelStr} inputMode="decimal"
+                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={taxiFuelStr} inputMode="decimal"
                                              onChange={(value) => {
                                                 setTaxiConso(id, fromUnit(+value));
                                              }} validate={async (value) => {

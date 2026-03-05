@@ -14,7 +14,7 @@
  */
 
 import { Collection, Map as olMap, MapBrowserEvent, getUid, MapEvent } from 'ol';
-import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState, useContext } from 'react';
+import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { NavData } from './MapMenu/Menus/Nav';
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
@@ -31,6 +31,7 @@ import { messageHandler, SettingsContext } from '@Settings/SettingsProvider';
 import { Deviation, ExportNavRecord, FuelUnit, getFuelConsumption, h125Curve, FuelPoint, Properties, Alt } from '@shared/NavData';
 import { getLength } from 'ol/sphere';
 import { PresetPopup } from '@pages/NavLog/Settings/Fuel/PresetPopup';
+import { useEvent } from 'react-use-event-hook';
 
 export type Interactive = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -453,9 +454,9 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     value: string,
     user?: boolean
   } | undefined>(undefined)
-  const updateFuelPreset = useCallback((value: string, user?: boolean) => {
+  const updateFuelPreset = useEvent((value: string, user?: boolean) => {
     setNextFuelPreset({ value, user })
-  }, [])
+  })
 
   const [fuelSettingsOat, setFuelSettingsOat] = useState(20)
 
@@ -472,9 +473,9 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     value: string,
     user?: boolean
   } | undefined>(undefined)
-  const updateDeviationPreset = useCallback((value: string, user?: boolean) => {
+  const updateDeviationPreset = useEvent((value: string, user?: boolean) => {
     setNextDeviationPreset({ value, user });
-  }, [])
+  })
 
 
   const importNavRef = useRef<(_data: {
@@ -493,7 +494,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     link: string;
   }[]) => void>(undefined);
 
-  const importNav = useCallback((data: {
+  const importNav = useEvent((data: {
     id: number,
     name: string;
     shortName: string;
@@ -509,12 +510,12 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     link: string;
   }[]) => {
     importNavRef.current?.(data)
-  }, [])
+  })
 
 
-  const updateNavPropsCB = useCallback((props: Properties, prevCoords: Coordinate, coords: Coordinate) =>
+  const updateNavPropsCB = useEvent((props: Properties, prevCoords: Coordinate, coords: Coordinate) =>
     updateNavProps(deviationCurve, props, prevCoords, coords, fuelCurve)
-    , [deviationCurve, fuelCurve])
+  )
 
 
   useEffect(() => {
@@ -703,190 +704,231 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     messageHandler.send({ __GET_RECORDS__: true });
   }, []);
 
-  const provider = useMemo(() => ({
-    map: map,
-    addNav: (): void => setAddNavRequest(true),
-    setAddNav: setAddNav,
-    cancel: (): void => setCancelRequest(true),
-    registerMouseEnd: (callback: (_coords: Coordinate) => void) => {
-      mouseEndCallbacks.current.push(callback)
-    },
-    unregisterMouseEnd: (callback: (_coords: Coordinate) => void) => {
-      mouseEndCallbacks.current.splice(mouseEndCallbacks.current.findIndex(value => value === callback), 1)
-    },
-    setCancel: setCancel,
-    navData: navData,
-    setNavData: setNavData,
-    records: records,
-    counter: counter,
-    flash: flash,
-    setFlash: setFlash,
-    flashKey: flashKey,
-    triggerFlash: (value?: boolean) => {
-      if (value ?? true) {
-        setFlashKey(key => key + 1);
+  const triggerFlash = useEvent((value?: boolean) => {
+    if (value ?? true) {
+      setFlashKey(key => key + 1);
+    }
+    setFlash(value ?? true);
+  });
+
+  const removeNav = useEvent((id: number) => {
+    setNavData(items => {
+      const newItems = [...items];
+      const deleteIndex = newItems.findIndex((item) => item.id === id);
+      const deleteOrder = newItems[deleteIndex].order;
+      newItems.splice(deleteIndex, 1);
+      return newItems.map(elem => {
+        if (elem.order > deleteOrder) {
+          return { ...elem, order: (elem.order - 1) };
+        }
+        return elem;
+      });
+    });
+  });
+
+  const activeNav = useEvent((id: number, active: boolean) => {
+    setNavData(items => {
+      const index = items.findIndex((item) => item.id === id);
+      if (index === -1) {
+        return items;
       }
-      setFlash(value ?? true);
-    },
-    removeNav: (id: number) => {
-      setNavData(items => {
-        const newItems = [...items];
-        const deleteIndex = newItems.findIndex((item) => item.id === id);
-        const deleteOrder = newItems[deleteIndex].order;
-        newItems.splice(deleteIndex, 1);
-        return newItems.map(elem => {
-          if (elem.order > deleteOrder) {
-            return { ...elem, order: (elem.order - 1) };
-          }
-          return elem;
-        });
-      });
-    },
-    activeNav: (id: number, active: boolean) => {
-      setNavData(items => {
-        const index = items.findIndex((item) => item.id === id);
-        if (index === -1) {
-          return items;
+
+      return items.toSpliced(index, 1, { ...items[index], active: active })
+    });
+  });
+
+  const editNav = useEvent((id: number, newName: string) => {
+    setNavData(items => {
+      const index = items.findIndex((item) => item.id === id);
+      if (index === -1) {
+        return items;
+      }
+
+      return items.toSpliced(index, 1, { ...items[index], name: newName })
+    })
+  });
+
+  const setLoadedFuel = useEvent((id: number, value: number) => {
+    setNavData(items => {
+      const index = items.findIndex((item) => item.id === id);
+      if (index === -1) {
+        return items;
+      }
+
+      return items.toSpliced(index, 1, { ...items[index], loadedFuel: value })
+    })
+  });
+
+  const setDepartureTime = useEvent((id: number, value: number) => {
+    setNavData(items => {
+      const index = items.findIndex((item) => item.id === id);
+      if (index === -1) {
+        return items;
+      }
+
+      return items.toSpliced(index, 1, { ...items[index], departureTime: value })
+    })
+  });
+
+  const setTaxiTime = useEvent((id: number, value: number) => {
+    setNavData(items => {
+      const index = items.findIndex((item) => item.id === id);
+      if (index === -1) {
+        return items;
+      }
+
+      return items.toSpliced(index, 1, { ...items[index], taxiTime: value })
+    })
+  });
+
+  const setTaxiConso = useEvent((id: number, value: number) => {
+    setNavData(items => {
+      const index = items.findIndex((item) => item.id === id);
+      if (index === -1) {
+        return items;
+      }
+
+      return items.toSpliced(index, 1, { ...items[index], taxiConso: value })
+    })
+  });
+
+  const setLink = useEvent((id: number, value: string) => {
+    setNavData(items => {
+      const index = items.findIndex((item) => item.id === id);
+      if (index === -1) {
+        return items;
+      }
+
+      return items.toSpliced(index, 1, { ...items[index], link: value })
+    })
+  });
+
+  const editNavProperties = useEvent((id: number, properties: ((Properties[]) | ((_props: Properties[]) => (Properties[])))) => {
+    setNavData(items => {
+      const newItems = items.map(item => ({ ...item }));
+      const item = newItems.find((item) => item.id === id);
+      if (item) {
+        const { coords } = item;
+        if (typeof properties === 'function') {
+          item.properties = properties(item.properties).map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
+        } else {
+          item.properties = properties.map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
         }
+      }
 
-        return items.toSpliced(index, 1, { ...items[index], active: active })
-      });
-    },
-    editNav: (id: number, newName: string) => {
-      setNavData(items => {
-        const index = items.findIndex((item) => item.id === id);
-        if (index === -1) {
-          return items;
-        }
+      return newItems;
+    })
+  });
 
-        return items.toSpliced(index, 1, { ...items[index], name: newName })
-      })
-    },
-    setLoadedFuel: (id: number, value: number) => {
-      setNavData(items => {
-        const index = items.findIndex((item) => item.id === id);
-        if (index === -1) {
-          return items;
-        }
+  const updateWaypoints = useEvent((id: number, names: string[]) => {
+    setNavData(items => {
+      const index = items.findIndex((item) => item.id === id);
+      if (index === -1) {
+        return items;
+      }
 
-        return items.toSpliced(index, 1, { ...items[index], loadedFuel: value })
-      })
-    },
-    setDepartureTime: (id: number, value: number) => {
-      setNavData(items => {
-        const index = items.findIndex((item) => item.id === id);
-        if (index === -1) {
-          return items;
-        }
+      return items.toSpliced(index, 1, { ...items[index], waypoints: [...names] })
+    })
+  });
 
-        return items.toSpliced(index, 1, { ...items[index], departureTime: value })
-      })
-    },
-    setTaxiTime: (id: number, value: number) => {
-      setNavData(items => {
-        const index = items.findIndex((item) => item.id === id);
-        if (index === -1) {
-          return items;
-        }
+  const reorderNav = useEvent((orders: number[]) => {
+    setNavData(data => {
+      return orders.map((order, index) => ({ ...data[index], order: order }))
+    });
+  });
 
-        return items.toSpliced(index, 1, { ...items[index], taxiTime: value })
-      })
-    },
-    setTaxiConso: (id: number, value: number) => {
-      setNavData(items => {
-        const index = items.findIndex((item) => item.id === id);
-        if (index === -1) {
-          return items;
-        }
+  const removeRecord = useEvent((id: number) =>
+    messageHandler.send({
+      __REMOVE_RECORD__: true,
 
-        return items.toSpliced(index, 1, { ...items[index], taxiConso: value })
-      })
-    },
-    setLink: (id: number, value: string) => {
-      setNavData(items => {
-        const index = items.findIndex((item) => item.id === id);
-        if (index === -1) {
-          return items;
-        }
+      id: id
+    })
+  );
 
-        return items.toSpliced(index, 1, { ...items[index], link: value })
-      })
-    },
-    editNavProperties: (id: number, properties: ((Properties[]) | ((_props: Properties[]) => (Properties[])))) => {
-      setNavData(items => {
-        const newItems = items.map(item => ({ ...item }));
-        const item = newItems.find((item) => item.id === id);
-        if (item) {
-          const { coords } = item;
-          if (typeof properties === 'function') {
-            item.properties = properties(item.properties).map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
-          } else {
-            item.properties = properties.map((props, index) => updateNavPropsCB(props, coords[index], coords[index + 1]));
-          }
-        }
+  const activeRecord = useEvent((id: number, active: boolean) => {
+    const newActiveRecords = new Map(activeRecords);
+    newActiveRecords.set(id, active);
 
-        return newItems;
-      })
-    },
-    updateWaypoints: (id: number, names: string[]) => {
-      setNavData(items => {
-        const index = items.findIndex((item) => item.id === id);
-        if (index === -1) {
-          return items;
-        }
+    setActiveRecords(newActiveRecords);
+    setRecords(records => records.map(value => ({ ...value, active: newActiveRecords.get(value.id) ?? false })));
+  });
 
-        return items.toSpliced(index, 1, { ...items[index], waypoints: [...names] })
-      })
-    },
-    reorderNav: (orders: number[]) => {
-      setNavData(data => {
-        return orders.map((order, index) => ({ ...data[index], order: order }))
-      });
-    },
-    removeRecord: (id: number) => {
-      messageHandler.send({
-        __REMOVE_RECORD__: true,
+  const editRecord = useEvent((id: number, newName: string) => {
+    messageHandler.send({
+      __EDIT_RECORD__: true,
 
-        id: id
-      })
-    },
-    activeRecord: (id: number, active: boolean) => {
-      const newActiveRecords = new Map(activeRecords);
-      newActiveRecords.set(id, active);
+      id: id,
+      name: newName
+    })
+  });
+  const registerMouseEnd = useEvent((callback: (_coords: Coordinate) => void) => {
+    mouseEndCallbacks.current.push(callback)
+  });
 
-      setActiveRecords(newActiveRecords);
-      setRecords(records => records.map(value => ({ ...value, active: newActiveRecords.get(value.id) ?? false })));
-    },
-    editRecord: (id: number, newName: string) => {
-      messageHandler.send({
-        __EDIT_RECORD__: true,
+  const unregisterMouseEnd = useEvent((callback: (_coords: Coordinate) => void) => {
+    mouseEndCallbacks.current.splice(mouseEndCallbacks.current.findIndex(value => value === callback), 1)
+  });
 
-        id: id,
-        name: newName
-      })
-    },
-    setProfileOffset: setProfileOffset,
-    profileOffset: profileOffset,
-    setProfileScale: setProfileScale,
-    profileScale: profileScale,
-    recordsCenter: recordsCenter,
-    setRecordsCenter: setRecordsCenter,
-    setProfileRange: setProfileRange,
-    profileRange: profileRange,
-    setProfileRule1: setProfileRule1,
-    profileRule1: profileRule1,
-    setProfileRule2: setProfileRule2,
-    profileRule2: profileRule2,
+  const cancelCB = useEvent(() => {
+    setCancelRequest(true)
+  });
 
-    setProfileSlope1: setProfileSlope1,
-    profileSlope1: profileSlope1,
-    setProfileSlope2: setProfileSlope2,
-    profileSlope2: profileSlope2,
+  const addNavCB = useEvent(() => {
+    setAddNavRequest(true);
+  });
 
-    setProfileSlopeOffset1: setProfileSlopeOffset1,
-    profileSlopeOffset1: profileSlopeOffset1,
-    setProfileSlopeOffset2: setProfileSlopeOffset2,
-    profileSlopeOffset2: profileSlopeOffset2,
+  const provider = useMemo(() => ({
+    map,
+    addNav: addNavCB,
+    setAddNav,
+    cancel: cancelCB,
+    registerMouseEnd,
+    unregisterMouseEnd,
+    setCancel,
+    navData,
+    setNavData,
+    records,
+    counter,
+    flash,
+    setFlash,
+    flashKey,
+    triggerFlash,
+    removeNav,
+    activeNav,
+    editNav,
+    setLoadedFuel,
+    setDepartureTime,
+    setTaxiTime,
+    setTaxiConso,
+    setLink,
+    editNavProperties,
+    updateWaypoints,
+    reorderNav,
+    removeRecord,
+    activeRecord,
+    editRecord,
+    setProfileOffset,
+    profileOffset,
+    setProfileScale,
+    profileScale,
+    recordsCenter,
+    setRecordsCenter,
+    setProfileRange,
+    profileRange,
+    setProfileRule1,
+    profileRule1,
+    setProfileRule2,
+    profileRule2,
+
+    setProfileSlope1,
+    profileSlope1,
+    setProfileSlope2,
+    profileSlope2,
+
+    setProfileSlopeOffset1,
+    profileSlopeOffset1,
+    setProfileSlopeOffset2,
+    profileSlopeOffset2,
 
     enableTouchdown: setTouchdown,
     withTouchdown: touchdown,
@@ -895,30 +937,30 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
     updateNavProps: updateNavPropsCB,
 
-    fuelUnit: fuelUnit,
-    setFuelUnit: setFuelUnit,
+    fuelUnit,
+    setFuelUnit,
 
-    setSavedFuelCurves: setSavedFuelCurves,
-    savedFuelCurves: savedFuelCurves,
-    updateFuelPreset: updateFuelPreset,
-    fuelPreset: fuelPreset,
-    fuelSettingsOat: fuelSettingsOat,
-    setFuelSettingsOat: setFuelSettingsOat,
+    setSavedFuelCurves,
+    savedFuelCurves,
+    updateFuelPreset,
+    fuelPreset,
+    fuelSettingsOat,
+    setFuelSettingsOat,
 
-    fuelCurve: fuelCurve,
-    setFuelCurve: setFuelCurve,
+    fuelCurve,
+    setFuelCurve,
 
-    setSavedDeviationCurves: setSavedDeviationCurves,
-    savedDeviationCurves: savedDeviationCurves,
+    setSavedDeviationCurves,
+    savedDeviationCurves,
 
-    deviationCurve: deviationCurve,
-    setDeviationCurve: setDeviationCurve,
-    updateDeviationPreset: updateDeviationPreset,
-    deviationPreset: deviationPreset,
+    deviationCurve,
+    setDeviationCurve,
+    updateDeviationPreset,
+    deviationPreset,
 
-    importNavRef: importNavRef,
-    importNav: importNav
-  }), [map, navData, records, flash, flashKey, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav, activeRecords]);
+    importNavRef,
+    importNav
+  }), [map, addNavCB, cancelCB, registerMouseEnd, unregisterMouseEnd, navData, records, flash, flashKey, triggerFlash, removeNav, activeNav, editNav, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink, editNavProperties, updateWaypoints, reorderNav, removeRecord, activeRecord, editRecord, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav]);
 
   return (
     <MapContext.Provider

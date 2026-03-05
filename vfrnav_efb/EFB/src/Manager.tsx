@@ -505,8 +505,9 @@ export class Manager {
       // Offset between year 1 and Unix epoch (1970-01-01)
       const EPOCH_OFFSET_SECONDS = 62135596800;
       const unixSeconds = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "Seconds") - EPOCH_OFFSET_SECONDS;
+      const offset = SimVar.GetSimVarValue("E:TIME ZONE OFFSET", "Seconds");
 
-      this.sendMessage(id, { __DATE_RESPONSE__: true, date: unixSeconds * 1000 });
+      this.sendMessage(id, { __DATE_RESPONSE__: true, date: unixSeconds * 1000, timezone: offset * 1000 });
    }
 
    onGetATCId(id: number) {

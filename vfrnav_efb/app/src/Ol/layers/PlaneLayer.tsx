@@ -30,6 +30,7 @@ import { messageHandler } from "@Settings/SettingsProvider";
 import { PlanePos } from '@shared/PlanPos';
 
 import PlaneImg from '@efb-images/plane.svg';
+import { useEvent } from "react-use-event-hook";
 
 export const PlaneLayer = ({
   opacity,
@@ -58,7 +59,7 @@ export const PlaneLayer = ({
 
   const PlaneIcon = useRef<HTMLImageElement | null>(null);
 
-  const elemStyle = useCallback((angle: number) => new Style({
+  const elemStyle = useEvent((angle: number) => new Style({
     renderer(coordinates, state) {
       const [x, y] = coordinates as Coordinate;
       const ctx = state.context;
@@ -72,21 +73,20 @@ export const PlaneLayer = ({
       }
       ctx.restore();
     }
-  }), []);
+  }));
 
   // Layer displaying the clusters and individual features.
   const vectorLayer = useMemo(() => new VectorLayer({
     source: vectorSource
   }) as VectorLayer & Interactive, [vectorSource]);
 
+  const onGetPlanePosition = useEvent((planePos: PlanePos) => {
+    setPos(planePos);
+  });
   useEffect(() => {
-    const onGetPlanePosition = (planePos: PlanePos) => {
-      setPos(planePos);
-    };
-
     messageHandler.subscribe("__PLANE_POS__", onGetPlanePosition)
     return () => messageHandler.unsubscribe("__PLANE_POS__", onGetPlanePosition);
-  }, [map, vectorSource])
+  }, [onGetPlanePosition])
 
   useEffect(() => {
     vectorSource.clear();

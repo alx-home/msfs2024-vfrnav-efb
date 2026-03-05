@@ -466,7 +466,7 @@ const NavLogPageElem = ({ active }: {
               <div>Nav Log</div>
               <div className="ml-3">{atcId.length ? ' [' + atcId + ']' : ''}</div>
             </div>
-            <div className="">{simDate.toLocaleTimeString()}</div>
+            <div className="">{simDate.toLocaleTimeString("en-US", { timeZone: "UTC" })}</div>
           </div>
           <div className='flex flex-col overflow-hidden grow m-4 mt-5 mb-0 h-full'>
             <div className="pl-4">
