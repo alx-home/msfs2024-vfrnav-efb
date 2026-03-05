@@ -246,6 +246,8 @@ export class Manager {
                   this.recordManager.onGetPlaneRecords(data.id);
                } else if (isMessage("__GET_DATE__", data.content)) {
                   this.onGetDate(data.id);
+               } else if (isMessage("__GET_ATC_ID__", data.content)) {
+                  this.onGetATCId(data.id);
                } else if (isMessage("__GET_FACILITIES__", data.content)) {
                   this.onGetFacilities(data.id, data.content);
                } else if (isMessage("__GET_ICAOS__", data.content)) {
@@ -505,6 +507,10 @@ export class Manager {
       const unixSeconds = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "Seconds") - EPOCH_OFFSET_SECONDS;
 
       this.sendMessage(id, { __DATE_RESPONSE__: true, date: unixSeconds * 1000 });
+   }
+
+   onGetATCId(id: number) {
+      this.sendMessage(id, { __ATC_ID_RESPONSE__: true, value: SimVar.GetSimVarValue("ATC ID", "String") });
    }
 
    onGetServerState(id: number) {

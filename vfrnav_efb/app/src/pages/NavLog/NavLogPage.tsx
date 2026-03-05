@@ -26,6 +26,8 @@ import { Navlog } from "./NavLog";
 import { useKeyUp } from "@alx-home/Events";
 import { FuelPoint, Properties } from "@shared/NavData";
 import { Coordinate } from "ol/coordinate";
+import { useATCId } from "@Utils/ATCId";
+import { useSimDate } from "@Utils/SimDate";
 
 const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
   navData: NavData[],
@@ -196,6 +198,12 @@ const NavLogPageElem = ({ active }: {
     updateDeviationPreset, updateFuelPreset
   } = useContext(MapContext)!;
   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+
+  const getAtcId = useATCId();
+  const getSimDate = useSimDate();
+
+  const [atcId, setAtcId] = useState("");
+  const [simDate, setSimDate] = useState(new Date());
 
   const [opacity, setOpacity] = useState(' opacity-0');
   const [tab, setTab] = useState<string>('Settings');
@@ -425,6 +433,25 @@ const NavLogPageElem = ({ active }: {
     }
   }, [active]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      getAtcId().then(atcId => {
+        setAtcId(atcId);
+      }).catch(() => setAtcId(""));
+    }, 10_000);
+
+    return () => clearInterval(interval);
+  }, [getAtcId]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      getSimDate().then(date => {
+        setSimDate(date);
+      }).catch(() => setSimDate(new Date()));
+    }, 1_000);
+
+    return () => clearInterval(interval);
+  }, [getSimDate]);
 
   return <div className="flex grow justify-center overflow-hidden h-full" style={active ? {} : { display: 'none' }}>
     <div className="flex flex-row w-full h-full justify-center">
@@ -434,7 +461,13 @@ const NavLogPageElem = ({ active }: {
         + opacity + " max-w-full w-[77rem]"
       }>
         <div className={"relative flex flex-col grow overflow-hidden h-full"}>
-          <div className="flex text-2xl pt-6 px-8">Nav Log</div>
+          <div className="flex flex-row text-2xl pt-6 px-8">
+            <div className="flex flex-row grow">
+              <div>Nav Log</div>
+              <div className="ml-3">{atcId.length ? ' [' + atcId + ']' : ''}</div>
+            </div>
+            <div className="">{simDate.toLocaleTimeString()}</div>
+          </div>
           <div className='flex flex-col overflow-hidden grow m-4 mt-5 mb-0 h-full'>
             <div className="pl-4">
               <Tabs tabs={Array.from(tabs)} activeTab={tab} names={tabNames} switchTab={setTab} className="hidden" />
