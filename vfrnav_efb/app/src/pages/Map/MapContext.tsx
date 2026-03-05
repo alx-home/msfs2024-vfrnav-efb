@@ -766,7 +766,9 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
         return items;
       }
 
-      return items.toSpliced(index, 1, { ...items[index], departureTime: value })
+      // TypeScript modulo is a remainder, not a true modulo, so we need to do some extra work to get a positive result
+      const mod = (value: number, modulus: number) => ((value % modulus) + modulus) % modulus;
+      return items.toSpliced(index, 1, { ...items[index], departureTime: mod(value, 86_400) })
     })
   });
 
