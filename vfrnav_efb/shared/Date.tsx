@@ -11,11 +11,13 @@ export const GetDateRecord = GenRecord<GetDate>({
 export type DateResponse = {
    __DATE_RESPONSE__: true,
 
-   date: number
+   date: number,
+   timezone: number
 };
 
 export const DateResponseRecord = GenRecord<DateResponse>({
    __DATE_RESPONSE__: true,
 
-   date: 0
+   date: 0,
+   timezone: 0
 }, {})

@@ -31,10 +31,12 @@ struct Date {
    bool header_{true};
 
    std::size_t date_{};
+   int64_t     timezone_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__DATE_RESPONSE__", &Date::header_},
      js::_{"date", &Date::date_},
+     js::_{"timezone", &Date::timezone_},
    };
 };
 

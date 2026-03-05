@@ -15,7 +15,7 @@ export const useSimDate = () => {
 
          callback.current = (message) => {
             clearTimeout(timeoutId);
-            resolve(new Date(message.date));
+            resolve(new Date(message.date - message.timezone));
          };
          messageHandler.subscribe("__DATE_RESPONSE__", callback.current);
 
