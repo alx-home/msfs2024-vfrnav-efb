@@ -93,10 +93,12 @@ struct GetEFBState {
 #include "Records.h"
 #include "Settings.h"
 #include "Date.h"
+#include "ATCId.h"
 
 namespace ws {
 
 using Message = std::variant<
+  msg::ATCId,
   msg::ByeBye,
   msg::Date,
   msg::dev::Curve,
@@ -119,6 +121,7 @@ using Message = std::variant<
   msg::fuel::GetCurve,
   msg::fuel::GetPresets,
   msg::fuel::Presets,
+  msg::GetATCId,
   msg::GetDate,
   msg::GetEFBState,
   msg::GetFacilities,

@@ -25,6 +25,7 @@ import { ExportPdfsRecord } from './Pdfs';
 import { DefaultFuelPresetRecord, DeleteFuelPresetRecord, FuelPresetsRecord, FuelRecord, GetFuelCurveRecord, GetFuelPresetsRecord, GetFuelRecord, SetFuelCurveRecord } from './Fuel';
 import { DefaultDeviationPresetRecord, DeleteDeviationPresetRecord, DeviationPresetsRecord, GetDeviationCurveRecord, GetDeviationPresetsRecord, SetDeviationCurveRecord } from './Deviation';
 import { DateResponseRecord, GetDateRecord } from './Date';
+import { ATCIDResponseRecord, GetATCIdRecord } from './ATCId';
 
 export type GetSettings = { __GET_SETTINGS__: true };
 export type GetRecords = { __GET_RECORDS__: true };
@@ -37,10 +38,10 @@ const GetRecordsRecord = GenRecord<GetRecords>({
 }, {});
 
 const Messages = {
+   "__ATC_ID_RESPONSE__": ATCIDResponseRecord,
    "__BYE_BYE__": ByeByeRecord,
-   "__GET_DATE__": GetDateRecord,
-   "__DATE_RESPONSE__": DateResponseRecord,
    "__CLEAN_PLANE_RECORDS__": CleanPlaneRecordsRecord,
+   "__DATE_RESPONSE__": DateResponseRecord,
    "__DEFAULT_DEVIATION_PRESET__": DefaultDeviationPresetRecord,
    "__DEFAULT_FUEL_PRESET__": DefaultFuelPresetRecord,
    "__DELETE_DEVIATION_PRESET__": DeleteDeviationPresetRecord,
@@ -57,6 +58,8 @@ const Messages = {
    "__FUEL__": FuelRecord,
    "__FUEL_CURVE__": SetFuelCurveRecord,
    "__FUEL_PRESETS__": FuelPresetsRecord,
+   "__GET_ATC_ID__": GetATCIdRecord,
+   "__GET_DATE__": GetDateRecord,
    "__GET_DEVIATION_CURVE__": GetDeviationCurveRecord,
    "__GET_DEVIATION_PRESETS__": GetDeviationPresetsRecord,
    "__GET_EFB_STATE__": GetEFBStateRecord,

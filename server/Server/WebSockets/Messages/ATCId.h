@@ -19,22 +19,22 @@
 
 namespace ws::msg {
 
-struct GetDate {
+struct GetATCId {
    bool header_{true};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__GET_DATE__", &GetDate::header_},
+     js::_{"__GET_ATC_ID__", &GetATCId::header_},
    };
 };
 
-struct Date {
+struct ATCId {
    bool header_{true};
 
-   std::size_t date_{};
+   std::string value_{};
 
    static constexpr js::Proto PROTOTYPE{
-     js::_{"__DATE_RESPONSE__", &Date::header_},
-     js::_{"date", &Date::date_},
+     js::_{"__ATC_ID_RESPONSE__", &ATCId::header_},
+     js::_{"value", &ATCId::value_},
    };
 };
 
