@@ -23,6 +23,7 @@ import { FileExist, GetFile, OpenFile } from "@shared/Files";
 import { DefaultFuelPreset, FuelPresets, SetFuelCurve } from "@shared/Fuel";
 import { DefaultDeviationPreset, DeviationPresets, SetDeviationCurve } from "@shared/Deviation";
 import { SetPanelSize } from "@shared/Settings";
+import { PdfProcessed } from "@shared/Pdfs";
 
 interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
   /** The page title */
@@ -138,6 +139,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.props.manager.recordManager.onEditRecord(message);
   }
 
+  onPdfProcessed(message: PdfProcessed) {
+    this.props.manager.onPdfProcessed(message);
+  }
+
   onRemoveRecord(message: RemoveRecord) {
     this.props.manager.recordManager.onRemoveRecord(message);
   }
@@ -230,32 +235,33 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     if (messageHandler !== undefined) {
       this.props.manager.closeEFB();
 
-      messageHandler.unsubscribe("__SETTINGS__", this.props.manager.onSharedSettings)
-      messageHandler.unsubscribe("__GET_SETTINGS__", this.onGetSettings)
-      messageHandler.unsubscribe("__GET_SERVER_STATE__", this.onGetServerState)
-      messageHandler.unsubscribe("__GET_DATE__", this.onGetDate)
-      messageHandler.unsubscribe("__GET_ATC_ID__", this.onGetATCId)
-      messageHandler.unsubscribe("__GET_RECORDS__", this.onGetPlaneRecords)
       messageHandler.unsubscribe("__CLEAN_PLANE_RECORDS__", this.onCleanPlaneRecords)
-      messageHandler.unsubscribe("__GET_FACILITIES__", this.onGetFacilities)
-      messageHandler.unsubscribe("__GET_METAR__", this.onGetMetar)
-      messageHandler.unsubscribe("__GET_LAT_LON__", this.onGetLatLon)
-      messageHandler.unsubscribe("__GET_ICAOS__", this.onGetIcaos)
-      messageHandler.unsubscribe("__REMOVE_RECORD__", this.onRemoveRecord)
       messageHandler.unsubscribe("__EDIT_RECORD__", this.onEditRecord)
-      messageHandler.unsubscribe("__GET_PLANE_BLOB__", this.onGetPlaneBlob)
-      messageHandler.unsubscribe("__GET_FUEL__", this.onGetFuel)
-      messageHandler.unsubscribe("__GET_FILE__", this.onGetFile)
-      messageHandler.unsubscribe("__OPEN_FILE__", this.onOpenFile)
       messageHandler.unsubscribe("__FILE_EXISTS__", this.onFileExists)
+      messageHandler.unsubscribe("__GET_ATC_ID__", this.onGetATCId)
+      messageHandler.unsubscribe("__GET_DATE__", this.onGetDate)
+      messageHandler.unsubscribe("__GET_FACILITIES__", this.onGetFacilities)
+      messageHandler.unsubscribe("__GET_FILE__", this.onGetFile)
+      messageHandler.unsubscribe("__GET_FUEL__", this.onGetFuel)
+      messageHandler.unsubscribe("__GET_ICAOS__", this.onGetIcaos)
+      messageHandler.unsubscribe("__GET_LAT_LON__", this.onGetLatLon)
+      messageHandler.unsubscribe("__GET_METAR__", this.onGetMetar)
+      messageHandler.unsubscribe("__GET_PLANE_BLOB__", this.onGetPlaneBlob)
+      messageHandler.unsubscribe("__GET_RECORDS__", this.onGetPlaneRecords)
+      messageHandler.unsubscribe("__GET_SERVER_STATE__", this.onGetServerState)
+      messageHandler.unsubscribe("__GET_SETTINGS__", this.onGetSettings)
+      messageHandler.unsubscribe("__OPEN_FILE__", this.onOpenFile)
+      messageHandler.unsubscribe("__PDF_PROCESSED__", this.onPdfProcessed)
+      messageHandler.unsubscribe("__REMOVE_RECORD__", this.onRemoveRecord)
+      messageHandler.unsubscribe("__SETTINGS__", this.props.manager.onSharedSettings)
 
-      messageHandler.unsubscribe("__FUEL_PRESETS__", this.onFuelPresets)
-      messageHandler.unsubscribe("__FUEL_CURVE__", this.onFuelCurve)
       messageHandler.unsubscribe("__DEFAULT_FUEL_PRESET__", this.onDefaultFuelPreset)
+      messageHandler.unsubscribe("__FUEL_CURVE__", this.onFuelCurve)
+      messageHandler.unsubscribe("__FUEL_PRESETS__", this.onFuelPresets)
 
-      messageHandler.unsubscribe("__DEVIATION_PRESETS__", this.onDeviationPresets)
-      messageHandler.unsubscribe("__DEVIATION_CURVE__", this.onDeviationCurve)
       messageHandler.unsubscribe("__DEFAULT_DEVIATION_PRESET__", this.onDefaultDeviationPreset)
+      messageHandler.unsubscribe("__DEVIATION_CURVE__", this.onDeviationCurve)
+      messageHandler.unsubscribe("__DEVIATION_PRESETS__", this.onDeviationPresets)
     }
 
     super.destroy();
@@ -567,33 +573,34 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
       this.props.manager.openEFB(this.messageHandle);
 
-      messageHandler.subscribe("__SETTINGS__", this.props.manager.onSharedSettings.bind(this.props.manager))
-      messageHandler.subscribe("__GET_SETTINGS__", this.onGetSettings.bind(this))
-      messageHandler.subscribe("__GET_SERVER_STATE__", this.onGetServerState.bind(this))
-      messageHandler.subscribe("__GET_DATE__", this.onGetDate.bind(this))
-      messageHandler.subscribe("__GET_ATC_ID__", this.onGetATCId.bind(this))
       messageHandler.subscribe("__CLEAN_PLANE_RECORDS__", this.onCleanPlaneRecords.bind(this))
-      messageHandler.subscribe("__GET_RECORDS__", this.onGetPlaneRecords.bind(this))
-      messageHandler.subscribe("__GET_FACILITIES__", this.onGetFacilities.bind(this))
-      messageHandler.subscribe("__GET_METAR__", this.onGetMetar.bind(this))
-      messageHandler.subscribe("__GET_LAT_LON__", this.onGetLatLon.bind(this))
-      messageHandler.subscribe("__GET_ICAOS__", this.onGetIcaos.bind(this))
       messageHandler.subscribe("__EDIT_RECORD__", this.onEditRecord.bind(this))
-      messageHandler.subscribe("__REMOVE_RECORD__", this.onRemoveRecord.bind(this))
-      messageHandler.subscribe("__GET_PLANE_BLOB__", this.onGetPlaneBlob.bind(this))
-      messageHandler.subscribe("__GET_FUEL__", this.onGetFuel.bind(this))
-      messageHandler.subscribe("__GET_FILE__", this.onGetFile.bind(this))
-      messageHandler.subscribe("__OPEN_FILE__", this.onOpenFile.bind(this))
       messageHandler.subscribe("__FILE_EXISTS__", this.onFileExists.bind(this))
+      messageHandler.subscribe("__GET_ATC_ID__", this.onGetATCId.bind(this))
+      messageHandler.subscribe("__GET_DATE__", this.onGetDate.bind(this))
+      messageHandler.subscribe("__GET_FACILITIES__", this.onGetFacilities.bind(this))
+      messageHandler.subscribe("__GET_FILE__", this.onGetFile.bind(this))
+      messageHandler.subscribe("__GET_FUEL__", this.onGetFuel.bind(this))
+      messageHandler.subscribe("__GET_ICAOS__", this.onGetIcaos.bind(this))
+      messageHandler.subscribe("__GET_LAT_LON__", this.onGetLatLon.bind(this))
+      messageHandler.subscribe("__GET_METAR__", this.onGetMetar.bind(this))
+      messageHandler.subscribe("__GET_PLANE_BLOB__", this.onGetPlaneBlob.bind(this))
+      messageHandler.subscribe("__GET_RECORDS__", this.onGetPlaneRecords.bind(this))
+      messageHandler.subscribe("__GET_SERVER_STATE__", this.onGetServerState.bind(this))
+      messageHandler.subscribe("__GET_SETTINGS__", this.onGetSettings.bind(this))
+      messageHandler.subscribe("__OPEN_FILE__", this.onOpenFile.bind(this))
+      messageHandler.subscribe("__PDF_PROCESSED__", this.onPdfProcessed.bind(this))
+      messageHandler.subscribe("__REMOVE_RECORD__", this.onRemoveRecord.bind(this))
       messageHandler.subscribe("__SET_PANEL_SIZE__", this.onSetPanelSize.bind(this))
+      messageHandler.subscribe("__SETTINGS__", this.props.manager.onSharedSettings.bind(this.props.manager))
 
-      messageHandler.subscribe("__FUEL_PRESETS__", this.onFuelPresets.bind(this))
-      messageHandler.subscribe("__FUEL_CURVE__", this.onFuelCurve.bind(this))
       messageHandler.subscribe("__DEFAULT_FUEL_PRESET__", this.onDefaultFuelPreset.bind(this))
+      messageHandler.subscribe("__FUEL_CURVE__", this.onFuelCurve.bind(this))
+      messageHandler.subscribe("__FUEL_PRESETS__", this.onFuelPresets.bind(this))
 
-      messageHandler.subscribe("__DEVIATION_PRESETS__", this.onDeviationPresets.bind(this))
-      messageHandler.subscribe("__DEVIATION_CURVE__", this.onDeviationCurve.bind(this))
       messageHandler.subscribe("__DEFAULT_DEVIATION_PRESET__", this.onDefaultDeviationPreset.bind(this))
+      messageHandler.subscribe("__DEVIATION_CURVE__", this.onDeviationCurve.bind(this))
+      messageHandler.subscribe("__DEVIATION_PRESETS__", this.onDeviationPresets.bind(this))
     }
   }
 
