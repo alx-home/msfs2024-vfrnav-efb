@@ -33,6 +33,7 @@ declare global {
   }
 
   const __MSFS_EMBEDED__: boolean;
+  const __WATCH_MODE__: boolean;
   const __SIA_AUTH__: string;
   const __SIA_ADDR__: string;
   const __SIA_AZBA_ADDR__: string;

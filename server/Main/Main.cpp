@@ -236,7 +236,15 @@ Main::OpenWebEFB() {
    ShellExecute(
      nullptr,
      nullptr,
-     ("http://localhost:" + std::to_string(server_->GetPort())).data(),
+     ("http://localhost:"
+      + std::to_string(
+#ifdef WATCH_MODE
+        4003ui16
+#else
+        server_->GetPort()
+#endif
+      ))
+       .data(),
      nullptr,
      nullptr,
      SW_SHOW

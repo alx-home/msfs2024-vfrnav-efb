@@ -105,6 +105,7 @@ const GetConfig = (): UserConfig => ({
   ...AppConfig({
     empty_out: true,
     define: {
+      __WATCH_MODE__: watch,
       __MSFS_EMBEDED__: msfsEmbedded,
       __SIA_AUTH__: JSON.stringify(__SIA_AUTH__),
       __SIA_ADDR__: JSON.stringify(__SIA_ADDR__),
