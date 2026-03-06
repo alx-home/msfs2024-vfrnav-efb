@@ -31,7 +31,7 @@ process.argv.forEach(function (val) {
 
 const GetConfig = (name: string) => ({
    ...AppConfig({
-      output_dir: "../../../build/server/ts/" + name + "/dist",
+      output_dir: "../../../build/server/ts/" + name + "/dist"
    }), ...{
       root: name
    },

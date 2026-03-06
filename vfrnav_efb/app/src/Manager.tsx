@@ -60,7 +60,7 @@ export class Manager {
          return;
       }
 
-      this.socket = new WebSocket("ws://" + location.host);
+      this.socket = new WebSocket("ws://" + (__WATCH_MODE__ ? location.hostname + ":48578" : location.host));
       this.id = 2;
 
       const onClose = () => {
