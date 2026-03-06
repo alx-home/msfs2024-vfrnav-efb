@@ -15,16 +15,17 @@
 
 import { Scroll, Button } from "@alx-home/Utils";
 
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { ChartsPopup } from "./Popup";
-import { ExportPdfs } from "@shared/Pdfs";
+import { ExportPdfs, PdfBlob } from "@shared/Pdfs";
 import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 import { Pdf } from "@Utils/Pdf";
 import { useEFBServer } from "@Utils/useServer";
 
 import deleteImg from '@alx-home/images/delete.svg';
 import ExportIcon from '@alx-home/images/export.svg?react';
+import { useEvent } from "react-use-event-hook";
 
 export type Src = {
   src: Uint8Array,
@@ -39,6 +40,8 @@ export const ChartsPage = ({ active }: {
   const [opacity, setOpacity] = useState(' opacity-0');
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const efbConnected = useEFBServer();
+
+  const [pdfProcessed, setPdfProcessed] = useState(true);
 
   useEffect(() => {
     if (active) {
@@ -64,14 +67,14 @@ export const ChartsPage = ({ active }: {
     </Button>)],
     [activeDocument, srcs]);
 
-  const onWheel = useCallback((e: WheelEvent) => {
+  const onWheel = useEvent((e: WheelEvent) => {
     scrollRef.current!.scrollBy({
       left: e.deltaY / 3
     });
     e.preventDefault();
-  }, [])
+  })
 
-  const removeDocument = useCallback(() => {
+  const removeDocument = useEvent(() => {
     const src = srcs.entries().find((_src, index) => index === activeDocument)!;
 
     setSrcs(srcs => {
@@ -79,50 +82,137 @@ export const ChartsPage = ({ active }: {
       newSrcs.delete(src[0]);
       return newSrcs;
     })
-  }, [activeDocument, srcs]);
+  });
 
-  const loadDocument = useCallback(() => setPopup(<ChartsPopup setSrcs={setSrcs} />), [setPopup]);
-  const exportAll = useCallback(() => {
+  const loadDocument = useEvent(() => setPopup(<ChartsPopup setSrcs={setSrcs} />));
+  const exportAll = useEvent(() => {
     if (!__MSFS_EMBEDED__) {
+      console.assert(pdfProcessed, "Tried to export pdfs while a previous export is still being processed");
+      setPdfProcessed(false);
+
+      const timeout = setTimeout(() => {
+        processedCallback();
+
+        if (efbConnected) {
+          // Simulator may have been restarted or EFB closed, 
+          // so we can consider the acknowledgment lost and allow new exports to be sent
+          console.error("Did not receive PDF acknowledgment from EFB after 30 seconds");
+        }
+      }, 30_000);
+
+      const processedCallback = () => {
+        clearTimeout(timeout);
+        messageHandler.unsubscribe('__PDF_PROCESSED__', processedCallback);
+        setPdfProcessed(true);
+      };
+      messageHandler.subscribe('__PDF_PROCESSED__', processedCallback);
+
+      const blobs: PdfBlob[] = [];
+
+      const chunkString = (str: string, size: number): [string, string][] =>
+        Array.from({ length: Math.ceil(str.length / size) }, (_, i) =>
+          ([crypto.randomUUID(), str.slice(i * size, i * size + size)])
+        );
+
+
       messageHandler.send({
         __EXPORT_PDFS__: true,
 
         pdfs: Array.from(srcs.values()).map((src) => {
           const { name, id, src: data } = src;
 
+          const rawData = btoa(data.reduce((result, value) => result + String.fromCharCode(value), ""));
+
+          const chunks = chunkString(rawData, 1024);
+          blobs.push(...chunks.map(chunk => ({
+            __PDF_BLOB__: true as const,
+
+            id: chunk[0],
+            data: chunk[1]
+          })));
+
           return {
             name: name,
             id: id,
-            data: btoa(data.reduce((result, value) => result + String.fromCharCode(value), ""))
+            blobs: chunks.map(chunk => chunk[0])
           }
         })
-      })
+      });
+
+      blobs.forEach(blob => messageHandler.send(blob));
     }
-  }, [srcs]);
+  });
 
   useEffect(() => {
     if (__MSFS_EMBEDED__) {
-      const callback = (message: ExportPdfs) => {
-        const newSrcs = new Map<string, Src>();
-        message.pdfs.forEach(pdf => {
-          const binaryString = atob(pdf.data);
-          const bytes = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; ++i) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
+      const pendingBlobs = new Map<string, (_data: string) => void>();
 
-          newSrcs.set(pdf.name, {
-            id: pdf.id,
-            name: pdf.name,
-            src: bytes
-          })
-        })
-
-        setSrcs(newSrcs);
+      const blobCallback = (message: PdfBlob) => {
+        const callback = pendingBlobs.get(message.id);
+        if (callback) {
+          callback(message.data);
+          pendingBlobs.delete(message.id);
+        } else {
+          console.error("Received blob with id " + message.id + " but no pending callback was found");
+        }
       }
 
+      const callback = (message: ExportPdfs) => {
+        const error = { current: false };
+        const timeout = setTimeout(() => {
+          error.current = true;
+          console.error("Did not receive all blobs for pdf export after 30 seconds");
+        }, 30_000);
+
+        const newSrcs = new Map<string, Src>();
+        Promise.all(message.pdfs.map(pdf => {
+          return Promise.all(pdf.blobs.map(blobId => {
+            console.assert(!pendingBlobs.has(blobId), "Blob with id " + blobId + " is already pending");
+            return new Promise<string>(resolve => pendingBlobs.set(blobId, resolve));
+          }))
+            .then(data => {
+              if (error.current) {
+                throw new Error("Received blobs after timeout for pdf " + pdf.name);
+              }
+
+              const binaryString = atob(data.join(''));
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; ++i) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+
+              newSrcs.set(pdf.name, {
+                id: pdf.id,
+                name: pdf.name,
+                src: bytes
+              })
+            });
+        })).then(() => {
+          setSrcs(newSrcs);
+        }).catch((error) => {
+          console.error("Error while loading pdfs", error);
+        }).finally(() => {
+          clearTimeout(timeout);
+
+          if (pendingBlobs.size > 0) {
+            console.error("Some blobs were not received:", [...pendingBlobs.keys()]);
+            pendingBlobs.clear();
+          }
+
+          messageHandler.send({
+            __PDF_PROCESSED__: true,
+
+            id: message.id!
+          });
+        });
+      }
+
+      messageHandler.subscribe('__PDF_BLOB__', blobCallback);
       messageHandler.subscribe('__EXPORT_PDFS__', callback)
-      return () => messageHandler.unsubscribe('__EXPORT_PDFS__', callback)
+      return () => {
+        messageHandler.unsubscribe('__EXPORT_PDFS__', callback);
+        messageHandler.unsubscribe('__PDF_BLOB__', blobCallback);
+      }
     }
   }, []);
 
@@ -171,7 +261,7 @@ export const ChartsPage = ({ active }: {
                 </Button>
                 {
                   __MSFS_EMBEDED__ || (pdfs.length === 0) ? <></>
-                    : <Button active={pdfs.length > 0} disabled={(pdfs.length === 0) || !efbConnected} className="flex flex-row px-5 text-nowrap justify-center shrink"
+                    : <Button active={pdfs.length > 0} disabled={(pdfs.length === 0) || !efbConnected || !pdfProcessed} className="flex flex-row px-5 text-nowrap justify-center shrink"
                       onClick={exportAll}>
                       <ExportIcon className="invert m-auto" />
                     </Button>

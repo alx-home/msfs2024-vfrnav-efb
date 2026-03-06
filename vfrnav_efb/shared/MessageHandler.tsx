@@ -21,7 +21,7 @@ import { ByeByeRecord, HelloWorldRecord, SetIdRecord } from './HelloWorld';
 import { FileExistRecord, FileExistResponseRecord, GetFileRecord, GetFileResponseRecord, OpenFileRecord, OpenFileResponseRecord } from './Files';
 import { EfbStateRecord, GetEFBStateRecord, GetServerStateRecord, ServerStateRecord } from './Server';
 import { ExportNavRecord, ImportNavRecord } from './NavData';
-import { ExportPdfsRecord } from './Pdfs';
+import { ExportPdfsRecord, PdfBlobRecord, PdfProcessedRecord } from './Pdfs';
 import { DefaultFuelPresetRecord, DeleteFuelPresetRecord, FuelPresetsRecord, FuelRecord, GetFuelCurveRecord, GetFuelPresetsRecord, GetFuelRecord, SetFuelCurveRecord } from './Fuel';
 import { DefaultDeviationPresetRecord, DeleteDeviationPresetRecord, DeviationPresetsRecord, GetDeviationCurveRecord, GetDeviationPresetsRecord, SetDeviationCurveRecord } from './Deviation';
 import { DateResponseRecord, GetDateRecord } from './Date';
@@ -83,6 +83,8 @@ const Messages = {
    "__METAR__": MetarRecord,
    "__OPEN_FILE__": OpenFileRecord,
    "__OPEN_FILE_RESPONSE__": OpenFileResponseRecord,
+   "__PDF_BLOB__": PdfBlobRecord,
+   "__PDF_PROCESSED__": PdfProcessedRecord,
    "__PLANE_BLOB__": PlaneBlobRecord,
    "__PLANE_POS__": PlanePosRecord,
    "__RECORDS__": PlaneRecordsRecord,

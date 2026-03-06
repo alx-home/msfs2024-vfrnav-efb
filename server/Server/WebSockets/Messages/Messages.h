@@ -142,6 +142,8 @@ using Message = std::variant<
   msg::Metar,
   msg::OpenFile,
   msg::OpenFileResponse,
+  msg::PdfBlob,
+  msg::PdfProcessed,
   msg::PlaneBlob,
   msg::PlanePos,
   msg::Records,

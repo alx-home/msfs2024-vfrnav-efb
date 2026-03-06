@@ -20,7 +20,7 @@ import { FileExist, FileExistResponse, GetFile, GetFileResponse, OpenFile, OpenF
 import { DefaultFuelPreset, DeleteFuelPreset, SetFuelCurve as FuelCurve, FuelPresets, GetFuelPresets, Tank } from "@shared/Fuel";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { ExportNav } from "@shared/NavData";
-import { ExportPdfs } from "@shared/Pdfs";
+import { ExportPdfs, PdfBlob, PdfProcessed } from "@shared/Pdfs";
 import { SharedSettings, SharedSettingsRecord } from "@shared/Settings";
 import { fill } from "@shared/Types";
 import { RecordManager } from './RecordManager';
@@ -216,81 +216,87 @@ export class Manager {
                   content: MessageType
                });
 
-               if (isMessage("__HELLO_WORLD__", data.content)) {
-                  console.assert(data.id === 1);
-                  // Message sent by the Server
+               // Leave room for msfs in case of multiple consecutive messages to avoid blocking the main thread
+               // Which may cause stuttering
+               setTimeout(() => {
+                  if (isMessage("__HELLO_WORLD__", data.content)) {
+                     console.assert(data.id === 1);
+                     // Message sent by the Server
 
-                  this.serverMessageHandler = (id: number, message: MessageType) => {
-                     this.socket?.send(JSON.stringify({
-                        id: id,
-                        content: message
-                     }))
-                  };
+                     this.serverMessageHandler = (id: number, message: MessageType) => {
+                        this.socket?.send(JSON.stringify({
+                           id: id,
+                           content: message
+                        }))
+                     };
 
-                  this.messageHandler?.({
-                     "__SERVER_STATE__": true,
+                     this.messageHandler?.({
+                        "__SERVER_STATE__": true,
 
-                     state: true
-                  });
+                        state: true
+                     });
 
-                  this.recordManager.onGetPlaneRecords(1);
-               } else if (isMessage("__SETTINGS__", data.content)) {
-                  console.assert(false);
-               } else if (isMessage("__GET_SETTINGS__", data.content)) {
-                  console.assert(false);
-               } else if (isMessage("__GET_FUEL__", data.content)) {
-                  this.onGetFuel(data.id);
-               } else if (isMessage("__CLEAN_PLANE_RECORDS__", data.content)) {
-                  this.recordManager.onCleanPlaneRecords();
-               } else if (isMessage("__GET_RECORDS__", data.content)) {
-                  this.recordManager.onGetPlaneRecords(data.id);
-               } else if (isMessage("__GET_DATE__", data.content)) {
-                  this.onGetDate(data.id);
-               } else if (isMessage("__GET_ATC_ID__", data.content)) {
-                  this.onGetATCId(data.id);
-               } else if (isMessage("__GET_FACILITIES__", data.content)) {
-                  this.onGetFacilities(data.id, data.content);
-               } else if (isMessage("__GET_ICAOS__", data.content)) {
-                  this.onGetIcaos(data.id, data.content);
-               } else if (isMessage("__GET_LAT_LON__", data.content)) {
-                  this.onGetLatLon(data.id, data.content);
-               } else if (isMessage("__GET_METAR__", data.content)) {
-                  this.onGetMetar(data.id, data.content);
-               } else if (isMessage("__REMOVE_RECORD__", data.content)) {
-                  this.recordManager.onRemoveRecord(data.content);
-               } else if (isMessage("__EDIT_RECORD__", data.content)) {
-                  this.recordManager.onEditRecord(data.content);
-               } else if (isMessage("__GET_PLANE_BLOB__", data.content)) {
-                  this.recordManager.onGetPlaneBlob(data.id, data.content);
-               } else if (isMessage("__EXPORT_NAV__", data.content)) {
-                  this.onExportNav(data.content);
-               } else if (isMessage("__FUEL_PRESETS__", data.content)) {
-                  this.onFuelPresets(data.id, data.content);
-               } else if (isMessage("__GET_FUEL_PRESETS__", data.content)) {
-                  this.onGetFuelPresets(data.id, data.content);
-               } else if (isMessage("__DELETE_FUEL_PRESET__", data.content)) {
-                  this.onDeleteFuelPreset(data.content);
-               } else if (isMessage("__FUEL_CURVE__", data.content)) {
-                  this.onFuelCurve(data.id, data.content);
-               } else if (isMessage("__DEFAULT_FUEL_PRESET__", data.content)) {
-                  this.onDefaultFuelPreset(data.id, data.content)
-               } else if (isMessage("__DEVIATION_PRESETS__", data.content)) {
-                  this.onDeviationPresets(data.id, data.content);
-               } else if (isMessage("__GET_DEVIATION_PRESETS__", data.content)) {
-                  this.onGetDeviationPresets(data.id, data.content);
-               } else if (isMessage("__DELETE_DEVIATION_PRESET__", data.content)) {
-                  this.onDeleteDeviationPreset(data.content);
-               } else if (isMessage("__DEVIATION_CURVE__", data.content)) {
-                  this.onDeviationCurve(data.id, data.content);
-               } else if (isMessage("__DEFAULT_DEVIATION_PRESET__", data.content)) {
-                  this.onDefaultDeviationPreset(data.id, data.content)
-               } else if (isMessage("__EXPORT_PDFS__", data.content)) {
-                  this.onExportPdfs(data.content);
-               } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
-                  || isMessage("__OPEN_FILE_RESPONSE__", data.content)
-                  || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
-                  this.onFileResponse(data.content);
-               }
+                     this.recordManager.onGetPlaneRecords(1);
+                  } else if (isMessage("__SETTINGS__", data.content)) {
+                     console.assert(false);
+                  } else if (isMessage("__GET_SETTINGS__", data.content)) {
+                     console.assert(false);
+                  } else if (isMessage("__GET_FUEL__", data.content)) {
+                     this.onGetFuel(data.id);
+                  } else if (isMessage("__CLEAN_PLANE_RECORDS__", data.content)) {
+                     this.recordManager.onCleanPlaneRecords();
+                  } else if (isMessage("__GET_RECORDS__", data.content)) {
+                     this.recordManager.onGetPlaneRecords(data.id);
+                  } else if (isMessage("__GET_DATE__", data.content)) {
+                     this.onGetDate(data.id);
+                  } else if (isMessage("__GET_ATC_ID__", data.content)) {
+                     this.onGetATCId(data.id);
+                  } else if (isMessage("__GET_FACILITIES__", data.content)) {
+                     this.onGetFacilities(data.id, data.content);
+                  } else if (isMessage("__GET_ICAOS__", data.content)) {
+                     this.onGetIcaos(data.id, data.content);
+                  } else if (isMessage("__GET_LAT_LON__", data.content)) {
+                     this.onGetLatLon(data.id, data.content);
+                  } else if (isMessage("__GET_METAR__", data.content)) {
+                     this.onGetMetar(data.id, data.content);
+                  } else if (isMessage("__REMOVE_RECORD__", data.content)) {
+                     this.recordManager.onRemoveRecord(data.content);
+                  } else if (isMessage("__EDIT_RECORD__", data.content)) {
+                     this.recordManager.onEditRecord(data.content);
+                  } else if (isMessage("__GET_PLANE_BLOB__", data.content)) {
+                     this.recordManager.onGetPlaneBlob(data.id, data.content);
+                  } else if (isMessage("__EXPORT_NAV__", data.content)) {
+                     this.onExportNav(data.content);
+                  } else if (isMessage("__FUEL_PRESETS__", data.content)) {
+                     this.onFuelPresets(data.id, data.content);
+                  } else if (isMessage("__GET_FUEL_PRESETS__", data.content)) {
+                     this.onGetFuelPresets(data.id, data.content);
+                  } else if (isMessage("__DELETE_FUEL_PRESET__", data.content)) {
+                     this.onDeleteFuelPreset(data.content);
+                  } else if (isMessage("__FUEL_CURVE__", data.content)) {
+                     this.onFuelCurve(data.id, data.content);
+                  } else if (isMessage("__DEFAULT_FUEL_PRESET__", data.content)) {
+                     this.onDefaultFuelPreset(data.id, data.content)
+                  } else if (isMessage("__DEVIATION_PRESETS__", data.content)) {
+                     this.onDeviationPresets(data.id, data.content);
+                  } else if (isMessage("__GET_DEVIATION_PRESETS__", data.content)) {
+                     this.onGetDeviationPresets(data.id, data.content);
+                  } else if (isMessage("__DELETE_DEVIATION_PRESET__", data.content)) {
+                     this.onDeleteDeviationPreset(data.content);
+                  } else if (isMessage("__DEVIATION_CURVE__", data.content)) {
+                     this.onDeviationCurve(data.id, data.content);
+                  } else if (isMessage("__DEFAULT_DEVIATION_PRESET__", data.content)) {
+                     this.onDefaultDeviationPreset(data.id, data.content)
+                  } else if (isMessage("__EXPORT_PDFS__", data.content)) {
+                     this.onExportPdfs(data.id, data.content);
+                  } else if (isMessage("__PDF_BLOB__", data.content)) {
+                     this.onPdfBlob(data.content);
+                  } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
+                     || isMessage("__OPEN_FILE_RESPONSE__", data.content)
+                     || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
+                     this.onFileResponse(data.content);
+                  }
+               }, 0);
             };
 
             this.socket.onclose = () => {
@@ -979,8 +985,17 @@ export class Manager {
       }
    }
 
-   onExportPdfs(message: ExportPdfs) {
+   onExportPdfs(id: number, message: ExportPdfs) {
+      // Save the id to be able to send the acknowledgment back to the correct requester
+      this.messageHandler?.({ ...message, id: id });
+   }
+
+   onPdfBlob(message: PdfBlob) {
       this.messageHandler?.(message);
+   }
+
+   onPdfProcessed(message: PdfProcessed) {
+      this.sendMessage(message.id, message);
    }
 
    onFileResponse(message: GetFileResponse | FileExistResponse | OpenFileResponse) {
