@@ -28,6 +28,7 @@
 #include <processthreadsapi.h>
 #include <exception>
 #include <filesystem>
+#include <fstream>
 #include <mutex>
 #include <ranges>
 #include <variant>
@@ -289,6 +290,13 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
             }
          } else {
             assert(message.id_ != 2);
+
+            if (data.size() > 500'000) {
+               if (!std::filesystem::exists("logs.json")) {
+                  std::ofstream file{"logs.json", std::ios::out | std::ios::binary};
+                  file.write(data.data(), data.size());
+               }
+            }
 
             if (message.id_ == 1) {
                // Broadcast

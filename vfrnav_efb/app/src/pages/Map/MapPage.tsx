@@ -20,7 +20,7 @@ import { OlWMTSLayer } from "@Ol/layers/OlWMTSLayer";
 import { OlMap } from "@Ol/OlMap";
 import { getTopLeft, getWidth } from 'ol/extent';
 import { fromLonLat, get as getProjection } from 'ol/proj';
-import { Dispatch, KeyboardEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { Dispatch, KeyboardEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useState, memo } from 'react';
 
 import { OnLayerChange } from './MapMenu/Menus/Layers';
 import { GlobalSettings } from "@Settings/Settings";
@@ -85,11 +85,11 @@ const OverlayItem = ({ menu, setMenu, setOpen, image, alt, currentMenu }: {
   </button>;
 };
 
-const Overlay = ({ menu, setMenu, setOpen }: {
+const Overlay = memo(function Overlay({ menu, setMenu, setOpen }: {
   menu: Menu,
   setMenu: Dispatch<SetStateAction<Menu>>,
   setOpen: Dispatch<SetStateAction<boolean>>
-}) => {
+}) {
   return <div className='flex flex-col justify-end m-2 pointer-events-auto'>
     <div className="group flex flex-col shrink w-9 transition-all hover:w-20 [&_*]:transition-all">
       <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.records} alt='records' image={recordImg} />
@@ -97,7 +97,7 @@ const Overlay = ({ menu, setMenu, setOpen }: {
       <OverlayItem menu={menu} setMenu={setMenu} setOpen={setOpen} currentMenu={Menu.layers} alt='layers' image={layersImg} />
     </div>
   </div>;
-};
+});
 
 const SpinAnimation = () => {
   const { triggerFlash, flash, flashKey } = useContext(MapContext)!;

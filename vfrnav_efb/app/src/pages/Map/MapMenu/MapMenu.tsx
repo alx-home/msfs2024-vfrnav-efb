@@ -15,7 +15,7 @@
 
 import { useMouseMove, MouseContext, useMouseRelease } from '@alx-home/Events';
 
-import { Dispatch, KeyboardEvent, MouseEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Dispatch, KeyboardEvent, MouseEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState, memo } from 'react';
 
 import { Layer, Layers, OnLayerChange } from './Menus/Layers';
 import { Nav } from './Menus/Nav';
@@ -25,13 +25,13 @@ import { Records } from './Menus/Records';
 // eslint-disable-next-line no-unused-vars
 export enum Menu { layers, nav, records };
 
-export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
+export const MapMenu = memo(function MapMenu({ open, setOpen, menu, layers, onLayerChange }: {
   open: boolean,
   setOpen: Dispatch<SetStateAction<boolean>>,
   menu: Menu,
   layers: Layer[],
   onLayerChange: OnLayerChange,
-}) => {
+}) {
   const closeWidth = useMemo(() => 40, []);
   const minWidth = useMemo(() => 120, []);
   const maxWidth = useMemo(() => 250, []);
@@ -151,4 +151,4 @@ export const MapMenu = ({ open, setOpen, menu, layers, onLayerChange }: {
       {layer}
     </div>
   </>
-};
+});
