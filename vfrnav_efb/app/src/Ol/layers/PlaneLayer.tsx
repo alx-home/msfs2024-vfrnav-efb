@@ -84,9 +84,11 @@ export const PlaneLayer = ({
     setPos(planePos);
   });
   useEffect(() => {
-    messageHandler.subscribe("__PLANE_POS__", onGetPlanePosition)
-    return () => messageHandler.unsubscribe("__PLANE_POS__", onGetPlanePosition);
-  }, [onGetPlanePosition])
+    if (active) {
+      messageHandler.subscribe("__PLANE_POS__", onGetPlanePosition)
+      return () => messageHandler.unsubscribe("__PLANE_POS__", onGetPlanePosition);
+    }
+  }, [onGetPlanePosition, active])
 
   useEffect(() => {
     vectorSource.clear();
