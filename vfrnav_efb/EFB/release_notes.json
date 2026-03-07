@@ -627,6 +627,26 @@
             "     - All leftover records from previous versions are now automatically cleaned up (may take extra time on first launch).",
             "       Tous les anciens enregistrements résiduels sont désormais supprimés automatiquement (cela peut prendre un certain temps au premier lancement)."
          ]
+      },
+      {
+         "version": "1.3.0",
+         "date": "MAR 07, 2026",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - PDF uploads are now performed in chunks to prevent simulator stutters and crashes with large files.",
+            "       L'envoi de PDF se fait désormais par morceaux pour éviter les saccades ou plantages du simulateur avec de gros fichiers.",
+            "     - Navlog now uses simulator time for timestamps.",
+            "       Le navlog utilise désormais l'heure du simulateur pour les horodatages.",
+            "     - Aircraft tail number is now displayed in the Navlog page.",
+            "       L'immatriculation de l'avion est désormais affichée dans la page Navlog.",
+            "     - General performance improvements.",
+            "       Amélioration des performances générales.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Fixed a bug where clicking on multiple records concurrently in the record page was not handled correctly.",
+            "       Correction d'un bug où des clics simultanés sur plusieurs enregistrements dans la page des enregistrements n'étaient pas gérés correctement."
+         ]
       }
    ]
 }
