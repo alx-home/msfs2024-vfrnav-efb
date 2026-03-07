@@ -118,7 +118,7 @@ export const ChartsPage = ({ active }: {
       messageHandler.send({
         __EXPORT_PDFS__: true,
 
-        pdfs: Array.from(srcs.values()).map((src) => {
+        pdfs: Array.from(srcs.values()).map((src, index) => {
           const { name, id, src: data } = src;
 
           const rawData = btoa(data.reduce((result, value) => result + String.fromCharCode(value), ""));
@@ -127,6 +127,7 @@ export const ChartsPage = ({ active }: {
           blobs.push(...chunks.map(chunk => ({
             __PDF_BLOB__: true as const,
 
+            document: index,
             id: chunk[0],
             data: chunk[1]
           })));
@@ -145,16 +146,23 @@ export const ChartsPage = ({ active }: {
 
   useEffect(() => {
     if (__MSFS_EMBEDED__) {
-      const pendingBlobs: ((_data: string) => void)[] = [];
+      const pendingBlobs: ((_data: string) => void)[][] = [];
       const pendingPdf = { current: -1 };
+      const timeout = { current: -1 };
+      const timeoutCB = {
+        current: () => { }
+      };
 
       const blobCallback = (message: PdfBlob) => {
+        clearTimeout(timeout.current);
+        timeout.current = setTimeout(timeoutCB.current, 15_000);
+
         if (message.pdf_id !== pendingPdf.current) {
           console.error("Received blob for pdf " + message.pdf_id + " but pending pdf is " + pendingPdf.current);
           return;
         }
 
-        const callback = pendingBlobs[message.id];
+        const callback = pendingBlobs[message.document][message.id];
         if (callback) {
           callback(message.data);
         } else {
@@ -171,19 +179,24 @@ export const ChartsPage = ({ active }: {
         pendingPdf.current = message.id!;
 
         const error = { current: false };
-        const timeout = setTimeout(() => {
+
+        timeoutCB.current = () => {
           error.current = true;
-          console.error("Did not receive all blobs for pdf export after 30 seconds");
-        }, 30_000);
+          console.error("Did not receive all blobs for pdf export after 15 seconds");
+        };
+        timeout.current = setTimeout(timeoutCB.current, 15_000);
 
         const newSrcs = new Map<string, Src>();
-        Promise.all(message.pdfs.map(pdf => {
-          pendingBlobs.fill(() => {
-            console.error("Shall not happen: callback not defined for pdf " + pdf.name);
-          }, 0, pdf.num_blobs);
+        // Initialize pending blobs array for each pdf
+        message.pdfs.forEach(pdf => {
+          pendingBlobs.push(Array.from({ length: pdf.num_blobs }).map(() => () => { }));
+        });
+
+        Promise.all(message.pdfs.map((pdf, pdfIndex) => {
           return Promise.all(Array.from({ length: pdf.num_blobs }).map((_, blobId) => {
-            console.assert(pendingBlobs.length > blobId, "Blob id " + blobId + " is out of bounds for pdf " + pdf.name);
-            return new Promise<string>(resolve => pendingBlobs[blobId] = resolve);
+            console.assert(pendingBlobs.length > pdfIndex, "Pdf index " + pdfIndex + " is out of bounds for pending blobs");
+            console.assert(pendingBlobs[pdfIndex].length > blobId, "Blob id " + blobId + " is out of bounds for pdf " + pdf.name);
+            return new Promise<string>(resolve => pendingBlobs[pdfIndex][blobId] = resolve);
           }))
             .then(data => {
               if (error.current) {
@@ -207,7 +220,8 @@ export const ChartsPage = ({ active }: {
         }).catch((error) => {
           console.error("Error while loading pdfs", error);
         }).finally(() => {
-          clearTimeout(timeout);
+          clearTimeout(timeout.current);
+          timeout.current = -1;
 
           pendingBlobs.length = 0;
           pendingPdf.current = -1;

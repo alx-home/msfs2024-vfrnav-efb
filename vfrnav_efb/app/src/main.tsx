@@ -218,10 +218,10 @@ Chart.register(...registerables);
       const resolvers = new Map<number, {
         resolve: (_: string) => void,
         reject: (_: Error) => void,
-        resolveBlob: ((_data: string) => void)[]
+        resolveBlob: ((_data: string) => void)[],
+        timeout: ReturnType<typeof setTimeout>,
+        timeoutCB: () => void
       }>();
-
-
 
       messageHandler.subscribe("__FILE_BLOB__", message => {
         const resolver = resolvers.get(message.file_id);
@@ -230,6 +230,8 @@ Chart.register(...registerables);
           console.error(`Received file blob for unknown request with id ${message.file_id}`);
           return;
         }
+        clearTimeout(resolver.timeout);
+        resolver.timeout = setTimeout(resolver.timeoutCB, 15_000);
 
         console.assert(resolver.resolveBlob.length > message.id, `Blob id ${message.id} is out of bounds for file request ${message.file_id}`);
         resolver.resolveBlob[message.id](message.data);
@@ -242,28 +244,31 @@ Chart.register(...registerables);
           return;
         }
 
-        console.log(`Received file response for request ${message.id} with ${message.num_blobs} blobs`);
         Promise.all(Array.from({ length: message.num_blobs })
           .map(() => new Promise<string>(resolve => resolver.resolveBlob.push(resolve))))
-          .then(blobs => resolver.resolve(blobs.join('')))
-          .catch(err => resolver.reject(err));
+          .then(blobs => {
+            clearTimeout(resolver.timeout);
+            resolver.resolve(blobs.join(''))
+          })
+          .catch(err => resolver.reject(err))
+          .finally(() => resolvers.delete(message.id));
       });
 
       return (name: string): Promise<string> => {
         return new Promise<string>((resolve, reject) => {
           const my_id = ++id.next;
 
-          setTimeout(() => {
-            if (resolvers.has(my_id)) {
-              resolvers.delete(my_id);
-              reject(new Error("File retrieval timed out"));
-            }
-          }, 30_000);
+          const timeoutCB = () => {
+            reject(new Error("File retrieval timed out"));
+          };
+          const timeout = setTimeout(timeoutCB, 15_000);
 
           resolvers.set(my_id, {
-            resolve: resolve,
-            reject: reject,
-            resolveBlob: []
+            resolve,
+            reject,
+            resolveBlob: [],
+            timeout,
+            timeoutCB
           });
 
           messageHandler.send({

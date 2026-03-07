@@ -51,11 +51,13 @@ SimConnect::SimConnect()
             std::shared_ptr<HANDLE> handle_ptr{
               new HANDLE(handle),
               [](HANDLE* ptr) constexpr {
+                 std::cout << "SimConnect: Disconnected from simulator" << std::endl;
                  SimConnect_Close(*ptr);
                  delete ptr;
               },
             };
             handle_ = handle_ptr;
+            std::cout << "SimConnect: Connected to simulator" << std::endl;
             Run(stoken);
          }
 
@@ -186,7 +188,8 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
       } break;
 
       case SIMCONNECT_RECV_ID_QUIT: {
-         handle_ = std::shared_ptr<HANDLE>{nullptr};
+         std::cout << "SimConnect: Simulator quit" << std::endl;
+         handle_.reset();
          SetEvent(event_);
          break;
       }

@@ -73,12 +73,14 @@ struct PdfBlob {
    bool header_{true};
 
    std::optional<std::size_t> pdf_id_{};
+   std::size_t                document_{};
    std::size_t                id_{};
    std::string                data_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__PDF_BLOB__", &SELF::header_},
      js::_{"pdf_id", &SELF::pdf_id_},
+     js::_{"document", &SELF::document_},
      js::_{"id", &SELF::id_},
      js::_{"data", &SELF::data_},
    };
