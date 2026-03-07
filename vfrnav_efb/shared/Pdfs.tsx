@@ -47,6 +47,7 @@ export type PdfBlob = {
    __PDF_BLOB__: true
 
    pdf_id?: number
+   document: number
    id: number
    data: string
 };
@@ -54,6 +55,7 @@ export type PdfBlob = {
 export const PdfBlobRecord = GenRecord<PdfBlob>({
    "__PDF_BLOB__": true,
 
+   document: -1,
    id: -1,
    data: ''
 }, {
