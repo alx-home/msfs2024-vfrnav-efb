@@ -28,8 +28,6 @@ export class WasmComm {
                }
 
                this.nextRequestId = id;
-               console.log(`WASM initialized with request ID ${this.nextRequestId}`);
-
                listener.on("VFRNAV_WASM_RESPONSE", (data: string) => {
                   const sepIndex = data.indexOf(":");
 

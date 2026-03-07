@@ -16,7 +16,7 @@
 import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
 import { DefaultDeviationPreset, DeleteDeviationPreset, SetDeviationCurve as DeviationCurve, DeviationPresets, GetDeviationPresets } from "@shared/Deviation";
 import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
-import { FileExist, FileExistResponse, GetFile, GetFileResponse, OpenFile, OpenFileResponse } from "@shared/Files";
+import { FileBlob, FileExist, FileExistResponse, GetFile, GetFileResponse, OpenFile, OpenFileResponse } from "@shared/Files";
 import { DefaultFuelPreset, DeleteFuelPreset, SetFuelCurve as FuelCurve, FuelPresets, GetFuelPresets, Tank } from "@shared/Fuel";
 import { isMessage, MessageType } from "@shared/MessageHandler";
 import { ExportNav } from "@shared/NavData";
@@ -290,10 +290,11 @@ export class Manager {
                   } else if (isMessage("__EXPORT_PDFS__", data.content)) {
                      this.onExportPdfs(data.id, data.content);
                   } else if (isMessage("__PDF_BLOB__", data.content)) {
-                     this.onPdfBlob(data.content);
+                     this.onPdfBlob(data.id, data.content);
                   } else if (isMessage("__GET_FILE_RESPONSE__", data.content)
                      || isMessage("__OPEN_FILE_RESPONSE__", data.content)
-                     || isMessage("__FILE_EXISTS_RESPONSE__", data.content)) {
+                     || isMessage("__FILE_EXISTS_RESPONSE__", data.content)
+                     || isMessage("__FILE_BLOB__", data.content)) {
                      this.onFileResponse(data.content);
                   }
                }, 0);
@@ -990,15 +991,15 @@ export class Manager {
       this.messageHandler?.({ ...message, id: id });
    }
 
-   onPdfBlob(message: PdfBlob) {
-      this.messageHandler?.(message);
+   onPdfBlob(id: number, message: PdfBlob) {
+      this.messageHandler?.({ ...message, pdf_id: id });
    }
 
    onPdfProcessed(message: PdfProcessed) {
       this.sendMessage(message.id, message);
    }
 
-   onFileResponse(message: GetFileResponse | FileExistResponse | OpenFileResponse) {
+   onFileResponse(message: GetFileResponse | FileExistResponse | OpenFileResponse | FileBlob) {
       this.messageHandler?.(message);
    }
 

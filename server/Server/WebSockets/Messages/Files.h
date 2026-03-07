@@ -108,11 +108,29 @@ struct GetFileResponse {
    bool header_{true};
 
    std::size_t id_{};
-   std::string data_{};
+   std::size_t num_blobs_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__GET_FILE_RESPONSE__", &SELF::header_},
 
+     js::_{"id", &SELF::id_},
+     js::_{"num_blobs", &SELF::num_blobs_},
+   };
+};
+
+struct FileBlob {
+   using SELF = FileBlob;
+
+   bool header_{true};
+
+   std::size_t file_id_{};
+   std::size_t id_{};
+   std::string data_{};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__FILE_BLOB__", &SELF::header_},
+
+     js::_{"file_id", &SELF::file_id_},
      js::_{"id", &SELF::id_},
      js::_{"data", &SELF::data_},
    };

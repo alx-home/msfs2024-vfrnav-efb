@@ -105,7 +105,7 @@ endif()
 
 set(BOOST_IOSTREAMS_ENABLE_ZLIB TRUE)
 set(BOOST_ENABLE_CMAKE ON)
-set(BOOST_LIBRARIES iostreams)
+set(BOOST_LIBRARIES iostreams uuid)
 
 # @TODO first configure failed...
 FetchContent_MakeAvailable(Boost upx build_tools cpp_utils windows promise json webview ts_utils)
