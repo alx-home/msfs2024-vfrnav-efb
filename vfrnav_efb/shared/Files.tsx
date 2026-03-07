@@ -59,6 +59,14 @@ export type GetFileResponse = {
    __GET_FILE_RESPONSE__: true
 
    id: number,
+   num_blobs: number
+};
+
+export type FileBlob = {
+   __FILE_BLOB__: true
+
+   file_id: number,
+   id: number,
    data: string
 };
 
@@ -111,5 +119,13 @@ export const GetFileResponseRecord = GenRecord<GetFileResponse>({
    "__GET_FILE_RESPONSE__": true,
 
    id: -1,
-   data: "undef",
+   num_blobs: 0,
+}, {});
+
+export const FileBlobRecord = GenRecord<FileBlob>({
+   "__FILE_BLOB__": true,
+
+   file_id: -1,
+   id: -1,
+   data: ""
 }, {});

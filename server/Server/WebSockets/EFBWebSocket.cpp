@@ -19,7 +19,8 @@
 #include "Messages/Records.h"
 #include "Server/WebSockets/Messages/Facilities.h"
 #include "Server/WebSockets/Messages/Fuel.h"
-#include "boost/beast/websocket/rfc6455.hpp"
+
+#include <boost/beast/websocket/rfc6455.hpp>
 
 #include <window/FileDialog.h>
 #include <boost/beast/websocket/error.hpp>
@@ -29,6 +30,7 @@
 #include <exception>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <mutex>
 #include <ranges>
 #include <variant>
@@ -282,21 +284,39 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
             auto const& msg = std::get<ws::msg::GetFile>(message.content_);
 
             if (auto const data = Base64Open(msg.path_); data.empty()) {
-               VDispatchMessage(message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .data_ = ""});
-            } else {
                VDispatchMessage(
-                 message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .data_ = data}
+                 message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .num_blobs_ = 0}
+               );
+            } else {
+               static constexpr std::size_t CHUNK_SIZE = 100 * 1024;  // 100KB
+               std::vector<std::size_t>     chunks{};
+               chunks.reserve((data.size() + CHUNK_SIZE - 1) / CHUNK_SIZE);
+
+               for (std::size_t i = 0; i < data.size(); i += CHUNK_SIZE) {
+                  chunks.emplace_back(i);
+               }
+
+               for (std::size_t i = 0; i < data.size(); i += CHUNK_SIZE) {
+                  auto const chunk =
+                    std::string_view{data.data() + i, std::min(data.size() - i, CHUNK_SIZE)};
+                  auto const id = chunks[i / CHUNK_SIZE];
+
+                  server_.Dispatch([self    = shared_from_this(),
+                                    file_id = msg.id_,
+                                    id,
+                                    chunk = std::string{chunk}]() {
+                     self->VSendMessage(
+                       1, ws::msg::FileBlob{.file_id_ = file_id, .id_ = id, .data_ = chunk}
+                     );
+                  });
+               }
+
+               VDispatchMessage(
+                 message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .num_blobs_ = chunks.size()}
                );
             }
          } else {
             assert(message.id_ != 2);
-
-            if (data.size() > 500'000) {
-               if (!std::filesystem::exists("logs.json")) {
-                  std::ofstream file{"logs.json", std::ios::out | std::ios::binary};
-                  file.write(data.data(), data.size());
-               }
-            }
 
             if (message.id_ == 1) {
                // Broadcast

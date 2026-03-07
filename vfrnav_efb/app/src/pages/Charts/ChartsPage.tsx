@@ -109,9 +109,9 @@ export const ChartsPage = ({ active }: {
 
       const blobs: PdfBlob[] = [];
 
-      const chunkString = (str: string, size: number): [string, string][] =>
+      const chunkString = (str: string, size: number): [number, string][] =>
         Array.from({ length: Math.ceil(str.length / size) }, (_, i) =>
-          ([crypto.randomUUID(), str.slice(i * size, i * size + size)])
+          ([i, str.slice(i * size, i * size + size)])
         );
 
 
@@ -123,7 +123,7 @@ export const ChartsPage = ({ active }: {
 
           const rawData = btoa(data.reduce((result, value) => result + String.fromCharCode(value), ""));
 
-          const chunks = chunkString(rawData, 1024);
+          const chunks = chunkString(rawData, 100 * 1024);
           blobs.push(...chunks.map(chunk => ({
             __PDF_BLOB__: true as const,
 
@@ -134,7 +134,7 @@ export const ChartsPage = ({ active }: {
           return {
             name: name,
             id: id,
-            blobs: chunks.map(chunk => chunk[0])
+            num_blobs: chunks.length
           }
         })
       });
@@ -145,19 +145,31 @@ export const ChartsPage = ({ active }: {
 
   useEffect(() => {
     if (__MSFS_EMBEDED__) {
-      const pendingBlobs = new Map<string, (_data: string) => void>();
+      const pendingBlobs: ((_data: string) => void)[] = [];
+      const pendingPdf = { current: -1 };
 
       const blobCallback = (message: PdfBlob) => {
-        const callback = pendingBlobs.get(message.id);
+        if (message.pdf_id !== pendingPdf.current) {
+          console.error("Received blob for pdf " + message.pdf_id + " but pending pdf is " + pendingPdf.current);
+          return;
+        }
+
+        const callback = pendingBlobs[message.id];
         if (callback) {
           callback(message.data);
-          pendingBlobs.delete(message.id);
         } else {
           console.error("Received blob with id " + message.id + " but no pending callback was found");
         }
       }
 
       const callback = (message: ExportPdfs) => {
+        if (pendingPdf.current !== -1) {
+          console.error("Received export request while another export is still pending");
+          return;
+        }
+
+        pendingPdf.current = message.id!;
+
         const error = { current: false };
         const timeout = setTimeout(() => {
           error.current = true;
@@ -166,9 +178,12 @@ export const ChartsPage = ({ active }: {
 
         const newSrcs = new Map<string, Src>();
         Promise.all(message.pdfs.map(pdf => {
-          return Promise.all(pdf.blobs.map(blobId => {
-            console.assert(!pendingBlobs.has(blobId), "Blob with id " + blobId + " is already pending");
-            return new Promise<string>(resolve => pendingBlobs.set(blobId, resolve));
+          pendingBlobs.fill(() => {
+            console.error("Shall not happen: callback not defined for pdf " + pdf.name);
+          }, 0, pdf.num_blobs);
+          return Promise.all(Array.from({ length: pdf.num_blobs }).map((_, blobId) => {
+            console.assert(pendingBlobs.length > blobId, "Blob id " + blobId + " is out of bounds for pdf " + pdf.name);
+            return new Promise<string>(resolve => pendingBlobs[blobId] = resolve);
           }))
             .then(data => {
               if (error.current) {
@@ -194,11 +209,8 @@ export const ChartsPage = ({ active }: {
         }).finally(() => {
           clearTimeout(timeout);
 
-          if (pendingBlobs.size > 0) {
-            console.error("Some blobs were not received:", [...pendingBlobs.keys()]);
-            pendingBlobs.clear();
-          }
-
+          pendingBlobs.length = 0;
+          pendingPdf.current = -1;
           messageHandler.send({
             __PDF_PROCESSED__: true,
 

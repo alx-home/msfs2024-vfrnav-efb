@@ -49,6 +49,7 @@ target_link_libraries(server
         msfs_sdk
         Dwmapi
         Boost::asio
+        Boost::uuid
         boost_beast
         boost_url
 )

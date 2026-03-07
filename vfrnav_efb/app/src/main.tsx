@@ -217,18 +217,39 @@ Chart.register(...registerables);
 
       const resolvers = new Map<number, {
         resolve: (_: string) => void,
-        reject: (_: Error) => void
+        reject: (_: Error) => void,
+        receivedBlobs: Map<number, string>
       }>();
+
+
+
+      messageHandler.subscribe("__FILE_BLOB__", message => {
+        const resolver = resolvers.get(message.file_id);
+
+        if (!resolver) {
+          console.error(`Received file blob for unknown request with id ${message.file_id}`);
+          return;
+        }
+
+        resolver.receivedBlobs.set(message.id, message.data);
+      });
 
       messageHandler.subscribe("__GET_FILE_RESPONSE__", message => {
         const resolver = resolvers.get(message.id);
-        console.assert(!!resolver);
+        if (!resolver) {
+          console.error(`Received file response for unknown request with id ${message.id}`);
+          return;
+        }
+        console.assert(resolver.receivedBlobs.size === message.num_blobs, "Received blobs count does not match expected count");
 
-        if (message.data.length) {
-          resolver?.resolve(message.data);
+        if (resolver.receivedBlobs.size) {
+          resolver?.resolve(Array.from({ length: message.num_blobs })
+            .map((_, blobId) => resolver.receivedBlobs.get(blobId)!).join(""));
+          resolver.receivedBlobs.clear();
         } else {
           resolver?.reject(new Error("File not found"));
         }
+
         resolvers.delete(message.id);
       });
 
@@ -236,9 +257,17 @@ Chart.register(...registerables);
         return new Promise<string>((resolve, reject) => {
           const my_id = ++id.next;
 
+          setTimeout(() => {
+            if (resolvers.has(my_id)) {
+              resolvers.delete(my_id);
+              reject(new Error("File retrieval timed out"));
+            }
+          }, 30_000);
+
           resolvers.set(my_id, {
             resolve: resolve,
-            reject: reject
+            reject: reject,
+            receivedBlobs: new Map<number, string>()
           });
 
           messageHandler.send({

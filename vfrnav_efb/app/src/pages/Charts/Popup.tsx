@@ -348,7 +348,9 @@ export const ChartsPopup = ({ setSrcs }: {
               for (let i = 0; i < binaryString.length; ++i) {
                 bytes[i] = binaryString.charCodeAt(i);
               }
-              setPdf(bytes);
+
+              // setTimeout is needed to avoid blocking the UI thread with the pdf parsing in case of big files
+              setTimeout(() => setPdf(bytes), 0);
             }).catch((e: Error) => {
               setLoading(false);
               setError(e.message);

@@ -27,14 +27,14 @@ struct Pdf {
 
    bool header_{true};
 
-   std::string              name_{};
-   std::string              id_{};
-   std::vector<std::string> blobs_{};
+   std::string name_{};
+   std::string id_{};
+   std::size_t num_blobs_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"name", &SELF::name_},
      js::_{"id", &SELF::id_},
-     js::_{"blobs", &SELF::blobs_},
+     js::_{"num_blobs", &SELF::num_blobs_},
    };
 };
 
@@ -72,11 +72,13 @@ struct PdfBlob {
 
    bool header_{true};
 
-   std::string id_{};
-   std::string data_{};
+   std::optional<std::size_t> pdf_id_{};
+   std::size_t                id_{};
+   std::string                data_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__PDF_BLOB__", &SELF::header_},
+     js::_{"pdf_id", &SELF::pdf_id_},
      js::_{"id", &SELF::id_},
      js::_{"data", &SELF::data_},
    };
