@@ -23,7 +23,7 @@ export type ExportPdfs = {
    pdfs: {
       name: string
       id: string
-      blobs: string[]
+      num_blobs: number
    }[]
 };
 
@@ -38,10 +38,7 @@ export const ExportPdfsRecord = GenRecord<ExportPdfs>({
       record: {
          name: 'string',
          id: 'string',
-         blobs: {
-            array: true,
-            record: 'string'
-         }
+         num_blobs: 'number'
       }
    }
 });
@@ -49,16 +46,19 @@ export const ExportPdfsRecord = GenRecord<ExportPdfs>({
 export type PdfBlob = {
    __PDF_BLOB__: true
 
-   id: string
+   pdf_id?: number
+   id: number
    data: string
 };
 
 export const PdfBlobRecord = GenRecord<PdfBlob>({
    "__PDF_BLOB__": true,
 
-   id: '',
+   id: -1,
    data: ''
-}, {});
+}, {
+   pdf_id: { optional: true, record: 'number' },
+});
 
 export type PdfProcessed = {
    __PDF_PROCESSED__: true

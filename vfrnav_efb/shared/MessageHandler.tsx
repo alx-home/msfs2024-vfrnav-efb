@@ -18,7 +18,7 @@ import { FacilitiesRecord, GetFacilitiesRecord, GetICAOSRecord as GetIcaosRecord
 import { SharedSettingsRecord, SetPanelSizeRecord, SetEfbModeRecord, CleanPlaneRecordsRecord } from './Settings';
 import { EditRecordRecord, GetPlaneBlobRecord, PlaneBlobRecord, PlanePosRecord, PlaneRecordsRecord, RemoveRecordRecord } from './PlanPos';
 import { ByeByeRecord, HelloWorldRecord, SetIdRecord } from './HelloWorld';
-import { FileExistRecord, FileExistResponseRecord, GetFileRecord, GetFileResponseRecord, OpenFileRecord, OpenFileResponseRecord } from './Files';
+import { FileBlobRecord, FileExistRecord, FileExistResponseRecord, GetFileRecord, GetFileResponseRecord, OpenFileRecord, OpenFileResponseRecord } from './Files';
 import { EfbStateRecord, GetEFBStateRecord, GetServerStateRecord, ServerStateRecord } from './Server';
 import { ExportNavRecord, ImportNavRecord } from './NavData';
 import { ExportPdfsRecord, PdfBlobRecord, PdfProcessedRecord } from './Pdfs';
@@ -53,6 +53,7 @@ const Messages = {
    "__EXPORT_NAV__": ExportNavRecord,
    "__EXPORT_PDFS__": ExportPdfsRecord,
    "__FACILITIES__": FacilitiesRecord,
+   "__FILE_BLOB__": FileBlobRecord,
    "__FILE_EXISTS__": FileExistRecord,
    "__FILE_EXISTS_RESPONSE__": FileExistResponseRecord,
    "__FUEL__": FuelRecord,

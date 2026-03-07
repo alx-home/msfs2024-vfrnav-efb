@@ -217,28 +217,53 @@ Chart.register(...registerables);
 
       const resolvers = new Map<number, {
         resolve: (_: string) => void,
-        reject: (_: Error) => void
+        reject: (_: Error) => void,
+        resolveBlob: ((_data: string) => void)[]
       }>();
+
+
+
+      messageHandler.subscribe("__FILE_BLOB__", message => {
+        const resolver = resolvers.get(message.file_id);
+
+        if (!resolver) {
+          console.error(`Received file blob for unknown request with id ${message.file_id}`);
+          return;
+        }
+
+        console.assert(resolver.resolveBlob.length > message.id, `Blob id ${message.id} is out of bounds for file request ${message.file_id}`);
+        resolver.resolveBlob[message.id](message.data);
+      });
 
       messageHandler.subscribe("__GET_FILE_RESPONSE__", message => {
         const resolver = resolvers.get(message.id);
-        console.assert(!!resolver);
-
-        if (message.data.length) {
-          resolver?.resolve(message.data);
-        } else {
-          resolver?.reject(new Error("File not found"));
+        if (!resolver) {
+          console.error(`Received file response for unknown request with id ${message.id}`);
+          return;
         }
-        resolvers.delete(message.id);
+
+        console.log(`Received file response for request ${message.id} with ${message.num_blobs} blobs`);
+        Promise.all(Array.from({ length: message.num_blobs })
+          .map(() => new Promise<string>(resolve => resolver.resolveBlob.push(resolve))))
+          .then(blobs => resolver.resolve(blobs.join('')))
+          .catch(err => resolver.reject(err));
       });
 
       return (name: string): Promise<string> => {
         return new Promise<string>((resolve, reject) => {
           const my_id = ++id.next;
 
+          setTimeout(() => {
+            if (resolvers.has(my_id)) {
+              resolvers.delete(my_id);
+              reject(new Error("File retrieval timed out"));
+            }
+          }, 30_000);
+
           resolvers.set(my_id, {
             resolve: resolve,
-            reject: reject
+            reject: reject,
+            resolveBlob: []
           });
 
           messageHandler.send({

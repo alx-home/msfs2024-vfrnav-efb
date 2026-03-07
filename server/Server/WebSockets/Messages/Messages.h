@@ -112,6 +112,7 @@ using Message = std::variant<
   msg::ExportNav,
   msg::ExportPdfs,
   msg::Facilities,
+  msg::FileBlob,
   msg::FileExists,
   msg::FileExistsResponse,
   msg::Fuel,
