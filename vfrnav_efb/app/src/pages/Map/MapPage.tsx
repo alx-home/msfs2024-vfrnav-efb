@@ -29,7 +29,7 @@ import { SettingsContext, messageHandler } from "@Settings/SettingsProvider";
 import { AirportsLayer } from "@Ol/layers/AirportsLayer";
 import { PlaneLayer } from "@Ol/layers/PlaneLayer";
 import { RecordsLayer } from "@Ol/layers/RecordsLayer";
-import { OpenAip } from "@Ol/layers/OpenAip";
+// import { OpenAip } from "@Ol/layers/OpenAip";
 import { ToolBar } from "./Toolbar";
 import { MapContext } from "./MapContext";
 
@@ -42,7 +42,7 @@ import airportsImg from '@efb-images/airports.jpg';
 import planeImg from '@efb-images/plane.jpg';
 import dsfImg from '@efb-images/dsf.jpg';
 import openflightmapsImg from '@efb-images/openflightmaps.jpg';
-import openAIPImg from '@efb-images/open_aip.jpg';
+// import openAIPImg from '@efb-images/open_aip.jpg';
 import openflightmapsBaseImg from '@efb-images/openflightmaps_base.jpg';
 import map4freeImg from '@efb-images/map4free.jpg';
 import bingImg from '@efb-images/bing.jpg';
@@ -177,12 +177,12 @@ export const MapPage = memo(function MapPage({ active }: {
       alt: 'dsf layer',
       getSettings: (_settings: GlobalSettings) => _settings.germany
     },
-    {
-      olLayer: <OpenAip key="openaip" url="https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.pbf" crossOrigin={null} />,
-      src: openAIPImg,
-      alt: 'openaip layer',
-      getSettings: (_settings: GlobalSettings) => _settings.openaipmaps
-    },
+    // {
+    //   olLayer: <OpenAip key="openaip" url="https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.pbf" crossOrigin={null} />,
+    //   src: openAIPImg,
+    //   alt: 'openaip layer',
+    //   getSettings: (_settings: GlobalSettings) => _settings.openaipmaps
+    // },
     {
       olLayer: <OlOSMLayer key="openflightmaps" url={`${openFlightMapUrl}/aero/latest`} crossOrigin={null} />,
       src: openflightmapsImg,

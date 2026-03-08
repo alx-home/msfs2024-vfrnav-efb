@@ -44,12 +44,13 @@ const ErrorMessage = ({ children }: PropsWithChildren<{
    return children;
 };
 
-const LayerActivation = ({ setting, defaultSetting, reset, children }: PropsWithChildren<{
+const LayerActivation = ({ setting, defaultSetting, reset, children, disable }: PropsWithChildren<{
    setting: LayerSetting & LayerSettingSetter,
    defaultSetting: LayerSetting,
-   reset?: boolean
+   reset?: boolean,
+   disable?: boolean
 }>) => {
-   return <CheckBox onChange={setting.setEnabled} reset={reset}
+   return <CheckBox onChange={setting.setEnabled} reset={reset} active={!(disable ?? false)}
       value={setting.enabled} defaultValue={defaultSetting.enabled}>
       {children}
    </CheckBox>
@@ -440,7 +441,7 @@ export const SettingsPage = ({ active }: {
                      Use Germany DFS Layer (secais).
                   </LayerActivation>
                   <LayerActivation setting={settings.openaipmaps} defaultSetting={SharedSettingsRecord.defaultValues.openaipmaps}>
-                     Use Open Aip Layer.
+                     Use Open Aip Layer (WARNING Not optimized, expect performance issues).
                   </LayerActivation>
                   <LayerActivation setting={settings.openflightmaps} defaultSetting={SharedSettingsRecord.defaultValues.openflightmaps}>
                      Use Open Flight Layer.
