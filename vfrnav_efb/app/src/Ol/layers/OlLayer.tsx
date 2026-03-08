@@ -16,7 +16,7 @@
 import { Feature, Map } from "ol";
 import TileLayer from "ol/layer/Tile";
 import { TileImage } from "ol/source";
-import { useContext, useEffect, useId, useMemo } from "react";
+import { useContext, useEffect, useId, useMemo, memo } from 'react';
 import { MapContext } from "@pages/Map/MapContext";
 import VectorLayer from "ol/layer/Vector";
 import { Coordinate } from "ol/coordinate";
@@ -105,12 +105,12 @@ const useLayer = (source: Source | TileImage, map?: Map, clipAera?: Coordinate[]
   return layer;
 };
 
-export const OlLayer = ({ opacity, source, order, active, maxZoom, minZoom, clipAera }:
+export const OlLayer = memo(function OlLayer({ opacity, source, order, active, maxZoom, minZoom, clipAera }:
   OlLayerProp & {
     opacity?: number,
     source: Source | TileImage,
     clipAera?: Coordinate[]
-  }) => {
+  }) {
   const mapContext = useContext(MapContext)!;
   const layer = useLayer(source, mapContext.map, clipAera);
 
@@ -151,4 +151,4 @@ export const OlLayer = ({ opacity, source, order, active, maxZoom, minZoom, clip
   }, [order, layer]);
 
   return <></>;
-};
+});

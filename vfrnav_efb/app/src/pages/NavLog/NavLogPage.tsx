@@ -15,7 +15,7 @@
 
 import { Button, CheckBox, Input, Tabs } from "@alx-home/Utils";
 import { MapContext } from "@pages/Map/MapContext";
-import { ReactElement, useCallback, useContext, useEffect, useMemo, useState, useRef, memo } from 'react';
+import { ReactElement, useContext, useEffect, useMemo, useState, useRef, memo } from 'react';
 
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
@@ -28,6 +28,7 @@ import { FuelPoint, Properties } from "@shared/NavData";
 import { Coordinate } from "ol/coordinate";
 import { useATCId } from "@Utils/ATCId";
 import { useSimDate } from "@Utils/SimDate";
+import { useEvent } from 'react-use-event-hook';
 
 const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
   navData: NavData[],
@@ -52,7 +53,7 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
     && (exportDev || exportFuel || (exportNav.find(elem => elem) !== undefined))
     , [devValid, exportDev, exportFuel, exportNav, fuelValid])
 
-  const validate = useCallback(() => {
+  const validate = useEvent(() => {
     if (ok) {
       const navs = exportNav.map((elem, index) => elem ? {
         name: exportNavName[index].length ? exportNavName[index] : navData[index].name,
@@ -124,7 +125,7 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
 
       setPopup(emptyPopup);
     }
-  }, [deviationCurve, emptyPopup, exportDev, exportDevName, exportFuel, exportFuelName, exportNav, exportNavName, fuelCurve, navData, ok, setPopup])
+  })
 
   const exportNavElems = useMemo(() => navData.map((elem, index) => <div key={elem.id} className="flex flex-row">
     <CheckBox value={exportNav[index]} onChange={(value) => {
@@ -189,9 +190,9 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
   </div >;
 }
 
-const NavLogPageElem = ({ active }: {
+export const NavLogPage = memo(function NavLogPage({ active }: {
   active: boolean
-}) => {
+}) {
   const {
     navData, deviationCurve, fuelUnit, fuelCurve, importNav,
     setSavedDeviationCurves, setSavedFuelCurves, deviationPreset, fuelPreset,
@@ -210,10 +211,10 @@ const NavLogPageElem = ({ active }: {
   const [edit, setEdit] = useState<boolean>(false);
   const [empty, setEmpty] = useState(true);
   const settingPage = useRef<string>(undefined)
-  const exportCb = useCallback(() => {
+  const exportCb = useEvent(() => {
     setPopup(<ExportPopup navData={navData} deviationCurve={deviationCurve} fuelCurve={fuelCurve} settingPage={settingPage.current} />)
-  }, [deviationCurve, fuelCurve, navData, setPopup])
-  const importCb = useCallback(() => {
+  })
+  const importCb = useEvent(() => {
     const input = document.createElement('input');
     input.accept = 'application/json'
     input.multiple = false
@@ -334,7 +335,7 @@ const NavLogPageElem = ({ active }: {
 
     document.body.appendChild(input);
     input.click();
-  }, [emptyPopup, importNav, setPopup, setSavedDeviationCurves, setSavedFuelCurves, updateDeviationPreset, updateFuelPreset])
+  })
 
   const [tabs, tabElems, tabNames] = useMemo(() => {
     const elems: ReactElement[] = [];
@@ -381,12 +382,14 @@ const NavLogPageElem = ({ active }: {
     return [tabs, elems, tabNames]
   }, [active, edit, navData, tab]);
 
-  const switchEdit = useCallback(() => {
+  const tabsArray = useMemo(() => Array.from(tabs), [tabs]);
+
+  const switchEdit = useEvent(() => {
     setEdit(edit => !edit)
-  }, [])
+  })
 
   const efbConnected = useEFBServer();
-  const exportNav = useCallback(() => {
+  const exportNav = useEvent(() => {
     messageHandler.send({
       __EXPORT_NAV__: true,
 
@@ -417,7 +420,7 @@ const NavLogPageElem = ({ active }: {
       })) : [],
       fuelPreset: fuelPreset
     })
-  }, [deviationCurve, deviationPreset, fuelCurve, fuelPreset, fuelUnit, navData]);
+  });
 
   useEffect(() => {
     if (!tabs.find(value => value === tab)) {
@@ -470,7 +473,7 @@ const NavLogPageElem = ({ active }: {
           </div>
           <div className='flex flex-col overflow-hidden grow m-4 mt-5 mb-0 h-full'>
             <div className="pl-4">
-              <Tabs tabs={Array.from(tabs)} activeTab={tab} names={tabNames} switchTab={setTab} className="hidden" />
+              <Tabs tabs={tabsArray} activeTab={tab} names={tabNames} switchTab={setTab} className="hidden" />
             </div>
             <div className='relative grow overflow-hidden h-full'>
               {tabElems}
@@ -506,6 +509,4 @@ const NavLogPageElem = ({ active }: {
       </div>
     </div>
   </div >;
-}
-
-export const NavLogPage = memo(NavLogPageElem);
+});

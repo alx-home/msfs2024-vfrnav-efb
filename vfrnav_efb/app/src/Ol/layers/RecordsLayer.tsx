@@ -14,7 +14,7 @@
  */
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useEffect, useMemo, useState, useRef } from 'react';
+import { useContext, useEffect, useMemo, useState, useRef, memo } from 'react';
 import { Geometry, LineString, Point, Polygon, SimpleGeometry } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import VectorSource from "ol/source/Vector";
@@ -90,7 +90,7 @@ const fetchRecord = async (record: PlaneRecord) => new Promise<PlanePosContent[]
   }
 });
 
-export const RecordsLayer = ({
+export const RecordsLayer = memo(function RecordsLayer({
   opacity,
   order,
   active,
@@ -99,7 +99,7 @@ export const RecordsLayer = ({
   clipAera
 }: OlLayerProp & {
   opacity?: number
-}) => {
+}) {
   const { map, profileScale, profileRange, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, profileOffset, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
   const records = useMemo(() => records_.filter(record => record.active), [records_]);
   const [mapSize, setMapSize] = useState<number[] | undefined>(undefined);
@@ -485,6 +485,4 @@ export const RecordsLayer = ({
 
 
   return <OlLayer key={"airports"} source={group} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />
-};
-
-
+});

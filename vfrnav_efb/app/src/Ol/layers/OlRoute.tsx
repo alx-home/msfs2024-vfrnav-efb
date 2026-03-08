@@ -25,7 +25,7 @@ import { doubleClick } from 'ol/events/condition';
 import { FeatureLike } from "ol/Feature";
 import Style from "ol/style/Style";
 import { Coordinate, rotate } from "ol/coordinate";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 import { MapContext } from "@pages/Map/MapContext";
 
@@ -337,12 +337,12 @@ const useDraw = (source?: VectorSource<Feature<Geometry>>) => {
    return { draw: draw };
 }
 
-export const OlRouteLayer = ({
+export const OlRouteLayer = memo(function OlRouteLayer({
    order,
    zIndex
 }: {
    zIndex: number
-} & OlLayerProp) => {
+} & OlLayerProp) {
    const { setNavData, map, setCancel, navData, updateNavProps, setFuelCurve, updateFuelPreset, setFuelUnit, setDeviationCurve, updateDeviationPreset, importNavRef } = useContext(MapContext)!;
    const settings = useContext(SettingsContext)!;
 
@@ -764,4 +764,4 @@ export const OlRouteLayer = ({
       <img ref={redMarkerImg} src={redMarker} alt='destination marker' />
       <img ref={blueMarkerImg} src={blueMarker} alt='intermediate marker' />
    </div>;
-};
+});

@@ -138,8 +138,8 @@ export const OpenAip = ({
                   ctx.save()
                   const coords__ = (() => {
                     const coords1 = (coords_ as Coordinate[][]);
-                    for (let index = 0; index < coords1.length; ++index) {
-                      const coords = coords1[index];
+                    for (const element of coords1) {
+                      const coords = element;
 
                       for (let index = 0; index < coords.length - 1; ++index) {
                         const center = [(coords[index][0] + coords[index + 1][0]) / 2, (coords[index][1] + coords[index + 1][1]) / 2]
@@ -147,10 +147,7 @@ export const OpenAip = ({
                           let angle = Math.atan2(coords[index][1] - coords[index + 1][1], coords[index][0] - coords[index + 1][0])
                           let way = 1;
 
-                          if (angle > Math.PI / 2) {
-                            angle = angle + Math.PI;
-                            way = -1;
-                          } else if (angle < -Math.PI / 2) {
+                          if ((angle > Math.PI / 2) || (angle < -Math.PI / 2)) {
                             angle = angle + Math.PI;
                             way = -1;
                           }
@@ -224,7 +221,7 @@ export const OpenAip = ({
                       ctx.rotate(angle)
                       ctx.translate(0, trans);
 
-                      for (const currentText of text as string[][]) {
+                      for (const currentText of text) {
 
                         ctx.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
 

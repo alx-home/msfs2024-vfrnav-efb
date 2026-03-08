@@ -17,10 +17,10 @@ import { useMouseRelease, useKeyUp } from "@alx-home/Events";
 
 import { View } from "ol";
 import { fromLonLat } from "ol/proj";
-import { PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
+import { PropsWithChildren, useContext, useEffect, useRef, useState, memo } from 'react';
 import { MapContext } from "@pages/Map/MapContext";
 
-export const OlMap = ({ children, id, className }: PropsWithChildren<{ id: string, className: string }>) => {
+export const OlMap = memo(function OlMap({ children, id, className }: PropsWithChildren<{ id: string, className: string }>) {
   const mapContext = useContext(MapContext)!;
 
   const [center,] = useState(fromLonLat([1.5911241345835847, 48.104707368204686]));
@@ -66,4 +66,4 @@ export const OlMap = ({ children, id, className }: PropsWithChildren<{ id: strin
     <div ref={mapElement} id={id} className="grow w-full" />
     {children}
   </div>;
-}
+});

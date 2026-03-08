@@ -15,9 +15,9 @@
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
 import { TileWMS } from "ol/source";
-import { useMemo } from "react";
+import { useMemo, memo } from 'react';
 
-export const OlWMSLayer = ({
+export const OlWMSLayer = memo(function OlWMSLayer({
   opacity,
   url,
   crossOrigin,
@@ -30,7 +30,7 @@ export const OlWMSLayer = ({
   url: string,
   crossOrigin?: string | null,
   opacity?: number
-}) => {
+}) {
   const source = useMemo(() => new TileWMS({
     params: {
       url: url,
@@ -38,4 +38,4 @@ export const OlWMSLayer = ({
     },
   }), [crossOrigin, url]);
   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />;
-};
+});

@@ -16,7 +16,7 @@
 import { MapContext } from "@pages/Map/MapContext";
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 import { Coordinate } from "ol/coordinate";
-import { PropsWithChildren, useCallback, useContext, useMemo, useState, useEffect, useRef } from 'react';
+import { PropsWithChildren, useCallback, useContext, useMemo, useState, useEffect, useRef, memo } from 'react';
 
 import Arrow from '@alx-home/images/arrow.svg?react';
 import { CheckBox, Input, Scroll, Select, SelectOption, Tabs } from "@alx-home/Utils";
@@ -151,13 +151,13 @@ const useFuel = () => {
    return { fuel, getFuel }
 }
 
-export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
+export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navData }: {
    currentTab: string,
    tab: string,
    coords: Coordinate[],
    edit: boolean,
    navData: NavData
-}) => {
+}) {
    const { editNavProperties, activeNav, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useContext(MapContext)!;
    const { properties, waypoints, departureTime, link, taxiTime, taxiConso, loadedFuel, id } = navData;
    const getSimDate = useSimDate();
@@ -653,6 +653,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
       })
    }, [actives, collapseWaypoints, coords, departureTime, edit, editNavProperties, fromUnit, id, loadedFuel, mode, properties, reset, setActive, taxiConso, taxiTime, toUnit, updateWaypoints, waypoints]);
 
+   const tabs = useMemo(() => Array.from(modes), []);
    useEffect(() => {
       setReset(value => value + 1)
    }, [fuelUnit])
@@ -677,7 +678,7 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
          + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
       }>
          <div className="flex flex-row pl-4 pt-2">
-            <Tabs tabs={Array.from(modes)} activeTab={mode} names={modesStr} switchTab={setMode} />
+            <Tabs tabs={tabs} activeTab={mode} names={modesStr} switchTab={setMode} />
          </div>
          <Scroll className={
             'block [&>:not(:first-child)]:mt-8'
@@ -904,4 +905,4 @@ export const Navlog = ({ tab, currentTab, coords, edit, navData }: {
          </Scroll >
       </div >
       : <></>
-}
+});

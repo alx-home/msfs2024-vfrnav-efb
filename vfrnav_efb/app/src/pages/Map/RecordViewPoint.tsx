@@ -15,12 +15,12 @@
 
 import StreetView from '@efb-images/street-view.svg?react';
 import { Menu } from './MapMenu/MapMenu';
-import { useContext, useState } from 'react';
+import { useContext, useState, memo } from 'react';
 import { MapContext } from './MapContext';
 
-export const RecordViewpoint = ({ menu }: {
+export const RecordViewpoint = memo(function RecordViewpoint({ menu }: {
    menu: Menu
-}) => {
+}) {
    const { recordsCenter, setRecordsCenter } = useContext(MapContext)!;
    const [dragOffset, setDragOffset] = useState<{ x: number, y: number } | undefined>()
 
@@ -56,4 +56,4 @@ export const RecordViewpoint = ({ menu }: {
          <StreetView className="w-8 h-8 transition-all filter-icon opacity-50 hocus:opacity-100 pointer-events-auto cursor-move" />
       </button>
    </div>
-}
+});

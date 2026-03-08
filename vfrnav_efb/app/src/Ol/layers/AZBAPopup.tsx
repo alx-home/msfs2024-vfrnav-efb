@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { PropsWithChildren, useCallback, useContext, useEffect, useMemo } from 'react';
+import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, memo } from 'react';
 
 import { Azba } from '@Settings/SIAAZBA';
 import { Button, Scroll } from '@alx-home/Utils';
@@ -43,9 +43,9 @@ const SubCategory = ({ children, title }: PropsWithChildren<{
   </div>
 }
 
-export const AZBAPopup = ({ data }: {
+export const AZBAPopup = memo(function AZBAPopup({ data }: {
   data: Azba
-}) => {
+}) {
   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
   const key = useKeyUp();
 
@@ -143,4 +143,4 @@ export const AZBAPopup = ({ data }: {
         }}>Close</Button>
     </div>
   </div >;
-};
+});

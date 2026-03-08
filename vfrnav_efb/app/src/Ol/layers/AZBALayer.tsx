@@ -15,7 +15,7 @@
 
 import VectorLayer from "ol/layer/Vector";
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState, memo } from 'react';
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
@@ -29,7 +29,7 @@ import { Interactive } from "@pages/Map/MapContext";
 import { AZBAPopup } from "./AZBAPopup";
 import { Color } from "ol/color";
 
-export const AZBALayer = ({
+export const AZBALayer = memo(function AZBALayer({
   opacity,
   order,
   active,
@@ -38,7 +38,7 @@ export const AZBALayer = ({
   clipAera
 }: OlLayerProp & {
   opacity?: number
-}) => {
+}) {
   const { getSIAAZBA, setPopup, map } = useContext(SettingsContext)!;
   const { azba } = map;
 
@@ -97,7 +97,7 @@ export const AZBALayer = ({
   }), [activeHighLayer, activeLowLayer, inactiveHighLayer, inactiveLowLayer])
 
   const [refresh, setRefresh] = useState(0);
-  const timer = useRef<NodeJS.Timeout>(undefined);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
 
   useEffect(() => {
@@ -193,6 +193,6 @@ export const AZBALayer = ({
   }, [activeHighLayer, activeLowLayer, inactiveHighLayer, inactiveLowLayer, refresh, getSIAAZBA, azba.range, setPopup]);
 
   return <OlLayer key={"active high"} source={groupLayer} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />
-};
+});
 
 

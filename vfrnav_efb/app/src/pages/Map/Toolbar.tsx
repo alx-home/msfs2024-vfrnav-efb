@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, memo } from 'react';
 
 import Arrow from '@alx-home/images/arrow.svg?react';
 import { Menu } from "./MapMenu/MapMenu";
 import { RecordsToolbar } from "./MapMenu/Menus/Records";
 
-export const ToolBar = ({ menu }: {
+export const ToolBar = memo(function ToolBar({ menu }: {
    menu: Menu
-}) => {
+}) {
    const [open, setOpen] = useState(false);
    const content = useMemo(() => {
       switch (menu) {
@@ -35,4 +35,4 @@ export const ToolBar = ({ menu }: {
          <div className="flex grow p-4 h-full">{content}</div>
       </div>
    </div>
-}
+});

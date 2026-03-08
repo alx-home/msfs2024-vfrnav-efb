@@ -14,7 +14,7 @@
  */
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import VectorSource from "ol/source/Vector";
@@ -32,7 +32,7 @@ import { PlanePos } from '@shared/PlanPos';
 import PlaneImg from '@efb-images/plane.svg';
 import { useEvent } from "react-use-event-hook";
 
-export const PlaneLayer = ({
+export const PlaneLayer = memo(function PlaneLayer({
   opacity,
   order,
   active,
@@ -41,7 +41,7 @@ export const PlaneLayer = ({
   clipAera
 }: OlLayerProp & {
   opacity?: number
-}) => {
+}) {
   const { map } = useContext(MapContext)!;
   const vectorSource = useMemo(() => new VectorSource<Feature<Point>>({}), []);
   const [pos, setPos] = useState<PlanePos>({
@@ -111,6 +111,6 @@ export const PlaneLayer = ({
       <img ref={PlaneIcon} src={PlaneImg} alt='plane' />
     </div>
   </>
-};
+});
 
 

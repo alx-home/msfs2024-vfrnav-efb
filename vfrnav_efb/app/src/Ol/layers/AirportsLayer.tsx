@@ -14,7 +14,7 @@
  */
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 import { Point } from "ol/geom";
 import { fromLonLat, toLonLat } from "ol/proj";
@@ -36,7 +36,7 @@ import WaterAirportsImg from '@efb-images/waterairport.svg';
 import MilitaryAirportImg from '@efb-images/militaryAirport.svg';
 import HelipadImg from '@efb-images/helipad.svg';
 
-export const AirportsLayer = ({
+export const AirportsLayer = memo(function AirportsLayer({
   opacity,
   order,
   active,
@@ -45,7 +45,7 @@ export const AirportsLayer = ({
   clipAera
 }: OlLayerProp & {
   opacity?: number
-}) => {
+}) {
   const { setPopup, airports } = useContext(SettingsContext)!;
   const { map, registerMouseEnd, unregisterMouseEnd } = useContext(MapContext)!;
   const vectorSource = useMemo(() => new VectorSource<Feature<Point>>({}), []);
@@ -190,6 +190,6 @@ export const AirportsLayer = ({
       <img ref={MilitaryAirportIcon} src={MilitaryAirportImg} alt='military airport' />
     </div>
   </>
-};
+});
 
 

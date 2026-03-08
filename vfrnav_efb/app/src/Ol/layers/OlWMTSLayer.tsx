@@ -18,10 +18,10 @@ import { Projection } from "ol/proj";
 import { OlLayer, OlLayerProp } from "./OlLayer";
 import { TileImage, WMTS } from "ol/source";
 import WMTSTileGrid from "ol/tilegrid/WMTS";
-import { useMemo } from "react";
+import { useMemo, memo } from 'react';
 import { Coordinate } from "ol/coordinate";
 
-export const OlWMTSLayer = ({
+export const OlWMTSLayer = memo(function OlWMTSLayer({
   opacity,
   url,
   layer,
@@ -53,7 +53,7 @@ export const OlWMTSLayer = ({
   },
   style?: 'normal',
   wrapX?: boolean,
-} & OlLayerProp) => {
+} & OlLayerProp) {
   const source = useMemo<TileImage>(() => new WMTS({
     url: url,
     layer: layer,
@@ -67,4 +67,4 @@ export const OlWMTSLayer = ({
     crossOrigin: '',
   }), [format, layer, matrixSet, projection, style, tileGrid, url, version, wrapX]);
   return <OlLayer source={source} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />;
-};
+});
