@@ -655,7 +655,11 @@
             "### EFB ###",
             "***🔧 Improvements / Améliorations:***",
             "     - General performance improvements.",
-            "       Amélioration des performances générales."
+            "       Amélioration des performances générales.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - OpenFlightMap layer is now restored and fully functional.",
+            "       Correction du calque OpenFlightMap qui est désormais restauré et pleinement fonctionnel."
          ]
       }
    ]
