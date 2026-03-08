@@ -647,6 +647,16 @@
             "     - Fixed a bug where clicking on multiple records concurrently in the record page was not handled correctly.",
             "       Correction d'un bug où des clics simultanés sur plusieurs enregistrements dans la page des enregistrements n'étaient pas gérés correctement."
          ]
+      },
+      {
+         "version": "1.3.1",
+         "date": "MAR 08, 2026",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - General performance improvements.",
+            "       Amélioration des performances générales."
+         ]
       }
    ]
 }
