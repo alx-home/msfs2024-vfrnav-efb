@@ -440,8 +440,10 @@ export const SettingsPage = ({ active }: {
                   <LayerActivation setting={settings.germany} defaultSetting={SharedSettingsRecord.defaultValues.germany}>
                      Use Germany DFS Layer (secais).
                   </LayerActivation>
-                  <LayerActivation setting={settings.openaipmaps} defaultSetting={SharedSettingsRecord.defaultValues.openaipmaps}>
-                     Use Open Aip Layer (WARNING Not optimized, expect performance issues).
+                  <LayerActivation setting={settings.openaipmaps} defaultSetting={SharedSettingsRecord.defaultValues.openaipmaps} disable={true}>
+                     <div className="opacity-30">
+                        Use Open Aip Layer (Disabled: Until optimized).
+                     </div>
                   </LayerActivation>
                   <LayerActivation setting={settings.openflightmaps} defaultSetting={SharedSettingsRecord.defaultValues.openflightmaps}>
                      Use Open Flight Layer.
