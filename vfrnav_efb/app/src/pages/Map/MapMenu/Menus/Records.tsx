@@ -26,7 +26,6 @@ import editImg from "@alx-home/images/edit.svg";
 import deleteImg from "@alx-home/images/delete.svg";
 import undoImg from '@alx-home/images/undo.svg';
 
-
 export class RecordData {
   // eslint-disable-next-line no-unused-vars
   constructor(public id: number, public name: string, public active: boolean, public shortName: string, public feature: Feature, public layer: VectorLayer) { }
@@ -221,14 +220,14 @@ export const RecordsToolbar = () => {
     setProfileRange({ min: min, max: max })
   }, [setProfileRange]);
 
-  const rule1 = useMemo(() => profileRule1 + profileOffset, [profileOffset, profileRule1]);
-  const rule2 = useMemo(() => profileRule2 + profileOffset, [profileOffset, profileRule2]);
+  const rule1 = useMemo(() => profileRule1, [profileRule1]);
+  const rule2 = useMemo(() => profileRule2, [profileRule2]);
 
   return <div className='flex flex-col grow'>
     <div className='flex flex-col'>
       <SliderItem title={"Scale 1:" + profileScale.toFixed(3)}>
         <Reset onReset={() => setProfileScale(1)}>
-          <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 10 }} onChange={setProfileScale} />
+          <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 2 }} onChange={setProfileScale} />
         </Reset>
       </SliderItem>
       <SliderItem title={`Range ${(profileRange.min * 100).toFixed(0)}% - ${(profileRange.max * 100).toFixed(0)}%`}>

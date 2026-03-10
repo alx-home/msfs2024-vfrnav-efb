@@ -15,7 +15,7 @@
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
 import { useContext, useEffect, useMemo, useState, useRef, memo } from 'react';
-import { Geometry, LineString, Point, Polygon, SimpleGeometry } from "ol/geom";
+import { Circle, Geometry, LineString, Point, Polygon, SimpleGeometry } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import VectorSource from "ol/source/Vector";
 import { Feature } from 'ol';
@@ -262,12 +262,14 @@ export const RecordsLayer = memo(function RecordsLayer({
               ? 0
               : Math.sqrt(Math.pow(coords[index - 1][0] - coord[0], 2) + Math.pow(coords[index - 1][1] - coord[1], 2))
           ), 0)
-        // Draw rule 1
-        {
+
+
+        const drawRule = (color: string, profileSlopeOffset: number, profileSlope: number, profileRule: number) => {
           const segment: Coordinate[] = [];
-          let dist = -fullDistance * profileSlopeOffset1 / 100;
+          let dist = -fullDistance * profileSlopeOffset / 100;
+          let lastDist = dist;
           let lastCoord: Coordinate | undefined = undefined;
-          const slope = Math.atan(profileSlope1 * Math.PI / 180);
+          const slope = Math.atan(profileSlope * Math.PI / 180);
           for (const element of coords) {
             if (lastCoord) {
               dist += Math.sqrt(Math.pow(element[0] - lastCoord[0], 2) + Math.pow(element[1] - lastCoord[1], 2))
@@ -275,48 +277,40 @@ export const RecordsLayer = memo(function RecordsLayer({
             lastCoord = element;
 
             const coord = element as Coordinate
-            const vec = getVec(coord, res * Math.max(0, profileRule1 + profileOffset + slope * dist - profileOffset));
+            const vec = getVec(coord, res * Math.max(0, profileRule + profileOffset + slope * dist - profileOffset));
 
             segment.push([coord[0] + vec[0], coord[1] + vec[1]])
+
+            if ((lastDist < 0) && (dist >= 0)) {
+              const point = new Feature({
+                geometry: new Circle([coord[0] + vec[0], coord[1] + vec[1]], 50)
+              });
+              point.setStyle(new Style({
+                fill: new Fill({
+                  color: 'rgba(' + color + ', 0.8)',
+                }), stroke: new Stroke({
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  width: 1.5,
+                })
+              }))
+              features.push(point)
+            };
+
+            lastDist = dist;
           }
 
           const feature = new Feature(new LineString(segment));
           feature.setStyle(new Style({
             fill: new Fill(), stroke: new Stroke({
-              color: 'rgba(255, 0, 0, 1)',
+              color: 'rgba(' + color + ', 1)',
               width: 2,
             })
           }))
           features.push(feature)
         }
 
-        // Draw rule 2
-        {
-          const segment: Coordinate[] = [];
-          let dist = -fullDistance * profileSlopeOffset2 / 100;
-          let lastCoord: Coordinate | undefined = undefined;
-          const slope = Math.atan(profileSlope2 * Math.PI / 180);
-          for (const element of coords) {
-            if (lastCoord) {
-              dist += Math.sqrt(Math.pow(element[0] - lastCoord[0], 2) + Math.pow(element[1] - lastCoord[1], 2))
-            }
-            lastCoord = element;
-
-            const coord = element as Coordinate
-            const vec = getVec(coord, res * Math.max(0, profileRule2 + profileOffset + slope * dist - profileOffset));
-
-            segment.push([coord[0] + vec[0], coord[1] + vec[1]])
-          }
-
-          const feature = new Feature(new LineString(segment));
-          feature.setStyle(new Style({
-            fill: new Fill(), stroke: new Stroke({
-              color: 'rgba(0, 255, 0, 1)',
-              width: 2,
-            })
-          }))
-          features.push(feature)
-        }
+        drawRule('255, 0, 0', profileSlopeOffset1, profileSlope1, profileRule1 / 3.28084);
+        drawRule('0, 255, 0', profileSlopeOffset2, profileSlope2, profileRule2 / 3.28084);
 
         return features;
       })();
