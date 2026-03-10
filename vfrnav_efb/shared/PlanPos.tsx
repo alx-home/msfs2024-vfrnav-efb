@@ -25,7 +25,10 @@ export type PlanePosContent = {
   heading: number,
   verticalSpeed: number,
   windVelocity: number,
-  windDirection: number
+  windDirection: number,
+  indicatedAirSpeed?: number,
+  trueAirSpeed?: number,
+  groundVelocity?: number,
 }
 
 export type PlanePos = {
@@ -36,10 +39,11 @@ export type PlaneBlob = {
   __PLANE_BLOB__: true,
 
   id: number,
+  version?: number,
   value: string // encoded PlanePosContent[]
 };
 
-export const decodePlaneBlob = (blob: string): PlanePosContent[] => {
+export const decodePlaneBlob = (blob: string, version: number): PlanePosContent[] => {
   const data = atob(blob);
   if (!data) {
     return [];
@@ -51,7 +55,7 @@ export const decodePlaneBlob = (blob: string): PlanePosContent[] => {
   const poses = Array.from(new Float32Array(bytes.buffer));
 
   let date = 0;
-  for (let index = 0; index < poses.length; index += 9) {
+  for (let index = 0; index < poses.length; index += 9 + (version >= 2 ? 3 : 0)) {
     if (index === 0) {
       date = poses[0];
     } else {
@@ -68,13 +72,16 @@ export const decodePlaneBlob = (blob: string): PlanePosContent[] => {
       verticalSpeed: poses[index + 6],
       windVelocity: poses[index + 7],
       windDirection: poses[index + 8],
+      indicatedAirSpeed: version >= 2 ? poses[index + 9] : undefined,
+      trueAirSpeed: version >= 2 ? poses[index + 10] : undefined,
+      groundVelocity: version >= 2 ? poses[index + 11] : undefined
     });
   }
 
   return values;
 }
 
-export const encodePlaneBlob = (data: PlanePosContent[]): string => {
+export const encodePlaneBlob = (data: PlanePosContent[], version: number): string => {
   let lastDate = 0;
 
   const buffer = new Float32Array(data
@@ -90,6 +97,11 @@ export const encodePlaneBlob = (data: PlanePosContent[]): string => {
         pos.windVelocity,
         pos.windDirection
       ];
+
+      if (version >= 2) {
+        result.push(pos.indicatedAirSpeed ?? -1, pos.trueAirSpeed ?? -1, pos.groundVelocity ?? -1);
+      }
+
       lastDate = pos.date;
       return result;
     }));
@@ -115,7 +127,11 @@ export const PlanePosRecord = GenRecord<PlanePos>({
   verticalSpeed: -1,
   windVelocity: -1,
   windDirection: -1
-}, {});
+}, {
+  indicatedAirSpeed: { optional: true },
+  trueAirSpeed: { optional: true },
+  groundVelocity: { optional: true }
+});
 
 
 export const PlanePosContentRecord = GenRecord<PlanePosContent>({
@@ -127,8 +143,12 @@ export const PlanePosContentRecord = GenRecord<PlanePosContent>({
   heading: -1,
   verticalSpeed: -1,
   windVelocity: -1,
-  windDirection: -1
-}, {});
+  windDirection: -1,
+}, {
+  indicatedAirSpeed: { optional: true },
+  trueAirSpeed: { optional: true },
+  groundVelocity: { optional: true }
+});
 
 
 export const PlaneBlobRecord = GenRecord<PlaneBlob>({
@@ -136,7 +156,9 @@ export const PlaneBlobRecord = GenRecord<PlaneBlob>({
 
   id: 0,
   value: ""
-}, {});
+}, {
+  version: { optional: true }
+});
 
 export type PlaneRecord = {
   name: string,

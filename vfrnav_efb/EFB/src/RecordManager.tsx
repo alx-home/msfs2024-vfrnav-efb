@@ -163,7 +163,7 @@ export class RecordManager {
    }
 
    private async SaveBlob() {
-      const encoded = encodePlaneBlob(this.planePosBlob);
+      const encoded = encodePlaneBlob(this.planePosBlob, 2);
 
       let blob_id = await this.blob_id;
       await this.saveBlobToDisk(`blob-${blob_id}`, encoded);
@@ -186,9 +186,12 @@ export class RecordManager {
          altitude: SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet'),
          ground: SimVar.GetSimVarValue('GROUND ALTITUDE', 'feet'),
          heading: SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees'),
-         verticalSpeed: SimVar.GetSimVarValue('VELOCITY BODY Y', 'feet per seconds') * 60,
+         verticalSpeed: SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per seconds') * 60,
          windVelocity: SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'knots'),
          windDirection: SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'degrees'),
+         indicatedAirSpeed: SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots'),
+         trueAirSpeed: SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'),
+         groundVelocity: SimVar.GetSimVarValue('GROUND VELOCITY', 'knots')
       };
 
       // Chain position fetches to avoid concurrent fetches in case fetching and saving blobs takes longer than the fetch interval
@@ -304,7 +307,7 @@ export class RecordManager {
             this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: blob });
          } else {
             console.error(`Blob with id ${blob_id} not found on disk`);
-            this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: encodePlaneBlob([]) });
+            this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: encodePlaneBlob([], 2) });
          }
       });
    }
