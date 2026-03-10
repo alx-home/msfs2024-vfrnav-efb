@@ -158,8 +158,8 @@ export const RecordsLayer = memo(function RecordsLayer({
             && (index < profileRange.max * data.length)
           ).map(elem => [
             ...fromLonLat([elem.lon, elem.lat]),
-            Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res),
-            Math.max(0, (elem.ground - profileOffset) * res)
+            Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res) / 3.28084,
+            Math.max(0, (elem.ground - profileOffset) * res) / 3.28084
           ]);
         const features: Feature[] = [];
         const polygonStyle = new Style({
