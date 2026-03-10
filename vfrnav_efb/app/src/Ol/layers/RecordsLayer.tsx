@@ -34,6 +34,7 @@ import LayerGroup from "ol/layer/Group";
 import { getLength } from "ol/sphere";
 
 import { useEvent } from "react-use-event-hook";
+import Text from "ol/style/Text";
 
 
 let cancelToken: { current: boolean } | undefined = undefined;
@@ -66,7 +67,7 @@ const fetchRecord = async (record: PlaneRecord) => new Promise<PlanePosContent[]
 
     if (pending_blobs.has(blob.id)) {
       pending_blobs.delete(blob.id);
-      result[record.blobs.indexOf(blob.id)] = decodePlaneBlob(blob.value);
+      result[record.blobs.indexOf(blob.id)] = decodePlaneBlob(blob.value, blob.version ?? 1);
 
       if (pending_blobs.size === 0) {
         currentToken.current = true;
@@ -159,7 +160,14 @@ export const RecordsLayer = memo(function RecordsLayer({
           ).map(elem => [
             ...fromLonLat([elem.lon, elem.lat]),
             Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res) / 3.28084,
-            Math.max(0, (elem.ground - profileOffset) * res) / 3.28084
+            Math.max(0, (elem.ground - profileOffset) * res) / 3.28084,
+            elem.verticalSpeed,
+            elem.windVelocity,
+            elem.windDirection,
+            elem.indicatedAirSpeed ?? -1,
+            elem.trueAirSpeed ?? -1,
+            elem.groundVelocity ?? -1,
+            elem.heading,
           ]);
         const features: Feature[] = [];
         const polygonStyle = new Style({
@@ -294,6 +302,41 @@ export const RecordsLayer = memo(function RecordsLayer({
                 })
               }))
               features.push(point)
+
+              const textFeature = new Feature({
+                geometry: new Point([coord[0] + vec[0], coord[1] + vec[1]])
+              });
+
+              //Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res) / 3.28084,
+              // Math.max(0, (elem.ground - profileOffset) * res) / 3.28084,
+              const groundAlt = coord[3] * 3.28084 / res + profileOffset;
+              const alt = coord[2] * 3.28084 / res + profileOffset + (withGround ? 0 : groundAlt);
+              textFeature.setStyle(
+                new Style({
+                  text: new Text({
+                    text: 'AMSL: ' + alt.toFixed(0) + ' ft\n'
+                      + 'AGL: ' + (alt - groundAlt).toFixed(0) + ' ft\n'
+                      + 'HDG: ' + coord[10].toFixed(0) + '°\n'
+                      + (coord[7] >= 0 ? ('\nIAS: ' + coord[7].toFixed(0) + ' kts') : '')
+                      + (coord[8] >= 0 ? ('\nTAS: ' + coord[8].toFixed(0) + ' kts') : '')
+                      + (coord[9] >= 0 ? ('\nGS: ' + coord[9].toFixed(0) + ' kts') : '')
+                      + 'VSpeed: ' + (coord[4] / 60).toFixed(0) + ' ft/min\n'
+                      + 'Wind: ' + coord[5].toFixed(0) + 'kts @' + coord[6].toFixed(0) + '°',
+                    font: '16px Calibri,sans-serif',
+                    fill: new Fill({ color: '#FFF' }),
+                    padding: [6, 10, 6, 10],
+                    backgroundFill: new Fill({ color: 'rgba(' + color + ', 0.5)' }),
+                    backgroundStroke: new Stroke({ color: 'rgba(' + color + ', 0.8)', width: 2 }),
+                    textAlign: 'left',
+                    textBaseline: 'bottom',
+
+                    offsetY: -17,
+                    offsetX: 22
+                  })
+                })
+              );
+              features.push(textFeature);
+
             };
 
             lastDist = dist;
