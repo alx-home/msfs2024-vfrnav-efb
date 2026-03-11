@@ -26,7 +26,7 @@ import Feature, { FeatureLike } from "ol/Feature";
 import { LineString, SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
-import { PlaneRecord, PlaneRecords } from '@shared/PlanPos';
+import { PlanePosContent, PlaneRecord, PlaneRecords } from '@shared/PlanPos';
 import { messageHandler, SettingsContext } from '@Settings/SettingsProvider';
 import { Deviation, ExportNavRecord, FuelUnit, getFuelConsumption, h125Curve, FuelPoint, Properties, Alt } from '@shared/NavData';
 import { getLength } from 'ol/sphere';
@@ -72,6 +72,10 @@ export const MapContext = createContext<{
   profileSlopeOffset1: number,
   setProfileSlopeOffset2: (_value: number) => void,
   profileSlopeOffset2: number,
+  resetProfileOffset: () => void,
+
+  currentRecord: PlanePosContent[][],
+  setCurrentRecord: Dispatch<SetStateAction<PlanePosContent[][]>>,
 
   withTouchdown: boolean,
   enableTouchdown: (_value: boolean) => void,
@@ -422,6 +426,19 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
   const [cancelRequest, setCancelRequest] = useState(false);
   const [addNavRequest, setAddNavRequest] = useState(false);
+
+  const [currentRecord, setCurrentRecord] = useState<PlanePosContent[][]>(records.map(() => []));
+  const resetProfileOffset = useEvent(() => {
+    const minGround = currentRecord.reduce((acc, curr) => {
+      return curr.reduce((acc, curr) => {
+        if (curr.ground < acc) {
+          return curr.ground;
+        }
+        return acc;
+      }, acc);
+    }, Infinity);
+    setProfileOffset(minGround);
+  });
 
   const [profileScale, setProfileScale] = useState(1);
   const [profileOffset, setProfileOffset] = useState(0);
@@ -909,6 +926,9 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     removeRecord,
     activeRecord,
     editRecord,
+    currentRecord,
+    setCurrentRecord,
+    resetProfileOffset,
     setProfileOffset,
     profileOffset,
     setProfileScale,
@@ -962,7 +982,13 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
     importNavRef,
     importNav
-  }), [map, addNavCB, cancelCB, registerMouseEnd, unregisterMouseEnd, navData, records, flash, flashKey, triggerFlash, removeNav, activeNav, editNav, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink, editNavProperties, updateWaypoints, reorderNav, removeRecord, activeRecord, editRecord, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav]);
+  }), [map, addNavCB, cancelCB, registerMouseEnd, unregisterMouseEnd, navData, records, flash, flashKey, triggerFlash, removeNav, activeNav, editNav, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink, editNavProperties, updateWaypoints, reorderNav, removeRecord, activeRecord, editRecord, currentRecord, resetProfileOffset, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav]);
+
+  useEffect(() => {
+    if (profileOffset === 0 && currentRecord.length) {
+      resetProfileOffset();
+    }
+  }, [currentRecord, profileOffset, resetProfileOffset])
 
   return (
     <MapContext.Provider

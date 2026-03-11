@@ -101,7 +101,12 @@ export const RecordsLayer = memo(function RecordsLayer({
 }: OlLayerProp & {
   opacity?: number
 }) {
-  const { map, profileScale, profileRange, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, profileOffset, recordsCenter, profileRule1, profileRule2, records: records_, withTouchdown, withGround } = useContext(MapContext)!;
+  const {
+    map,
+    profileScale, profileRange, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, profileOffset, profileRule1, profileRule2,
+    recordsCenter, records: records_, currentRecord, setCurrentRecord,
+    withTouchdown, withGround,
+  } = useContext(MapContext)!;
   const records = useMemo(() => records_.filter(record => record.active), [records_]);
   const [mapSize, setMapSize] = useState<number[] | undefined>(undefined);
   const [zoom, setZoom] = useState(1);
@@ -118,9 +123,8 @@ export const RecordsLayer = memo(function RecordsLayer({
   }, [map, mapSize, recordsCenter.x, recordsCenter.y])
 
 
-  const [navData, setNavData] = useState<PlanePosContent[][]>(records.map(() => []));
   const lastNavData = useRef<[number, PlanePosContent[]][]>(undefined);
-  const navPath = useMemo(() => navData
+  const navPath = useMemo(() => currentRecord
     .map(data => {
       const feature = new Feature(new LineString(data.map(pos => fromLonLat([pos.lon, pos.lat]))))
       feature.setStyle(new Style({
@@ -146,9 +150,9 @@ export const RecordsLayer = memo(function RecordsLayer({
         }
       }))
       return feature;
-    }), [navData]);
+    }), [currentRecord]);
 
-  const profile = useMemo(() => navData
+  const profile = useMemo(() => currentRecord
     .reduce((result, data) => {
       const features = (() => {
         const res = 0.30480 / profileScale;
@@ -307,8 +311,6 @@ export const RecordsLayer = memo(function RecordsLayer({
                 geometry: new Point([coord[0] + vec[0], coord[1] + vec[1]])
               });
 
-              //Math.max(0, ((withGround ? elem.altitude : elem.altitude - elem.ground) - profileOffset) * res) / 3.28084,
-              // Math.max(0, (elem.ground - profileOffset) * res) / 3.28084,
               const groundAlt = coord[3] * 3.28084 / res + profileOffset;
               const alt = coord[2] * 3.28084 / res + profileOffset + (withGround ? 0 : groundAlt);
               textFeature.setStyle(
@@ -359,7 +361,7 @@ export const RecordsLayer = memo(function RecordsLayer({
       })();
 
       return [...result, features] as Feature[][];
-    }, [] as Feature[][]), [navData, profileScale, center, profileRange.min, profileRange.max, withGround, profileOffset, zoom, profileSlopeOffset1, profileSlope1, profileRule1, profileSlopeOffset2, profileSlope2, profileRule2]);
+    }, [] as Feature[][]), [currentRecord, profileScale, center, profileRange.min, profileRange.max, withGround, profileOffset, zoom, profileSlopeOffset1, profileSlope1, profileRule1, profileSlopeOffset2, profileSlope2, profileRule2]);
 
   const projectionSource = useMemo(() => new VectorSource<Feature<Geometry>>({}), []);
   const pathSource = useMemo(() => new VectorSource<Feature<Geometry>>({}), []);
@@ -465,7 +467,7 @@ export const RecordsLayer = memo(function RecordsLayer({
           return feature;
         });
 
-      setNavData(results);
+      setCurrentRecord(results);
       setTouchDownSource(
         new VectorSource<Feature<Geometry>>({
           features: touchdowns
