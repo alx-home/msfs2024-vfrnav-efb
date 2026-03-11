@@ -661,6 +661,26 @@
             "     - OpenFlightMap layer is now restored and fully functional.",
             "       Correction du calque OpenFlightMap qui est désormais restauré et pleinement fonctionnel."
          ]
+      },
+      {
+         "version": "1.3.2",
+         "date": "MAR 11, 2026",
+         "notes": [
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Disabled the export button for 1 second for better user experience.",
+            "       Désactivation du bouton d'exportation pendant 1 seconde pour une meilleure expérience utilisateur.",
+            "     - Default profile offset now uses minimum ground value instead of 0. (#303)",
+            "       Le décalage de profil par défaut utilise désormais la valeur minimale du sol au lieu de 0. (#303)",
+            "     - Added tooltip to record points with heading, airspeed, and other information in the records layer. (#301)",
+            "       Ajout d'une info-bulle aux points d'enregistrement affichant le cap, la vitesse et d'autres informations dans le layer d'enregistrements. (#301)",
+            "     - Displayed profile rule pivot point for better clarity. (#298)",
+            "       Affichage du point pivot des règles de profil pour une meilleure clarté. (#298)",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Fixed incorrect unit for altitude in the record layer (now uses meters instead of feet). (#297)",
+            "       Correction de l'unité d'altitude incorrecte dans le layer d'enregistrements (utilise désormais les mètres au lieu des pieds). (#297)"
+         ]
       }
    ]
 }
