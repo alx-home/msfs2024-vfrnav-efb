@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeEvent, Children, CSSProperties, Dispatch, FocusEvent, isValidElement, KeyboardEvent, MouseEventHandler, PropsWithChildren, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, Children, CSSProperties, Dispatch, FocusEvent, isValidElement, KeyboardEvent, MouseEventHandler, PropsWithChildren, SetStateAction, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import VectorLayer from 'ol/layer/Vector';
 
@@ -30,6 +30,7 @@ import { useEFBServer } from '@Utils/useServer';
 import { messageHandler } from '@Settings/SettingsProvider';
 import { Properties } from '@shared/NavData';
 import { Coordinate } from 'ol/coordinate';
+import { useEvent } from 'react-use-event-hook';
 
 export class NavData {
   // eslint-disable-next-line no-unused-vars
@@ -115,26 +116,26 @@ const Input = ({ editMode, setEditMode, name, id }: {
     }
   });
 
-  const onBlur = useCallback((e: FocusEvent<HTMLInputElement>) => {
+  const onBlur = useEvent((e: FocusEvent<HTMLInputElement>) => {
     setFocused(false);
     editNav(id, e.currentTarget.value)
     setEditMode(false);
-  }, [editNav, id, setEditMode])
+  })
 
-  const onFocus = useCallback(() => {
+  const onFocus = useEvent(() => {
     setFocused(true);
-  }, [])
+  })
 
-  const onChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+  const onChange = useEvent((e: ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value)
-  }, [])
+  })
 
-  const onKeyUp = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+  const onKeyUp = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape' || e.key === 'Enter') {
       editNav(id, e.currentTarget.value);
       setEditMode(false);
     }
-  }, [editNav, id, setEditMode])
+  })
 
   return <input className={'bg-transparent h-6 pt-[2px] pointer-events-auto'} placeholder={name} ref={textArea} type="text" style={editMode ? {} : { display: 'none' }}
     onBlur={onBlur}
@@ -166,16 +167,16 @@ const NavItem = ({ name, shortName, active, id, setDraggable }: {
     }
   }, [editMode, setDraggable])
 
-  const onClick = useCallback(() => setNavData(navData => {
+  const onClick = useEvent(() => setNavData(navData => {
     const newData = [...navData];
     const elem = newData.find(e => e.id === id);
     if (elem) {
       elem.active = !active;
     }
     return newData;
-  }), [active, id, setNavData]);
-  const onEdit = useCallback(() => setEditMode(true), [setEditMode]);
-  const onRemove = useCallback(() => removeNav(id), [removeNav, id]);
+  }));
+  const onEdit = useEvent(() => setEditMode(true));
+  const onRemove = useEvent(() => removeNav(id));
 
   return <div className={'group flex flex-row max-w-full grow [&>*:not(:first-child)]:hover:ml-[5px]' + (active ? ' border-l-2 border-msfs' : '')}>
     <Button className={'flex flex-row grow max-w-full mx-[5px] @container/label'}
@@ -241,6 +242,7 @@ export const Nav = ({ closeMenu, className, style }: {
   const { addNav, navData, deviationCurve, deviationPreset, fuelUnit, fuelCurve, fuelPreset, reorderNav } = useContext(MapContext)!;
   const key = useMemo(() => navData.reduce((prev, elem) => { return prev + ";" + elem.name; }, ""), [navData]);
   const [draggable, setDraggable] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const childs = useMemo(() => navData.map((item, index) => {
     return <Item key={navData[index].id} order={navData[index].order} className='flex' setDraggable={setDraggable}>
       <NavItem key={item.id} active={item.active} id={item.id} name={item.name} shortName={item.shortName} />
@@ -248,13 +250,15 @@ export const Nav = ({ closeMenu, className, style }: {
   })
     , [navData]);
 
-  const onAdd = useCallback(() => {
+  const onAdd = useEvent(() => {
     addNav?.()
     closeMenu()
-  }, [addNav, closeMenu]);
+  });
 
-  const importNav = useCallback(() => { }, []);
-  const exportNav = useCallback(() => {
+  const importNav = useEvent(() => { });
+  const exportNav = useEvent(() => {
+    setExporting(true);
+
     messageHandler.send({
       __EXPORT_NAV__: true,
 
@@ -285,7 +289,9 @@ export const Nav = ({ closeMenu, className, style }: {
       })) : [],
       fuelPreset: fuelPreset
     })
-  }, [deviationCurve, deviationPreset, fuelCurve, fuelPreset, fuelUnit, navData]);
+
+    setTimeout(() => setExporting(false), 1000);
+  });
 
   const onOrdersChange = useMemo(() => (orders: number[]) => {
     reorderNav(orders);
@@ -312,7 +318,7 @@ export const Nav = ({ closeMenu, className, style }: {
       </div>
       <div className='flex'>
         <Add name='Import' image={importImg} disabled={true} onClick={importNav} />
-        <Add name='Export' image={exportImg} disabled={!efbConnected || __MSFS_EMBEDED__} onClick={exportNav} />
+        <Add name='Export' image={exportImg} disabled={!efbConnected || __MSFS_EMBEDED__ || exporting} onClick={exportNav} />
       </div>
     </div>
   </div >

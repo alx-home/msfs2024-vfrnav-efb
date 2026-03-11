@@ -15,7 +15,7 @@
 
 import { Button, CheckBox, Input, Tabs } from "@alx-home/Utils";
 import { MapContext } from "@pages/Map/MapContext";
-import { ReactElement, useContext, useEffect, useMemo, useState, useRef, memo } from 'react';
+import { ReactElement, useContext, useEffect, useMemo, useState, useRef, memo, SetStateAction, Dispatch } from 'react';
 
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
@@ -30,11 +30,12 @@ import { useATCId } from "@Utils/ATCId";
 import { useSimDate } from "@Utils/SimDate";
 import { useEvent } from 'react-use-event-hook';
 
-const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
+const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve, setExporting }: {
   navData: NavData[],
   settingPage?: string,
   deviationCurve: [number, number][],
-  fuelCurve: [number, FuelPoint[]][]
+  fuelCurve: [number, FuelPoint[]][],
+  setExporting: Dispatch<SetStateAction<boolean>>
 }) => {
   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
   const key = useKeyUp();
@@ -123,9 +124,15 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
         }
       })()
 
+      setTimeout(() => setExporting(false), 1000);
       setPopup(emptyPopup);
     }
   })
+
+  const cancel = useEvent(() => {
+    setExporting(false);
+    setPopup(emptyPopup);
+  });
 
   const exportNavElems = useMemo(() => navData.map((elem, index) => <div key={elem.id} className="flex flex-row">
     <CheckBox value={exportNav[index]} onChange={(value) => {
@@ -139,9 +146,9 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
 
   useEffect(() => {
     if (key == 'Escape') {
-      setPopup(emptyPopup);
+      cancel();
     }
-  }, [emptyPopup, key, setPopup])
+  }, [cancel, key])
 
 
   return <div className='flex flex-col p-2 w-full max-h-full'>
@@ -181,9 +188,7 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
     </div>
     <div className='flex flex-row w-full min-h-0 shrink-0 pt-8 justify-end [&>*]:mx-1' >
       <Button active={true} className='px-2'
-        onClick={() => {
-          setPopup(emptyPopup);
-        }}>Cancel</Button>
+        onClick={cancel}>Cancel</Button>
       <Button active={ok} disabled={!ok} className='px-2'
         onClick={validate}>Export</Button>
     </div>
@@ -200,6 +205,8 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
   } = useContext(MapContext)!;
   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
 
+  const [exporting, setExporting] = useState(false);
+
   const getAtcId = useATCId();
   const getSimDate = useSimDate();
 
@@ -212,7 +219,9 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
   const [empty, setEmpty] = useState(true);
   const settingPage = useRef<string>(undefined)
   const exportCb = useEvent(() => {
-    setPopup(<ExportPopup navData={navData} deviationCurve={deviationCurve} fuelCurve={fuelCurve} settingPage={settingPage.current} />)
+    setExporting(true);
+    setPopup(<ExportPopup navData={navData} deviationCurve={deviationCurve} fuelCurve={fuelCurve} settingPage={settingPage.current}
+      setExporting={setExporting} />)
   })
   const importCb = useEvent(() => {
     const input = document.createElement('input');
@@ -484,7 +493,7 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
           {
             __MSFS_EMBEDED__ ? <></> :
               <div className="flex flex-row mr-2 grow [&>*:not(:first-child)]:ml-1">
-                <Button active={!empty} disabled={empty || !efbConnected || __MSFS_EMBEDED__} onClick={exportNav}>
+                <Button active={!empty} disabled={empty || !efbConnected || __MSFS_EMBEDED__ || exporting} onClick={exportNav}>
                   Upload
                 </Button>
                 <Button active={!empty} disabled={empty}
