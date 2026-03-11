@@ -242,7 +242,7 @@ export const Nav = ({ closeMenu, className, style }: {
   const { addNav, navData, deviationCurve, deviationPreset, fuelUnit, fuelCurve, fuelPreset, reorderNav } = useContext(MapContext)!;
   const key = useMemo(() => navData.reduce((prev, elem) => { return prev + ";" + elem.name; }, ""), [navData]);
   const [draggable, setDraggable] = useState(true);
-  const [exporting, setExporting] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const childs = useMemo(() => navData.map((item, index) => {
     return <Item key={navData[index].id} order={navData[index].order} className='flex' setDraggable={setDraggable}>
       <NavItem key={item.id} active={item.active} id={item.id} name={item.name} shortName={item.shortName} />
@@ -257,7 +257,7 @@ export const Nav = ({ closeMenu, className, style }: {
 
   const importNav = useEvent(() => { });
   const exportNav = useEvent(() => {
-    setExporting(true);
+    setUploading(true);
 
     messageHandler.send({
       __EXPORT_NAV__: true,
@@ -290,7 +290,7 @@ export const Nav = ({ closeMenu, className, style }: {
       fuelPreset: fuelPreset
     })
 
-    setTimeout(() => setExporting(false), 1000);
+    setTimeout(() => setUploading(false), 1000);
   });
 
   const onOrdersChange = useMemo(() => (orders: number[]) => {
@@ -318,7 +318,7 @@ export const Nav = ({ closeMenu, className, style }: {
       </div>
       <div className='flex'>
         <Add name='Import' image={importImg} disabled={true} onClick={importNav} />
-        <Add name='Export' image={exportImg} disabled={!efbConnected || __MSFS_EMBEDED__ || exporting} onClick={exportNav} />
+        <Add name='Export' image={exportImg} disabled={!efbConnected || __MSFS_EMBEDED__ || uploading} onClick={exportNav} />
       </div>
     </div>
   </div >

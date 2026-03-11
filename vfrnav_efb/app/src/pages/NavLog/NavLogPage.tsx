@@ -202,7 +202,7 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
   } = useContext(MapContext)!;
   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
 
-  const [exporting, setExporting] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const getAtcId = useATCId();
   const getSimDate = useSimDate();
@@ -216,7 +216,6 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
   const [empty, setEmpty] = useState(true);
   const settingPage = useRef<string>(undefined)
   const exportCb = useEvent(() => {
-    setExporting(true);
     setPopup(<ExportPopup navData={navData} deviationCurve={deviationCurve} fuelCurve={fuelCurve} settingPage={settingPage.current} />)
   })
   const importCb = useEvent(() => {
@@ -395,7 +394,7 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
 
   const efbConnected = useEFBServer();
   const exportNav = useEvent(() => {
-    setExporting(true);
+    setUploading(true);
     messageHandler.send({
       __EXPORT_NAV__: true,
 
@@ -427,7 +426,7 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
       fuelPreset: fuelPreset
     })
 
-    setTimeout(() => setExporting(false), 1000);
+    setTimeout(() => setUploading(false), 1000);
   });
 
   useEffect(() => {
@@ -492,7 +491,7 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
           {
             __MSFS_EMBEDED__ ? <></> :
               <div className="flex flex-row mr-2 grow [&>*:not(:first-child)]:ml-1">
-                <Button active={!empty} disabled={empty || !efbConnected || __MSFS_EMBEDED__ || exporting} onClick={exportNav}>
+                <Button active={!empty} disabled={empty || !efbConnected || __MSFS_EMBEDED__ || uploading} onClick={exportNav}>
                   Upload
                 </Button>
                 <Button active={!empty} disabled={empty}
