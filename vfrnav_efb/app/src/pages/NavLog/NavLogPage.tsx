@@ -15,7 +15,7 @@
 
 import { Button, CheckBox, Input, Tabs } from "@alx-home/Utils";
 import { MapContext } from "@pages/Map/MapContext";
-import { ReactElement, useContext, useEffect, useMemo, useState, useRef, memo, SetStateAction, Dispatch } from 'react';
+import { ReactElement, useContext, useEffect, useMemo, useState, useRef, memo } from 'react';
 
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
@@ -30,12 +30,11 @@ import { useATCId } from "@Utils/ATCId";
 import { useSimDate } from "@Utils/SimDate";
 import { useEvent } from 'react-use-event-hook';
 
-const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve, setExporting }: {
+const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
   navData: NavData[],
   settingPage?: string,
   deviationCurve: [number, number][],
-  fuelCurve: [number, FuelPoint[]][],
-  setExporting: Dispatch<SetStateAction<boolean>>
+  fuelCurve: [number, FuelPoint[]][]
 }) => {
   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
   const key = useKeyUp();
@@ -124,13 +123,11 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve, setExpor
         }
       })()
 
-      setTimeout(() => setExporting(false), 1000);
       setPopup(emptyPopup);
     }
   })
 
   const cancel = useEvent(() => {
-    setExporting(false);
     setPopup(emptyPopup);
   });
 
@@ -220,8 +217,7 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
   const settingPage = useRef<string>(undefined)
   const exportCb = useEvent(() => {
     setExporting(true);
-    setPopup(<ExportPopup navData={navData} deviationCurve={deviationCurve} fuelCurve={fuelCurve} settingPage={settingPage.current}
-      setExporting={setExporting} />)
+    setPopup(<ExportPopup navData={navData} deviationCurve={deviationCurve} fuelCurve={fuelCurve} settingPage={settingPage.current} />)
   })
   const importCb = useEvent(() => {
     const input = document.createElement('input');
@@ -399,6 +395,7 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
 
   const efbConnected = useEFBServer();
   const exportNav = useEvent(() => {
+    setExporting(true);
     messageHandler.send({
       __EXPORT_NAV__: true,
 
@@ -429,6 +426,8 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
       })) : [],
       fuelPreset: fuelPreset
     })
+
+    setTimeout(() => setExporting(false), 1000);
   });
 
   useEffect(() => {
