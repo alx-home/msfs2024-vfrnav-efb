@@ -25,6 +25,7 @@ import { MapContext } from '@pages/Map/MapContext';
 import editImg from "@alx-home/images/edit.svg";
 import deleteImg from "@alx-home/images/delete.svg";
 import undoImg from '@alx-home/images/undo.svg';
+import { useEvent } from 'react-use-event-hook';
 
 export class RecordData {
   // eslint-disable-next-line no-unused-vars
@@ -214,7 +215,7 @@ export const RecordsToolbar = () => {
     profileRule1, profileRule2, setProfileRule1, setProfileRule2,
     profileSlope1, profileSlope2, setProfileSlope1, setProfileSlope2,
     profileSlopeOffset1, profileSlopeOffset2, setProfileSlopeOffset1, setProfileSlopeOffset2,
-    enableTouchdown, withTouchdown, enableGround, withGround } = useContext(MapContext)!;
+    enableTouchdown, withTouchdown, enableGround, withGround, resetProfileOffset } = useContext(MapContext)!;
 
   const setProfileRanges = useCallback((min: number, max: number) => {
     setProfileRange({ min: min, max: max })
@@ -223,10 +224,33 @@ export const RecordsToolbar = () => {
   const rule1 = useMemo(() => profileRule1, [profileRule1]);
   const rule2 = useMemo(() => profileRule2, [profileRule2]);
 
+  const resetProfileScale = useEvent(() => {
+    setProfileScale(1);
+  });
+
+  const resetProfileRule1 = useEvent(() => {
+    setProfileRule1(1000);
+  });
+
+  const resetProfileRule2 = useEvent(() => {
+    setProfileRule2(1500);
+  });
+
+  const resetProfileSlope1 = useEvent(() => {
+    setProfileSlopeOffset1(0);
+    setProfileSlope1(0);
+  });
+
+  const resetProfileSlope2 = useEvent(() => {
+    setProfileSlopeOffset2(0);
+    setProfileSlope2(0);
+  });
+
+
   return <div className='flex flex-col grow'>
     <div className='flex flex-col'>
       <SliderItem title={"Scale 1:" + profileScale.toFixed(3)}>
-        <Reset onReset={() => setProfileScale(1)}>
+        <Reset onReset={resetProfileScale}>
           <Slider className="flex flex-row grow justify-end" value={profileScale} range={{ min: 0.1, max: 2 }} onChange={setProfileScale} />
         </Reset>
       </SliderItem>
@@ -236,30 +260,24 @@ export const RecordsToolbar = () => {
         </Reset>
       </SliderItem>
       <SliderItem title={`Offset (${profileOffset >= 10000 ? "FL" + (profileOffset / 100).toFixed(0) : profileOffset.toFixed(0)})`}>
-        <Reset onReset={() => setProfileOffset(0)}>
+        <Reset onReset={resetProfileOffset}>
           <Slider className="flex flex-row grow justify-end" value={profileOffset} range={{ min: 0, max: 10000 }} onChange={setProfileOffset} />
         </Reset>
       </SliderItem>
       <SliderItem title={`Rules ${rule1 >= 10000 ? "FL" + (rule1 / 100).toFixed(0) : rule1.toFixed(0)} ${rule2 >= 10000 ? "FL" + (rule2 / 100).toFixed(0) : rule2.toFixed(0)}`}>
-        <Reset onReset={() => setProfileRule1(1000)}>
+        <Reset onReset={resetProfileRule1}>
           <Slider className="flex flex-row grow" value={profileRule1} range={{ min: 0, max: 40000 }} onChange={setProfileRule1} />
         </Reset>
-        <Reset onReset={() => setProfileRule2(1500)}>
+        <Reset onReset={resetProfileRule2}>
           <Slider className="flex flex-row grow" value={profileRule2} range={{ min: 0, max: 40000 }} onChange={setProfileRule2} />
         </Reset>
       </SliderItem>
       <SliderItem title={`Slopes ${profileSlope1.toFixed(0)}° ${profileSlope2.toFixed(0)}°`}>
-        <Reset onReset={() => {
-          setProfileSlopeOffset1(0)
-          setProfileSlope1(0)
-        }}>
+        <Reset onReset={resetProfileSlope1}>
           <Slider className="flex flex-row grow" value={profileSlopeOffset1} range={{ min: 0, max: 100 }} onChange={setProfileSlopeOffset1} />
           <Slider className="flex flex-row grow" value={profileSlope1} range={{ min: -45, max: 45 }} onChange={setProfileSlope1} />
         </Reset>
-        <Reset onReset={() => {
-          setProfileSlopeOffset2(0)
-          setProfileSlope2(0)
-        }}>
+        <Reset onReset={resetProfileSlope2}>
           <Slider className="flex flex-row grow" value={profileSlopeOffset2} range={{ min: 0, max: 100 }} onChange={setProfileSlopeOffset2} />
           <Slider className="flex flex-row grow" value={profileSlope2} range={{ min: -45, max: 45 }} onChange={setProfileSlope2} />
         </Reset>
