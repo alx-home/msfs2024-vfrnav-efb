@@ -67,9 +67,10 @@ WasmHandler::SaveBlobEntry(Payload const& payload) {
 
 std::string
 WasmHandler::DeleteBlobEntry(std::string_view key) {
-   auto const path = std::string{OUTPUT_FOLDER} + "/" + std::string{key};
-   if ((std::remove((path + ".bin").c_str()) != 0)
-       || (std::remove((path + ".v2.bin").c_str()) != 0)) {
+   auto const path       = std::string{OUTPUT_FOLDER} + "/" + std::string{key};
+   bool const v1_removed = (std::remove((path + ".bin").c_str()) != 0);
+   bool const v2_removed = (std::remove((path + ".v2.bin").c_str()) != 0);
+   if (!v1_removed && !v2_removed) {
       return "error:Could not delete file";
    }
 
