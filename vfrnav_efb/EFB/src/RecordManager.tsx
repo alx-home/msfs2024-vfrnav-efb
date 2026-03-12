@@ -163,7 +163,7 @@ export class RecordManager {
    }
 
    private async SaveBlob() {
-      const encoded = encodePlaneBlob(this.planePosBlob, 2);
+      const encoded = encodePlaneBlob(this.planePosBlob);
 
       let blob_id = await this.blob_id;
       await this.saveBlobToDisk(`blob-${blob_id}`, encoded);
@@ -304,10 +304,22 @@ export class RecordManager {
       this.promise = this.promise.then(async () => {
          const blob = await this.getBlobFromDisk(`blob-${blob_id}`);
          if (blob) {
-            this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: blob });
-         } else {
+            const sep = blob.indexOf(':');
+            if (sep !== -1) {
+               const version = parseInt(blob.substring(0, sep));
+
+               if (isNaN(version) || (version != 1 && version != 2)) {
+                  console.error(`Received blob with unsupported version ${version} for blob id ${blob_id}`);
+                  this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: encodePlaneBlob([]), version: 2 });
+                  return;
+               }
+               this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: blob.substring(sep + 1), version });
+               return;
+            }
+
+
             console.error(`Blob with id ${blob_id} not found on disk`);
-            this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: encodePlaneBlob([], 2) });
+            this.manager.sendMessage(id, { __PLANE_BLOB__: true, id: blob_id, value: encodePlaneBlob([]), version: 2 });
          }
       });
    }

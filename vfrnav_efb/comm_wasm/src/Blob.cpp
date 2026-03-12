@@ -15,8 +15,10 @@
 
 #include "CommWasm.h"
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <optional>
+#include <string>
 
 Context&
 WasmHandler::StoreBlobContext() {
@@ -45,7 +47,7 @@ WasmHandler::SaveBlobEntry(Payload const& payload) {
    }
 
    std::ofstream stream(
-     std::string{OUTPUT_FOLDER} + "/" + std::string(payload.key_) + ".bin",
+     std::string{OUTPUT_FOLDER} + "/" + std::string(payload.key_) + ".v2.bin",
      std::ios::binary | std::ios::trunc
    );
    if (!stream.is_open()) {
@@ -62,8 +64,9 @@ WasmHandler::SaveBlobEntry(Payload const& payload) {
 
 std::string
 WasmHandler::DeleteBlobEntry(std::string_view key) {
-   auto const path = std::string{OUTPUT_FOLDER} + "/" + std::string{key} + ".bin";
-   if (std::remove(path.c_str()) != 0) {
+   auto const path = std::string{OUTPUT_FOLDER} + "/" + std::string{key};
+   if ((std::remove((path + ".bin").c_str()) != 0)
+       || (std::remove((path + ".v2.bin").c_str()) != 0)) {
       return "error:Could not delete file";
    }
 
@@ -72,10 +75,17 @@ WasmHandler::DeleteBlobEntry(std::string_view key) {
 
 std::string
 WasmHandler::LoadBlobEntry(std::string_view key) {
-   auto const    path = std::string{OUTPUT_FOLDER} + "/" + std::string{key} + ".bin";
-   std::ifstream stream(path, std::ios::binary);
+   auto const path = std::string{OUTPUT_FOLDER} + "/" + std::string{key};
+
+   std::size_t   version = 2;
+   std::ifstream stream(path + ".v2.bin", std::ios::binary);
    if (!stream.is_open()) {
-      return "error:Could not open file for reading";
+      version = 1;
+      stream.open(path + ".bin", std::ios::binary);
+
+      if (!stream.is_open()) {
+         return "error:Could not open file for reading";
+      }
    }
 
    stream.seekg(0, std::ios::end);
@@ -86,6 +96,15 @@ WasmHandler::LoadBlobEntry(std::string_view key) {
       return "error:File is empty";
    }
 
+   // If the file is in version 2 format, the first 4 bytes represent the version number
+   if (version == 2) {
+      stream.read(reinterpret_cast<char*>(&version), sizeof(version));
+   }
+
+   if (version != 1 && version != 2) {
+      return "error:Unsupported file version " + std::to_string(version);
+   }
+
    std::string content;
    content.resize(static_cast<std::size_t>(size));
    stream.read(content.data(), size);
@@ -93,7 +112,7 @@ WasmHandler::LoadBlobEntry(std::string_view key) {
       return "error:Could not read data from file";
    }
 
-   return "data:" + content;
+   return "data:" + std::to_string(version) + ":" + content;
 }
 
 std::optional<std::string>

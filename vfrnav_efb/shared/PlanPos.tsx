@@ -55,7 +55,7 @@ export const decodePlaneBlob = (blob: string, version: number): PlanePosContent[
   const poses = Array.from(new Float32Array(bytes.buffer));
 
   let date = 0;
-  for (let index = 0; index < poses.length; index += 9 + (version >= 2 ? 3 : 0)) {
+  for (let index = 0; index < poses.length; index += (9 + (version >= 2 ? 3 : 0))) {
     if (index === 0) {
       date = poses[0];
     } else {
@@ -81,7 +81,7 @@ export const decodePlaneBlob = (blob: string, version: number): PlanePosContent[
   return values;
 }
 
-export const encodePlaneBlob = (data: PlanePosContent[], version: number): string => {
+export const encodePlaneBlob = (data: PlanePosContent[]): string => {
   let lastDate = 0;
 
   const buffer = new Float32Array(data
@@ -95,12 +95,11 @@ export const encodePlaneBlob = (data: PlanePosContent[], version: number): strin
         pos.heading,
         pos.verticalSpeed,
         pos.windVelocity,
-        pos.windDirection
+        pos.windDirection,
+        pos.indicatedAirSpeed ?? -1,
+        pos.trueAirSpeed ?? -1,
+        pos.groundVelocity ?? -1
       ];
-
-      if (version >= 2) {
-        result.push(pos.indicatedAirSpeed ?? -1, pos.trueAirSpeed ?? -1, pos.groundVelocity ?? -1);
-      }
 
       lastDate = pos.date;
       return result;
