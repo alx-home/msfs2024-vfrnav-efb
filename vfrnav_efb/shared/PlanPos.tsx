@@ -55,7 +55,7 @@ export const decodePlaneBlob = (blob: string, version: number): PlanePosContent[
   const poses = Array.from(new Float32Array(bytes.buffer));
 
   let date = 0;
-  for (let index = 0; index < poses.length; index += (9 + (version >= 2 ? 3 : 0))) {
+  for (let index = 0; index < poses.length; index += (9 + ((version >= 2) ? 3 : 0))) {
     if (index === 0) {
       date = poses[0];
     } else {
@@ -127,9 +127,9 @@ export const PlanePosRecord = GenRecord<PlanePos>({
   windVelocity: -1,
   windDirection: -1
 }, {
-  indicatedAirSpeed: { optional: true },
-  trueAirSpeed: { optional: true },
-  groundVelocity: { optional: true }
+  indicatedAirSpeed: { optional: true, record: 'number' },
+  trueAirSpeed: { optional: true, record: 'number' },
+  groundVelocity: { optional: true, record: 'number' }
 });
 
 
@@ -144,9 +144,9 @@ export const PlanePosContentRecord = GenRecord<PlanePosContent>({
   windVelocity: -1,
   windDirection: -1,
 }, {
-  indicatedAirSpeed: { optional: true },
-  trueAirSpeed: { optional: true },
-  groundVelocity: { optional: true }
+  indicatedAirSpeed: { optional: true, record: 'number' },
+  trueAirSpeed: { optional: true, record: 'number' },
+  groundVelocity: { optional: true, record: 'number' }
 });
 
 
@@ -156,7 +156,7 @@ export const PlaneBlobRecord = GenRecord<PlaneBlob>({
   id: 0,
   value: ""
 }, {
-  version: { optional: true }
+  version: { optional: true, record: 'number' }
 });
 
 export type PlaneRecord = {

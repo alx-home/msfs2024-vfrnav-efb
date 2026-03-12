@@ -22,15 +22,18 @@
 namespace ws::msg {
 
 struct PlanePosContent {
-   std::size_t date_{};
-   double      lat_{};
-   double      lon_{};
-   double      altitude_{};
-   double      ground_{};
-   double      heading_{};
-   double      vertical_speed_{};
-   double      wind_velocity_{};
-   double      wind_direction_{};
+   std::size_t           date_{};
+   double                lat_{};
+   double                lon_{};
+   double                altitude_{};
+   double                ground_{};
+   double                heading_{};
+   double                vertical_speed_{};
+   double                wind_velocity_{};
+   double                wind_direction_{};
+   std::optional<double> indicated_air_speed_{};
+   std::optional<double> true_air_speed_{};
+   std::optional<double> ground_velocity_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"date", &PlanePosContent::date_},
@@ -42,6 +45,9 @@ struct PlanePosContent {
      js::_{"verticalSpeed", &PlanePosContent::vertical_speed_},
      js::_{"windVelocity", &PlanePosContent::wind_velocity_},
      js::_{"windDirection", &PlanePosContent::wind_direction_},
+     js::_{"indicatedAirSpeed", &PlanePosContent::indicated_air_speed_},
+     js::_{"trueAirSpeed", &PlanePosContent::true_air_speed_},
+     js::_{"groundVelocity", &PlanePosContent::ground_velocity_},
    };
 };
 

@@ -290,12 +290,13 @@ export const RecordsLayer = memo(function RecordsLayer({
 
             const coord = element as Coordinate
             const vec = getVec(coord, res * Math.max(0, profileRule + profileOffset + slope * dist - profileOffset));
+            const vec2 = getVec(coord, coord[2]);
 
             segment.push([coord[0] + vec[0], coord[1] + vec[1]])
 
-            if ((lastDist < 0) && (dist >= 0)) {
+            const addPoint = (coord: [number, number]) => {
               const point = new Feature({
-                geometry: new Circle([coord[0] + vec[0], coord[1] + vec[1]], 50)
+                geometry: new Circle([coord[0], coord[1]], 50)
               });
               point.setStyle(new Style({
                 fill: new Fill({
@@ -306,9 +307,15 @@ export const RecordsLayer = memo(function RecordsLayer({
                 })
               }))
               features.push(point)
+            }
+
+            if ((lastDist < 0) && (dist >= 0)) {
+              addPoint([coord[0] + vec[0], coord[1] + vec[1]])
+              addPoint([coord[0], coord[1]])
+              addPoint([coord[0] + vec2[0], coord[1] + vec2[1]])
 
               const textFeature = new Feature({
-                geometry: new Point([coord[0] + vec[0], coord[1] + vec[1]])
+                geometry: new Point([coord[0] + vec2[0], coord[1] + vec2[1]])
               });
 
               const groundAlt = coord[3] * 3.28084 / res + profileOffset;
@@ -319,11 +326,11 @@ export const RecordsLayer = memo(function RecordsLayer({
                     text: 'AMSL: ' + alt.toFixed(0) + ' ft\n'
                       + 'AGL: ' + (alt - groundAlt).toFixed(0) + ' ft\n'
                       + 'HDG: ' + coord[10].toFixed(0) + '°\n'
-                      + (coord[7] >= 0 ? ('\nIAS: ' + coord[7].toFixed(0) + ' kts') : '')
-                      + (coord[8] >= 0 ? ('\nTAS: ' + coord[8].toFixed(0) + ' kts') : '')
-                      + (coord[9] >= 0 ? ('\nGS: ' + coord[9].toFixed(0) + ' kts') : '')
-                      + 'VSpeed: ' + (coord[4] / 60).toFixed(0) + ' ft/min\n'
-                      + 'Wind: ' + coord[5].toFixed(0) + 'kts @' + coord[6].toFixed(0) + '°',
+                      + 'Wind: ' + coord[5].toFixed(0) + 'kts @' + coord[6].toFixed(0) + '°\n'
+                      + '\nVSpeed: ' + (coord[4] * 60).toFixed(0) + ' ft/min\n'
+                      + (coord[7] !== -1 ? ('IAS: ' + coord[7].toFixed(0) + ' kts\n') : '')
+                      + (coord[8] !== -1 ? ('TAS: ' + coord[8].toFixed(0) + ' kts\n') : '')
+                      + (coord[9] !== -1 ? ('GS: ' + coord[9].toFixed(0) + ' kts') : ''),
                     font: '16px Calibri,sans-serif',
                     fill: new Fill({ color: '#FFF' }),
                     padding: [6, 10, 6, 10],

@@ -54,6 +54,9 @@ WasmHandler::SaveBlobEntry(Payload const& payload) {
       return "error:Could not open file for writing";
    }
 
+   std::size_t version = 2;
+   stream.write(reinterpret_cast<const char*>(&version), sizeof(version));
+
    stream.write(payload.data_.data(), payload.data_.size());
    if (!stream.good()) {
       return "error:Could not write data to file";
@@ -106,8 +109,10 @@ WasmHandler::LoadBlobEntry(std::string_view key) {
    }
 
    std::string content;
-   content.resize(static_cast<std::size_t>(size));
-   stream.read(content.data(), size);
+   content.resize(
+     static_cast<std::size_t>(size) - ((version == 1) ? 0 : sizeof(version))
+   );  // Adjust size for version header if present
+   stream.read(content.data(), content.size());
    if (!stream.good() && !stream.eof()) {
       return "error:Could not read data from file";
    }
