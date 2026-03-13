@@ -15,10 +15,13 @@
 
 cmake_minimum_required(VERSION 3.20)
 
-project(vfrnav LANGUAGES CXX)
-
 # CMake Options
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/options.cmake)
+
+# vcpkg setup must run before project() to set the toolchain.
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/vcpkg_setup.cmake)
+
+project(vfrnav LANGUAGES CXX)
 
 # set(FETCHCONTENT_SOURCE_DIR_MICROSOFT_WEB_WEBVIEW2 ${CMAKE_SOURCE_DIR}/packages/Microsoft.Web.WebView2/)
 set(FETCHCONTENT_SOURCE_DIR_TS_UTILS ${CMAKE_SOURCE_DIR}/packages/ts-utils)

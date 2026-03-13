@@ -22,7 +22,6 @@
 
 #include <fcntl.h>
 #include <fileapi.h>
-#include <stdio.h>
 #include <windows/Lock.h>
 #include <json/json.h>
 #include <libloaderapi.h>
@@ -267,6 +266,15 @@ main() {
          freopen_s(&old, "CONOUT$", "w", stdout);
          freopen_s(&old, "CONOUT$", "w", stderr);
       }
+
+      // Switch console to UTF‑8
+      SetConsoleOutputCP(CP_UTF8);
+      SetConsoleCP(CP_UTF8);
+
+      // Disable legacy translation
+      std::ios_base::sync_with_stdio(false);
+      // Force stdout to binary mode (no CRLF mangling, no translation)
+      _setmode(_fileno(stdout), _O_BINARY);
 #endif  // DEBUG
 
       auto const main = Main::Get();

@@ -19,3 +19,4 @@ template class Window<WIN::MAIN>;
 template class Window<WIN::TASKBAR>;
 template class Window<WIN::TASKBAR_TOOLTIP>;
 template class Window<WIN::EFB>;
+template class Window<WIN::PROCESSING>;
