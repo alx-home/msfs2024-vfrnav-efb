@@ -20,7 +20,16 @@
          "args": ["--configure"],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",
-         "environment": [],
+         "environment": [
+            {
+               "name": "ASAN_OPTIONS",
+               "value": "halt_on_error=1:verbosity=1:check_initialization_order=1:detect_leaks=0:strict_string_checks=1:log_path=asan_log"
+            },
+            {
+               "name": "ASAN_SYMBOLIZER_PATH",
+               "value": "C:/Program Files/LLVM/bin/llvm-symbolizer.exe"
+            }
+         ],
          "console": "integratedTerminal"
       },
       {
@@ -31,7 +40,16 @@
          "args": [],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",
-         "environment": [],
+         "environment": [
+            {
+               "name": "ASAN_OPTIONS",
+               "value": "halt_on_error=1:verbosity=1:check_initialization_order=1:detect_leaks=0:strict_string_checks=1"
+            },
+            {
+               "name": "ASAN_SYMBOLIZER_PATH",
+               "value": "C:/Program Files/LLVM/bin/llvm-symbolizer.exe"
+            }
+         ],
          "console": "integratedTerminal"
       },
       {
