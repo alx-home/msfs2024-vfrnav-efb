@@ -58,6 +58,8 @@ public:
 
    void Dispatch(std::function<void()>) const;
 
+   webview::webview& Webview() const;
+
 private:
 #ifndef WATCH_MODE
    void InstallResourceHandler();

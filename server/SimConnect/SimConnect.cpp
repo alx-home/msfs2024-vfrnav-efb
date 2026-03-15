@@ -15,28 +15,30 @@
 
 #include "SimConnect.h"
 
+#include "SimConnect.inl"
+
 #include "main.h"
 
-#include <utils/MessageQueue.h>
-#include <Windows.h>
-#include <SimConnect.h>
-#include <synchapi.h>
-#include <winbase.h>
-#include <winuser.h>
+#include "ServerPort.h"
+
 #include <chrono>
 #include <condition_variable>
+#include <cstdint>
 #include <functional>
-#include <ios>
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <SimConnect.h>
 #include <stdexcept>
+#include <string_view>
+#include <synchapi.h>
 #include <thread>
-
-enum class DataId : uint32_t {
-   SET_PORT,
-   EVENT_FRAME,
-};
+#include <utils/MessageQueue.h>
+#include <utils/Scoped.h>
+#include <winbase.h>
+#include <Windows.h>
+#include <winspool.h>
+#include <winuser.h>
 
 SimConnect::SimConnect()
    : MessageQueue{"SimConnect"}
@@ -50,10 +52,12 @@ SimConnect::SimConnect()
          if (SUCCEEDED(SimConnect_Open(&handle, "MSFS VFRNav'", nullptr, 0, event_, 0))) {
             std::shared_ptr<HANDLE> handle_ptr{
               new HANDLE(handle),
-              [](HANDLE* ptr) constexpr {
+              [this](HANDLE* ptr) constexpr {
                  std::cout << "SimConnect: Disconnected from simulator" << std::endl;
                  SimConnect_Close(*ptr);
                  delete ptr;
+
+                 sent_port_ = -1;
               },
             };
             handle_ = handle_ptr;
@@ -61,17 +65,17 @@ SimConnect::SimConnect()
             Run(stoken);
          }
 
-         // Wait 5 seconds before retrying
+         // Wait 1 second before retrying
          std::mutex       mutex{};
          std::unique_lock lock{mutex};
-         std::condition_variable_any{}.wait_for(lock, stoken, std::chrono::seconds{5}, []() {
+         std::condition_variable_any{}.wait_for(lock, stoken, std::chrono::seconds{1}, []() {
             return false;
          });
       }
    }} {}
 
 SimConnect::~SimConnect() {
-   MessageQueue::Dispatch([this]() {
+   MessageQueue::Dispatch([this]() constexpr {
       thread_.request_stop();
 
       if (event_) {
@@ -80,75 +84,58 @@ SimConnect::~SimConnect() {
    });
 }
 
-void
-SimConnect::SetServerPort(uint32_t port) {
-   MessageQueue::Dispatch([this, port]() {
-      server_port_ = port;
-      next_check_  = std::chrono::steady_clock::now();
-      SetEvent(event_);
-   });
+WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>
+SimConnect::AICreateSimulatedObject(
+  std::string_view             title,
+  SIMCONNECT_DATA_INITPOSITION pos,
+  std::shared_ptr<void*>       handle
+) {
+   return MakePromise(
+     [this, handle, title = std::string{title}, pos](
+       Resolve<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> const& resolve, Reject const& reject
+     ) mutable -> Promise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID, true> {
+        if (!handle) {
+           handle = handle_.lock();
+           if (!handle) {
+              MakeReject<std::runtime_error>(reject, "Not connected to simulator");
+              co_return;
+           }
+        }
+
+        MessageQueue::Dispatch(
+          [reject = reject.shared_from_this()]() constexpr {
+             MakeReject<std::runtime_error>(*reject, "Timed out while creating simulated object");
+          },
+          std::chrono::seconds{5}
+        );
+
+        auto const request_id = ++request_id_;
+        if (SimConnect_AICreateSimulatedObject(*handle, title.data(), pos, request_id) == S_OK) {
+           pending_assigned_.emplace(
+             request_id,
+             [&resolve](SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned) { resolve(assigned); }
+           );
+        } else {
+           MakeReject<std::runtime_error>(reject, "Failed to create simulated object");
+           co_return;
+        }
+     }
+   );
 }
 
 void
 SimConnect::Run(std::stop_token const& stoken) {
    auto handle = handle_.lock();
+   using enum DataId;
 
-   SimConnect_AddToDataDefinition(
-     *handle,
-     static_cast<uint32_t>(DataId::SET_PORT),
-     "L:VFRNAV_SET_PORT",
-     "Number",
-     SIMCONNECT_DATATYPE_FLOAT64
-   );
+   AddToDataDefinition<SET_PORT, ServerPort>(handle);
 
-   sent_port_  = -1;
-   next_check_ = std::chrono::steady_clock::now();
-   while ((::WaitForSingleObject(
-             event_,
-             std::max(
-               0ll,
-               next_check_ == time_point::max()
-                 ? INFINITE
-                 : 100
-                     + std::chrono::duration_cast<std::chrono::milliseconds>(
-                         next_check_ - std::chrono::steady_clock::now()
-                     )
-                         .count()
-             )
-           )
-           == WAIT_OBJECT_0)
-          && !ShouldStop(stoken)) {
-      MessageQueue::Dispatch([this, handle]() {
-         if ((std::chrono::steady_clock::now() >= next_check_) && (sent_port_ != server_port_)) {
-            next_check_      = time_point::max();
-            sent_port_       = server_port_;
-            auto server_port = static_cast<double>(server_port_);
+   MessageQueue::Dispatch([this]() constexpr { SetServerPort(server_port_).Detach(); });
 
-            std::cout << "SimConnect: Setting server port to " << server_port_ << " sent port "
-                      << sent_port_ << " (connected: " << std::boolalpha
-                      << static_cast<bool>(handle) << ")" << std::endl;
-            if (E_FAIL
-                == SimConnect_SetDataOnSimObject(
-                  *handle,
-                  static_cast<uint32_t>(DataId::SET_PORT),
-                  SIMCONNECT_OBJECT_ID_USER,
-                  0,
-                  0,
-                  sizeof(server_port),
-                  &server_port
-                )) {
-               std::cerr << "SimConnect: Failed to set server port to " << server_port_
-                         << std::endl;
-
-               // Retry sending the port on failure after 5 seconds
-               sent_port_  = -1;
-               next_check_ = std::chrono::steady_clock::now() + std::chrono::seconds{1};
-               SetEvent(event_);
-            }
-         }
-      });
-
-      MessageQueue::Dispatch([this, handle]() {
+   uint32_t result;
+   while ((result = ::WaitForSingleObject(event_, INFINITE)),
+          (result == WAIT_OBJECT_0) && !ShouldStop(stoken)) {
+      MessageQueue::Dispatch([this, handle]() constexpr {
          SimConnect_CallDispatch(
            *handle,
            [](SIMCONNECT_RECV* data, DWORD, void* self) constexpr {
@@ -158,6 +145,7 @@ SimConnect::Run(std::stop_token const& stoken) {
          );
       });
    }
+   std::cout << "SimConnect: Stopping SimConnect thread, result " << result << std::endl;
 }
 
 bool
@@ -167,6 +155,8 @@ SimConnect::ShouldStop(std::stop_token const& stoken) const noexcept {
 
 void
 SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
+   using enum DataId;
+
    auto const handle = handle_.lock();
    if (!handle) {
       return;
@@ -180,18 +170,38 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
       case SIMCONNECT_RECV_ID_EXCEPTION: {
          auto const& exception = static_cast<SIMCONNECT_RECV_EXCEPTION const&>(data);
          std::cerr << "SimConnect: Exception (" << exception.dwException << ")" << std::endl;
+      } break;
 
-         // Retry sending the port on exception after 5 seconds
-         sent_port_  = -1;
-         next_check_ = std::chrono::steady_clock::now() + std::chrono::seconds{1};
-         SetEvent(event_);
+      case SIMCONNECT_RECV_ID_ASSIGNED_OBJECT_ID: {
+         // This is the only traffic-related message guaranteed in all SimConnect SDKs
+         auto const& assigned = static_cast<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const&>(data);
+         auto        request  = pending_assigned_.find(assigned.dwRequestID);
+
+         if (request != pending_assigned_.end()) {
+            ScopeExit _{[this, request]() constexpr { pending_assigned_.erase(request); }};
+            request->second(assigned);
+         } else {
+            std::cerr << "SimConnect: Received ASSIGNED_OBJECT_ID for unknown request ID "
+                      << assigned.dwRequestID << std::endl;
+         }
+      } break;
+
+      case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: {
+         auto const& simobj  = static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA const&>(data);
+         auto        request = pending_simobject_.find(simobj.dwRequestID);
+         if (request != pending_simobject_.end()) {
+            ScopeExit _{[this, request]() constexpr { pending_simobject_.erase(request); }};
+            request->second(simobj);
+         } else {
+            std::cerr << "SimConnect: Received SIMOBJECT_DATA for unknown request ID "
+                      << simobj.dwRequestID << std::endl;
+         }
       } break;
 
       case SIMCONNECT_RECV_ID_QUIT: {
          std::cout << "SimConnect: Simulator quit" << std::endl;
          handle_.reset();
          SetEvent(event_);
-         break;
-      }
+      } break;
    }
 }

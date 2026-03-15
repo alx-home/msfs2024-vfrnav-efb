@@ -15,14 +15,14 @@
 
 #pragma once
 
-#include <Windows.h>
-#include <SimConnect.h>
+#include "DataType.h"
 
-class Request {
-protected:
-   Request()          = default;
-   virtual ~Request() = default;
+#include <tuple>
 
-public:
-   virtual void Handle(SIMCONNECT_RECV_SIMOBJECT_DATA const& data) = 0;
+struct ServerPort {
+   double value_{};
+
+   static constexpr std::tuple MEMBERS{std::make_tuple(
+     sm::_m{"L:VFRNAV_SET_PORT", sm::_t<SIMCONNECT_DATATYPE_FLOAT64>{}, "", &ServerPort::value_}
+   )};
 };

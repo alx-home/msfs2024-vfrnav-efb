@@ -18,12 +18,12 @@
 #include "Server/Server.h"
 #include "Server/WebSockets/Messages/Messages.h"
 #include "SimConnect/SimConnect.h"
-#include "promise/promise.h"
 #include "Window/template/Window.h"
 
 #include <memory>
-#include <memory>
+#include <promise/promise.h>
 #include <unordered_map>
+#include <utility>
 #include <webview/webview.h>
 #include <windows/Env.h>
 #include <windows/SystemTray.h>
@@ -65,13 +65,50 @@ public:
 
    void SendServerPortToEFB(uint32_t port);
 
+   template <class FUN>
+   auto PoolDispatch(FUN&& func) {
+      if constexpr (promise::IS_FUNCTION<FUN>) {
+         if constexpr (std::is_same_v<void, promise::return_t<FUN>>) {
+            return PoolDispatchImp(std::forward<FUN>(func));
+         } else {
+            return PoolDispatchImp(std::forward<FUN>(func));
+         }
+      } else {
+         return PoolDispatch(std::function{std::forward<FUN>(func)});
+      }
+   }
+
 private:
+   Poll<50>     poll_{"Poll"};
    std::jthread mouse_watcher_;
    LRESULT      OnTrayNotification(WPARAM wParam, LPARAM lParam) override;
    LRESULT      OnMessageImpl(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) override;
 
    template <WIN WINDOW>
    void OnTerminate();
+
+   bool PoolDispatchImp(std::function<void()>);
+
+   template <class RETURN>
+   auto PoolDispatchImp(std::function<void(Resolve<RETURN> const&, Reject const&)>&& func) {
+      return MakePromise(
+        [this, func = std::move(func)](
+          Resolve<std::string> const& resolve, Reject const& reject
+        ) -> Promise<std::string, true> {
+           poll_.Dispatch([resolve = resolve.shared_from_this(),
+                           reject  = reject.shared_from_this(),
+                           func    = std::move(func)]() {
+              try {
+                 (func)(*resolve, *reject);
+              } catch (...) {
+                 (*reject)(std::current_exception());
+              }
+           });
+
+           co_return;
+        }
+      );
+   }
 
    // Delay window creation to ensure Main::Get() is ready
    using TaskbarPtr = std::unique_ptr<Window<WIN::TASKBAR>>;
@@ -84,7 +121,7 @@ private:
    using EFBPtr = std::unique_ptr<Window<WIN::EFB>>;
    std::unordered_map<std::size_t, EFBPtr> efbs_{};
 
-   std::unique_ptr<SimConnect> sim_connect_{};
+   std::unique_ptr<SimConnectProxy> sim_connect_{};
    // Must be afters windows to resolve every promises
    std::unique_ptr<Server> server_{};
 

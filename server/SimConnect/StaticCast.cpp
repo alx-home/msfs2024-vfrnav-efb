@@ -13,16 +13,8 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "ServerPort.h"
 
-#include <Windows.h>
-#include <SimConnect.h>
+#include "StaticCast.inl"
 
-class Request {
-protected:
-   Request()          = default;
-   virtual ~Request() = default;
-
-public:
-   virtual void Handle(SIMCONNECT_RECV_SIMOBJECT_DATA const& data) = 0;
-};
+template ServerPort SimConnect::StaticCast<ServerPort>(DWORD const& data);

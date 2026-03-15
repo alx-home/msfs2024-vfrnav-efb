@@ -213,7 +213,7 @@ Open(std::string_view path, std::vector<Filter> filters) {
                  }
 
                  if (!fdialog.Show()) {
-                    return MakeReject<Exception>(reject, "FileDialog closed");
+                    return reject.Apply<Exception>("FileDialog closed");
                  }
 
                  return resolve(utils::NarrowString(fdialog.GetResult()));

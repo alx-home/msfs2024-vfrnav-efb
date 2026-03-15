@@ -262,7 +262,7 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
       jump_list.AddTask("Open Settings", exe_path, "msfs2024-vfrnav_server.exe --configure");
    }
 
-   sim_connect_ = std::make_unique<SimConnect>();
+   sim_connect_ = std::make_unique<SimConnectProxy>();
    server_      = std::make_unique<Server>(*this);
 
    taskbar_ =
@@ -298,6 +298,11 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
    }
 }
 
+bool
+Main::PoolDispatchImp(std::function<void()> func) {
+   return poll_.Dispatch(std::move(func));
+}
+
 void
 Main::SetServerPort(uint16_t port) {
    assert(server_);
@@ -311,7 +316,7 @@ Main::Running() {
 
 void
 Main::SendServerPortToEFB(uint32_t port) {
-   sim_connect_->SetServerPort(port);
+   (*sim_connect_)([port](SimConnectPublic& sc) constexpr { sc.SetServerPort(port).Detach(); });
 }
 
 void
@@ -324,7 +329,7 @@ Main::Terminate() {
    assert(main);
 
    main->server_->RejectAll();
-   main->Dispatch([]() { PostQuitMessage(0); });
+   main->Dispatch([]() constexpr { PostQuitMessage(0); });
 }
 
 std::atomic<bool> Main::s__running{false};

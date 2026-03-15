@@ -25,7 +25,9 @@ set(SOURCES
     Server/WebSockets/WebSocket.cpp
     Server/WebSockets/EFBWebSocket.cpp
 
+    SimConnect/StaticCast.cpp
     SimConnect/SimConnect.cpp
+    SimConnect/SimConnectInterface.cpp
 
     Window/template/Bindings/log.cpp
     Window/template/Bindings/Files.cpp
