@@ -14,12 +14,12 @@
  */
 {
    "extends": "./tsconfig.base.json",
-   "references": [{ "path": "../../packages/ts-utils/tsconfig.json" }],
+   "references": [{ "path": "../../submodules/ts-utils/tsconfig.json" }],
    "compilerOptions": {
       "outDir": "../../build/installer/ts-dist",
       "composite": true,
       "paths": {
-         "@alx-home/build": ["../../packages/ts-utils/build_template.ts"]
+         "@alx-home/build": ["../../submodules/ts-utils/build_template.ts"]
       }
    },
    "include": ["./build.ts", "./tailwind.config.ts"]

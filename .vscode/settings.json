@@ -1,24 +1,22 @@
 {
    "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\compile_commands.json",
    "cSpell.words": ["FILEOPENDIALOGOPTIONS"],
-   "sonarlint.connectedMode.project": {
-      "connectionId": "https-sonarqube-alex-home-fr-",
-      "projectKey": "alx-home_msfs2024-vfrnav-efb_4b2e913f-5043-4cb2-b198-30de43fbba1a"
-   },
+   "eslint.useFlatConfig": true,
+   "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact"
+   ],
    "eslint.workingDirectories": [
       "./",
-
       "./common/ts",
-
       "./vfrnav_efb",
       "./vfrnav_efb/shared",
       "./vfrnav_efb/app",
       "./vfrnav_efb/EFB",
-
       "./installer/ts/app",
-
-      "./packages/ts-utils",
-
+      "./submodules/ts-utils",
       "./server/ts",
       "./server/ts/app",
       "./server/ts/common",

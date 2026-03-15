@@ -16,7 +16,7 @@
 {
    "extends": "../tsconfig.base.json",
    "references": [
-      { "path": "../../../packages/ts-utils/tsconfig.json" },
+      { "path": "../../../submodules/ts-utils/tsconfig.json" },
       { "path": "../common/tsconfig.json" },
       { "path": "../../../common/ts/tsconfig.json" }
    ],

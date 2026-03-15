@@ -17,6 +17,6 @@
    "references": [
       { "path": "./tsconfig.app.json" },
       { "path": "./tsconfig.build.json" },
-      { "path": "../../packages/ts-utils/tsconfig.json" }
+      { "path": "../../submodules/ts-utils/tsconfig.json" }
    ]
 }

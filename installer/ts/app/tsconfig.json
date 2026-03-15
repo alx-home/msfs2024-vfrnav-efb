@@ -15,7 +15,7 @@
 
 {
    "extends": "../tsconfig.base.json",
-   "references": [{ "path": "../../../packages/ts-utils/tsconfig.json" }],
+   "references": [{ "path": "../../../submodules/ts-utils/tsconfig.json" }],
    "compilerOptions": {
       "outDir": "../../../build/installer/ts-dist/app/"
    },

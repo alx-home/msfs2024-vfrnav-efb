@@ -36,7 +36,9 @@
 dist/
 build/
 .cache/
-packages/Microsoft.Web.WebView2
+submodules/Microsoft.Web.WebView2
+packages/
+_PackageInt/
 **/node_modules/
 **/package-lock.json
 **/msfs2024-vfrnavProject.xml.user

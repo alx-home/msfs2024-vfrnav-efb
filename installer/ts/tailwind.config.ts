@@ -14,13 +14,13 @@
  */
 
 import type { Config } from "tailwindcss";
-import BaseTailwind from '../../packages/ts-utils/tailwind.config.js';
+import BaseTailwind from '../../submodules/ts-utils/tailwind.config.js';
 
 const Tailwind: Config = {
    ...BaseTailwind, content: [
       "../../common/ts/**/*.{js,ts,jsx,tsx,mdx}",
       "./app/**/*.{js,ts,jsx,tsx,mdx}",
-      "../../packages/ts-utils/src/**/*.{js,ts,jsx,tsx,mdx}"
+      "../../submodules/ts-utils/src/**/*.{js,ts,jsx,tsx,mdx}"
    ]
 };
 export default Tailwind;

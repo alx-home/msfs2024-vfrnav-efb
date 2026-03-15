@@ -15,7 +15,7 @@
 {
    "extends": "./tsconfig.base.json",
    "references": [
-      { "path": "../../packages/ts-utils/tsconfig.json" },
+      { "path": "../../submodules/ts-utils/tsconfig.json" },
       { "path": "./tsconfig.build.json" },
       { "path": "./app/tsconfig.json" },
       { "path": "./taskbar/tsconfig.json" },
@@ -24,7 +24,7 @@
    ],
    "compilerOptions": {
       "paths": {
-         "@alx-home/build": ["../../packages/ts-utils/build_template.ts"]
+         "@alx-home/build": ["../../submodules/ts-utils/build_template.ts"]
       }
    }
 }

@@ -15,21 +15,20 @@
 
 cmake_minimum_required(VERSION 3.20)
 
-project(vfrnav LANGUAGES CXX)
-
 # CMake Options
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/options.cmake)
 
-# set(FETCHCONTENT_SOURCE_DIR_MICROSOFT_WEB_WEBVIEW2 ${CMAKE_SOURCE_DIR}/packages/Microsoft.Web.WebView2/)
-set(FETCHCONTENT_SOURCE_DIR_TS_UTILS ${CMAKE_SOURCE_DIR}/packages/ts-utils)
-set(FETCHCONTENT_SOURCE_DIR_BUILD_TOOLS ${CMAKE_SOURCE_DIR}/packages/build_tools)
-set(FETCHCONTENT_SOURCE_DIR_WEBVIEW ${CMAKE_SOURCE_DIR}/packages/webview)
-set(FETCHCONTENT_SOURCE_DIR_JSON ${CMAKE_SOURCE_DIR}/packages/json)
-set(FETCHCONTENT_SOURCE_DIR_PROMISE ${CMAKE_SOURCE_DIR}/packages/promise)
-set(FETCHCONTENT_SOURCE_DIR_WINDOWS ${CMAKE_SOURCE_DIR}/packages/windows)
-set(FETCHCONTENT_SOURCE_DIR_CPP_UTILS ${CMAKE_SOURCE_DIR}/packages/cpp_utils)
+project(vfrnav LANGUAGES CXX)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/packages/build_tools)
+set(FETCHCONTENT_SOURCE_DIR_TS_UTILS ${CMAKE_SOURCE_DIR}/submodules/ts-utils)
+set(FETCHCONTENT_SOURCE_DIR_BUILD_TOOLS ${CMAKE_SOURCE_DIR}/submodules/build_tools)
+set(FETCHCONTENT_SOURCE_DIR_WEBVIEW ${CMAKE_SOURCE_DIR}/submodules/webview)
+set(FETCHCONTENT_SOURCE_DIR_JSON ${CMAKE_SOURCE_DIR}/submodules/json)
+set(FETCHCONTENT_SOURCE_DIR_PROMISE ${CMAKE_SOURCE_DIR}/submodules/promise)
+set(FETCHCONTENT_SOURCE_DIR_WINDOWS ${CMAKE_SOURCE_DIR}/submodules/windows)
+set(FETCHCONTENT_SOURCE_DIR_CPP_UTILS ${CMAKE_SOURCE_DIR}/submodules/cpp_utils)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/submodules/build_tools)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies.cmake)
 

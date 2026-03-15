@@ -5,6 +5,5 @@
 	<Packages>
 		<Package>PackageDefinitions\alexhome-msfs2024-vfrnav.xml</Package>
 	</Packages>
-	<PublishingGroups/>
+	<PublishingGroups />
 </Project>
-

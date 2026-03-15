@@ -22,7 +22,7 @@ import { lint, LibConfig, VitePlugin } from '@alx-home/build';
 import { minify } from "terser";
 
 import externalGlobals from 'rollup-plugin-external-globals';
-import { copyFile, cp, mkdir } from 'fs';
+import { copyFile, mkdir } from 'fs';
 
 import Jpackage from "./package.json" with { type: "json" }; import { config } from "dotenv";
 
@@ -90,12 +90,6 @@ const copyFiles = () => {
         if (err) throw err;
       });
       copyFile(path.resolve(__dirname, '../../images/app-icon.svg'), path.resolve(__dirname, '../../build/vfrnav_efb/dist/assets/app-icon.svg'), err => {
-        if (err) throw err;
-      });
-      copyFile(path.resolve(__dirname, './msfs2024-vfrnavProject.xml'), path.resolve(__dirname, '../../build/vfrnav_efb/msfs2024-vfrnavProject.xml'), err => {
-        if (err) throw err;
-      });
-      cp(path.resolve(__dirname, './PackageDefinitions'), path.resolve(__dirname, '../../build/vfrnav_efb/PackageDefinitions'), { recursive: true }, err => {
         if (err) throw err;
       });
     }

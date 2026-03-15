@@ -26,7 +26,7 @@
 			<Flags>
 				<FSXCompatibility>false</FSXCompatibility>
 			</Flags>
-			<AssetDir>dist\</AssetDir>
+			<AssetDir>build\vfrnav_efb\dist\</AssetDir>
 			<OutputDir>html_ui\efb_ui\efb_apps\msfs2024-vfrnav\</OutputDir>
 		</AssetGroup>
 		<AssetGroup Name="efbStorageWasm">
@@ -34,7 +34,7 @@
 			<Flags>
 				<FSXCompatibility>false</FSXCompatibility>
 			</Flags>
-			<AssetDir>wasm\</AssetDir>
+			<AssetDir>build\vfrnav_efb\wasm\</AssetDir>
 			<OutputDir>modules\</OutputDir>
 		</AssetGroup>
 	</AssetGroups>

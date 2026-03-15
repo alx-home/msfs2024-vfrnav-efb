@@ -13,19 +13,21 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 {
-   "extends": "../../packages/ts-utils/tsconfig.base.json",
+   "extends": "../../submodules/ts-utils/tsconfig.base.json",
    "compilerOptions": {
       "outDir": "../../build/server/ts-dist",
       "rootDir": "../../",
       "paths": {
-         "@alx-home/global.css": ["../../packages/ts-utils/src/global.css"],
+         "@alx-home/global.css": ["../../submodules/ts-utils/src/global.css"],
 
-         "@alx-home/fonts/*": ["../../packages/ts-utils/src/fonts/*"],
-         "@alx-home/images/*": ["../../packages/ts-utils/src/images/*"],
-         "@alx-home/types": ["../../packages/ts-utils/types/index.d.ts"],
+         "@alx-home/fonts/*": ["../../submodules/ts-utils/src/fonts/*"],
+         "@alx-home/images/*": ["../../submodules/ts-utils/src/images/*"],
+         "@alx-home/types": ["../../submodules/ts-utils/types/index.d.ts"],
 
-         "@alx-home/Events": ["../../packages/ts-utils/src/Events/index.d.ts"],
-         "@alx-home/Utils": ["../../packages/ts-utils/src/Utils/index.d.ts"],
+         "@alx-home/Events": [
+            "../../submodules/ts-utils/src/Events/index.d.ts"
+         ],
+         "@alx-home/Utils": ["../../submodules/ts-utils/src/Utils/index.d.ts"],
 
          "@vfrnav/images/*": ["../../images/*"],
 

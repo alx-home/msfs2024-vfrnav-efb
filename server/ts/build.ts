@@ -49,7 +49,7 @@ const buildProject = async (name: string, port: number) => {
             fs: {
                allow: [
                   searchForWorkspaceRoot(__dirname),
-                  path.resolve(__dirname, "../../packages/ts-utils/src/fonts")
+                  path.resolve(__dirname, "../../submodules/ts-utils/src/fonts")
                ]
             }
          }

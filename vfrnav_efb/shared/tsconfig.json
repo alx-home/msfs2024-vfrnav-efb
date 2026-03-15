@@ -15,11 +15,11 @@
 
 {
    "extends": "../tsconfig.base.json",
-   "references": [{ "path": "../../packages/ts-utils/tsconfig.json" }],
+   "references": [{ "path": "../../submodules/ts-utils/tsconfig.json" }],
    "compilerOptions": {
       "outDir": "../../build/vfrnav_efb/ts-dist/common/",
       "paths": {
-         "@alx-home/types": ["../../packages/ts-utils/src/env.d.ts"]
+         "@alx-home/types": ["../../submodules/ts-utils/src/env.d.ts"]
       }
    },
    "include": ["./**/*.ts", "./**/*.tsx"]

@@ -81,7 +81,7 @@ else()
         EMBEDED_RESOURCES installer_app
         EFB_RESOURCES vfrnav_efb_msfs
             RESOURCES
-        EFB_THUMBNAIL ${CMAKE_SOURCE_DIR}/vfrnav_efb/EFB/PackageDefinitions/alexhome-msfs2024-vfrnav/ContentInfo/Thumbnail.jpg
+        EFB_THUMBNAIL ${CMAKE_SOURCE_DIR}/PackageDefinitions/alexhome-msfs2024-vfrnav/ContentInfo/Thumbnail.jpg
         EFB_RELEASE_NOTE ${CMAKE_SOURCE_DIR}/vfrnav_efb/EFB/release_notes.json
         WASM_STORAGE "${VFRNAV_COMM_WASM_STAGING_FILE}"
     )
