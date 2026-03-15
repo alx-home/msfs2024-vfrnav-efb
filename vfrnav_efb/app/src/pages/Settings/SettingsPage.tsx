@@ -136,7 +136,7 @@ export const SettingsPage = ({ active }: {
    const { setPopup } = useContext(SettingsContext)!;
 
    const settings = useContext(SettingsContext)!;
-   const [opacity, setOpacity] = useState(' opacity-0');
+   const opacity = useMemo(() => active ? ' opacity-100' : ' opacity-0', [active]);
    const [advanced, setAdvanced] = useState(false);
    const setSpeed = useCallback((value: string) => settings.setDefaultSpeed(+value), [settings]);
    const [panelWidth, setPanelWidth] = useState(1);
@@ -248,14 +248,6 @@ export const SettingsPage = ({ active }: {
 
       return () => messageHandler.unsubscribe("__SET_PANEL_SIZE__", callback);
    }, [setInitialized, setPanelOffsetX, setPanelOffsetY, setPanelWidth, setPanelHeight, setBorderScale, setDpiScale, setMenuDpi]);
-
-   useEffect(() => {
-      if (active) {
-         setOpacity(' opacity-100');
-      } else {
-         setOpacity(' opacity-0');
-      }
-   }, [active]);
 
    const textSize = useMemo(() => ({ min: settings.map.text.minSize, max: settings.map.text.maxSize }), [settings.map.text.maxSize, settings.map.text.minSize]);
    const defaultTextSize = useMemo(() => ({ min: SharedSettingsRecord.defaultValues.map.text.minSize, max: SharedSettingsRecord.defaultValues.map.text.maxSize }), []);

@@ -14,7 +14,7 @@
  */
 
 import { PropsWithChildren, useContext, useEffect, useMemo, useState, ReactElement, useCallback, useRef } from 'react';
-import { messageHandler, SettingsContext } from "@Settings/SettingsProvider.jsx";
+import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
 
 import { Tabs, Button, Scroll } from '@alx-home/Utils';
 import { useKeyUp } from "@alx-home/Events";
@@ -187,7 +187,7 @@ const Fuels = ({ data }: {
 const Charts = ({ data }: {
    data: AirportFacility
 }) => {
-   const { getSIAPDF, addPdf, setPopup, emptyPopup, setPage } = useContext(SettingsContext)!;
+   const { getSIAPDF, addPdfRef, setPopup, emptyPopup, setPage } = useContext(SettingsContext)!;
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<boolean>(false);
    const [errorMsg, setErrorMsg] = useState<string | undefined>();
@@ -197,14 +197,14 @@ const Charts = ({ data }: {
       setLoading(true);
 
       getSIAPDF(data.icao).then(src => {
-         addPdf.current?.(data.icao.toUpperCase(), { src: src, name: data.icao.toUpperCase(), id: sha256(src) });
+         addPdfRef.current?.(data.icao.toUpperCase(), { src: src, name: data.icao.toUpperCase(), id: sha256(src) });
          setPopup(emptyPopup);
          setPage('charts')
       }).catch((e) => {
          setError(true)
          setErrorMsg(e.message);
       });
-   }, [addPdf, data.icao, emptyPopup, getSIAPDF, setPage, setPopup])
+   }, [addPdfRef, data.icao, emptyPopup, getSIAPDF, setPage, setPopup])
 
    useEffect(() => {
       if (error) {

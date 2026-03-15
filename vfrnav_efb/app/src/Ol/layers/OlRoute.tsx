@@ -39,7 +39,7 @@ import { useEvent } from "react-use-event-hook";
 
 const useMap = () => {
    const { defaultSpeed } = useContext(SettingsContext)!;
-   const { map, navData, setNavData, counter, updateNavProps } = useContext(MapContext)!;
+   const { map, navData, setNavData, counterRef, updateNavProps } = useContext(MapContext)!;
    const [modify, setModify] = useState<Modify>();
    const [snap, setSnap] = useState<Snap>();
    const [layer, setLayer] = useState<VectorLayer>();
@@ -48,14 +48,14 @@ const useMap = () => {
 
    const initFeature = useCallback((feature: Feature<MultiLineString>) => {
       if (!feature.getProperties()['initialized']) {
-         feature.setId(++counter.current);
+         feature.setId(++counterRef.current);
 
          feature.setProperties({ ...feature.getProperties(), initialized: true })
          return true
       }
 
       return false
-   }, [counter])
+   }, [counterRef])
 
    const [newFeatures, setNewFeatures] = useState<Feature<MultiLineString>[] | undefined>(undefined)
    const [features, setFeatures] = useState<Feature<MultiLineString>[]>([])

@@ -51,7 +51,7 @@ export type GlobalSettings = Settings & SharedSettings & {
   setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>
   setPage: Dispatch<SetStateAction<string>>
 
-  addPdf: RefObject<((_name: string, _pdf: Src) => void) | undefined>,
+  addPdfRef: RefObject<((_name: string, _pdf: Src) => void) | undefined>,
 
   azba: LayerSettingSetter & SharedSettings['azba'],
   airports: AirportLayerSettingSetter & LayerSettingSetter & SharedSettings['airports'],

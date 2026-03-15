@@ -452,7 +452,7 @@ var DragOperationController = (function () {
         var _this = this;
         this._lastTouchEvent = event;
         if (this._dragOperationState === 0) {
-            var startDrag = void 0;
+            let startDrag = true;
             if (this._config.dragStartConditionOverride) {
                 try {
                     startDrag = this._config.dragStartConditionOverride(event);
@@ -462,9 +462,7 @@ var DragOperationController = (function () {
                     startDrag = false;
                 }
             }
-            else {
-                startDrag = true;
-            }
+
             if (!startDrag) {
                 this._cleanup();
                 return;

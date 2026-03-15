@@ -81,7 +81,7 @@ export const MapContext = createContext<{
   enableTouchdown: (_value: boolean) => void,
   withGround: boolean,
   enableGround: (_value: boolean) => void,
-  counter: RefObject<number>
+  counterRef: RefObject<number>
   flash: boolean,
   flashKey: number,
   setNavData: Dispatch<SetStateAction<NavData[]>>,
@@ -420,7 +420,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [addNav, setAddNav] = useState<() => void>();
   const [cancel, setCancel] = useState<() => void>();
   const [navData, setNavData] = useState<NavData[]>([]);
-  const counter = useRef(0);
+  const counterRef = useRef(0);
   const [flash, setFlash] = useState(false);
   const [flashKey, setFlashKey] = useState(0);
 
@@ -428,17 +428,6 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [addNavRequest, setAddNavRequest] = useState(false);
 
   const [currentRecord, setCurrentRecord] = useState<PlanePosContent[][]>(records.map(() => []));
-  const resetProfileOffset = useEvent(() => {
-    const minGround = currentRecord.reduce((acc, curr) => {
-      return curr.reduce((acc, curr) => {
-        if (curr.ground < acc) {
-          return curr.ground;
-        }
-        return acc;
-      }, acc);
-    }, Infinity);
-    setProfileOffset(minGround);
-  });
 
   const [profileScale, setProfileScale] = useState(1);
   const [profileOffset, setProfileOffset] = useState(0);
@@ -452,6 +441,18 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const [recordsCenter, setRecordsCenter] = useState({ x: 0.65, y: 0.65 });
   const [touchdown, setTouchdown] = useState(false);
   const [ground, setGround] = useState(true);
+
+  const resetProfileOffset = useEvent(() => {
+    const minGround = currentRecord.reduce((acc, curr) => {
+      return curr.reduce((acc, curr) => {
+        if (curr.ground < acc) {
+          return curr.ground;
+        }
+        return acc;
+      }, acc);
+    }, Infinity);
+    setProfileOffset(minGround);
+  });
 
   const [fuelUnit, setFuelUnit] = useState<FuelUnit>(ExportNavRecord.defaultValues.fuelUnit)
 
@@ -907,7 +908,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     navData,
     setNavData,
     records,
-    counter,
+    counterRef,
     flash,
     setFlash,
     flashKey,

@@ -68,10 +68,25 @@ export default [...fixupConfigRules(compat.extends(
     },
     settings: {
         'import/resolver': {
-            // Load <rootdir>/tsconfig.json
             typescript: {
                 // Always try resolving any corresponding @types/* folders
                 alwaysTryTypes: true,
+                project: [
+                    './tsconfig.json',
+                    './common/ts/tsconfig.json',
+                    './installer/ts/app/tsconfig.json',
+                    './server/ts/app/tsconfig.json',
+                    './server/ts/common/tsconfig.json',
+                    './server/ts/taskbar/tsconfig.json',
+                    './server/ts/taskbar_tooltip/tsconfig.json',
+                    './vfrnav_efb/shared/tsconfig.json',
+                    './vfrnav_efb/EFB/tsconfig.json',
+                    './vfrnav_efb/app/tsconfig.app.json',
+                    './submodules/ts-utils/tsconfig.json',
+                ],
+            },
+            node: {
+                extensions: ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.d.ts', '.json', '.svg'],
             },
         },
 
@@ -81,6 +96,9 @@ export default [...fixupConfigRules(compat.extends(
         },
     },
     rules: {
+        'react-hooks/set-state-in-render': 'warn', // @todo error
+        'react-hooks/set-state-in-effect': 'warn', // @todo error
+        "react-hooks/refs": 'warn', // @todo error
         "react-hooks/exhaustive-deps": "error",
         "no-unused-vars": ["error", {
             vars: "all",

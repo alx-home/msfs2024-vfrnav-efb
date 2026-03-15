@@ -185,7 +185,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
     setSIAAZBAAddr: setSIAAZBAAddr,
     setSIAAZBADateAddr: setSIAAZBADateAddr,
     setPopup: setPopup,
-    addPdf: addPdf,
+    addPdfRef: addPdf,
     setPage: setPage,
 
     map: {

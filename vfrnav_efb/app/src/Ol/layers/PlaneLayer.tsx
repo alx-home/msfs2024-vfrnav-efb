@@ -47,7 +47,7 @@ export const PlaneLayer = memo(function PlaneLayer({
   const [pos, setPos] = useState<PlanePos>({
     __PLANE_POS__: true,
 
-    date: Date.now(),
+    date: 0,
     lon: 2.3941664695739746, lat: 47.48055648803711,
     heading: 45,
     altitude: 3000,

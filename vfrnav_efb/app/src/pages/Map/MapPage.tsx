@@ -53,7 +53,7 @@ import sectionalImg from '@efb-images/sectional.jpg';
 import osmImg from '@efb-images/osm.jpg';
 import { Input } from "@alx-home/Utils";
 import { Icaos, LatLon } from "@shared/Facilities";
-import { RecordViewpoint } from "./RecordViewpoint";
+import { RecordViewpoint } from "./RecordViewPoint";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();

@@ -108,9 +108,9 @@ const useFolder = ({ placeholder, initPath, autoSub }: {
    };
 }
 
-export const Body = ({ setCanContinue, validate }: {
+export const Body = ({ setCanContinue, validateRef }: {
    setCanContinue: (_setter: SetStateAction<boolean>) => void,
-   validate: RefObject<(() => void) | null>
+   validateRef: RefObject<(() => void) | null>
 }) => {
    const { setInstalling } = useContext(PopupContext)!;
 
@@ -142,7 +142,7 @@ export const Body = ({ setCanContinue, validate }: {
    }, [communityValid, installPathValid, setCanContinue]);
 
    useEffect(() => {
-      validate.current = () => {
+      validateRef.current = () => {
          setInstalling(true);
          addPopup(<LoadingPopup title="Installing" message="Installing MSFS2024 VFRNav' Server..." />, 0)
 
@@ -150,7 +150,7 @@ export const Body = ({ setCanContinue, validate }: {
             setInstalling(false);
          }).catch(() => { setInstalling(false); });
       }
-   }, [communityPath, installPath, startupOption, validate, setInstalling])
+   }, [communityPath, installPath, startupOption, validateRef, setInstalling]);
 
    return <div className='flex flex-row grow min-h-0 overflow-hidden'>
       <Scroll className='flex-col grow'>

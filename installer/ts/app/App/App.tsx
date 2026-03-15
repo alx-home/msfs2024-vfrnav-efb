@@ -43,7 +43,7 @@ const Trailer = ({ canContinue, validate }: {
 }
 export const App = () => {
   const [canContinue, setCanContinue] = useState(false);
-  const validateRef = useRef<() => void>(null)
+  const validateRef = useRef<(() => void) | null>(null);
 
   const validate = useCallback(() => {
     validateRef.current?.();
@@ -54,7 +54,7 @@ export const App = () => {
       <Header />
       <div className='relative flex flex-col h-full w-full overflow-hidden'>
         <Popup />
-        <Body setCanContinue={setCanContinue} validate={validateRef} />
+        <Body setCanContinue={setCanContinue} validateRef={validateRef} />
         <Trailer canContinue={canContinue} validate={validate} />
       </div>
     </div>

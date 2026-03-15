@@ -36,7 +36,7 @@ export type Src = {
 export const ChartsPage = ({ active }: {
   active: boolean
 }) => {
-  const { setPopup, addPdf } = useContext(SettingsContext)!;
+  const { setPopup, addPdfRef } = useContext(SettingsContext)!;
   const [opacity, setOpacity] = useState(' opacity-0');
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const efbConnected = useEFBServer();
@@ -243,14 +243,14 @@ export const ChartsPage = ({ active }: {
   }, []);
 
   useEffect(() => {
-    addPdf.current = (name: string, pdf: Src) => {
+    addPdfRef.current = (name: string, pdf: Src) => {
       setSrcs(srcs => {
         const newSrcs = new Map<string, Src>(srcs);
         newSrcs.set(name, pdf);
         return newSrcs;
       })
     }
-  }, [addPdf]);
+  }, [addPdfRef]);
 
   useEffect(() => {
     setActiveDocument(Math.max(0, srcs.size - 1, 0));

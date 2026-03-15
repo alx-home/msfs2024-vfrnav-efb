@@ -19,13 +19,12 @@ import { Coordinate } from "ol/coordinate";
 import { PropsWithChildren, useCallback, useContext, useMemo, useState, useEffect, useRef, memo } from 'react';
 
 import Arrow from '@alx-home/images/arrow.svg?react';
-import { CheckBox, Input, Scroll, Select, SelectOption, Tabs } from "@alx-home/Utils";
+import { CheckBox, Input, Scroll, Select, SelectOption, Tabs, useDelayed } from "@alx-home/Utils";
 import { JSX } from "react/jsx-runtime";
 
 import UndoImg from '@alx-home/images/undo.svg?react';
 import { messageHandler } from "@Settings/SettingsProvider";
 import { Fuel } from "@shared/Fuel";
-import { useDelayed } from '../../../../../packages/ts-utils/src/Utils/Delayed';
 import { useSimDate } from "@Utils/SimDate";
 import { useEvent } from "react-use-event-hook";
 
@@ -96,12 +95,10 @@ const Reset = ({ onReset, children, className }: PropsWithChildren<{
 }>) => {
    const [reset, setReset] = useState(false);
 
-   useEffect(() => {
-      if (reset) {
-         onReset?.();
-         setReset(false);
-      }
-   }, [onReset, reset, setReset]);
+   if (reset) {
+      onReset?.();
+      setReset(false);
+   }
 
    return <div className={'relative flex flex-row grow ' + className}>
       {children}
@@ -215,19 +212,20 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
 
    const setActive = useEvent((index: number) => {
       const value = !actives[index];
+      const newProperties = [...properties];
 
       if (value) {
-         for (let i = index; i < properties.length; ++i) {
-            properties[i].active = value;
-            properties[i].ata = -1;
-            properties[i].curFuel = 0;
+         for (let i = index; i < newProperties.length; ++i) {
+            newProperties[i].active = value;
+            newProperties[i].ata = -1;
+            newProperties[i].curFuel = 0;
          }
       } else {
          for (let i = 0; i <= index; ++i) {
-            properties[i].active = value;
+            newProperties[i].active = value;
          }
 
-         if (properties[index].ata === -1) {
+         if (newProperties[index].ata === -1) {
             getSimDate().catch(() => new Date()).then(date => {
                editNavProperties(id, props => {
                   props[index].ata = date.getHours() * 60 + date.getMinutes();
@@ -237,7 +235,7 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
             })
          }
 
-         if (properties[index].curFuel === 0) {
+         if (newProperties[index].curFuel === 0) {
             getFuel().then((fuel) => {
                delayedRef.current.push(() => {
                   editNavProperties(id, props => {
@@ -250,7 +248,7 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                setDelayed(true)
             }).catch(() => { });
 
-            editNavProperties(id, properties);
+            editNavProperties(id, newProperties);
 
             if (index === actives.length - 1) {
                activeNav(id, false);
@@ -265,7 +263,7 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
          }
       }
 
-      editNavProperties(id, properties);
+      editNavProperties(id, newProperties);
    });
 
    const header = useMemo(() => {
@@ -305,8 +303,8 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
 
    const legs = useMemo(() => {
       let time = (departureTime - new Date().getTimezoneOffset() + taxiTime) * 60;
-      let estfuel = (loadedFuel - taxiConso);
-      let estfuel2 = estfuel;
+      let estFuel = (loadedFuel - taxiConso);
+      let estFuel2 = estFuel;
       let deltaEta = 0;
 
       return coords.map((_value, row) => {
@@ -322,7 +320,7 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                   }} />
                   : <div className={"m-auto text-center transition-all " + ((collapseWaypoints) ? "w-0" : "w-36")}>{name}</div>
             }
-         </GridElem>)
+         </GridElem>);
 
          if (row > 0) {
             const active = actives[row - 1];
@@ -331,13 +329,15 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
             const { ident: vorIndent, freq: vorFreq, obs: vorObs } = vor;
             const { direction: windDir, speed: windVel } = wind;
 
-            estfuel -= conso;
+            // WHY ??
+            // eslint-disable-next-line react-hooks/immutability
+            estFuel -= conso;
             if (curFuel) {
-               estfuel2 = curFuel
+               estFuel2 = curFuel
             } else {
-               estfuel2 -= conso;
+               estFuel2 -= conso;
             }
-            const deltaFuel = Math.round(estfuel2 - estfuel);
+            const deltaFuel = Math.round(estFuel2 - estFuel);
 
             const ataStr = (() => {
                if (ata == -1) {
@@ -613,13 +613,13 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                         </Reset>
                      </div>
                      : <div className="flex flex-col shrink m-auto justify-center">
-                        <div className="flex grow justify-center">{Math.round(toUnit(estfuel)) + ''}</div>
+                        <div className="flex grow justify-center">{Math.round(toUnit(estFuel)) + ''}</div>
                         {
                            deltaFuel === 0 ? <></>
                               :
                               <div className="flex flex-col grow">
                                  <div className={"text-center justify-center" + (deltaFuel > 0 ? ' text-green-600' : ' text-red-600')}>
-                                    {Math.round(toUnit(estfuel2))}
+                                    {Math.round(toUnit(estFuel2))}
                                  </div>
                               </div>
                         }

@@ -44,9 +44,13 @@ const useFileDialog = () => {
       input.type = 'file';
 
       input.onchange = (e) => {
+        // @todo fix this issue
+        // eslint-disable-next-line react-hooks/globals 
         file = undefined;
         const target = e.target as HTMLInputElement | null
         if (target?.files?.length) {
+          // @todo fix this issue
+          // eslint-disable-next-line react-hooks/globals 
           file = target.files[0];
           resolver.current!.resolve(input.value);
         } else {
