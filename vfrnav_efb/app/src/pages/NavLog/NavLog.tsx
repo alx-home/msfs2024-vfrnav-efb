@@ -685,7 +685,7 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
          }>
             <div className="flex flex-col w-full min-h-max">
                <div className="flex flex-row w-full">
-                  <div className='flex flex-col shadow-sm min-h-max ml-5 min-w-max'>
+                  <div className='flex flex-col min-h-max ml-5 min-w-max'>
                      <div className={"flex flex-col w-full h-full pb-8"}>
                         <div className={"relative max-w-min"}>
                            <div className={"absolute top-0 bottom-0 left-0 w-4 bg-slate-900 hocus:bg-msfs shadow-md m-[0.1rem] "

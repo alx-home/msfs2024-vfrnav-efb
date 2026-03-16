@@ -482,7 +482,7 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
             <div className="pl-4">
               <Tabs tabs={tabsArray} activeTab={tab} names={tabNames} switchTab={setTab} className="hidden" />
             </div>
-            <div className='relative grow overflow-hidden h-full'>
+            <div className='relative grow overflow-hidden h-full hi'>
               {tabElems}
             </div>
           </div>

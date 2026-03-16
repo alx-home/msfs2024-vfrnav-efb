@@ -415,13 +415,13 @@ export const ChartsPopup = ({ setSrcs }: {
     inputRef.current?.focus()
   }, []);
 
-  return <div className='relative flex flex-col p-2 [&>:not(:first-child_.no-margin)]:mt-8 w-full'>
+  return <div className='relative flex flex-col p-2 [&>:not(:first-child_.no-margin)]:mt-5 w-full'>
     <img src={loadingImg} alt='loading' className={"absolute w-72 right-[-5rem] top-[-4rem] z-50" + (loading ? '' : ' hidden')} />
-    <div className="flex flex-col [&>:not(:first-child)]:mt-3">
+    <div className="flex flex-col [&>:not(:first-child)]:mt-3 shadow-xl border-slate-700 border-1 p-4">
       <div className='text-base '>
         Source
       </div>
-      <div className='flex flex-col [&>:not(:first-child)]:ml-2 shadow-xl border-slate-700 border-1 pb-4'>
+      <div className='flex flex-col'>
         <Tabs disabled={loading} tabs={Array.from(sources)} activeTab={sourceType} switchTab={switchSource} />
         <div className='grid shrink px-4'>
           <div className='flex flex-col grow justify-center'>
@@ -430,16 +430,16 @@ export const ChartsPopup = ({ setSrcs }: {
         </div>
       </div>
     </div>
-    <div className="flex flex-col [&>:not(:first-child)]:mt-3">
+    <div className="flex flex-col [&>:not(:first-child)]:mt-3 shadow-xl border-slate-700 border-1 p-4">
       <div className='text-base '>
         Name
       </div>
-      <div className='flex'>
+      <div className='flex px-4'>
         <Input active={!disabled} placeholder={nameMessage}
           inputMode="text" onChange={setName} onValidate={download} />
       </div>
     </div>
-    <div className='flex flex-row grow w-full [&>:not(:first-child)]:ml-2 pt-2' >
+    <div className='flex flex-row grow w-full [&>:not(:first-child)]:ml-2 pt-4' >
       <Button active={notLoading} disabled={loading} className='px-2'
         onClick={() => {
           setPopup(emptyPopup);
