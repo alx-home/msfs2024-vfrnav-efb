@@ -63,10 +63,11 @@ export class NavData {
     public layer: VectorLayer) { }
 };
 
-const Label = ({ name, shortName, editMode }: {
+const Label = ({ name, shortName, editMode, reduced }: {
   name: string,
   shortName: string,
-  editMode: boolean
+  editMode: boolean,
+  reduced: boolean
 }) => {
   return <div
     className='flex flex-row pt-1 grow'
@@ -76,8 +77,8 @@ const Label = ({ name, shortName, editMode }: {
       <div className="text-nowrap hidden @[55px]/label:flex @[85px]/label:hidden">nav: {shortName}</div>
       <div className="text-nowrap flex @[55px]/label:hidden">{shortName}</div>
        */}
-    <div className="text-nowrap overflow-hidden h-[20px] flex group-hocus:hidden">{name}</div>
-    <div className="text-nowrap overflow-hidden h-[20px] hidden group-hocus:flex">{shortName}</div>
+    {!reduced && <div className="text-nowrap overflow-hidden h-[20px] flex group-hocus:hidden">{name}</div>}
+    <div className={"text-nowrap overflow-hidden h-[20px] " + (reduced ? 'flex' : "hidden group-hocus:flex")}>{shortName}</div>
   </div>;
 };
 
@@ -145,11 +146,12 @@ const Input = ({ editMode, setEditMode, name, id }: {
   />;
 };
 
-const NavItem = ({ name, shortName, active, id, setDraggable }: {
+const NavItem = ({ name, shortName, active, id, reduced, setDraggable }: {
   active: boolean,
   id: number,
   name: string,
   shortName: string,
+  reduced: boolean,
   setDraggable?: Dispatch<SetStateAction<boolean>>
 }) => {
   const { setNavData, removeNav } = useContext(MapContext)!;
@@ -182,15 +184,15 @@ const NavItem = ({ name, shortName, active, id, setDraggable }: {
     <Button className={'flex flex-row grow max-w-full mx-[5px] @container/label'}
       active={!editMode}
       onClick={onClick}>
-      <Label name={name} shortName={shortName} editMode={editMode} />
-      <Input editMode={editMode} setEditMode={setEditMode} id={id} name={name} />
+      <Label name={name} shortName={shortName} editMode={editMode} reduced={reduced} />
+      {!reduced && <Input editMode={editMode} setEditMode={setEditMode} id={id} name={name} />}
     </Button>
-    <div className={'transition duration-std flex flex-row [&>*:not(:first-child)]:ml-[5px] overflow-hidden max-w-[4.4rem] h-8 mt-auto mb-auto w-0 group-hocus:w-full'}
+    {!reduced && (<div className={'transition duration-std flex flex-row [&>*:not(:first-child)]:ml-[5px] overflow-hidden max-w-[4.4rem] h-8 mt-auto mb-auto w-0 group-hocus:w-full'}
       style={{ display: (editMode ? 'none' : ''), transitionProperty: 'width' }}
     >
       <Edit onClick={onEdit} image={editImg} alt='edit' background='bg-msfs' />
       <Edit onClick={onRemove} image={deleteImg} alt='delete' background='bg-red-600' />
-    </div>
+    </div>)}
   </div>;
 };
 
@@ -232,10 +234,11 @@ const Item = ({ children, className, setDraggable }: PropsWithChildren<{
   return <div className={className}>{child}</div>;
 };
 
-export const Nav = ({ closeMenu, className, style }: {
+export const Nav = ({ closeMenu, className, style, reduced }: {
   closeMenu: () => void,
   className: string,
-  style: CSSProperties
+  style: CSSProperties,
+  reduced: boolean
 }) => {
   const efbConnected = useEFBServer();
 
@@ -245,10 +248,10 @@ export const Nav = ({ closeMenu, className, style }: {
   const [uploading, setUploading] = useState(false);
   const childs = useMemo(() => navData.map((item, index) => {
     return <Item key={navData[index].id} order={navData[index].order} className='flex' setDraggable={setDraggable}>
-      <NavItem key={item.id} active={item.active} id={item.id} name={item.name} shortName={item.shortName} />
+      <NavItem key={item.id} active={item.active} id={item.id} name={item.name} shortName={item.shortName} reduced={reduced} />
     </Item>
   })
-    , [navData]);
+    , [navData, reduced]);
 
   const onAdd = useEvent(() => {
     addNav?.()
@@ -297,12 +300,14 @@ export const Nav = ({ closeMenu, className, style }: {
     reorderNav(orders);
   }, [reorderNav]);
 
-  return <div className={'flex flex-col h-full overflow-hidden p-2 pt-8'}>
-    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl ">
-      Nav&apos;s
-    </div>
-    <Scroll style={style} className={className}>
-      <div className={"flex flex-col [&>*:not(:first-child)]:mt-[5px]"}>
+  return <div className={'flex flex-col h-full overflow-hidden' + (reduced ? ' pt-24' : ' pt-8')} style={style}>
+    {!reduced && (<div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl shadow-md border-slate-700/60 border-b-2 mb-2">
+      <div className='flex mx-2'>
+        Nav&apos;s
+      </div>
+    </div>)}
+    <Scroll className={className}>
+      <div className={"flex flex-col [&>*:not(:first-child)]:mt-[5px]" + (reduced ? '' : ' px-2')}>
         <Draggable key={key} className={'@container flex flex-col w-full overflow-hidden [&>*:not(:first-child)]:mt-[4px] [&>*:last-child]:mb-[4px]'}
           vertical={true}
           active={draggable}
@@ -312,14 +317,16 @@ export const Nav = ({ closeMenu, className, style }: {
         </Draggable>
       </div>
     </Scroll>
-    <div className='flex flex-col p-2 mt-auto'>
-      <div className='flex pt-4'>
-        <Add name='Create' image={newFileImg} onClick={onAdd} />
+    {!reduced && (
+      <div className='flex flex-col p-2 mt-auto'>
+        <div className='flex pt-4'>
+          <Add name='Create' image={newFileImg} onClick={onAdd} />
+        </div>
+        <div className='flex'>
+          <Add name='Import' image={importImg} disabled={true} onClick={importNav} />
+          <Add name='Export' image={exportImg} disabled={!efbConnected || __MSFS_EMBEDED__ || uploading} onClick={exportNav} />
+        </div>
       </div>
-      <div className='flex'>
-        <Add name='Import' image={importImg} disabled={true} onClick={importNav} />
-        <Add name='Export' image={exportImg} disabled={!efbConnected || __MSFS_EMBEDED__ || uploading} onClick={exportNav} />
-      </div>
-    </div>
+    )}
   </div >
 };

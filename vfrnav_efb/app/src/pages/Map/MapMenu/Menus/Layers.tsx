@@ -21,13 +21,16 @@ import { LayerSetting } from "@shared/Settings";
 
 import { CSSProperties, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-export class Layer {
-  // eslint-disable-next-line no-unused-vars
-  constructor(public src: string, public alt: string, public order: number, public getSettings: (_settings: GlobalSettings) => LayerSetting & LayerSettingSetter) { }
+export interface Layer {
+  src: string;
+  alt: string;
+  order: number;
+  getSettings: (_settings: GlobalSettings) => LayerSetting & LayerSettingSetter;
+  reduced: boolean;
 };
 
-const LayerComp = ({ src, alt, getSettings }:
-  Layer) => {
+const LayerComp = ({ src, alt, getSettings, reduced }:
+  Readonly<Layer>) => {
   const settings = useContext(SettingsContext)!;
   const layerSettings = useMemo(() => getSettings(settings), [getSettings, settings]);
 
@@ -62,35 +65,42 @@ const LayerComp = ({ src, alt, getSettings }:
     <img width={200} height={200} src={src} alt={alt}
       className={'block ml-auto mr-auto group-hocus:brightness-75 group-hocus:contrast-150 '
         + (transition ? ' transition-[width]' : '')
-        + ' w-28 @lg:border-l-2'
-        + ' @[150px]:w-52 @lg:border-l-4'
-        + ' @[200px]:w-72 @lg:border-l-8'
+        + (reduced ? ' w-20' :
+          ' w-full @lg:border-l-2'
+        )
       } />
   </button>;
 };
 
 export type OnLayerChange = (_layers: { index: number, order?: number, active?: boolean }[]) => void;
 
-export const Layers = ({ layers, onLayerChange, className, style }: {
+export const Layers = ({ layers, onLayerChange, className, style, reduced }: {
   layers: Layer[],
   onLayerChange: OnLayerChange,
   className: string,
-  style: CSSProperties
+  style: CSSProperties,
+  reduced: boolean
 }) => {
   const childs = useMemo(() => layers.map((layer) =>
-    <LayerComp order={layer.order} key={layer.alt} src={layer.src} alt={layer.alt} getSettings={layer.getSettings} />
-  ), [layers]);
+    <LayerComp order={layer.order} key={layer.alt} src={layer.src} alt={layer.alt}
+      getSettings={layer.getSettings} reduced={reduced} />
+  ), [layers, reduced]);
 
   const onOrdersChange = useCallback((orders: number[]) => {
     onLayerChange(orders.map((order, index) => ({ index: index, order: order })));
   }, [onLayerChange]);
 
-  return <div className={'flex flex-col h-full overflow-hidden p-2 pt-8'}>
-    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl ">
-      Layers
-    </div>
-    <Scroll className={className} style={style}>
-      <Draggable className='@container flex flex-col p-2 [&>*:not(:first-child):has(>:not(.hidden))]:mt-[7px] w-full'
+  return <div className={'flex flex-col h-full overflow-hidden' + (reduced ? ' pt-24' : ' pt-8')} style={style}>
+    {!reduced && (
+      <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl shadow-md border-slate-700/60 border-b-2 mb-2">
+        <div className='flex mx-2'>
+          Layers
+        </div>
+      </div>
+    )}
+    <Scroll className={className}>
+      <Draggable className={'@container flex flex-col [&>*:not(:first-child):has(>:not(.hidden))]:mt-[7px] w-full'
+        + (reduced ? '' : ' p-4')}
         vertical={true}
         onOrdersChange={onOrdersChange}>
         {childs}
