@@ -17,6 +17,7 @@
 
 #include "SimConnect.inl"
 
+#include "GroundInfo.h"
 #include "ServerPort.h"
 
 #include <chrono>
@@ -118,4 +119,57 @@ SimConnect::SetServerPort(uint32_t port) {
 
       co_return co_await SetServerPort(server_port_);
    });
+}
+
+WPromise<double>
+SimConnect::GetGroundInfo(double lat, double lon) {
+   using enum DataId;
+
+   return MakePromise(
+     [this,
+      lat,
+      lon](Resolve<double> const& resolve, Reject const& reject) -> Promise<double, true> {
+        auto handle = handle_.lock();
+        if (!handle) {
+           MakeReject<std::runtime_error>(reject, "Not connected to simulator");
+           co_return;
+        }
+
+        // Create a temporary AI object on the ground at the specified location, then request its
+        // ground altitude. This is a workaround to get the ground altitude at a specific location,
+        auto const& ai_object = co_await AICreateSimulatedObject(
+          "TerrainProbe",
+          {
+            .Latitude  = lat,
+            .Longitude = lon,
+            .Altitude  = 1,
+            // The next fields doesn't matter, as the object will be teleported to
+            // ground immediately after creation
+            .Pitch = 0,
+
+            .Bank    = 0,
+            .Heading = 0,
+            // Force the object to be on the ground so that we can get the
+            // ground altitude immediately
+            .OnGround = 1,
+            .Airspeed = INITPOSITION_AIRSPEED_KEEP,
+          },
+          handle
+        );
+
+        ScopeExit _{[&handle, &ai_object]() constexpr {
+           // Remove the probe object
+           SimConnect_AIRemoveObject(*handle, ai_object.dwObjectID, ai_object.dwRequestID);
+        }};
+
+        // Request ground altitude once the probe exists
+        auto const& ground_object = co_await RequestDataOnSimObject<GROUND_INFO, GroundInfo>(
+          SIMCONNECT_PERIOD_ONCE, ai_object.dwObjectID, handle
+        );
+        auto const& ground_info = ground_object.dw_data_;
+        resolve(ground_info.altitude_);
+
+        co_return;
+     }
+   );
 }

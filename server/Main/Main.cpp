@@ -291,6 +291,50 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
       OpenToolTip();
    }
 
+   // promise::All(
+   //   ia_handler_.GetFrequency("LFPM").Catch([](std::exception const& exc) constexpr {
+   //      std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+   //   }),
+   //   ia_handler_.GetFrequency("LFPN").Catch([](std::exception const& exc) constexpr {
+   //      std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+   //   }),
+   //   ia_handler_.GetFrequency("TOTO").Catch([](std::exception const& exc) constexpr {
+   //      std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+   //   }),
+   //   ia_handler_.GetFrequency("LFPG").Catch([](std::exception const& exc) constexpr {
+   //      std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+   //   }),
+   //   ia_handler_.GetFrequency("LFPO").Catch([](std::exception const& exc) constexpr {
+   //      std::cerr << "Error getting frequency: " << exc.what() << std::endl;
+   //   })
+   // )
+   //   .Then([](std::tuple<
+   //            std::optional<std::vector<Frequency>>,
+   //            std::optional<std::vector<Frequency>>,
+   //            std::optional<std::vector<Frequency>>,
+   //            std::optional<std::vector<Frequency>>,
+   //            std::optional<std::vector<Frequency>>> const& results) constexpr {
+   //      std::apply(
+   //        [](auto const&... freqs) constexpr {
+   //           (
+   //             [](auto const& freq) constexpr {
+   //                if (freq.has_value()) {
+   //                   std::cout << "------------------------\n";
+   //                   for (const auto& f : freq.value()) {
+   //                      std::cout << "Frequency: " << f.name_.local_ << " (" << f.name_.english_
+   //                                << ") - " << f.value_ << " MHz (" << f.type_
+   //                                << ") HOR: " << f.hor_ << " -- " << f.comment_ << std::endl;
+   //                   }
+   //                }
+   //             }(freqs),
+   //             ...
+   //           );
+   //        },
+   //        results
+   //      );
+   //   })
+   //   .Detach();
+
    MSG msg;
    while (GetMessageW(&msg, nullptr, 0, 0) > 0) {
       TranslateMessage(&msg);
@@ -299,7 +343,7 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
 }
 
 bool
-Main::PoolDispatchImp(std::function<void()> func) {
+Main::DispatchImp(std::function<void()> func) {
    return poll_.Dispatch(std::move(func));
 }
 
@@ -329,7 +373,7 @@ Main::Terminate() {
    assert(main);
 
    main->server_->RejectAll();
-   main->Dispatch([]() constexpr { PostQuitMessage(0); });
+   main->Dispatch([]() { PostQuitMessage(0); });
 }
 
 std::atomic<bool> Main::s__running{false};

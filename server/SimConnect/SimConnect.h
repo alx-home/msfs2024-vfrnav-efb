@@ -71,6 +71,13 @@ using ServerPortParam = sim_connect::Parameter<sim_connect::Message::SIMCONNECT_
 
 enum class DataId : uint32_t {
    SET_PORT,
+   EVENT_FRAME,
+   TRAFFIC,
+   TRAFFIC_INFO,
+   HELI_TRAFFIC_INFO,
+   TAXIWAY_PATH,
+   USER_INFO,
+   GROUND_INFO,
 
    MAX_VALUE
 };
@@ -98,7 +105,8 @@ protected:
    virtual ~SimConnectPublic() = default;
 
 public:
-   [[nodiscard]] virtual WPromise<bool> SetServerPort(uint32_t port) = 0;
+   [[nodiscard]] virtual WPromise<bool>   SetServerPort(uint32_t port)          = 0;
+   [[nodiscard]] virtual WPromise<double> GetGroundInfo(double lat, double lon) = 0;
 };
 
 class SimConnect
@@ -111,7 +119,8 @@ public:
    ~SimConnect() override;
 
 private:
-   [[nodiscard]] WPromise<bool> SetServerPort(uint32_t port) override;
+   [[nodiscard]] WPromise<bool>   SetServerPort(uint32_t port) override;
+   [[nodiscard]] WPromise<double> GetGroundInfo(double lat, double lon) override;
 
    bool ShouldStop(std::stop_token const& stoken) const noexcept;
    void Run(std::stop_token const& stoken);
@@ -184,6 +193,7 @@ private:
    win32::Event event_{win32::CreateEvent()};
    int64_t      server_port_{48578};
    int64_t      sent_port_{-1};
+   bool         connected_{false};
 
    std::weak_ptr<HANDLE> handle_{};
 

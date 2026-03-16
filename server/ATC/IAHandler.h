@@ -13,12 +13,33 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "GroundInfo.h"
-#include "TrafficInfo.h"
-#include "ServerPort.h"
+#pragma once
 
-#include "StaticCast.inl"
+#include "SIAExtractor.h"
 
-template GroundInfo  SimConnect::StaticCast<GroundInfo>(DWORD const& data);
-template TrafficInfo SimConnect::StaticCast<TrafficInfo>(DWORD const& data);
-template ServerPort  SimConnect::StaticCast<ServerPort>(DWORD const& data);
+#include "Frequencies.h"
+
+#include <utils/MessageQueue.h>
+#include <utils/Poll.h>
+#include <json/json.h>
+#include <promise/promise.h>
+
+class Main;
+
+namespace ia {
+
+class Handler : private MessageQueue {
+public:
+   Handler(Main& main);
+   virtual ~Handler();
+
+   WPromise<std::vector<Frequency>> GetFrequency(std::string const& icao);
+
+private:
+   // std::size_t pending_requests_{0};
+
+   // Main& main_;
+   // sia::Extractor sia_extractor_{main_};
+};
+
+}  // namespace ia

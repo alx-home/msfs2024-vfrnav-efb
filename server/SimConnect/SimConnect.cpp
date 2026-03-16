@@ -19,7 +19,9 @@
 
 #include "main.h"
 
+#include "GroundInfo.h"
 #include "ServerPort.h"
+#include "TrafficInfo.h"
 
 #include <chrono>
 #include <condition_variable>
@@ -128,9 +130,35 @@ SimConnect::Run(std::stop_token const& stoken) {
    auto handle = handle_.lock();
    using enum DataId;
 
+   connected_ = false;
+
    AddToDataDefinition<SET_PORT, ServerPort>(handle);
 
+   // Define traffic info data structure
+   AddToDataDefinition<TRAFFIC_INFO, TrafficInfo>(handle);
+   AddToDataDefinition<HELI_TRAFFIC_INFO, TrafficInfo>(handle);
+   AddToDataDefinition<GROUND_INFO, GroundInfo>(handle);
+
+   // Request data for all aircraft in range (radius 0 = unlimited)
+   // RequestDataOnSimObjectType<TRAFFIC_INFO>(SIMCONNECT_SIMOBJECT_TYPE_AIRCRAFT, 0, handle);
+   // RequestDataOnSimObjectType<HELI_TRAFFIC_INFO>(SIMCONNECT_SIMOBJECT_TYPE_HELICOPTER, 0,
+   // handle);
+
    MessageQueue::Dispatch([this]() constexpr { SetServerPort(server_port_).Detach(); });
+
+   MessageQueue::Dispatch([this, handle]() constexpr {
+      GetGroundInfo(48.750279, 2.113189)
+        .Then([](double ground_altitude) {
+           std::cout << "SimConnect: Successfully set server port, ground altitude at "
+                        "(48.750279, 2.113189) is "
+                     << ground_altitude << " ft" << std::endl;
+        })
+        .Catch([](std::exception const& e) {
+           std::cerr << "SimConnect: Failed to get ground info after setting server port: "
+                     << e.what() << std::endl;
+        })
+        .Detach();
+   });
 
    uint32_t result;
    while ((result = ::WaitForSingleObject(event_, INFINITE)),
@@ -165,6 +193,7 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
    switch (data.dwID) {
       case SIMCONNECT_RECV_ID_OPEN: {
          std::cout << "SimConnect: Connection opened" << std::endl;
+         connected_ = true;
       } break;
 
       case SIMCONNECT_RECV_ID_EXCEPTION: {
@@ -195,6 +224,28 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
          } else {
             std::cerr << "SimConnect: Received SIMOBJECT_DATA for unknown request ID "
                       << simobj.dwRequestID << std::endl;
+         }
+      } break;
+
+      case SIMCONNECT_RECV_ID_SIMOBJECT_DATA_BYTYPE: {
+         auto const& simobj = static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE const&>(data);
+         if (simobj.dwDefineID == static_cast<DWORD>(DataId::TRAFFIC_INFO)
+             || simobj.dwDefineID == static_cast<DWORD>(DataId::HELI_TRAFFIC_INFO)) {
+            auto traffic = StaticCast<TrafficInfo>(simobj.dwData);
+
+            std::cout << "\nSimConnect: Received traffic info type " << traffic.atc_type_
+                      << ", model " << traffic.atc_model_ << ", id " << traffic.atc_id_
+                      << ", category " << traffic.category_
+                      << (traffic.is_user_sim_ ? " (user sim)" : "") << " at altitude "
+                      << traffic.plane_altitude_ << " ft, lat " << traffic.plane_latitude_
+                      << ", lon " << traffic.plane_longitude_ << ", ground velocity "
+                      << traffic.ground_velocity_ << " knots, heading "
+                      << traffic.plane_heading_degrees_true_ << " degrees, vertical speed "
+                      << traffic.vertical_speed_ << " ft/s, transponder code "
+                      << traffic.transponder_code_ << ", number of engines "
+                      << traffic.number_of_engines_ << ", engine type " << traffic.engine_type_
+                      << ", from airport " << traffic.atc_from_airport_ << ", to airport "
+                      << traffic.atc_to_airport_ << std::endl;
          }
       } break;
 

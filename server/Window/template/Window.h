@@ -37,7 +37,7 @@ struct WinRefCount {
    static std::atomic<std::size_t> s__refcount;
 };
 
-enum class WIN { MAIN, TASKBAR, TASKBAR_TOOLTIP, EFB };
+enum class WIN { MAIN, TASKBAR, TASKBAR_TOOLTIP, EFB, PROCESSING };
 template <WIN WINDOW>
 class Window : private WinRefCount {
 public:

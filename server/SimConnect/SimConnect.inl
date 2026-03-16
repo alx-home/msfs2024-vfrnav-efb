@@ -19,8 +19,8 @@
 #include <Windows.h>
 #include <SimConnect.h>
 #include <synchapi.h>
-#include <WinBase.h>
-#include <WinUser.h>
+#include <winbase.h>
+#include <winuser.h>
 #include <cstdint>
 #include <memory>
 #include <string_view>

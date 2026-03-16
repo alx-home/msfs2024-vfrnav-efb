@@ -13,12 +13,19 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "GroundInfo.h"
-#include "TrafficInfo.h"
-#include "ServerPort.h"
+#pragma once
 
-#include "StaticCast.inl"
+#include "DataType.h"
 
-template GroundInfo  SimConnect::StaticCast<GroundInfo>(DWORD const& data);
-template TrafficInfo SimConnect::StaticCast<TrafficInfo>(DWORD const& data);
-template ServerPort  SimConnect::StaticCast<ServerPort>(DWORD const& data);
+#include <tuple>
+
+struct GroundInfo {
+   float altitude_{};
+
+   static constexpr std::tuple MEMBERS{std::make_tuple(sm::_m{
+     "Ground Altitude",
+     sm::_t<SIMCONNECT_DATATYPE_FLOAT32>{},
+     "feet",
+     &GroundInfo::altitude_
+   })};
+};
