@@ -32,16 +32,17 @@ export class RecordData {
   constructor(public id: number, public name: string, public active: boolean, public shortName: string, public feature: Feature, public layer: VectorLayer) { }
 };
 
-const Label = ({ name, shortName, editMode }: {
+const Label = ({ name, shortName, editMode, reduced }: {
   name: string,
   shortName: string,
-  editMode: boolean
+  editMode: boolean,
+  reduced: boolean
 }) => {
   return <div
     className='flex flex-row pt-1 grow'
     style={editMode ? { display: 'none' } : {}}>
-    <div className="text-nowrap overflow-hidden h-[20px] flex group-hocus:hidden">{name}</div>
-    <div className="text-nowrap overflow-hidden h-[20px] hidden group-hocus:flex">{shortName}</div>
+    {!reduced && <div className="text-nowrap overflow-hidden h-[20px] flex group-hocus:hidden">{name}</div>}
+    <div className={"text-nowrap overflow-hidden h-[20px] " + (reduced ? 'flex' : "hidden group-hocus:flex")}>{shortName}</div>
   </div>;
 };
 
@@ -109,11 +110,12 @@ const Input = ({ editMode, setEditMode, name, id }: {
   />;
 };
 
-const RecordItem = ({ name, shortName, active, id }: {
+const RecordItem = ({ name, shortName, active, id, reduced }: {
   active: boolean,
   name: string,
   id: number,
-  shortName: string
+  shortName: string,
+  reduced: boolean
 }) => {
   const { activeRecord, removeRecord } = useContext(MapContext)!;
   const [editMode, setEditMode] = useState(false);
@@ -126,37 +128,40 @@ const RecordItem = ({ name, shortName, active, id }: {
     <Button className={'flex flex-row grow max-w-full mx-[5px] @container/label'}
       active={!editMode}
       onClick={onClick}>
-      <Label name={name} shortName={shortName} editMode={editMode} />
-      <Input editMode={editMode} setEditMode={setEditMode} name={name} id={id} />
+      <Label name={name} shortName={shortName} editMode={editMode} reduced={reduced} />
+      {!reduced && <Input editMode={editMode} setEditMode={setEditMode} name={name} id={id} />}
     </Button>
-    <div className={'transition duration-std flex flex-row [&>*:not(:first-child)]:ml-[5px] overflow-hidden max-w-[4.5rem] h-8 mt-auto mb-auto w-0 group-hocus:w-full'}
+    {!reduced && <div className={'transition duration-std flex flex-row [&>*:not(:first-child)]:ml-[5px] overflow-hidden max-w-[4.5rem] h-8 mt-auto mb-auto w-0 group-hocus:w-full'}
       style={{ display: (editMode ? 'none' : ''), transitionProperty: 'width' }}
     >
       <Edit onClick={onEdit} image={editImg} alt='edit' background='bg-msfs' />
       <Edit onClick={onRemove} image={deleteImg} alt='delete' background='bg-red-600' />
-    </div>
+    </div>}
   </div>;
 };
 
 
-export const Records = ({ className, style }: {
+export const Records = ({ className, style, reduced }: {
   className: string,
-  style: CSSProperties
+  style: CSSProperties,
+  reduced: boolean
 }) => {
   const { records } = useContext(MapContext)!;
   const childs = useMemo(() => records.map((record) => {
     return <div key={record.id} className='flex min-h-max'>
-      <RecordItem key={record.id} active={record.active} name={record.name} shortName={record.id.toFixed(0)} id={record.id} />
+      <RecordItem reduced={reduced} key={record.id} active={record.active} name={record.name} shortName={record.id.toFixed(0)} id={record.id} />
     </div>
-  }), [records]);
+  }), [records, reduced]);
 
-  return <div className={'flex flex-col h-full overflow-hidden p-2 pt-8'}>
-    <div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl ">
-      Record&apos;s
-    </div>
+  return <div className={'flex flex-col h-full overflow-hidden pt-8' + (reduced ? ' pt-24' : ' pt-8')} style={style}>
+    {!reduced && (<div className="flex min-h-12 shrink-0 items-center justify-between ps-1 text-2xl shadow-md border-slate-700/60 border-b-2 mb-2">
+      <div className='flex mx-2'>
+        Record&apos;s
+      </div>
+    </div>)}
     <div className='flex flex-col grow overflow-hidden'>
-      <Scroll className={className} style={style}>
-        <menu className={"flex flex-col [&>*:not(:first-child)]:mt-[5px]"}>
+      <Scroll className={className}>
+        <menu className={"flex flex-col [&>*:not(:first-child)]:mt-[5px]" + (reduced ? '' : ' px-2')}>
           {childs}
         </menu>
       </Scroll>

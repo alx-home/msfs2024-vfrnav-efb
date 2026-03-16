@@ -32,13 +32,15 @@ export const MapMenu = memo(function MapMenu({ open, setOpen, menu, layers, onLa
   layers: Layer[],
   onLayerChange: OnLayerChange,
 }) {
-  const closeWidth = useMemo(() => 40, []);
-  const minWidth = useMemo(() => 120, []);
-  const maxWidth = useMemo(() => 250, []);
+  const closeWidth = 10;
+  const reduceWidth = 35;
+  const minWidth = 120;
+  const maxWidth = 250;
 
   const [initialDelta, setInitialDelta] = useState<number | undefined>();
   const [width, setWidth] = useState(0);
   const [defaultWidth, setDefaultWidth] = useState(minWidth);
+  const reduced = useMemo(() => width === reduceWidth, [width]);
 
   const handleRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +66,8 @@ export const MapMenu = memo(function MapMenu({ open, setOpen, menu, layers, onLa
   const updateWidth = useCallback((width: number) => {
     if (width < closeWidth) {
       width = 0;
+    } else if (width < reduceWidth) {
+      width = reduceWidth;
     } else if (width < minWidth) {
       width = minWidth;
     } else if (width > maxWidth) {
@@ -72,7 +76,7 @@ export const MapMenu = memo(function MapMenu({ open, setOpen, menu, layers, onLa
 
     setOpen(width > 0);
     setWidth(width);
-  }, [closeWidth, minWidth, maxWidth, setOpen, setWidth]);
+  }, [setOpen]);
 
   const onDrag = useCallback((mouseX: number) => {
     if (initialDelta !== undefined) {
@@ -124,18 +128,18 @@ export const MapMenu = memo(function MapMenu({ open, setOpen, menu, layers, onLa
 
   const onMouseDown = useCallback((e: MouseEvent) => onDragStart(e.pageX), [onDragStart])
   const className = useMemo(() => ('overflow-hidden shrink-0 flex flex-col'
-    + (width > 0 ? ' p-3' : ' hidden')), [width]);
+    + (width > reduceWidth ? ' pt-3' : width > 0 ? '' : ' hidden')), [width]);
 
   const layer = useMemo(() => {
     switch (menu) {
       case Menu.layers:
-        return <Layers layers={layers} onLayerChange={onLayerChange} className={className} style={{ width: width }} />
+        return <Layers layers={layers} onLayerChange={onLayerChange} className={className} style={{ width: width, maxWidth: width }} reduced={reduced} />
       case Menu.nav:
-        return <Nav closeMenu={closeMenu} className={className} style={{ width: width }} />
+        return <Nav closeMenu={closeMenu} className={className} style={{ width: width, maxWidth: width }} reduced={reduced} />
       case Menu.records:
-        return <Records className={className} style={{ width: width }} />
+        return <Records className={className} style={{ width: width, maxWidth: width }} reduced={reduced} />
     }
-  }, [className, closeMenu, layers, menu, onLayerChange, width]);
+  }, [className, closeMenu, layers, menu, onLayerChange, reduced, width]);
 
   return <>
     {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-static-element-interactions */}

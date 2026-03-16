@@ -471,7 +471,7 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
         + opacity + " max-w-full w-[77rem]"
       }>
         <div className={"relative flex flex-col grow overflow-hidden h-full"}>
-          <div className="flex flex-row text-2xl pt-6 px-8">
+          <div className="flex flex-row text-2xl pt-6 px-8 pb-4 shadow-md border-slate-700/60 border-b-2">
             <div className="flex flex-row grow">
               <div>Nav Log</div>
               <div className="ml-3">{atcId.length ? ' [' + atcId + ']' : ''}</div>
