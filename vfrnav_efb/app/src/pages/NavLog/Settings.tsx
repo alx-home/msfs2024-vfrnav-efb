@@ -49,7 +49,8 @@ export const Settings = ({ currentTab: currentPage, active, pageRef }: {
       'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden h-full'
       + (('Settings' === currentPage) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
    }>
-      <div className="flex flex-row pl-4 pt-2">
+      <div className="flex flex-row ml-8 pt-2">
+         <div className="h-4 w-4 border-l-2 border-b-2 border-slate-700 mr-1 shadow-md"></div>
          <Tabs className="pb-0" tabs={Array.from(settingsTabs)} activeTab={tab} names={settingsTabsStr} switchTab={setTab} />
       </div>
       <div className='relative h-full grow overflow-hidden'>

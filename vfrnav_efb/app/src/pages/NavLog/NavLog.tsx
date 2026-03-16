@@ -677,7 +677,8 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
       ? <div className={'flex flex-col text-sm h-full overflow-hidden [&>:last-child]:h-full'
          + ((tab === currentTab) ? '' : ' opacity-0 select-none pointer-events-none max-h-0')
       }>
-         <div className="flex flex-row pl-4 pt-2">
+         <div className="flex flex-row pt-2 ml-8">
+            <div className="h-4 w-4 border-l-2 border-b-2 border-slate-700 mr-1 shadow-md"></div>
             <Tabs tabs={tabs} activeTab={mode} names={modesStr} switchTab={setMode} />
          </div>
          <Scroll className={
