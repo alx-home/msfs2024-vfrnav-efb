@@ -378,20 +378,23 @@ export const RecordsLayer = memo(function RecordsLayer({
 
   const projectionLayer = useMemo(() => new VectorLayer(), []);
 
+  const onDrag = useEvent((event) => {
+    const size = event.map.getSize();
+    if (size) {
+      if (size[0] !== mapSize?.[0] || size[1] !== mapSize?.[1]) {
+        setMapSize([size[0], size[1]]);
+      }
+    } else {
+      setMapSize(undefined);
+    }
+    return true;
+  });
   const pathLayer = useMemo(() => {
     const vector = new VectorLayer() as VectorLayer & Interactive;
 
-    vector.onDrag = (event) => {
-      const size = event.map.getSize();
-      if (size) {
-        setMapSize([size[0], size[1]]);
-      } else {
-        setMapSize(undefined);
-      }
-      return true;
-    }
+    vector.onDrag = onDrag;
     return vector
-  }, []);
+  }, [onDrag]);
 
 
   const touchdownLayer = useMemo(() => new VectorLayer({
