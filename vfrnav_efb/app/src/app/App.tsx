@@ -16,13 +16,15 @@
 import { MouseContextProvider } from '@alx-home/Events';
 
 import { Menu } from '@app/Menu';
-import { JSX, ReactElement, useMemo, useState } from 'react';
+import { JSX, ReactElement, Suspense, lazy, useMemo, useState } from 'react';
 
-import { ChartsPage } from '@pages/Charts/ChartsPage';
-import { CreditsPage } from '@pages/Credits/CreditsPage';
-import { MapPage } from '@pages/Map/MapPage';
-import { SettingsPage } from '@pages/Settings/SettingsPage';
-import { NavLogPage } from '@pages/NavLog/NavLogPage';
+// Lazy load all page components to enable code-splitting
+// Each page will be in its own chunk and loaded on demand
+const ChartsPage = lazy(() => import('@pages/Charts/ChartsPage').then(m => ({ default: m.ChartsPage })));
+const CreditsPage = lazy(() => import('@pages/Credits/CreditsPage').then(m => ({ default: m.CreditsPage })));
+const MapPage = lazy(() => import('@pages/Map/MapPage').then(m => ({ default: m.MapPage })));
+const SettingsPage = lazy(() => import('@pages/Settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const NavLogPage = lazy(() => import('@pages/NavLog/NavLogPage').then(m => ({ default: m.NavLogPage })));
 
 import SettingsContextProvider from '@Settings/SettingsProvider';
 
@@ -33,6 +35,9 @@ import settingsImg from '@alx-home/images/settings.svg';
 import filesImg from '@alx-home/images/files.svg';
 import creditsImg from '@alx-home/images/credits.svg';
 import MapContextProvider from '@pages/Map/MapContext';
+
+// Loading placeholder shown while page chunks are being loaded
+const PageLoadingPlaceholder = () => <div className='flex items-center justify-center w-full h-full text-gray-400'>Loading...</div>;
 
 export class Page {
   public readonly type: string = 'page';
@@ -67,7 +72,11 @@ export class Space {
 
 export const App = () => {
   const [page, setPage] = useState<string>("map");
-  const pages: (Page | Space)[] = [
+
+  const empty = useMemo(() => <></>, []);
+  const [popup, setPopup] = useState<ReactElement>(empty);
+
+  const pages: (Page | Space)[] = useMemo(() => [
     new Page({
       name: "map",
       icon: <img src={mapImg} alt='map' />,
@@ -94,10 +103,8 @@ export const App = () => {
       icon: <img src={creditsImg} alt='credits' />,
       elem: <CreditsPage key="credits" active={page === "credits"} />
     })
-  ];
+  ], [page]);
 
-  const empty = useMemo(() => <></>, []);
-  const [popup, setPopup] = useState<ReactElement>(empty);
 
   return (
     <MouseContextProvider>
@@ -116,7 +123,7 @@ export const App = () => {
           </div>
           <div key='home' className='flex flex-row h-full' inert={popup !== empty}>
             <Menu pages={pages} setPage={page => setPage(page)} activePage={page} />
-            {pages.map(elem => elem.elem)}
+            {<Suspense fallback={<PageLoadingPlaceholder />}>{pages.map(elem => elem.elem)}</Suspense>}
           </div>
         </MapContextProvider>
       </SettingsContextProvider>

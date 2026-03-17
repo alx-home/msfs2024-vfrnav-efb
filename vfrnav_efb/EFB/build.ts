@@ -71,7 +71,7 @@ const minifyBundles = (): VitePlugin => {
       for (const key in bundle) {
         if (bundle[key].type === 'chunk' && key.endsWith('.js')) {
           if (dev) {
-            bundle[key].code = `(()=>{${bundle[key].code}})()`
+            bundle[key].code = `(()=>{${bundle[key].code}\n})()`
           } else {
             const minifyCode = await minify(bundle[key].code, { sourceMap: false })
             bundle[key].code = `(()=>{${minifyCode.code}})()`

@@ -15,21 +15,15 @@
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Chart, registerables } from 'chart.js';
 import { App } from './app/App'
 
 import { messageHandler } from '@Settings/SettingsProvider';
 
 import ResizeObserver from 'resize-observer-polyfill';
 
-import InterBlackFont from '@alx-home/fonts/Inter-Regular.ttf';
-import InterBlackItalicFont from '@alx-home/fonts/Inter-Italic.ttf';
+import InterRegularFont from '@alx-home/fonts/Inter-Regular.ttf';
+import InterItalicFont from '@alx-home/fonts/Inter-Italic.ttf';
 import InterBoldFont from '@alx-home/fonts/Inter-Bold.ttf';
-import InterBoldItalicFont from '@alx-home/fonts/Inter-BoldItalic.ttf';
-import InterExtraBoldFont from '@alx-home/fonts/Inter-ExtraBold.ttf';
-import InterExtraBoldItalicFont from '@alx-home/fonts/Inter-ExtraBoldItalic.ttf';
-import InterExtraLightFont from '@alx-home/fonts/Inter-ExtraLight.ttf';
-import InterExtraLightItalicFont from '@alx-home/fonts/Inter-ExtraLightItalic.ttf';
 
 import "@alx-home/global.css";
 import './global.css';
@@ -39,8 +33,6 @@ import icon from '@vfrnav/images/app-icon.svg'
 
 import '@polyfills/drag-events/default.css';
 
-
-import 'chartjs-plugin-dragdata';
 import { Manager } from './Manager';
 import { MessageType } from '@shared/MessageHandler';
 
@@ -56,8 +48,6 @@ const updateFavicon = () => {
     document.head.appendChild(newFavicon);
   }
 }
-
-Chart.register(...registerables);
 
 (async () => {
   if (__MSFS_EMBEDED__) {
@@ -104,14 +94,41 @@ Chart.register(...registerables);
     fontFace.load();
   }
 
-  loadFont(InterBlackFont, "normal", "normal");
-  loadFont(InterBlackItalicFont, "normal", "italic");
+  loadFont(InterRegularFont, "normal", "normal");
+  loadFont(InterItalicFont, "normal", "italic");
   loadFont(InterBoldFont, "bold", "normal");
-  loadFont(InterBoldItalicFont, "bold", "italic");
-  loadFont(InterExtraBoldFont, "bolder", "normal");
-  loadFont(InterExtraBoldItalicFont, "bolder", "italic");
-  loadFont(InterExtraLightFont, "lighter", "normal");
-  loadFont(InterExtraLightItalicFont, "lighter", "italic");
+
+  const loadDeferredFonts = async () => {
+    const [
+      InterBoldItalicFont,
+      InterExtraBoldFont,
+      InterExtraBoldItalicFont,
+      InterExtraLightFont,
+      InterExtraLightItalicFont,
+    ] = await Promise.all([
+      import('@alx-home/fonts/Inter-BoldItalic.ttf'),
+      import('@alx-home/fonts/Inter-ExtraBold.ttf'),
+      import('@alx-home/fonts/Inter-ExtraBoldItalic.ttf'),
+      import('@alx-home/fonts/Inter-ExtraLight.ttf'),
+      import('@alx-home/fonts/Inter-ExtraLightItalic.ttf'),
+    ]);
+
+    loadFont(InterBoldItalicFont.default, "bold", "italic");
+    loadFont(InterExtraBoldFont.default, "bolder", "normal");
+    loadFont(InterExtraBoldItalicFont.default, "bolder", "italic");
+    loadFont(InterExtraLightFont.default, "lighter", "normal");
+    loadFont(InterExtraLightItalicFont.default, "lighter", "italic");
+  };
+
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(() => {
+      void loadDeferredFonts();
+    }, { timeout: 1500 });
+  } else {
+    setTimeout(() => {
+      void loadDeferredFonts();
+    }, 1000);
+  }
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

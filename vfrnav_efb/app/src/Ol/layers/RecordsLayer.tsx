@@ -492,12 +492,14 @@ export const RecordsLayer = memo(function RecordsLayer({
   // - The number of active records has changed
   // - Or if there is at least one active record that was not present in the previous nav data
   // - Or if there is at least one record that was present in the previous nav data but is not active anymore
-  if ((fetching.current === 0) &&
-    ((records.filter(record => record.active).length !== lastNavData.current?.length)
-      || records.some((record) => record.active && !lastNavData.current!.find(([id,]) => id === record.id))
-      || records.some((record) => !record.active && lastNavData.current!.find(([id,]) => id === record.id)))) {
-    navDataPromise.current = navDataPromise.current.then(updateNavData);
-  }
+  useEffect(() => {
+    if ((fetching.current === 0) &&
+      ((records.filter(record => record.active).length !== lastNavData.current?.length)
+        || records.some((record) => record.active && !lastNavData.current!.find(([id,]) => id === record.id))
+        || records.some((record) => !record.active && lastNavData.current!.find(([id,]) => id === record.id)))) {
+      navDataPromise.current = navDataPromise.current.then(updateNavData);
+    }
+  }, [records, updateNavData])
 
   useEffect(() => {
     projectionLayer.setSource(projectionSource)
