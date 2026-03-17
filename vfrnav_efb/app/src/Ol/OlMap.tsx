@@ -13,13 +13,12 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { useMouseRelease, useKeyUp } from "@alx-home/Events";
+import { useKeyUp } from "@alx-home/Events";
 
 import { View } from "ol";
 import { fromLonLat } from "ol/proj";
 import { PropsWithChildren, useContext, useEffect, useRef, useState, memo } from 'react';
 import { MapContext } from "@pages/Map/MapContext";
-import { useEvent } from "react-use-event-hook";
 
 export const OlMap = memo(function OlMap({ children, id, className }: PropsWithChildren<{ id: string, className: string }>) {
   const mapContext = useContext(MapContext)!;
@@ -27,24 +26,7 @@ export const OlMap = memo(function OlMap({ children, id, className }: PropsWithC
   const [center,] = useState(fromLonLat([1.5911241345835847, 48.104707368204686]));
   const [zoom,] = useState(10);
   const keyUp = useKeyUp();
-  const [mouseInside, setMouseInside] = useState(false);
-  const mouseRelease = useMouseRelease(mouseInside);
   const mapElement = useRef<HTMLDivElement | null>(null);
-
-  const onMouseLeave = useEvent(() => {
-    setMouseInside(false);
-  });
-  const onMouseEnter = useEvent(() => {
-    setMouseInside(true);
-  });
-
-  useEffect(() => {
-    if (mouseRelease) {
-      if (!mouseInside) {
-        mapContext.cancel?.();
-      }
-    }
-  }, [mouseRelease, mapContext, mouseInside]);
 
   useEffect(() => {
     if (keyUp === 'Escape') {
@@ -67,10 +49,7 @@ export const OlMap = memo(function OlMap({ children, id, className }: PropsWithC
     }
   }, [mapContext.map, mapElement]);
 
-  return <div className={"flex " + className}
-    onMouseLeave={onMouseLeave}
-    onMouseEnter={onMouseEnter}
-  >
+  return <div className={"flex " + className}>
     <div ref={mapElement} id={id} className="grow w-full" />
     {children}
   </div>;

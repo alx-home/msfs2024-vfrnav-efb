@@ -130,13 +130,10 @@ export const CleanupRecordsPopup = ({ resolve }: {
 };
 
 
-export const SettingsPage = ({ active }: {
-   active: boolean
-}) => {
+export const SettingsPage = () => {
    const { setPopup } = useContext(SettingsContext)!;
 
    const settings = useContext(SettingsContext)!;
-   const opacity = useMemo(() => active ? ' opacity-100' : ' opacity-0', [active]);
    const [advanced, setAdvanced] = useState(false);
    const setSpeed = useCallback((value: string) => settings.setDefaultSpeed(+value), [settings]);
    const [panelWidth, setPanelWidth] = useState(1);
@@ -307,10 +304,9 @@ export const SettingsPage = ({ active }: {
    }, [settings.map.azba.range]);
 
 
-   return <div className="flex grow justify-center m-2 p-4" style={active ? {} : { display: 'none' }}>
+   return <div className="flex grow justify-center m-2 p-4">
       <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col "
          + " hocus:border-msfs"
-         + opacity
       }>
          <div className="flex flex-row pl-4 pb-[32px]">
             <div className="flex flex-row grow min-h-12 items-center justify-between p-4 text-2xl border-b-2 border-gray-700 mb-4">

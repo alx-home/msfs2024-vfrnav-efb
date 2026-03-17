@@ -26,16 +26,15 @@ const settingsTabsStr: Record<SettingsTabs, string> = {
    'Fuel': 'Fuel'
 }
 
-export const Settings = ({ currentTab: currentPage, active, pageRef }: {
+export const Settings = ({ currentTab: currentPage, pageRef }: {
    currentTab: string,
-   active: boolean,
    pageRef: RefObject<string | undefined>
 }) => {
    const [tab, setTab] = useState<SettingsTabs>('Deviation')
    const tabElems = useMemo(() => [
-      <Deviation key="deviation" curentPage={tab} active={(currentPage === 'Settings') && active} />,
-      <Fuel key="fuel" curentPage={tab} active={(currentPage === 'Settings') && active} />
-   ], [active, currentPage, tab]);
+      <Deviation key="deviation" curentPage={tab} active={(currentPage === 'Settings')} />,
+      <Fuel key="fuel" curentPage={tab} active={(currentPage === 'Settings')} />
+   ], [currentPage, tab]);
 
    useEffect(() => {
       if (currentPage === 'Settings') {
@@ -43,7 +42,7 @@ export const Settings = ({ currentTab: currentPage, active, pageRef }: {
       } else {
          pageRef.current = undefined;
       }
-   }, [active, currentPage, pageRef, tab])
+   }, [currentPage, pageRef, tab])
 
    return <div className={
       'flex flex-col text-sm [grid-row:1] [grid-column:1] overflow-hidden h-full'

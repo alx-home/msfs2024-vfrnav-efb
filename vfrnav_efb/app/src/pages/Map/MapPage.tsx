@@ -147,12 +147,9 @@ const openFlightMapUrl = (() => {
   return "https://nwy-tiles-api.prod.newaydata.com/tiles/{z}/{x}/{y}.png?path=" + id;
 })()
 
-export const MapPage = memo(function MapPage({ active }: {
-  active: boolean
-}) {
+export const MapPage = memo(function MapPage() {
   const { map } = useContext(MapContext)!;
   const settings = useContext(SettingsContext)!;
-  const [opacity, setOpacity] = useState(' opacity-0');
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState<Menu>(Menu.layers);
 
@@ -326,14 +323,6 @@ export const MapPage = memo(function MapPage({ active }: {
   }, [filteredIcaos, suggestIndex, updateIcao]);
 
   useEffect(() => {
-    if (active) {
-      setOpacity(' opacity-100');
-    } else {
-      setOpacity(' opacity-0');
-    }
-  }, [active]);
-
-  useEffect(() => {
     const callback = (message: Icaos) => {
       setIcaos(message.icaos.map(value => value.toUpperCase()));
     }
@@ -366,7 +355,7 @@ export const MapPage = memo(function MapPage({ active }: {
     }
   }, [icao, icaoValid])
 
-  return <div className={'z-0 transition transition-std relative grow h-full' + opacity} style={active ? {} : { display: 'none' }}>
+  return <div className={'z-0 transition transition-std relative grow h-full'} >
     <OlMap id='map' className='absolute w-full h-full top-0 left-0'>
       {olLayers}
       <OlRouteLayer

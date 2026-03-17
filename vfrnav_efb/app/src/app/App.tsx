@@ -60,12 +60,12 @@ export class Page {
 };
 
 export class Space {
-  constructor(index: number) {
-    this.index = index;
-    this.elem = <div className='my-1' key={'space_' + this.index}></div>;
+  constructor({ name }: { name: string }) {
+    this.name = name;
+    this.elem = <div className='my-1' key={name}></div>;
   }
 
-  public readonly index: number;
+  public readonly name: string;
   public readonly type: string = 'space';
   public readonly elem: JSX.Element;
 };
@@ -80,30 +80,32 @@ export const App = () => {
     new Page({
       name: "map",
       icon: <img src={mapImg} alt='map' />,
-      elem: <MapPage key="map" active={page === "map"} />
+      elem: <MapPage key="map" />
     }),
     new Page({
       name: "navlog",
       icon: <img src={navlogImg} alt='nav log' />,
-      elem: <NavLogPage key="navlog" active={page === 'navlog'} />,
+      elem: <NavLogPage key="navlog" />,
     }),
     new Page({
       name: "charts",
       icon: <img src={filesImg} alt='charts' />,
-      elem: <ChartsPage key="charts" active={page === "charts"} />
+      elem: <ChartsPage key="charts" />
     }),
     new Page({
       name: "settings",
       icon: <img src={settingsImg} alt='settings' />,
-      elem: <SettingsPage key="settings" active={page === "settings"} />
+      elem: <SettingsPage key="settings" />
     }),
-    new Space(1),
+    new Space({
+      name: "space1"
+    }),
     new Page({
       name: "credits",
       icon: <img src={creditsImg} alt='credits' />,
-      elem: <CreditsPage key="credits" active={page === "credits"} />
+      elem: <CreditsPage key="credits" />
     })
-  ], [page]);
+  ], []);
 
 
   return (
@@ -123,7 +125,13 @@ export const App = () => {
           </div>
           <div key='home' className='flex flex-row h-full' inert={popup !== empty}>
             <Menu pages={pages} setPage={page => setPage(page)} activePage={page} />
-            {<Suspense fallback={<PageLoadingPlaceholder />}>{pages.map(elem => elem.elem)}</Suspense>}
+            {pages.map(elem =>
+              <div className='flex grow' key={elem.name} style={{ display: elem.name == page ? '' : 'none' }}>
+                <Suspense fallback={<PageLoadingPlaceholder />}>
+                  {elem.elem}
+                </Suspense>
+              </div>
+            )}
           </div>
         </MapContextProvider>
       </SettingsContextProvider>

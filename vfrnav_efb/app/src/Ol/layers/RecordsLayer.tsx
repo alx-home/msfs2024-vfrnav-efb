@@ -113,9 +113,6 @@ export const RecordsLayer = memo(function RecordsLayer({
 
   const center = useMemo(() => {
     if (mapSize) {
-      const zoom = getLength(new LineString([map.getCoordinateFromPixel([0, 0]), map.getCoordinateFromPixel([mapSize[0], mapSize[1]])])) * 4;
-      setZoom(zoom);
-
       return map.getCoordinateFromPixel([mapSize[0] * (0.5 + (recordsCenter.x - 0.5) * 200), mapSize[1] * (0.5 + (recordsCenter.y - 0.5) * 200)]);
     } else {
       return undefined;
@@ -383,6 +380,8 @@ export const RecordsLayer = memo(function RecordsLayer({
     if (size) {
       if (size[0] !== mapSize?.[0] || size[1] !== mapSize?.[1]) {
         setMapSize([size[0], size[1]]);
+        const zoom = getLength(new LineString([map.getCoordinateFromPixel([0, 0]), map.getCoordinateFromPixel([size[0], size[1]])])) * 4;
+        setZoom(zoom);
       }
     } else {
       setMapSize(undefined);

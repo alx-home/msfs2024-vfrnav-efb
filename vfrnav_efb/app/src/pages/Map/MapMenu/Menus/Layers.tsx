@@ -25,8 +25,8 @@ export interface Layer {
   src: string;
   alt: string;
   order: number;
+  reduced?: boolean;
   getSettings: (_settings: GlobalSettings) => LayerSetting & LayerSettingSetter;
-  reduced: boolean;
 };
 
 const LayerComp = ({ src, alt, getSettings, reduced }:

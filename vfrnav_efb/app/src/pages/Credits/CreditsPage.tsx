@@ -15,7 +15,7 @@
 
 import { Scroll } from "@alx-home/Utils";
 
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren } from "react";
 
 
 const Section = ({ children, title }: PropsWithChildren<{
@@ -30,23 +30,10 @@ const Section = ({ children, title }: PropsWithChildren<{
   </ul>;
 };
 
-export const CreditsPage = ({ active }: {
-  active: boolean
-}) => {
-  const [opacity, setOpacity] = useState(' opacity-0');
+export const CreditsPage = () => {
 
-  useEffect(() => {
-    if (active) {
-      setOpacity(' opacity-100');
-    } else {
-      setOpacity(' opacity-0');
-    }
-  }, [active]);
-
-  return <div className="flex grow p-12 align-middle justify-center max-h-full " style={active ? {} : { display: 'none' }}>
-    <div className={"flex flex-col m-auto max-h-full transition transition-std shadow-md rounded-sm border-2 bg-gray-700 border-gray-900 hocus:border-msfs"
-      + opacity
-    }>
+  return <div className="flex grow p-12 align-middle justify-center max-h-full ">
+    <div className={"flex flex-col m-auto max-h-full transition transition-std shadow-md rounded-sm border-2 bg-gray-700 border-gray-900 hocus:border-msfs"}>
       <Scroll className="flex flex-col">
         <Section title='OpenLayer'>
           <li>

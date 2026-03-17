@@ -37,23 +37,13 @@ export type Src = {
   name: string
 };
 
-export const ChartsPage = ({ active }: {
-  active: boolean
-}) => {
+export const ChartsPage = () => {
   const { setPopup, addPdfRef } = useContext(SettingsContext)!;
-  const [opacity, setOpacity] = useState(' opacity-0');
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const efbConnected = useEFBServer();
 
   const [pdfProcessed, setPdfProcessed] = useState(true);
 
-  useEffect(() => {
-    if (active) {
-      setOpacity(' opacity-100');
-    } else {
-      setOpacity(' opacity-0');
-    }
-  }, [active]);
 
   const [activeDocument, setActiveDocument] = useState(0);
 
@@ -260,12 +250,11 @@ export const ChartsPage = ({ active }: {
     setActiveDocument(Math.max(0, srcs.size - 1, 0));
   }, [srcs]);
 
-  return <div className="flex grow justify-center overflow-hidden max-w-full" style={active ? {} : { display: 'none' }}>
+  return <div className="flex grow justify-center overflow-hidden max-w-full">
     <div className="flex flex-row grow justify-center max-w-full">
       <div className={"flex flex-col shrink transition transition-std py-1 px-2 h-full text-left"
         + " justify-start overflow-hidden bg-menu rounded-sm shadow-md"
         + " hocus:border-msfs"
-        + opacity
       }>
         <div className={"relative flex grow overflow-hidden max-w-full" + (pdfs.length ? '' : ' w-[800px]')}>
           {pdfs}

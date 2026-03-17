@@ -192,9 +192,7 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
   </div >;
 }
 
-export const NavLogPage = memo(function NavLogPage({ active }: {
-  active: boolean
-}) {
+export const NavLogPage = memo(function NavLogPage() {
   const {
     navData, deviationCurve, fuelUnit, fuelCurve, importNav,
     setSavedDeviationCurves, setSavedFuelCurves, deviationPreset, fuelPreset,
@@ -210,7 +208,6 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
   const [atcId, setAtcId] = useState("");
   const [simDate, setSimDate] = useState(new Date());
 
-  const [opacity, setOpacity] = useState(' opacity-0');
   const [tab, setTab] = useState<string>('Settings');
   const [edit, setEdit] = useState<boolean>(false);
   const [empty, setEmpty] = useState(true);
@@ -377,14 +374,14 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
 
       elems.push(<div key="aircraft" className={"flex flex-col text-sm overflow-hidden h-full"
         + (tab === 'Settings' ? "" : " opacity-0 select-none pointer-events-none max-h-0")}>
-        <Settings currentTab={tab} active={active} pageRef={settingPage} />
+        <Settings currentTab={tab} pageRef={settingPage} />
       </div>)
       tabs.push('Settings')
       tabNames['Settings'] = 'Settings'
     }
 
     return [tabs, elems, tabNames]
-  }, [active, edit, navData, tab]);
+  }, [edit, navData, tab]);
 
   const tabsArray = useMemo(() => Array.from(tabs), [tabs]);
 
@@ -435,13 +432,6 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
     }
   }, [tab, tabs]);
 
-  useEffect(() => {
-    if (active) {
-      setOpacity(' opacity-100');
-    } else {
-      setOpacity(' opacity-0');
-    }
-  }, [active]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -463,12 +453,12 @@ export const NavLogPage = memo(function NavLogPage({ active }: {
     return () => clearInterval(interval);
   }, [getSimDate]);
 
-  return <div className="flex grow justify-center overflow-hidden h-full" style={active ? {} : { display: 'none' }}>
+  return <div className="flex grow justify-center overflow-hidden h-full">
     <div className="flex flex-row w-full h-full justify-center">
       <div className={"flex flex-col shrink transition transition-std py-1 h-full text-left"
         + " justify-start overflow-hidden bg-menu rounded-sm shadow-md"
         + " hocus:border-msfs"
-        + opacity + " max-w-full w-[77rem]"
+        + " max-w-full w-[77rem]"
       }>
         <div className={"relative flex flex-col grow overflow-hidden h-full"}>
           <div className="flex flex-row text-2xl pt-6 px-8 pb-4 shadow-md border-slate-700/60 border-b-2">
