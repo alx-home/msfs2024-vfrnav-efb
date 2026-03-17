@@ -19,6 +19,7 @@ import { View } from "ol";
 import { fromLonLat } from "ol/proj";
 import { PropsWithChildren, useContext, useEffect, useRef, useState, memo } from 'react';
 import { MapContext } from "@pages/Map/MapContext";
+import { useEvent } from "react-use-event-hook";
 
 export const OlMap = memo(function OlMap({ children, id, className }: PropsWithChildren<{ id: string, className: string }>) {
   const mapContext = useContext(MapContext)!;
@@ -29,6 +30,13 @@ export const OlMap = memo(function OlMap({ children, id, className }: PropsWithC
   const [mouseInside, setMouseInside] = useState(false);
   const mouseRelease = useMouseRelease(mouseInside);
   const mapElement = useRef<HTMLDivElement | null>(null);
+
+  const onMouseLeave = useEvent(() => {
+    setMouseInside(false);
+  });
+  const onMouseEnter = useEvent(() => {
+    setMouseInside(true);
+  });
 
   useEffect(() => {
     if (mouseRelease) {
@@ -60,8 +68,8 @@ export const OlMap = memo(function OlMap({ children, id, className }: PropsWithC
   }, [mapContext.map, mapElement]);
 
   return <div className={"flex " + className}
-    onMouseLeave={() => setMouseInside(false)}
-    onMouseEnter={() => setMouseInside(true)}
+    onMouseLeave={onMouseLeave}
+    onMouseEnter={onMouseEnter}
   >
     <div ref={mapElement} id={id} className="grow w-full" />
     {children}

@@ -14,6 +14,8 @@
  */
 
 import { Scroll, Button } from "@alx-home/Utils";
+import { Chart, registerables } from 'chart.js';
+import 'chartjs-plugin-dragdata';
 
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -26,6 +28,8 @@ import { useEFBServer } from "@Utils/useServer";
 import deleteImg from '@alx-home/images/delete.svg';
 import ExportIcon from '@alx-home/images/export.svg?react';
 import { useEvent } from "react-use-event-hook";
+
+Chart.register(...registerables);
 
 export type Src = {
   src: Uint8Array,
