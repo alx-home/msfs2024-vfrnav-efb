@@ -13,9 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { AirportRunway, EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType, NearestAirportSearchSession, NearestIcaoSearchSessionDataType, UnitType } from "@microsoft/msfs-sdk";
+import { EventBus, FacilityLoader, FacilityRepository, FacilitySearchType, FacilityType } from "@microsoft/msfs-sdk";
 import { DefaultDeviationPreset, DeleteDeviationPreset, SetDeviationCurve as DeviationCurve, DeviationPresets, GetDeviationPresets } from "@shared/Deviation";
-import { AirportFacility, FrequencyType, GetFacilities, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
+import { AirportFacility, GetFacilities, GetFacility, GetICAOS, GetLatLon, GetMetar, Metar } from "@shared/Facilities";
 import { FileBlob, FileExist, FileExistResponse, GetFile, GetFileResponse, OpenFile, OpenFileResponse } from "@shared/Files";
 import { DefaultFuelPreset, DeleteFuelPreset, SetFuelCurve as FuelCurve, FuelPresets, GetFuelPresets, Tank } from "@shared/Fuel";
 import { isMessage, MessageType } from "@shared/MessageHandler";
@@ -24,17 +24,7 @@ import { ExportPdfs, PdfBlob, PdfProcessed } from "@shared/Pdfs";
 import { SharedSettings, SharedSettingsRecord } from "@shared/Settings";
 import { fill } from "@shared/Types";
 import { RecordManager } from './RecordManager';
-
-class FacilityManager {
-   readonly session: Promise<NearestAirportSearchSession<NearestIcaoSearchSessionDataType.StringV1>>;
-   readonly facilitiesList = new Map<string, AirportFacility>();
-   lat: number | undefined;
-   lon: number | undefined;
-
-   constructor(facilityLoader: FacilityLoader) {
-      this.session = facilityLoader.startNearestSearchSession(FacilitySearchType.Airport);
-   }
-};
+import { FacilityManager } from "./FacilitiesManager";
 
 export class Manager {
    private readonly facilityLoader: FacilityLoader;
@@ -253,6 +243,8 @@ export class Manager {
                      this.onGetATCId(data.id);
                   } else if (isMessage("__GET_FACILITIES__", data.content)) {
                      this.onGetFacilities(data.id, data.content);
+                  } else if (isMessage("__GET_FACILITY__", data.content)) {
+                     this.onGetFacility(data.id, data.content);
                   } else if (isMessage("__GET_ICAOS__", data.content)) {
                      this.onGetIcaos(data.id, data.content);
                   } else if (isMessage("__GET_LAT_LON__", data.content)) {
@@ -389,98 +381,24 @@ export class Manager {
       return { lat: result.lat, lon: result.lon };
    }
 
-   async getFacilitiesList(id: number, lat: number, lon: number): Promise<Map<string, AirportFacility>> {
+   async getFacilitiesList(id: number, lat: number, lon: number): Promise<Set<string>> {
       let manager = this.facilityManager.get(id);
       if (!manager) {
          manager = new FacilityManager(this.facilityLoader);
          this.facilityManager.set(id, manager);
       }
 
-      if (lat === manager.lat && lon === manager.lon) {
-         return manager.facilitiesList;
-      }
-      manager.lat = lat;
-      manager.lon = lon;
+      return manager.getFacilitiesList(lat, lon);
+   }
 
-      const distanceMeters = UnitType.NMILE.convertTo(100, UnitType.METER);
-      const diff = await manager.session.then(session => session.searchNearest(lat, lon, distanceMeters, 500));
-
-      const getDesignation = (runway: AirportRunway) => {
-         const runways = runway.designation.split('-');
-         let result = runways[0];
-
-         const addDesignation = (code: RunwayDesignator) => {
-            switch (code) {
-               case RunwayDesignator.RUNWAY_DESIGNATOR_LEFT:
-                  result += "L";
-                  break;
-
-               case RunwayDesignator.RUNWAY_DESIGNATOR_RIGHT:
-                  result += "R";
-                  break;
-
-               case RunwayDesignator.RUNWAY_DESIGNATOR_CENTER:
-                  result += "C";
-                  break;
-
-               case RunwayDesignator.RUNWAY_DESIGNATOR_A:
-                  result += "A";
-                  break;
-
-               case RunwayDesignator.RUNWAY_DESIGNATOR_B:
-                  result += "B";
-                  break;
-
-               case RunwayDesignator.RUNWAY_DESIGNATOR_WATER:
-                  result += "W";
-                  break;
-            }
-         };
-
-         addDesignation(runway.designatorCharPrimary)
-         result += '-' + runways[1]
-         addDesignation(runway.designatorCharSecondary)
-
-         return result;
+   async getFacility(id: number, icao: string): Promise<AirportFacility> {
+      let manager = this.facilityManager.get(id);
+      if (!manager) {
+         manager = new FacilityManager(this.facilityLoader);
+         this.facilityManager.set(id, manager);
       }
 
-      diff.removed.forEach(airport => manager.facilitiesList.delete(airport))
-      await Promise.all(diff.added.map(async (icao) => {
-         const airport = await this.facilityLoader.getFacility(FacilityType.Airport, icao);
-         manager.facilitiesList.set(icao, {
-            icao: airport.icaoStruct.ident,
-            lat: airport.lat,
-            lon: airport.lon,
-            towered: airport.towered,
-            airportClass: airport.airportClass,
-            airspaceType: airport.airspaceType,
-            bestApproach: airport.bestApproach,
-            fuel1: airport.fuel1,
-            fuel2: airport.fuel2,
-            airportPrivateType: airport.airportPrivateType,
-            transitionAlt: airport.transitionAlt,
-            transitionLevel: airport.transitionLevel,
-
-            frequencies: airport.frequencies.map(value => ({
-               name: value.name,
-               icao: value.icaoStruct.ident,
-               value: value.freqMHz,
-               type: value.type as number as FrequencyType,
-            })),
-            runways: airport.runways.map(value => ({
-               designation: getDesignation(value),
-               length: value.length,
-               width: value.width,
-               direction: value.direction,
-               elevation: value.elevation,
-               surface: value.surface,
-               latitude: value.latitude,
-               longitude: value.longitude,
-            }))
-         });
-      }));
-
-      return manager.facilitiesList
+      return manager.getFacility(icao);
    }
 
    GetSettings() {
@@ -527,12 +445,17 @@ export class Manager {
 
    async onGetFacilities(id: number, message: GetFacilities) {
       const list = await this.getFacilitiesList(id, message.lat, message.lon);
-      this.sendMessage(id, { __FACILITIES__: true, facilities: JSON.stringify([...list.values()]) });
+      this.sendMessage(id, { __FACILITIES__: true, facilities: Array.from(list.values()) });
+   }
+
+   async onGetFacility(id: number, message: GetFacility) {
+      const facility = await this.getFacility(id, message.icao);
+      this.sendMessage(id, { __FACILITY__: true, ...facility });
    }
 
    async onGetIcaos(id: number, message: GetICAOS) {
       const list = await this.getIcaos(message.icao);
-      this.sendMessage(id, { __ICAOS__: true, icaos: [...list.values()] });
+      this.sendMessage(id, { __ICAOS__: true, icaos: Array.from(list.values()) });
    }
 
    async onGetLatLon(id: number, message: GetLatLon) {

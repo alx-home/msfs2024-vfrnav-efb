@@ -70,8 +70,6 @@ struct AirportsSetting : LayerSetting {
 struct Settings {
    bool header_{true};
 
-   double server_port_{};
-
    double      default_speed_{};
    std::string sia_auth_{};
    std::string sia_addr_{};
@@ -144,7 +142,6 @@ struct Settings {
    static constexpr js::Proto PROTOTYPE{
      js::_{"__SETTINGS__", &Settings::header_},
 
-     js::_{"serverPort", &Settings::server_port_},
      js::_{"defaultSpeed", &Settings::default_speed_},
      js::_{"SIAAuth", &Settings::sia_auth_},
      js::_{"SIAAddr", &Settings::sia_addr_},

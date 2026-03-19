@@ -107,7 +107,19 @@ struct Runway {
    };
 };
 
+struct GetFacility {
+   bool header_{true};
+
+   std::string icao_{};
+
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"__GET_FACILITY__", &GetFacility::header_},
+     js::_{"icao", &GetFacility::icao_},
+   };
+};
+
 struct Facility {
+   bool header_{true};
 
    std::string            icao_{};
    double                 lat_{};
@@ -125,6 +137,8 @@ struct Facility {
    double                 transition_level_{};
 
    static constexpr js::Proto PROTOTYPE{
+     js::_{"__FACILITY__", &Facility::header_},
+
      js::_{"icao", &Facility::icao_},
      js::_{"lat", &Facility::lat_},
      js::_{"lon", &Facility::lon_},
@@ -145,7 +159,7 @@ struct Facility {
 struct Facilities {
    bool header_{true};
 
-   std::string facilities_{};  // encoded std::vector<Facility>
+   std::vector<std::string> facilities_{};
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__FACILITIES__", &Facilities::header_},
