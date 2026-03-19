@@ -14,7 +14,7 @@
  */
 
 import { GenRecord, reduce, TypeRecord } from './Types';
-import { FacilitiesRecord, GetFacilitiesRecord, GetICAOSRecord as GetIcaosRecord, GetLatLonRecord, GetMetarRecord, IcaosRecord, LatLonRecord, MetarRecord } from './Facilities';
+import { FacilitiesRecord, GetFacilitiesRecord, GetICAOSRecord, GetLatLonRecord, GetMetarRecord, IcaosRecord, LatLonRecord, MetarRecord, GetFacilityRecord, FacilityRecord } from './Facilities';
 import { SharedSettingsRecord, SetPanelSizeRecord, SetEfbModeRecord, CleanPlaneRecordsRecord } from './Settings';
 import { EditRecordRecord, GetPlaneBlobRecord, PlaneBlobRecord, PlanePosRecord, PlaneRecordsRecord, RemoveRecordRecord } from './PlanPos';
 import { ByeByeRecord, HelloWorldRecord, SetIdRecord } from './HelloWorld';
@@ -52,6 +52,7 @@ const Messages = {
    "__EFB_STATE__": EfbStateRecord,
    "__EXPORT_NAV__": ExportNavRecord,
    "__EXPORT_PDFS__": ExportPdfsRecord,
+   "__FACILITY__": FacilityRecord,
    "__FACILITIES__": FacilitiesRecord,
    "__FILE_BLOB__": FileBlobRecord,
    "__FILE_EXISTS__": FileExistRecord,
@@ -65,12 +66,13 @@ const Messages = {
    "__GET_DEVIATION_PRESETS__": GetDeviationPresetsRecord,
    "__GET_EFB_STATE__": GetEFBStateRecord,
    "__GET_FACILITIES__": GetFacilitiesRecord,
+   "__GET_FACILITY__": GetFacilityRecord,
    "__GET_FILE__": GetFileRecord,
    "__GET_FILE_RESPONSE__": GetFileResponseRecord,
    "__GET_FUEL__": GetFuelRecord,
    "__GET_FUEL_CURVE__": GetFuelCurveRecord,
    "__GET_FUEL_PRESETS__": GetFuelPresetsRecord,
-   "__GET_ICAOS__": GetIcaosRecord,
+   "__GET_ICAOS__": GetICAOSRecord,
    "__GET_LAT_LON__": GetLatLonRecord,
    "__GET_METAR__": GetMetarRecord,
    "__GET_PLANE_BLOB__": GetPlaneBlobRecord,

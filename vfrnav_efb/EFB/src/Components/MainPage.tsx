@@ -15,7 +15,7 @@
 
 import { EfbSettingsManager, GamepadUiView, RequiredProps, TVNode, UiViewProps } from "@alx-home/efb-api";
 import { FSComponent } from "@microsoft/msfs-sdk";
-import { GetFacilities, GetICAOS as GetIcaos, GetLatLon, GetMetar } from "@shared/Facilities";
+import { GetFacilities, GetFacility, GetICAOS as GetIcaos, GetLatLon, GetMetar } from "@shared/Facilities";
 import { MessageHandler, MessageType } from "@shared/MessageHandler";
 import { EditRecord, GetPlaneBlob, RemoveRecord } from "@shared/PlanPos";
 import { Manager } from "../Manager";
@@ -121,6 +121,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
   onGetFacilities(message: GetFacilities) {
     this.props.manager.onGetFacilities(0, message);
+  }
+
+  onGetFacility(message: GetFacility) {
+    this.props.manager.onGetFacility(0, message);
   }
 
   onGetMetar(message: GetMetar) {
@@ -241,6 +245,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("__GET_ATC_ID__", this.onGetATCId)
       messageHandler.unsubscribe("__GET_DATE__", this.onGetDate)
       messageHandler.unsubscribe("__GET_FACILITIES__", this.onGetFacilities)
+      messageHandler.unsubscribe("__GET_FACILITY__", this.onGetFacility)
       messageHandler.unsubscribe("__GET_FILE__", this.onGetFile)
       messageHandler.unsubscribe("__GET_FUEL__", this.onGetFuel)
       messageHandler.unsubscribe("__GET_ICAOS__", this.onGetIcaos)
@@ -579,6 +584,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__GET_ATC_ID__", this.onGetATCId.bind(this))
       messageHandler.subscribe("__GET_DATE__", this.onGetDate.bind(this))
       messageHandler.subscribe("__GET_FACILITIES__", this.onGetFacilities.bind(this))
+      messageHandler.subscribe("__GET_FACILITY__", this.onGetFacility.bind(this))
       messageHandler.subscribe("__GET_FILE__", this.onGetFile.bind(this))
       messageHandler.subscribe("__GET_FUEL__", this.onGetFuel.bind(this))
       messageHandler.subscribe("__GET_ICAOS__", this.onGetIcaos.bind(this))
