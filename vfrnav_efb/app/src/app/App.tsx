@@ -126,7 +126,7 @@ export const App = () => {
           <div key='home' className='flex flex-row h-full' inert={popup !== empty}>
             <Menu pages={pages} setPage={page => setPage(page)} activePage={page} />
             {pages.map(elem =>
-              <div className='flex grow' key={elem.name} style={{ display: elem.name == page ? '' : 'none' }}>
+              <div className='flex grow max-w-full min-w-0' key={elem.name} style={{ display: elem.name == page ? '' : 'none' }}>
                 <Suspense fallback={<PageLoadingPlaceholder />}>
                   {elem.elem}
                 </Suspense>
