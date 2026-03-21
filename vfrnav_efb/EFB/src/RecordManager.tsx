@@ -186,7 +186,7 @@ export class RecordManager {
          altitude: SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet'),
          ground: SimVar.GetSimVarValue('GROUND ALTITUDE', 'feet'),
          heading: SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees'),
-         verticalSpeed: SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per seconds'),
+         verticalSpeed: SimVar.GetSimVarValue('VERTICAL SPEED', 'Feet per second'),
          windVelocity: SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'knots'),
          windDirection: SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'degrees'),
          indicatedAirSpeed: SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots'),
