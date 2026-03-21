@@ -54,7 +54,7 @@ export const ChartsPage = () => {
     [activeDocument, srcs]);
   const buttons = useMemo(() =>
     [...srcs.values().map((src, index) => <Button key={src.name} active={true}
-      className="flex flex-row grow h-[22px] px-5 overflow-visible text-nowrap"
+      className="flex flex-row grow h-5 px-5 overflow-visible text-nowrap min-w-max"
       disabled={activeDocument === index}
       onClick={() => setActiveDocument(index)}>
       {src.name}
@@ -256,7 +256,7 @@ export const ChartsPage = () => {
         + " justify-start overflow-hidden bg-menu rounded-sm shadow-md"
         + " hocus:border-msfs"
       }>
-        <div className={"relative flex grow overflow-hidden max-w-full" + (pdfs.length ? '' : ' w-[800px]')}>
+        <div className={"relative flex grow min-h-0 overflow-hidden max-w-full" + (pdfs.length ? '' : ' w-[800px]')}>
           {pdfs}
           <button className={"group absolute transition-all right-0 bottom-0 mb-3 mr-3 z-10 bg-red-600 p-2 opacity-40 w-8 h-8 hocus-within:w-16 hocus-within:h-16 hocus-within:opacity-100 cursor-pointer"
             + (pdfs.length ? '' : ' hidden')
@@ -265,12 +265,12 @@ export const ChartsPage = () => {
             <img src={deleteImg} alt="remove document" className="w-full opacity-20 group-hocus:opacity-100 transition"></img>
           </button>
         </div>
-        <div className="flex flex-row shrink min-h-[38px] overflow-hidden">
+        <div className="flex flex-row shrink overflow-hidden mb-2 h-max min-h-max">
           <Scroll onWheel={onWheel} ref={scrollRef} >
-            <div className="flex flex-row grow justify-center w-max pb-2">
+            <div className="flex flex-row grow justify-center w-max h-max min-h-0 [&>*]:min-w-max min-w-max">
               {buttons}
-              <div className={"flex flex-row " + (pdfs.length ? 'shrink' : 'grow')}>
-                <Button active={true} className="flex flex-row px-5 text-nowrap justify-center"
+              <div className={"flex flex-row h-max " + (pdfs.length ? 'shrink' : 'grow')}>
+                <Button active={true} className="flex flex-row px-5 text-nowrap justify-center h-5"
                   onClick={loadDocument}>
                   {
                     pdfs.length ?
@@ -280,9 +280,11 @@ export const ChartsPage = () => {
                 </Button>
                 {
                   __MSFS_EMBEDED__ || (pdfs.length === 0) ? <></>
-                    : <Button active={pdfs.length > 0} disabled={(pdfs.length === 0) || !efbConnected || !pdfProcessed} className="flex flex-row px-5 text-nowrap justify-center shrink"
+                    : <Button active={pdfs.length > 0}
+                      disabled={(pdfs.length === 0) || !efbConnected || !pdfProcessed}
+                      className="flex flex-row px-5 text-nowrap justify-center shrink h-5"
                       onClick={exportAll}>
-                      <ExportIcon className="invert m-auto" />
+                      <ExportIcon className="invert m-auto h-5" />
                     </Button>
                 }
               </div>

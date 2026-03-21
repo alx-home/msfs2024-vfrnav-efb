@@ -313,16 +313,16 @@ export const Pdf = ({ src, alt, id, className }: {
     return Math.max(0, page - 1);
   }), []);
 
-  return <div className={"relative flex flex-col grow justify-start max-h-full max-w-full " + className}>
-    <div className="flex flex-row h-[32px] min-h-[32px] justify-begin">
+  return <div className={"relative flex flex-col grow justify-start max-h-full max-w-full h-max " + className}>
+    <div className="flex flex-row justify-begin">
       <Button active={true} disabled={prevDisabled} className="flex flex-row justify-begin"
         onClick={prev}>
-        <img className="h-[22px]" src={prevImage} alt="prev" />
+        <img className="h-5" src={prevImage} alt="prev" />
       </Button>
       <div className="flex flex-row grow justify-end">
         <Button className="flex flex-row justify-end" active={true} disabled={nextDisabled}
           onClick={next}>
-          <img className="h-[22px]" src={nextImage} alt="next" />
+          <img className="h-5" src={nextImage} alt="next" />
         </Button>
       </div>
     </div>
