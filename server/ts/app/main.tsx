@@ -32,7 +32,7 @@ window.addEventListener("error", function (e) {
 })
 
 window.addEventListener('unhandledrejection', function (e) {
-  if (e.reason == "App is stopping !") {
+  if (e.reason.includes("App is stopping !")) {
     window.display_appstopping();
   } else {
     window.display_error(e.reason);
