@@ -15,12 +15,45 @@
 
 import type { Config } from "tailwindcss";
 import BaseTailwind from '../../submodules/ts-utils/tailwind.config';
+import { PluginAPI } from "tailwindcss/types/config";
 
 const Tailwind: Config = {
    ...BaseTailwind, content: [
       "./src/**/*.{js,ts,jsx,tsx,mdx}",
       "../../common/ts/**/*.{js,ts,jsx,tsx,mdx}",
       "../../submodules/ts-utils/src/**/*.{js,ts,jsx,tsx,mdx}"
+   ],
+   theme: {
+      ...BaseTailwind.theme, extend: {
+         ...BaseTailwind.theme?.extend,
+         invert: {
+            0: "0%",
+            25: "25%",
+            50: "50%",
+            75: "75%",
+            100: "100%",
+         }
+      }
+   },
+   corePlugins: {
+      filter: false,
+      invert: false,
+   },
+   plugins: [
+      ...BaseTailwind.plugins || [],
+      ({ matchUtilities, theme }: PluginAPI) => {
+         matchUtilities(
+            {
+               invert: (value) => ({
+                  filter: `invert(${value})`,
+               }),
+            },
+            {
+               values: theme('invert'),
+               supportsNegativeValues: false,
+            }
+         )
+      }
    ]
 };
 export default Tailwind;
