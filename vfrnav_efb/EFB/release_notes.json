@@ -681,6 +681,30 @@
             "     - Fixed incorrect unit for altitude in the record layer (now uses meters instead of feet). (#297)",
             "       Correction de l'unité d'altitude incorrecte dans le layer d'enregistrements (utilise désormais les mètres au lieu des pieds). (#297)"
          ]
+      },
+      {
+         "version": "1.4.0",
+         "date": "MAR 21, 2026",
+         "notes": [
+            "### Installer/Server (new) ###",
+            "***🐞 Fixes / Corrections:***",
+            "     - MSFS now reconnects properly after an unexpected shutdown, without requiring a server restart.",
+            "       MSFS se reconnecte désormais correctement après une fermeture inattendue, sans nécessiter de redémarrage du serveur.",
+            "",
+            "",
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - General performance improvements.",
+            "       Amélioration des performances générales.",
+            "     - Added a compact mode for the map menu for quicker access to layers. (#306)",
+            "       Ajout d'un mode compact pour le menu de la carte afin d'accéder plus rapidement aux calques. (#306)",
+            "     - Minor graphical improvements.",
+            "       Améliorations graphiques mineures.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Removed stutters when interacting with the map or opening the EFB. (#308)",
+            "       Suppression des saccades lors de l'interaction avec la carte ou à l'ouverture de l'EFB. (#308)"
+         ]
       }
    ]
 }
