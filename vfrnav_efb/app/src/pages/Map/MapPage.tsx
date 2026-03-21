@@ -150,7 +150,7 @@ const openFlightMapUrl = (() => {
 export const MapPage = memo(function MapPage() {
   const { map } = useContext(MapContext)!;
   const settings = useContext(SettingsContext)!;
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [menu, setMenu] = useState<Menu>(Menu.layers);
 
   const [layers, setLayers] = useState([

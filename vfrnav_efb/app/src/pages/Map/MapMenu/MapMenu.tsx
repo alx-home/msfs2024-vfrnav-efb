@@ -38,8 +38,8 @@ export const MapMenu = memo(function MapMenu({ open, setOpen, menu, layers, onLa
   const maxWidth = 250;
 
   const [initialDelta, setInitialDelta] = useState<number | undefined>();
-  const [width, setWidth] = useState(0);
-  const [defaultWidth, setDefaultWidth] = useState(minWidth);
+  const [defaultWidth, setDefaultWidth] = useState(reduceWidth);
+  const [width, setWidth] = useState(reduceWidth);
   const reduced = useMemo(() => width === reduceWidth, [width]);
 
   const handleRef = useRef<HTMLDivElement>(null);
