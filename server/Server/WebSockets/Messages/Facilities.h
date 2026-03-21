@@ -121,39 +121,48 @@ struct GetFacility {
 struct Facility {
    bool header_{true};
 
-   std::string            icao_{};
-   double                 lat_{};
-   double                 lon_{};
-   bool                   towered_{};
-   std::size_t            airport_class_{};
-   std::size_t            airspace_type_{};
-   std::string            best_approach_{};
-   std::string            fuel1_{};
-   std::string            fuel2_{};
-   std::size_t            airport_private_type_{};
-   std::vector<Frequency> frequencies_{};
-   std::vector<Runway>    runways_{};
-   double                 transition_alt_{};
-   double                 transition_level_{};
+   std::string data_{
+   };  //@todo improve json parser performance to avoid stringifying the whole object
 
    static constexpr js::Proto PROTOTYPE{
      js::_{"__FACILITY__", &Facility::header_},
 
-     js::_{"icao", &Facility::icao_},
-     js::_{"lat", &Facility::lat_},
-     js::_{"lon", &Facility::lon_},
-     js::_{"towered", &Facility::towered_},
-     js::_{"airportClass", &Facility::airport_class_},
-     js::_{"airspaceType", &Facility::airspace_type_},
-     js::_{"bestApproach", &Facility::best_approach_},
-     js::_{"fuel1", &Facility::fuel1_},
-     js::_{"fuel2", &Facility::fuel2_},
-     js::_{"airportPrivateType", &Facility::airport_private_type_},
-     js::_{"frequencies", &Facility::frequencies_},
-     js::_{"runways", &Facility::runways_},
-     js::_{"transitionAlt", &Facility::transition_alt_},
-     js::_{"transitionLevel", &Facility::transition_level_},
+     js::_{"data", &Facility::data_},
    };
+
+   //  std::string            icao_{};
+   //  double                 lat_{};
+   //  double                 lon_{};
+   //  bool                   towered_{};
+   //  std::size_t            airport_class_{};
+   //  std::size_t            airspace_type_{};
+   //  std::string            best_approach_{};
+   //  std::string            fuel1_{};
+   //  std::string            fuel2_{};
+   //  std::size_t            airport_private_type_{};
+   //  std::vector<Frequency> frequencies_{};
+   //  std::vector<Runway>    runways_{};
+   //  double                 transition_alt_{};
+   //  double                 transition_level_{};
+
+   //  static constexpr js::Proto PROTOTYPE{
+   //    js::_{"__FACILITY__", &Facility::header_},
+
+   //    js::_{"icao", &Facility::icao_},
+   //    js::_{"lat", &Facility::lat_},
+   //    js::_{"lon", &Facility::lon_},
+   //    js::_{"towered", &Facility::towered_},
+   //    js::_{"airportClass", &Facility::airport_class_},
+   //    js::_{"airspaceType", &Facility::airspace_type_},
+   //    js::_{"bestApproach", &Facility::best_approach_},
+   //    js::_{"fuel1", &Facility::fuel1_},
+   //    js::_{"fuel2", &Facility::fuel2_},
+   //    js::_{"airportPrivateType", &Facility::airport_private_type_},
+   //    js::_{"frequencies", &Facility::frequencies_},
+   //    js::_{"runways", &Facility::runways_},
+   //    js::_{"transitionAlt", &Facility::transition_alt_},
+   //    js::_{"transitionLevel", &Facility::transition_level_},
+   //  };
 };
 
 struct Facilities {

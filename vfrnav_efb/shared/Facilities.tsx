@@ -250,19 +250,30 @@ export const GetFacilityRecord = GenRecord<GetFacility>({
   icao: "undef"
 }, {})
 
+// export type Facility = {
+//   __FACILITY__: true,
+// } & AirportFacility;
+
+// export const FacilityRecord = {
+//   __FACILITY__: "boolean" as const,
+//   ...AirportFacilityRecord,
+
+//   defaultValues: {
+//     __FACILITY__: true as const,
+//     ...AirportFacilityRecord.defaultValues
+//   }
+// };
+
 export type Facility = {
   __FACILITY__: true,
-} & AirportFacility;
 
-export const FacilityRecord = {
-  __FACILITY__: "boolean" as const,
-  ...AirportFacilityRecord,
-
-  defaultValues: {
-    __FACILITY__: true as const,
-    ...AirportFacilityRecord.defaultValues
-  }
+  data: string
 };
+
+export const FacilityRecord = GenRecord<Facility>({
+  __FACILITY__: true,
+  data: "undef"
+}, {});
 
 
 export type Icaos = {

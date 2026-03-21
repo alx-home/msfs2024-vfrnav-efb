@@ -450,7 +450,7 @@ export class Manager {
 
    async onGetFacility(id: number, message: GetFacility) {
       const facility = await this.getFacility(id, message.icao);
-      this.sendMessage(id, { __FACILITY__: true, ...facility });
+      this.sendMessage(id, { __FACILITY__: true, data: JSON.stringify(facility) });
    }
 
    async onGetIcaos(id: number, message: GetICAOS) {

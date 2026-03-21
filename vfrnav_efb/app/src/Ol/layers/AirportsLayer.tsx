@@ -222,10 +222,12 @@ export const AirportsLayer = memo(function AirportsLayer({
         }
       };
 
-      facilityCB.current = (facility: Facility) => {
+      facilityCB.current = (message: Facility) => {
         // We check if the token is still the same, which means that we are still in the same update cycle. 
         // If it's not, it means that we have already received a new list of facilities and we should ignore this one.
         if (currentToken === token.current) {
+          const facility = JSON.parse(message.data) as AirportFacility;
+
           if (missingFacilities.has(facility.icao)) {
             missingFacilities.delete(facility.icao);
             addFacilityEvent(facility);

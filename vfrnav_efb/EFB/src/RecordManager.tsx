@@ -230,7 +230,7 @@ export class RecordManager {
                   flights.splice(0, 1);
                }
 
-               console.assert(this.currentRecord);
+               console.assert(!!this.currentRecord);
                if (this.currentRecord) {
                   if (this.planePosBlob.length) {
                      // Save remaining plane positions in a blob
@@ -242,7 +242,7 @@ export class RecordManager {
                   this.currentRecord.active = false;
                   flights.push(this.currentRecord);
 
-                  console.assert(this.currentRecord.blobs.length);
+                  console.assert(!!this.currentRecord.blobs.length);
                   await this.StoreLastSavedBlobID(this.currentRecord.blobs[this.currentRecord.blobs.length - 1]);
                }
 
