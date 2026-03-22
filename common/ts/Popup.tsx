@@ -56,10 +56,14 @@ export const addPopup = (elem_: ReactElement<any>, priority: 0 | 1 | 2 | 3) => {
    ++proms.queue_size
    proms.ref = proms.ref.then(() =>
       new Promise<void>((resolve) => {
-         const popup = <elem_.type {...elem_.props} close={elem_.props.close ? () => {
-            elem_.props.close()
-            resolve()
-         } : resolve} />;
+         const popup = <elem_.type {...elem_.props} close={elem_.props.close ? (
+            elem_.props.close !== 'steady'
+               ? () => {
+                  elem_.props.close()
+                  resolve()
+               }
+               : 'steady'
+         ) : resolve} />;
 
          if (priority < (currentPopup.level ?? 0)) {
             // There is a higher priority popup ongoing go to the stack will be resume later by one of them
@@ -120,11 +124,10 @@ export const MessagePopup = ({ messages, close, title }: {
    close?: (() => void) | 'steady'
 }) => {
    const Footer = useMemo(() =>
-      close != 'steady' ?
-         <div className='flex flex-row grow'>
-            <Button active={true} onClick={close}>OK</Button>
-         </div> :
-         <></>
+      (close && close !== 'steady') &&
+      <div className='flex flex-row grow'>
+         <Button active={true} onClick={close}>OK</Button>
+      </div>
       , [close]);
 
    const message = useMemo(() =>
