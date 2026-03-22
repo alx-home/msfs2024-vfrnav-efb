@@ -92,8 +92,8 @@ Server::WebSocket::OnRead(error_code ec, size_t n) {
       auto message = js::Parse<ws::Message>(data);
 
       if (std::holds_alternative<ws::msg::HelloWorld>(message)) {
-         server_.Dispatch([self    = shared_from_this(),
-                           message = std::move(message)]() mutable constexpr {
+         (void)server_.Dispatch([self    = shared_from_this(),
+                                 message = std::move(message)]() mutable constexpr {
             auto const& hello_world = std::get<ws::msg::HelloWorld>(message);
 
             if (*hello_world.type_ == "EFB") {

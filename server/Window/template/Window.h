@@ -32,6 +32,7 @@
 #include <string_view>
 
 using ServerState = js::Enum<"switching", "running", "stopped", "invalid_port">;
+class Main;
 
 struct WinRefCount {
    static std::atomic<std::size_t> s__refcount;
@@ -41,13 +42,19 @@ enum class WIN { MAIN, TASKBAR, TASKBAR_TOOLTIP, EFB };
 template <WIN WINDOW>
 class Window : private WinRefCount {
 public:
-   Window(std::function<void()> on_terminate = []() constexpr {});
+   Window(Main& main, std::function<void()> on_terminate = []() constexpr {});
    ~Window();
 
-   static void DecRefcount();
-   void        Hide() const;
-   void        Show() const;
-   void        Restore() const;
+   Window(Window const&)     = default;
+   Window(Window&&) noexcept = default;
+
+   Window& operator=(Window const&)     = default;
+   Window& operator=(Window&&) noexcept = default;
+
+   void DecRefcount() const;
+   void Hide() const;
+   void Show() const;
+   void Restore() const;
 
    void            SetPos(int x, int y);
    int             Width() const;
@@ -56,11 +63,15 @@ public:
    webview::Pos    GetPos() const;
    webview::Bounds GetBounds() const;
 
+   void OnTerminate();
+
    void Dispatch(std::function<void()>) const;
 
    webview::webview& Webview() const;
 
 private:
+   Main& main_;
+
 #ifndef WATCH_MODE
    void InstallResourceHandler();
 #endif

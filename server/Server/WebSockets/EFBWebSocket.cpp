@@ -38,11 +38,11 @@
 using namespace boost::beast;
 
 Server::EFBWebSocket::EFBWebSocket(WebSocket&& socket, bool web_browser)
-   : web_browser_(web_browser)
-   , server_(socket.server_)
-   , ws_(std::move(socket.ws_))
+   : server_(socket.server_)
+   , web_browser_(web_browser)
    , buffer_(std::move(socket.buffer_))
-   , peer_(std::move(socket.peer_)) {
+   , peer_(std::move(socket.peer_))
+   , ws_(std::move(socket.ws_)) {
    socket.moved_ = true;
 }
 
@@ -50,18 +50,23 @@ Server::EFBWebSocket::~EFBWebSocket() {
    std::cout << "Session " << peer_ << " closed" << std::endl;
 
    if (web_browser_) {
-      server_.Dispatch([&server = server_, id = my_id_]() { server.UnsetMessageHandler(id); });
+      if (!server_.Dispatch([&server = server_, id = my_id_]() { server.UnsetMessageHandler(id); }
+          )) {
+         assert(false && "Failed to dispatch message handler removal on EFB WebSocket destruction");
+      }
    } else {
       // EFB MSFS App Closed - Notify server state
 
-      server_.Dispatch([&server = server_, my_id = my_id_]() {
-         server.efb_connected_ = false;
-         server.UnsetMessageHandler(0);
+      if (!server_.Dispatch([&server = server_, my_id = my_id_]() {
+             server.efb_connected_ = false;
+             server.UnsetMessageHandler(0);
 
-         for (auto const& [id, handler] : server.message_handlers_) {
-            handler(my_id, ws::msg::EFBState{.state_ = false});
-         }
-      });
+             for (auto const& [id, handler] : server.message_handlers_) {
+                handler(my_id, ws::msg::EFBState{.state_ = false});
+             }
+          })) {
+         assert(false && "Failed to dispatch server state update on EFB WebSocket destruction");
+      }
 
       // Wait promises to be done
       std::unique_lock lock{mutex_};
@@ -71,7 +76,7 @@ Server::EFBWebSocket::~EFBWebSocket() {
 
 void
 Server::EFBWebSocket::VDispatchMessage(std::size_t id, ws::Message&& message) {
-   server_.Dispatch([self = shared_from_this(), id, message = std::move(message)]() mutable {
+   (void)server_.Dispatch([self = shared_from_this(), id, message = std::move(message)]() mutable {
       self->VSendMessage(id, std::move(message));
    });
 }
@@ -83,7 +88,7 @@ Server::EFBWebSocket::VSendMessage(std::size_t id, ws::Message&& message) {
           || std::holds_alternative<ws::msg::Settings>(message)) {
          // @todo
       } else if (std::holds_alternative<ws::msg::GetEFBState>(message)) {
-         server_.Dispatch([self = shared_from_this(), id = id]() {
+         (void)server_.Dispatch([self = shared_from_this(), id = id]() {
             if (auto const message_handler = self->server_.message_handlers_.find(id);
                 message_handler != self->server_.message_handlers_.end()) {
                message_handler->second(
@@ -92,7 +97,7 @@ Server::EFBWebSocket::VSendMessage(std::size_t id, ws::Message&& message) {
             }
          });
       } else if (std::holds_alternative<ws::msg::GetServerState>(message)) {
-         server_.Dispatch([self = shared_from_this(), id = id]() {
+         (void)server_.Dispatch([self = shared_from_this(), id = id]() {
             if (auto const message_handler = self->server_.message_handlers_.find(id);
                 message_handler != self->server_.message_handlers_.end()) {
                message_handler->second(1, ws::msg::ServerState{.state_ = self->server_.runing_});
@@ -120,14 +125,16 @@ Server::EFBWebSocket::Stop() {
    std::condition_variable cv{};
    bool                    closed = false;
 
-   server_.Dispatch([self = shared_from_this(), &cv, &mutex, &closed]() {
-      self->ws_.next_layer().cancel();
-      self->ws_.close({});
+   if (!server_.Dispatch([self = shared_from_this(), &cv, &mutex, &closed]() {
+          self->ws_.next_layer().cancel();
+          self->ws_.close({});
 
-      std::lock_guard lock{mutex};
-      closed = true;
-      cv.notify_all();
-   });
+          std::lock_guard lock{mutex};
+          closed = true;
+          cv.notify_all();
+       })) {
+      assert(false && "Failed to dispatch stop on EFB WebSocket");
+   }
 
    cv.wait(lock, [&closed]() { return closed; });
 }
@@ -140,42 +147,44 @@ Server::EFBWebSocket::Start() {
 
    my_id_ = web_browser_ ? std::bit_cast<std::size_t>(this) : 0;
 
-   server_.Dispatch([self = shared_from_this()]() constexpr {
-      self->VSendMessage(1, ws::msg::HelloWorld{.type_ = "Server"});
+   if (!server_.Dispatch([self = shared_from_this()]() constexpr {
+          self->VSendMessage(1, ws::msg::HelloWorld{.type_ = "Server"});
 
-      self->server_.SetMessageHandler(
-        self->my_id_,
-        {[self = self->weak_from_this()](std::size_t id, ws::Message message) constexpr {
-           auto const ptr = self.lock();
-           if (ptr) {
-              ptr->VDispatchMessage(id, std::move(message));
-           }
-        }}
-      );
+          self->server_.SetMessageHandler(
+            self->my_id_,
+            {[self = self->weak_from_this()](std::size_t id, ws::Message message) constexpr {
+               auto const ptr = self.lock();
+               if (ptr) {
+                  ptr->VDispatchMessage(id, std::move(message));
+               }
+            }}
+          );
 
-      if (self->web_browser_) {
-         self->VSendMessage(1, ws::msg::SetId{.id_ = self->my_id_});
-         self->VSendMessage(1, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
-      } else {
-         // EFB MSFS App
-         self->server_.efb_connected_ = true;
+          if (self->web_browser_) {
+             self->VSendMessage(1, ws::msg::SetId{.id_ = self->my_id_});
+             self->VSendMessage(1, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
+          } else {
+             // EFB MSFS App
+             self->server_.efb_connected_ = true;
 
-         self->VSendMessage(1, ws::msg::GetRecords{});
+             self->VSendMessage(1, ws::msg::GetRecords{});
 
-         for (auto const& [id, handler] : self->server_.message_handlers_) {
-            handler(1, ws::msg::EFBState{.state_ = true});
+             for (auto const& [id, handler] : self->server_.message_handlers_) {
+                handler(1, ws::msg::EFBState{.state_ = true});
 
-            if (handler.lat_ > -500) {
-               self->VSendMessage(
-                 id, ws::msg::GetFacilities{.lat_ = handler.lat_, .lon_ = handler.lon_}
-               );
-            }
-         }
-      }
+                if (handler.lat_ > -500) {
+                   self->VSendMessage(
+                     id, ws::msg::GetFacilities{.lat_ = handler.lat_, .lon_ = handler.lon_}
+                   );
+                }
+             }
+          }
 
-      self->VSendMessage(1, ws::msg::fuel::GetPresets{});
-      self->VSendMessage(1, ws::msg::dev::GetPresets{});
-   });
+          self->VSendMessage(1, ws::msg::fuel::GetPresets{});
+          self->VSendMessage(1, ws::msg::dev::GetPresets{});
+       })) {
+      return;
+   }
 
    Read();
 }
@@ -198,7 +207,7 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
          std::cerr << "Read error: " << ec.message() << std::endl;
       }
 
-      server_.Dispatch([self = shared_from_this()]() {
+      (void)server_.Dispatch([self = shared_from_this()]() {
          if (self->web_browser_) {
             for (auto it = self->server_.web_sockets_.begin();
                  it != self->server_.web_sockets_.end();
@@ -221,7 +230,7 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
    std::string data{it, it + n};
    buffer_.consume(n);
 
-   poll_.Dispatch([this, data = std::move(data)]() mutable {
+   (void)poll_.Dispatch([this, data = std::move(data)]() mutable {
       try {
          auto message = js::Parse<ws::Proxy>(data);
 
@@ -245,7 +254,7 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
             assert(message.id_ != 2);
             assert(message.id_ != 1);
 
-            server_.Dispatch([self = shared_from_this(), id = my_id_]() {
+            (void)server_.Dispatch([self = shared_from_this(), id = my_id_]() {
                self->VSendMessage(id, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
             });
          } else if (std::holds_alternative<ws::msg::GetServerState>(message.content_)) {
@@ -269,7 +278,7 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
               .Then([self   = shared_from_this(),
                      id     = message.id_,
                      req_id = msg.id_](std::string const& path) constexpr {
-                 self->server_.Dispatch([self = std::move(self), id, req_id, path]() {
+                 (void)self->server_.Dispatch([self = std::move(self), id, req_id, path]() {
                     self->VSendMessage(id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path});
                     std::shared_lock lock{self->mutex_};
                     --self->promises_;
@@ -315,22 +324,24 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
 
             if (message.id_ == 1) {
                // Broadcast
-               server_.Dispatch([&server = server_, my_id = my_id_, message = std::move(message)](
-                                ) {
-                  for (auto const message_handler : server.message_handlers_) {
-                     if (message_handler.first != my_id) {
-                        message_handler.second(my_id, std::move(message.content_));
-                     }
-                  }
-               });
+               (void)server_.Dispatch(
+                 [&server = server_, my_id = my_id_, message = std::move(message)]() {
+                    for (auto const message_handler : server.message_handlers_) {
+                       if (message_handler.first != my_id) {
+                          message_handler.second(my_id, std::move(message.content_));
+                       }
+                    }
+                 }
+               );
             } else {
-               server_.Dispatch([&server = server_, my_id = my_id_, message = std::move(message)](
-                                ) {
-                  if (auto const message_handler = server.message_handlers_.find(message.id_);
-                      message_handler != server.message_handlers_.end()) {
-                     message_handler->second(my_id, std::move(message.content_));
-                  }
-               });
+               (void)server_.Dispatch(
+                 [&server = server_, my_id = my_id_, message = std::move(message)]() {
+                    if (auto const message_handler = server.message_handlers_.find(message.id_);
+                        message_handler != server.message_handlers_.end()) {
+                       message_handler->second(my_id, std::move(message.content_));
+                    }
+                 }
+               );
             }
          }
       } catch (std::exception const& e) {

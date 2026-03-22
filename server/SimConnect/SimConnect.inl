@@ -19,17 +19,18 @@
 #include <Windows.h>
 #include <SimConnect.h>
 #include <synchapi.h>
-#include <WinBase.h>
-#include <WinUser.h>
+#include <winbase.h>
+#include <winuser.h>
 #include <cstdint>
 #include <memory>
 #include <string_view>
-#include <tuple>
+#include <variant>
 
 using namespace std::chrono_literals;
 
+namespace priv {
 template <DataId ID>
-void
+bool
 SimConnect::AddToDataDefinition(
   std::string_view                datumName,
   SIMCONNECT_DATATYPE             datumType,
@@ -37,82 +38,86 @@ SimConnect::AddToDataDefinition(
 ) {
    auto handle = handle_.lock();
    if (!handle) {
-      return;
+      return false;
    }
 
-   AddToDataDefinition<ID>(handle, datumName, datumType, unitsName);
+   return AddToDataDefinition<ID>(handle, datumName, datumType, unitsName);
 }
 
 template <DataId ID>
-void
+bool
 SimConnect::AddToDataDefinition(
   std::shared_ptr<void*> const&   handle,
   std::string_view                datumName,
   SIMCONNECT_DATATYPE             datumType,
   std::optional<std::string_view> unitsName
 ) {
-   SimConnect_AddToDataDefinition(
-     *handle,
-     static_cast<uint32_t>(ID),
-     datumName.data(),
-     unitsName ? unitsName->data() : nullptr,
-     datumType
-   );
+   return SimConnect_AddToDataDefinition(
+            *handle,
+            static_cast<uint32_t>(ID),
+            datumName.data(),
+            unitsName ? unitsName->data() : nullptr,
+            datumType
+          )
+          == S_OK;
 }
 
 template <DataId ID, class T>
-void
+bool
 SimConnect::AddToDataDefinition(std::shared_ptr<void*> const& handle) {
-   std::apply(
+   return std::apply(
      [&](auto&&... member) constexpr {
-        (AddToDataDefinition<ID>(
-           handle, std::get<0>(member), std::get<1>(member).VALUE_S, std::get<2>(member)
-         ),
-         ...);
+        return (
+          AddToDataDefinition<ID>(
+            handle, std::get<0>(member), std::get<1>(member).VALUE_S, std::get<2>(member)
+          )
+          && ...
+        );
      },
      T::MEMBERS
    );
 }
 
 template <DataId ID>
-void
+bool
 SimConnect::AddToFacilityDefinition(std::string_view fieldName) {
    auto handle = handle_.lock();
    if (!handle) {
-      return;
+      return false;
    }
 
-   AddToFacilityDefinition<ID>(handle, fieldName);
+   return AddToFacilityDefinition<ID>(handle, fieldName);
 }
 
 template <DataId ID>
-void
+bool
 SimConnect::AddToFacilityDefinition(
   std::shared_ptr<void*> const& handle,
   std::string_view              fieldName
 ) {
-   SimConnect_AddToDataDefinition(*handle, static_cast<uint32_t>(ID), fieldName.data());
+   return SimConnect_AddToDataDefinition(*handle, static_cast<uint32_t>(ID), fieldName.data())
+          == S_OK;
 }
 
 template <DataId ID, class T>
-void
+bool
 SimConnect::AddToFacilityDefinition(std::shared_ptr<void*> const& handle) {
-   std::apply(
+   return std::apply(
      [&](auto&&... member) constexpr {
-        (AddToFacilityDefinition<ID>(handle, std::get<0>(member)), ...);
+        return (AddToFacilityDefinition<ID>(handle, std::get<0>(member)) && ...);
      },
      T::MEMBERS
    );
 }
 
 template <DataId ID, class T>
-void
+bool
 SimConnect::AddToDataDefinition() {
    auto handle = handle_.lock();
    if (!handle) {
-      return;
+      return false;
    }
-   AddToDataDefinition<ID, T>(handle);
+   return AddToDataDefinition<ID, T>(handle);
 }
 
 template <DataId ID>
@@ -154,19 +159,22 @@ SimConnect::RequestDataOnSimObject(
         if (!handle) {
            handle = handle_.lock();
            if (!handle) {
-              MakeReject<std::runtime_error>(reject, "Not connected to simulator");
+              MakeReject<sim_connect::Disconnected>(reject);
               co_return;
            }
         }
 
-        MessageQueue::Dispatch(
-          [reject = reject.shared_from_this()]() constexpr {
-             MakeReject<std::runtime_error>(
-               *reject, "Timed out while requesting data on sim object"
-             );
-          },
-          5s
-        );
+        if (!MessageQueue::Dispatch(
+              [reject = reject.shared_from_this()]() constexpr {
+                 MakeReject<sim_connect::Timeout>(
+                   *reject, "Timed out while requesting data on sim object"
+                 );
+              },
+              5s
+            )) {
+           MakeReject<sim_connect::UnknownError>(reject, "App is stopping");
+           co_return;
+        }
 
         auto const request_id = ++request_id_;
         if (SimConnect_RequestDataOnSimObject(
@@ -181,7 +189,7 @@ SimConnect::RequestDataOnSimObject(
              request_id,
              [&resolve, &reject](SIMCONNECT_RECV_SIMOBJECT_DATA const& data) {
                 if (data.dwDefineID != static_cast<DWORD>(ID)) {
-                   MakeReject<std::runtime_error>(
+                   MakeReject<sim_connect::UnknownError>(
                      reject, "Received data for unknown request ID or data type mismatch"
                    );
                    return;
@@ -189,11 +197,13 @@ SimConnect::RequestDataOnSimObject(
 
                 if (auto const header_size =
                       sizeof(SIMCONNECT_RECV_SIMOBJECT_DATA) - sizeof(data.dwSize);
-                    sizeof(DATA_TYPE) != (data.dwSize - header_size)) {
+                    Size<DATA_TYPE>() > (data.dwSize - header_size)) {
 
-                   MakeReject<std::runtime_error>(
+                   MakeReject<sim_connect::UnknownError>(
                      reject,
-                     "Received data size does not match expected size for requested data type"
+                     "Received data size does not match expected size for requested data type ("
+                       + std::to_string(data.dwSize - header_size) + " vs "
+                       + std::to_string(Size<DATA_TYPE>()) + ")"
                    );
                    return;
                 }
@@ -215,9 +225,11 @@ SimConnect::RequestDataOnSimObject(
              }
            );
         } else {
-           MakeReject<std::runtime_error>(reject, "Failed to request data on sim object");
+           MakeReject<sim_connect::UnknownError>(reject, "Failed to request data on sim object");
            co_return;
         }
      }
    );
 }
+
+}  // namespace priv

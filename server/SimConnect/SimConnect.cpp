@@ -42,14 +42,17 @@
 
 using namespace std::chrono_literals;
 
-SimConnect::SimConnect()
+namespace priv {
+
+SimConnect::SimConnect(Main& main)
    : MessageQueue{"SimConnect"}
+   , main_(main)
    , thread_{[this](std::stop_token stoken) {
       if (!event_) {
          throw std::runtime_error("Couldn't create event");
       }
 
-      while (Main::Running() && !stoken.stop_requested()) {
+      while (!stoken.stop_requested()) {
          HANDLE handle;
          if (SUCCEEDED(SimConnect_Open(&handle, "MSFS VFRNav'", nullptr, 0, event_, 0))) {
             std::shared_ptr<HANDLE> handle_ptr{
@@ -75,13 +78,16 @@ SimConnect::SimConnect()
    }} {}
 
 SimConnect::~SimConnect() {
-   MessageQueue::Dispatch([this]() constexpr {
-      thread_.request_stop();
+   if (!MessageQueue::Dispatch([this]() constexpr {
+          assert(thread_.joinable());
+          thread_.request_stop();
 
-      if (event_) {
-         SetEvent(event_);
-      }
-   });
+          if (event_) {
+             SetEvent(event_);
+          }
+       })) {
+      assert(false && "Failed to dispatch stop message to SimConnect thread");
+   }
 }
 
 WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>
@@ -97,17 +103,20 @@ SimConnect::AICreateSimulatedObject(
         if (!handle) {
            handle = handle_.lock();
            if (!handle) {
-              MakeReject<std::runtime_error>(reject, "Not connected to simulator");
+              MakeReject<sim_connect::Disconnected>(reject);
               co_return;
            }
         }
 
-        MessageQueue::Dispatch(
-          [reject = reject.shared_from_this()]() constexpr {
-             MakeReject<std::runtime_error>(*reject, "Timed out while creating simulated object");
-          },
-          5s
-        );
+        if (!MessageQueue::Dispatch(
+              [reject = reject.shared_from_this()]() constexpr {
+                 MakeReject<sim_connect::Disconnected>(*reject);
+              },
+              5s
+            )) {
+           MakeReject<sim_connect::UnknownError>(reject, "App is stopping");
+           co_return;
+        }
 
         auto const request_id = ++request_id_;
         if (SimConnect_AICreateSimulatedObject(*handle, title.data(), pos, request_id) == S_OK) {
@@ -116,7 +125,7 @@ SimConnect::AICreateSimulatedObject(
              [&resolve](SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned) { resolve(assigned); }
            );
         } else {
-           MakeReject<std::runtime_error>(reject, "Failed to create simulated object");
+           MakeReject<sim_connect::UnknownError>(reject, "Failed to create simulated object");
            co_return;
         }
      }
@@ -128,29 +137,37 @@ SimConnect::Run(std::stop_token const& stoken) {
    auto handle = handle_.lock();
    using enum DataId;
 
-   AddToDataDefinition<SET_PORT, ServerPort>(handle);
+   connected_ = false;
 
-   MessageQueue::Dispatch([this]() constexpr { SetServerPort(server_port_).Detach(); });
+   if (!AddToDataDefinition<SET_PORT, ServerPort>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for server port" << std::endl;
+      Sleep(5000);
+      return;
+   }
+
+   (void)MessageQueue::Dispatch([this]() constexpr { SetServerPort(server_port_).Detach(); });
 
    uint32_t result;
    while ((result = ::WaitForSingleObject(event_, INFINITE)),
           (result == WAIT_OBJECT_0) && !ShouldStop(stoken)) {
-      MessageQueue::Dispatch([this, handle]() constexpr {
-         SimConnect_CallDispatch(
-           *handle,
-           [](SIMCONNECT_RECV* data, DWORD, void* self) constexpr {
-              reinterpret_cast<SimConnect*>(self)->Dispatch(*data);
-           },
-           this
-         );
-      });
+      if (!MessageQueue::Dispatch([this, handle]() constexpr {
+             SimConnect_CallDispatch(
+               *handle,
+               [](SIMCONNECT_RECV* data, DWORD, void* self) constexpr {
+                  reinterpret_cast<SimConnect*>(self)->Dispatch(*data);
+               },
+               this
+             );
+          })) {
+         break;
+      }
    }
    std::cout << "SimConnect: Stopping SimConnect thread, result " << result << std::endl;
 }
 
 bool
 SimConnect::ShouldStop(std::stop_token const& stoken) const noexcept {
-   return !Main::Running() || stoken.stop_requested() || !handle_.lock();
+   return stoken.stop_requested() || !handle_.lock();
 }
 
 void
@@ -165,6 +182,7 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
    switch (data.dwID) {
       case SIMCONNECT_RECV_ID_OPEN: {
          std::cout << "SimConnect: Connection opened" << std::endl;
+         connected_ = true;
       } break;
 
       case SIMCONNECT_RECV_ID_EXCEPTION: {
@@ -205,3 +223,5 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
       } break;
    }
 }
+
+}  // namespace priv

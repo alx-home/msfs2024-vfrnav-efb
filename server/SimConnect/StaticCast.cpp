@@ -17,4 +17,10 @@
 
 #include "StaticCast.inl"
 
+namespace priv {
+
 template ServerPort SimConnect::StaticCast<ServerPort>(DWORD const& data);
+
+template std::size_t SimConnect::Size<ServerPort>();
+
+}  // namespace priv

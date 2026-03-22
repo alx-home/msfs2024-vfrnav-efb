@@ -15,6 +15,8 @@
 
 #include "Server.h"
 
+#include "main.h"
+
 #include "Resources.h"
 #include "main.h"
 #include "Registry/Registry.h"
@@ -143,22 +145,22 @@ Server::Tcp::Tcp(tcp::endpoint endpoint)
 
 Server::Server(Main& main)
    : MessageQueue("Server Message queue")
-   , main_{&main}
-   , thread_{[this]() {
+   , main_{main}
+   , thread_{[this](std::stop_token stoken) {
       SetThreadDescription(GetCurrentThread(), L"Server");
       ScopeExit _{[this]() constexpr { FlushState(); }};
 
       std::unique_lock lock{mutex_};
 
       bool first_run = true;
-      while (Main::Running()) {
+      while (!stoken.stop_requested()) {
          if (first_run) {
             first_run = false;
          } else {
-            cv_.wait(lock);
+            cv_.wait(lock, [this, &stoken] { return want_run_ || stoken.stop_requested(); });
          }
 
-         if (!Main::Running()) {
+         if (stoken.stop_requested()) {
             break;
          }
 
@@ -184,9 +186,9 @@ Server::Server(Main& main)
 
                lock.unlock();
                {
-                  main_->SendServerPortToEFB(port);
+                  main_.SendServerPortToEFB(port);
                   tcp_->ioc_.run();
-                  main_->SendServerPortToEFB(0);
+                  main_.SendServerPortToEFB(0);
                }
                lock.lock();
             }
@@ -203,7 +205,7 @@ Server::Server(Main& main)
          Notify(GetState(lock), lock);
       }
    }} {
-   Dispatch([this]() {
+   (void)Dispatch([this]() {
       LoadFuelPresets();
 
       auto&       registry            = registry::Get();
@@ -232,7 +234,13 @@ Server::Server(Main& main)
    });
 }
 
-Server::~Server() { assert(resolvers_.empty()); }
+Server::~Server() {
+   assert(thread_.joinable());
+   thread_.request_stop();
+   cv_.notify_all();
+
+   assert(resolvers_.empty());
+}
 
 using namespace boost::beast;
 using namespace boost::urls;
@@ -311,7 +319,7 @@ Server::Accept(const boost_error& error, tcp::socket socket) {
                   res.set(http::field::content_type, "text/plain");
                   res.body() = "Not Found";
                   res.prepare_payload();
-               } 
+               }
             } else {
                res.result(http::status::method_not_allowed);
                res.set(http::field::content_type, "text/plain");
@@ -392,7 +400,7 @@ Server::LoadFuelPresets() {
 
 void
 Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
-   Dispatch([this, id, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, id, message = std::move(message)]() constexpr {
       auto const& [_, fuel_presets] = std::get<ws::msg::fuel::Presets>(message);
 
       bool                            save = false;
@@ -476,7 +484,7 @@ Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
 
 void
 Server::HandleFuelCurve(std::size_t, ws::Message&& message) {
-   Dispatch([this, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, message = std::move(message)]() constexpr {
       auto const& fuel_preset = std::get<ws::msg::fuel::Curves>(message);
 
       bool update = false;
@@ -510,7 +518,7 @@ Server::HandleFuelCurve(std::size_t, ws::Message&& message) {
 
 void
 Server::HandleDefaultFuelPreset(std::size_t, ws::Message&& message) {
-   Dispatch([this, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, message = std::move(message)]() constexpr {
       auto const& default_fuel_preset = std::get<ws::msg::fuel::DefaultPreset>(message);
       if (this->default_fuel_preset_.name_.empty()
           || (this->default_fuel_preset_.date_ < default_fuel_preset.date_)) {
@@ -583,7 +591,7 @@ Server::LoadDeviationPresets() {
 
 void
 Server::HandleDeviationPresets(std::size_t id, ws::Message&& message) {
-   Dispatch([this, id, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, id, message = std::move(message)]() constexpr {
       auto const& [_, dev_presets] = std::get<ws::msg::dev::Presets>(message);
 
       bool                            save = false;
@@ -667,7 +675,7 @@ Server::HandleDeviationPresets(std::size_t id, ws::Message&& message) {
 
 void
 Server::HandleDeviationCurve(std::size_t, ws::Message&& message) {
-   Dispatch([this, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, message = std::move(message)]() constexpr {
       auto const& dev_preset = std::get<ws::msg::dev::Curve>(message);
 
       bool update = false;
@@ -700,7 +708,7 @@ Server::HandleDeviationCurve(std::size_t, ws::Message&& message) {
 
 void
 Server::HandleDefaultDeviationPreset(std::size_t, ws::Message&& message) {
-   Dispatch([this, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, message = std::move(message)]() constexpr {
       auto const& default_dev_preset = std::get<ws::msg::dev::DefaultPreset>(message);
       if (this->default_deviation_preset_.name_.empty()
           || (this->default_deviation_preset_.date_ < default_dev_preset.date_)) {
@@ -744,7 +752,7 @@ Server::VDispatchMessage(std::size_t id, ws::Message&& message) {
          efb_socket->VDispatchMessage(id, std::move(message));
       });
    } else if (std::holds_alternative<ws::msg::GetFacilities>(message)) {
-      Dispatch([this, id, message = std::move(message)]() constexpr {
+      (void)Dispatch([this, id, message = std::move(message)]() constexpr {
          if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
             // Cache latitude and longitude to send GetFacilities later when the server becomes
             // available
@@ -760,7 +768,7 @@ Server::VDispatchMessage(std::size_t id, ws::Message&& message) {
 
 void
 Server::SetMessageHandler(std::size_t id, MessageHandler&& message_handler) {
-   Dispatch([this, id, message_handler = std::move(message_handler)]() constexpr {
+   (void)Dispatch([this, id, message_handler = std::move(message_handler)]() constexpr {
       auto const [handler, _] = message_handlers_.emplace(id, std::move(message_handler));
       assert(_);
 
@@ -776,10 +784,12 @@ Server::SetMessageHandler(std::size_t id, MessageHandler&& message_handler) {
 
 void
 Server::UnsetMessageHandler(std::size_t id) {
-   Dispatch([this, id]() constexpr {
-      auto const _ = message_handlers_.erase(id);
-      assert(_ == 1);
-   });
+   if (!Dispatch([this, id]() constexpr {
+          auto const _ = message_handlers_.erase(id);
+          assert(_ == 1);
+       })) {
+      assert(message_handlers_.empty());
+   }
 }
 
 void

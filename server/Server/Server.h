@@ -121,9 +121,9 @@ struct Server : public MessageQueue {
 
    void WatchServerState(Resolve<ServerState> const& resolve, Reject const& reject);
 
-   Main*                       main_   = nullptr;
+   Main&                       main_;
    bool                        runing_ = false;
-   std::shared_mutex           mutex_{};
+   mutable std::shared_mutex   mutex_{};
    std::condition_variable_any cv_{};
    Resolvers<ServerState>      resolvers_{};
    bool                        efb_connected_{false};
@@ -204,12 +204,13 @@ private:
    void OnRead(boost::beast::error_code ec, size_t n);
    void OnWrite(boost::beast::error_code ec, size_t n);
 
-   bool                                         web_browser_{};
-   Server&                                      server_;
-   boost::beast::websocket::stream<tcp::socket> ws_;
+   Server&     server_;
+   bool        web_browser_{};
+   std::size_t my_id_{1};
+
    boost::beast::flat_buffer                    buffer_;
    tcp::endpoint                                peer_;
-   std::size_t                                  my_id_{1};
+   boost::beast::websocket::stream<tcp::socket> ws_;
 
    Poll<10> poll_{"ServPoll"};
 

@@ -277,8 +277,7 @@ main() {
       _setmode(_fileno(stdout), _O_BINARY);
 #endif  // DEBUG
 
-      auto const main = Main::Get();
-      main->Run(minimized, configure, open_efb, open_web);
+      Main main{minimized, configure, open_efb, open_web};
    } catch (const webview::Exception& e) {
       std::cerr << e.what() << '\n';
       return 1;

@@ -44,24 +44,25 @@
 #include <memory>
 #include <shared_mutex>
 #include <stdexcept>
+#include <stop_token>
 #include <string_view>
 #include <thread>
+#include <type_traits>
 #include <atltypes.h>
 
-std::weak_ptr<Main> Main::s__instance{};
-bool                Main::s__expired{false};
+using namespace std::chrono_literals;
 
 AppStopping::AppStopping()
    : std::runtime_error("App is stopping !") {}
 
 static uint32_t const MF_MOUSE_EVENT = ::RegisterWindowMessage("MainFrameMouseEvent");
-Main::Main()
+Main::Main(bool minimized, bool configure, bool open_efb, bool open_web)
    : win32::SystemTray("MSFS2024 VFRNav' Server", "MSFS2024 VFRNav' Server")
-   , mouse_watcher_([this]() constexpr {
+   , mouse_watcher_([this](std::stop_token stop_token) constexpr {
       bool was_l_down{false};
       bool was_r_down{false};
 
-      while (s__running) {
+      while (!stop_token.stop_requested()) {
          auto const l_down = GetAsyncKeyState(VK_LBUTTON) & 0x8000;
          auto const r_down = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
 
@@ -76,183 +77,12 @@ Main::Main()
          was_l_down = l_down;
          was_r_down = r_down;
 
-         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+         std::this_thread::sleep_for(50ms);
       }
    }) {
    SetStandardIcon(IDI_ICON1);
    ShowIcon();
-}
 
-Main::~Main() {
-   s__running = false;
-   server_->Stop();
-}
-
-LRESULT
-Main::OnTrayNotification(WPARAM wParam, LPARAM lParam) {
-   // Return quickly if its not for this tray icon
-   if (wParam != GetUid()) {
-      return 0L;
-   }
-
-   if (taskbar_) {
-      if (LOWORD(lParam) == WM_RBUTTONUP) {
-         CPoint pos;
-         GetCursorPos(&pos);
-
-         taskbar_->SetPos(pos.x, pos.y - taskbar_->Height());
-         taskbar_->Show();
-      } else if (LOWORD(lParam) == WM_LBUTTONUP) {
-         OpenEFB();
-      }
-   }
-
-   return 1;
-}
-
-LRESULT
-Main::OnMessageImpl(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam) {
-   if (taskbar_) {
-      CPoint cpos;
-      GetCursorPos(&cpos);
-      if (msg == MF_MOUSE_EVENT && (wParam == WM_LBUTTONUP || wParam == WM_RBUTTONUP)) {
-         webview::Pos const pos{.x_ = cpos.x, .y_ = cpos.y};
-
-         if (auto const bounds = taskbar_->GetBounds(); !bounds.Contains(pos)) {
-            CloseTaskbar();
-         }
-      }
-   }
-
-   if (msg == WM_OPEN_SETTINGS) {
-      OpenSettings();
-   } else if (msg == WM_OPEN_EFB) {
-      OpenEFB();
-   } else if (msg == WM_OPEN_WEB) {
-      OpenWebEFB();
-   }
-
-   return win32::SystemTray::OnMessageImpl(handle, msg, wParam, lParam);
-}
-
-template <WIN WINDOW>
-void
-Main::OnTerminate() {
-   Window<WINDOW>::DecRefcount();
-
-   if (Running()) {
-      FlushServerState();
-   }
-}
-
-void
-Main::OpenSettings() {
-   Dispatch([this]() {
-      if (!settings_) {
-         settings_ = std::make_unique<Window<WIN::MAIN>>([this]() constexpr {
-            this->OnTerminate<WIN::MAIN>();
-            this->Dispatch([this]() { settings_ = nullptr; });
-         });
-      } else {
-         settings_->Show();
-         settings_->Restore();
-      }
-   });
-}
-
-void
-Main::SetMessageHandler(std::size_t id, Server::MessageHandler&& message_handler) {
-   assert(server_);
-   server_->SetMessageHandler(id, std::move(message_handler));
-}
-
-void
-Main::UnsetMessageHandler(std::size_t id) {
-   assert(server_);
-   server_->UnsetMessageHandler(id);
-}
-
-void
-Main::VDispatchMessage(std::size_t id, ws::Message&& message) {
-   assert(server_);
-   server_->VDispatchMessage(id, std::move(message));
-}
-
-void
-Main::OpenTaskbar() const {
-   assert(taskbar_);
-   taskbar_->Show();
-}
-
-void
-Main::CloseTaskbar() const {
-   assert(taskbar_);
-   taskbar_->Hide();
-}
-
-void
-Main::OpenToolTip() const {
-   assert(taskbar_tooltip_);
-   taskbar_tooltip_->Show();
-}
-
-void
-Main::CloseToolTip() const {
-   assert(taskbar_tooltip_);
-   taskbar_tooltip_->Hide();
-   // Keeps ToolTip from beeing shown again
-   ++WinRefCount::s__refcount;
-}
-
-void
-Main::OpenEFB() {
-   static std::atomic<std::size_t> s__uid = 0;
-   std::size_t                     uid    = ++s__uid;
-
-   Dispatch([this, uid]() {
-      auto erased = std::make_shared<bool>(false);
-
-      auto window = std::make_unique<Window<WIN::EFB>>([this, uid, erased]() {
-         this->OnTerminate<WIN::EFB>();
-
-         this->Dispatch([this, uid, erased = std::move(erased)]() {
-            if (auto elem = efbs_.find(uid); elem != efbs_.end()) {
-               efbs_.erase(elem);
-            }
-            *erased = true;
-         });
-      });
-
-      if (!*erased) {
-         efbs_.emplace(uid, std::move(window));
-      }
-   });
-}
-
-void
-Main::OpenWebEFB() {
-   assert(server_);
-   server_->Start();
-   ShellExecute(
-     nullptr,
-     nullptr,
-     ("http://localhost:"
-      + std::to_string(
-#ifdef WATCH_MODE
-        4003ui16
-#else
-        server_->GetPort()
-#endif
-      ))
-       .data(),
-     nullptr,
-     nullptr,
-     SW_SHOW
-   );
-}
-
-void
-Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
    {
       std::string exe_path = win32::GetExecutablePath();
 
@@ -261,15 +91,6 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
       jump_list.AddTask("Open In WebBrowser", exe_path, "msfs2024-vfrnav_server.exe --open-web");
       jump_list.AddTask("Open Settings", exe_path, "msfs2024-vfrnav_server.exe --configure");
    }
-
-   sim_connect_ = std::make_unique<SimConnectProxy>();
-   server_      = std::make_unique<Server>(*this);
-
-   taskbar_ =
-     std::make_unique<Window<WIN::TASKBAR>>([this]() { this->OnTerminate<WIN::TASKBAR>(); });
-   taskbar_tooltip_ = std::make_unique<Window<WIN::TASKBAR_TOOLTIP>>([this]() {
-      this->OnTerminate<WIN::TASKBAR_TOOLTIP>();
-   });
 
    if (minimized) {
       CloseToolTip();
@@ -298,6 +119,148 @@ Main::Run(bool minimized, bool configure, bool open_efb, bool open_web) {
    }
 }
 
+Main::~Main() {
+   mouse_watcher_.request_stop();
+   server_.Stop();
+}
+
+LRESULT
+Main::OnTrayNotification(WPARAM wParam, LPARAM lParam) {
+   // Return quickly if its not for this tray icon
+   if (wParam != GetUid()) {
+      return 0L;
+   }
+
+   if (LOWORD(lParam) == WM_RBUTTONUP) {
+      CPoint pos;
+      GetCursorPos(&pos);
+
+      taskbar_.SetPos(pos.x, pos.y - taskbar_.Height());
+      taskbar_.Show();
+   } else if (LOWORD(lParam) == WM_LBUTTONUP) {
+      OpenEFB();
+   }
+
+   return 1;
+}
+
+LRESULT
+Main::OnMessageImpl(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam) {
+   CPoint cpos;
+   GetCursorPos(&cpos);
+   if (msg == MF_MOUSE_EVENT && (wParam == WM_LBUTTONUP || wParam == WM_RBUTTONUP)) {
+      webview::Pos const pos{.x_ = cpos.x, .y_ = cpos.y};
+
+      if (auto const bounds = taskbar_.GetBounds(); !bounds.Contains(pos)) {
+         CloseTaskbar();
+      }
+   }
+
+   if (msg == WM_OPEN_SETTINGS) {
+      OpenSettings();
+   } else if (msg == WM_OPEN_EFB) {
+      OpenEFB();
+   } else if (msg == WM_OPEN_WEB) {
+      OpenWebEFB();
+   }
+
+   return win32::SystemTray::OnMessageImpl(handle, msg, wParam, lParam);
+}
+
+void
+Main::OpenSettings() {
+   settings_.Show();
+}
+
+void
+Main::CloseSettings() {
+   settings_.Hide();
+}
+
+void
+Main::SetMessageHandler(std::size_t id, Server::MessageHandler&& message_handler) {
+   server_.SetMessageHandler(id, std::move(message_handler));
+}
+
+void
+Main::UnsetMessageHandler(std::size_t id) {
+   server_.UnsetMessageHandler(id);
+}
+
+void
+Main::VDispatchMessage(std::size_t id, ws::Message&& message) {
+   server_.VDispatchMessage(id, std::move(message));
+}
+
+void
+Main::OpenTaskbar() const {
+   taskbar_.Show();
+}
+
+void
+Main::CloseTaskbar() const {
+   taskbar_.Hide();
+}
+
+void
+Main::OpenToolTip() const {
+   taskbar_tooltip_.Show();
+}
+
+void
+Main::CloseToolTip() const {
+   taskbar_tooltip_.Hide();
+   // Keeps ToolTip from beeing shown again
+   ++WinRefCount::s__refcount;
+}
+
+void
+Main::OpenEFB() {
+   static std::atomic<std::size_t> s__uid = 0;
+   std::size_t                     uid    = ++s__uid;
+
+   Dispatch([this, uid]() {
+      auto erased = std::make_shared<bool>(false);
+
+      auto window = std::make_unique<Window<WIN::EFB>>(*this, [this, uid, erased]() {
+         this->Dispatch([this, uid, erased = std::move(erased)]() {
+            if (auto elem = efbs_.find(uid); elem != efbs_.end()) {
+               elem->second->OnTerminate();
+               efbs_.erase(elem);
+            } else {
+               assert(false);
+            }
+            *erased = true;
+         });
+      });
+
+      if (!*erased) {
+         efbs_.emplace(uid, std::move(window));
+      }
+   });
+}
+
+void
+Main::OpenWebEFB() {
+   server_.Start();
+   ShellExecute(
+     nullptr,
+     nullptr,
+     ("http://localhost:"
+      + std::to_string(
+#ifdef WATCH_MODE
+        4003ui16
+#else
+        server_.GetPort()
+#endif
+      ))
+       .data(),
+     nullptr,
+     nullptr,
+     SW_SHOW
+   );
+}
+
 bool
 Main::PoolDispatchImp(std::function<void()> func) {
    return poll_.Dispatch(std::move(func));
@@ -305,52 +268,22 @@ Main::PoolDispatchImp(std::function<void()> func) {
 
 void
 Main::SetServerPort(uint16_t port) {
-   assert(server_);
-   return server_->SetServerPort(port);
-}
-
-bool
-Main::Running() {
-   return s__running;
+   return server_.SetServerPort(port);
 }
 
 void
 Main::SendServerPortToEFB(uint32_t port) {
-   (*sim_connect_)([port](SimConnectPublic& sc) constexpr { sc.SetServerPort(port).Detach(); });
+   sim_connect_([port](api::SimConnect& sc) constexpr { sc.SetServerPort(port).Detach(); });
 }
 
 void
 Main::Terminate() {
-   if (!s__running.exchange(false)) {
-      throw AppStopping();
+   if (terminated_.exchange(true)) {
+      return;
    }
 
-   auto main = Get();
-   assert(main);
-
-   main->server_->RejectAll();
-   main->Dispatch([]() constexpr { PostQuitMessage(0); });
-}
-
-std::atomic<bool> Main::s__running{false};
-
-std::shared_ptr<Main>
-Main::Get() {
-   if (s__instance.expired()) {
-      if (s__expired) {
-         throw std::runtime_error("Use main after free");
-      }
-      s__expired = true;
-      s__running = true;
-
-      struct MainPublic : Main {};
-      auto result = std::make_shared<MainPublic>();
-
-      s__instance = result;
-      return result;
-   }
-
-   return s__instance.lock();
+   server_.RejectAll();
+   Dispatch([]() constexpr { PostQuitMessage(0); });
 }
 
 void
@@ -358,25 +291,21 @@ Main::WatchServerState(
   promise::Resolve<ServerState> const& resolve,
   promise::Reject const&               reject
 ) {
-   assert(server_);
-   server_->WatchServerState(resolve, reject);
+   server_.WatchServerState(resolve, reject);
 }
 
 void
 Main::FlushServerState() {
-   assert(server_);
-   server_->FlushState();
+   server_.FlushState();
 }
 
 ServerState
 Main::GetServerState() const {
-   assert(server_);
-   std::shared_lock lock{server_->mutex_};
-   return server_->GetState(lock);
+   std::shared_lock lock{server_.mutex_};
+   return server_.GetState(lock);
 }
 
 void
 Main::SwitchServer() {
-   assert(server_);
-   server_->Switch();
+   server_.Switch();
 }

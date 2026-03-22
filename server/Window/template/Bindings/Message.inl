@@ -21,6 +21,6 @@
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::VDispatchMessage(ws::Message message) {
-   Main::Get()->VDispatchMessage(std::bit_cast<std::size_t>(this), std::move(message));
+   main_.VDispatchMessage(std::bit_cast<std::size_t>(this), std::move(message));
    co_return;
 }

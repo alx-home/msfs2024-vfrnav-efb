@@ -21,6 +21,8 @@
 template <typename>
 inline constexpr bool ALWAYS_FALSE = false;
 
+namespace priv {
+
 template <class T>
 T
 SimConnect::StaticCast(DWORD const& data) {
@@ -90,3 +92,49 @@ SimConnect::StaticCast(DWORD const& data) {
 
    return result;
 }
+
+template <class T>
+std::size_t
+SimConnect::Size() {
+   return [] constexpr {
+      std::size_t size = 0;
+
+      std::apply(
+        [&](auto const&... member) constexpr {
+           (
+             [&]<class M>(M const&) constexpr {
+                if constexpr (std::tuple_element_t<1, M>::VALUE_S
+                              == SIMCONNECT_DATATYPE_STRING256) {
+                   size += 256;
+                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
+                                     == SIMCONNECT_DATATYPE_STRING32) {
+                   size += 32;
+                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
+                                     == SIMCONNECT_DATATYPE_STRING8) {
+                   size += 8;
+                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
+                                     == SIMCONNECT_DATATYPE_FLOAT64) {
+                   size += sizeof(double);
+                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
+                                     == SIMCONNECT_DATATYPE_FLOAT32) {
+                   size += sizeof(float);
+                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
+                                     == SIMCONNECT_DATATYPE_INT32) {
+                   size += sizeof(int32_t);
+                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
+                                     == SIMCONNECT_DATATYPE_INT64) {
+                   size += sizeof(int64_t);
+                } else {
+                   static_assert(ALWAYS_FALSE<M>, "Unsupported type");
+                }
+             }(member),
+             ...
+           );
+        },
+        T::MEMBERS
+      );
+
+      return size;
+   }();
+}
+}  // namespace priv

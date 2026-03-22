@@ -23,7 +23,7 @@
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::ShowSettings() {
-   co_return Main::Get()->OpenSettings();
+   co_return main_.OpenSettings();
 }
 
 template <WIN WINDOW>
@@ -43,7 +43,7 @@ Promise<uint16_t>
 Window<WINDOW>::ServerPort(std::optional<uint16_t> port) {
    auto& registry = registry::Get();
    if (port) {
-      Main::Get()->SetServerPort(*port);
+      main_.SetServerPort(*port);
       co_return *port;
    }
 
@@ -82,20 +82,17 @@ Window<WINDOW>::WatchServerState(
   promise::Resolve<ServerState> const& resolve,
   promise::Reject const&               reject
 ) {
-   auto main = Main::Get();
-   co_return main->WatchServerState(resolve, reject);
+   co_return main_.WatchServerState(resolve, reject);
 }
 
 template <WIN WINDOW>
 Promise<ServerState>
 Window<WINDOW>::GetServerState() {
-   auto main = Main::Get();
-   co_return main->GetServerState();
+   co_return main_.GetServerState();
 }
 
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::SwitchServer() {
-   auto main = Main::Get();
-   co_return main->SwitchServer();
+   co_return main_.SwitchServer();
 }

@@ -30,23 +30,22 @@
 #include <wrl/client.h>
 
 class Main : public win32::SystemTray {
-private:
-   Main();
+public:
+   Main(bool minimized, bool configure, bool open_efb, bool open_web);
    ~Main() override;
 
 public:
-   static std::shared_ptr<Main> Get();
-
    ServerState GetServerState() const;
    void        WatchServerState(promise::Resolve<ServerState> const&, promise::Reject const&);
    void        FlushServerState();
    void        SwitchServer();
 
-   void OpenSettings();
-
    void SetMessageHandler(std::size_t id, Server::MessageHandler&&);
    void UnsetMessageHandler(std::size_t id);
    void VDispatchMessage(std::size_t id, ws::Message&&);
+
+   void OpenSettings();
+   void CloseSettings();
 
    void OpenTaskbar() const;
    void CloseTaskbar() const;
@@ -57,11 +56,9 @@ public:
    void OpenEFB();
    void OpenWebEFB();
 
-   void Run(bool minimized, bool configure, bool open_efb, bool open_web);
    void SetServerPort(uint16_t port);
 
-   static void Terminate();
-   static bool Running();
+   void Terminate();
 
    void SendServerPortToEFB(uint32_t port);
 
@@ -78,14 +75,19 @@ public:
       }
    }
 
+   [[nodiscard]] bool SimConnect(std::function<void(api::SimConnect&)>&& callback) {
+      return sim_connect_(std::move(callback));
+   }
+
+   bool Terminated() const noexcept { return terminated_; }
+
 private:
    Poll<50>     poll_{"Poll"};
    std::jthread mouse_watcher_;
    LRESULT      OnTrayNotification(WPARAM wParam, LPARAM lParam) override;
    LRESULT      OnMessageImpl(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) override;
 
-   template <WIN WINDOW>
-   void OnTerminate();
+   std::atomic<bool> terminated_{false};
 
    bool PoolDispatchImp(std::function<void()>);
 
@@ -95,37 +97,32 @@ private:
         [this, func = std::move(func)](
           Resolve<std::string> const& resolve, Reject const& reject
         ) -> Promise<std::string, true> {
-           poll_.Dispatch([resolve = resolve.shared_from_this(),
-                           reject  = reject.shared_from_this(),
-                           func    = std::move(func)]() {
-              try {
-                 (func)(*resolve, *reject);
-              } catch (...) {
-                 (*reject)(std::current_exception());
-              }
-           });
+           if (!poll_.Dispatch([resolve = resolve.shared_from_this(),
+                                reject  = reject.shared_from_this(),
+                                func    = std::move(func)]() {
+                  try {
+                     (func)(*resolve, *reject);
+                  } catch (...) {
+                     (*reject)(std::current_exception());
+                  }
+               })) {
+              MakeReject<std::runtime_error>(reject, "App is stopping");
+           }
 
            co_return;
         }
       );
    }
 
-   // Delay window creation to ensure Main::Get() is ready
-   using TaskbarPtr = std::unique_ptr<Window<WIN::TASKBAR>>;
-   TaskbarPtr taskbar_{};
-   using TooltipPtr = std::unique_ptr<Window<WIN::TASKBAR_TOOLTIP>>;
-   TooltipPtr taskbar_tooltip_{};
-   using SettingsPtr = std::unique_ptr<Window<WIN::MAIN>>;
-   SettingsPtr settings_{};
+   // Must be before windows to resolve every promises
+   ::SimConnect sim_connect_{*this};
+   Server       server_{*this};
 
-   using EFBPtr = std::unique_ptr<Window<WIN::EFB>>;
-   std::unordered_map<std::size_t, EFBPtr> efbs_{};
+   Window<WIN::TASKBAR>         taskbar_{*this, [this]() { taskbar_.OnTerminate(); }};
+   Window<WIN::TASKBAR_TOOLTIP> taskbar_tooltip_{*this, [this]() {
+                                                    taskbar_tooltip_.OnTerminate();
+                                                 }};
+   Window<WIN::MAIN>            settings_{*this, [this]() { settings_.OnTerminate(); }};
 
-   std::unique_ptr<SimConnectProxy> sim_connect_{};
-   // Must be afters windows to resolve every promises
-   std::unique_ptr<Server> server_{};
-
-   static std::atomic<bool>   s__running;
-   static std::weak_ptr<Main> s__instance;
-   static bool                s__expired;
+   std::unordered_map<std::size_t, std::unique_ptr<Window<WIN::EFB>>> efbs_{};
 };

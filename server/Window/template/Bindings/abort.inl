@@ -20,5 +20,5 @@
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::Abort() {
-   co_return Main::Terminate();
+   co_return main_.Terminate();
 }

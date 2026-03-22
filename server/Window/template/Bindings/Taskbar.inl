@@ -19,35 +19,35 @@
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::HideTaskbar() {
-   co_return Main::Get()->CloseTaskbar();
+   co_return main_.CloseTaskbar();
 }
 
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::ShowTaskbar() {
-   co_return Main::Get()->OpenTaskbar();
+   co_return main_.OpenTaskbar();
 }
 
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::HideToolTip() {
-   co_return Main::Get()->CloseToolTip();
+   co_return main_.CloseToolTip();
 }
 
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::OpenEFB() {
-   co_return Main::Get()->OpenEFB();
+   co_return main_.OpenEFB();
 }
 
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::OpenWebEFB() {
-   co_return Main::Get()->OpenWebEFB();
+   co_return main_.OpenWebEFB();
 }
 
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::ShowToolTip() {
-   co_return Main::Get()->OpenToolTip();
+   co_return main_.OpenToolTip();
 }

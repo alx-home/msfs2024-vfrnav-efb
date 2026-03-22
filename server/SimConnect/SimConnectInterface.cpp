@@ -25,8 +25,6 @@
 #include <iostream>
 #include <memory>
 #include <SimConnect.h>
-#include <stdexcept>
-#include <string_view>
 #include <synchapi.h>
 #include <thread>
 #include <utils/MessageQueue.h>
@@ -35,6 +33,8 @@
 #include <Windows.h>
 #include <winspool.h>
 #include <winuser.h>
+
+namespace priv {
 
 WPromise<bool>
 SimConnect::SetServerPort(uint32_t port) {
@@ -60,14 +60,17 @@ SimConnect::SetServerPort(uint32_t port) {
 
                auto server_port = static_cast<double>(server_port_);
 
-               MessageQueue::Dispatch(
-                 [reject = reject.shared_from_this()]() constexpr {
-                    MakeReject<std::runtime_error>(
-                      *reject, "Timed out while creating simulated object"
-                    );
-                 },
-                 5s
-               );
+               if (!MessageQueue::Dispatch(
+                     [reject = reject.shared_from_this()]() constexpr {
+                        MakeReject<sim_connect::Timeout>(
+                          *reject, "Timed out while creating simulated object"
+                        );
+                     },
+                     5s
+                   )) {
+                  MakeReject<sim_connect::UnknownError>(reject, "App is stopping");
+                  co_return;
+               }
 
                std::cout << "SimConnect: Setting server port to " << server_port_ << std::endl;
                if (E_FAIL
@@ -80,7 +83,7 @@ SimConnect::SetServerPort(uint32_t port) {
                      sizeof(server_port),
                      &server_port
                    )) {
-                  MakeReject<std::runtime_error>(
+                  MakeReject<sim_connect::UnknownError>(
                     reject,
                     "SimConnect: Failed to set server port to " + std::to_string(server_port_)
                   );
@@ -99,7 +102,7 @@ SimConnect::SetServerPort(uint32_t port) {
                      resolve(true);
                      co_return;
                   } else {
-                     MakeReject<std::runtime_error>(
+                     MakeReject<sim_connect::UnknownError>(
                        reject,
                        "Failed to set server port in simulator, got " + std::to_string(port)
                          + " expected " + std::to_string(server_port_)
@@ -119,3 +122,4 @@ SimConnect::SetServerPort(uint32_t port) {
       co_return co_await SetServerPort(server_port_);
    });
 }
+}  // namespace priv

@@ -19,6 +19,7 @@
 
 #include <promise/promise.h>
 #include <utils/MessageQueue.h>
+#include <utils/MessageQueueProxy.inl>
 #include <windows/Event.h>
 #include <windows/Window.h>
 
@@ -33,17 +34,22 @@
 #include <winuser.h>
 #include <chrono>
 #include <cstdint>
-#include <exception>
 #include <map>
 #include <memory>
 #include <stdexcept>
 #include <thread>
+
+class Main;
 
 namespace sim_connect {
 
 struct Disconnected : std::runtime_error {
    Disconnected()
       : std::runtime_error("MSFS not connected!") {}
+};
+
+struct Timeout : std::runtime_error {
+   using std::runtime_error::runtime_error;
 };
 
 struct UnknownError : std::runtime_error {
@@ -92,20 +98,23 @@ struct SimobjectData {
    DATA_TYPE dw_data_;      // data begins here, dw_define_count_ data items
 };
 
-class SimConnectPublic {
+namespace api {
+class SimConnect {
 protected:
-   SimConnectPublic()          = default;
-   virtual ~SimConnectPublic() = default;
+   SimConnect()          = default;
+   virtual ~SimConnect() = default;
 
 public:
    [[nodiscard]] virtual WPromise<bool> SetServerPort(uint32_t port) = 0;
 };
+}  // namespace api
 
+namespace priv {
 class SimConnect
-   : public SimConnectPublic
+   : public api::SimConnect
    , private MessageQueue {
 private:
-   SimConnect();
+   SimConnect(Main& main);
 
 public:
    ~SimConnect() override;
@@ -117,47 +126,48 @@ private:
    void Run(std::stop_token const& stoken);
 
    template <DataId ID>
-   void AddToDataDefinition(
+   [[nodiscard]] bool AddToDataDefinition(
      std::string_view                datumName,
      SIMCONNECT_DATATYPE             datumType,
      std::optional<std::string_view> unitsName = std::nullopt
    );
    template <DataId ID>
-   void AddToDataDefinition(
+   [[nodiscard]] bool AddToDataDefinition(
      std::shared_ptr<void*> const&   handle,
      std::string_view                datumName,
      SIMCONNECT_DATATYPE             datumType,
      std::optional<std::string_view> unitsName = std::nullopt
    );
    template <DataId ID, class T>
-   void AddToDataDefinition(std::shared_ptr<void*> const& handle);
+   [[nodiscard]] bool AddToDataDefinition(std::shared_ptr<void*> const& handle);
    template <DataId ID, class T>
-   void AddToDataDefinition();
+   [[nodiscard]] bool AddToDataDefinition();
 
    template <DataId ID>
-   void AddToFacilityDefinition(std::string_view datumName);
+   [[nodiscard]] bool AddToFacilityDefinition(std::string_view datumName);
    template <DataId ID>
-   void AddToFacilityDefinition(std::shared_ptr<void*> const& handle, std::string_view datumName);
+   [[nodiscard]] bool
+   AddToFacilityDefinition(std::shared_ptr<void*> const& handle, std::string_view datumName);
    template <DataId ID, class T>
-   void AddToFacilityDefinition(std::shared_ptr<void*> const& handle);
+   [[nodiscard]] bool AddToFacilityDefinition(std::shared_ptr<void*> const& handle);
    template <DataId ID, class T>
-   void AddToFacilityDefinition();
+   [[nodiscard]] bool AddToFacilityDefinition();
 
    template <DataId ID>
-   bool RequestDataOnSimObjectType(
+   [[nodiscard]] bool RequestDataOnSimObjectType(
      SIMCONNECT_SIMOBJECT_TYPE objectType,
      uint32_t                  radius = 0,
      std::shared_ptr<void*>    handle = nullptr
    );
 
    template <DataId ID, class DATA_TYPE>
-   WPromise<SimobjectData<DATA_TYPE>> RequestDataOnSimObject(
+   [[nodiscard]] WPromise<SimobjectData<DATA_TYPE>> RequestDataOnSimObject(
      SIMCONNECT_PERIOD      period,
      uint32_t               objectId,
      std::shared_ptr<void*> handle
    );
 
-   WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> AICreateSimulatedObject(
+   [[nodiscard]] WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> AICreateSimulatedObject(
      std::string_view             title,
      SIMCONNECT_DATA_INITPOSITION pos,
      std::shared_ptr<void*>       handle
@@ -165,6 +175,9 @@ private:
 
    template <class T>
    static T StaticCast(DWORD const& data);
+
+   template <class T>
+   static std::size_t Size();
 
    void Dispatch(SIMCONNECT_RECV const& data);
 
@@ -181,52 +194,18 @@ private:
 
    using time_point = std::chrono::steady_clock::time_point;
 
+   Main&        main_;
    win32::Event event_{win32::CreateEvent()};
    int64_t      server_port_{48578};
    int64_t      sent_port_{-1};
+   bool         connected_{false};
 
    std::weak_ptr<HANDLE> handle_{};
 
    std::jthread thread_{};
 
-   friend class SimConnectProxy;
+   friend class utils::queue::Proxy<SimConnect, api::SimConnect>;
 };
+}  // namespace priv
 
-class SimConnectProxy {
-public:
-   SimConnectProxy()  = default;
-   ~SimConnectProxy() = default;
-
-   bool operator()(std::function<void(SimConnectPublic&)>&& callback) {
-      return details_.MessageQueue::Dispatch(
-        [this, callback = std::move(callback)] constexpr mutable { callback(details_); }
-      );
-   }
-
-   template <class T>
-      requires(!std::is_void_v<T>)
-   WPromise<T> operator()(std::function<T(SimConnectPublic&)>&& callback) {
-      return MakePromise(
-        [this, callback = std::move(callback)](
-          Resolve<T> const& resolve, Reject const& reject
-        ) mutable -> Promise<T, true> {
-           if (details_.MessageQueue::Dispatch(
-                 [this, callback = std::move(callback), &resolve, &reject] constexpr mutable {
-                    try {
-                       resolve(callback(details_));
-                    } catch (...) {
-                       reject(std::current_exception());
-                    }
-                 }
-               )) {
-
-           } else {
-              MakeReject<std::runtime_error>(reject, "SimConnect thread is not running");
-           }
-        }
-      );
-   }
-
-private:
-   SimConnect details_{};
-};
+using SimConnect = utils::queue::Proxy<priv::SimConnect, api::SimConnect>;

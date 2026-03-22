@@ -100,8 +100,9 @@ struct Params<WINDOW> {
 }  // namespace
 
 template <WIN WINDOW>
-Window<WINDOW>::Window(std::function<void()> on_terminate)
-   : thread_{
+Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
+   : main_(main)
+   , thread_{
        [this](std::stop_token stoken, std::function<void()> on_terminate) constexpr {
           ScopeExit _{[this, &stoken]() constexpr {
              std::unique_lock lock{mutex_};
@@ -200,15 +201,21 @@ Window<WINDOW>::Window(std::function<void()> on_terminate)
 
    if constexpr (WIN::EFB == WINDOW) {
       Dispatch([this]() constexpr {
-         if (Main::Running()) {
-            auto const id = std::bit_cast<std::size_t>(this);
-            Main::Get()->SetMessageHandler(
-              id, {[this](std::size_t, ws::Message message) constexpr {
-                 webview_->Call<void>("vfrnav_onmessage", std::move(message));
-              }}
-            );
-         }
+         auto const id = std::bit_cast<std::size_t>(this);
+         main_.SetMessageHandler(id, {[this](std::size_t, ws::Message message) constexpr {
+                                    webview_->Call<void>("vfrnav_onmessage", std::move(message));
+                                 }});
       });
+   }
+}
+
+template <WIN WINDOW>
+void
+Window<WINDOW>::OnTerminate() {
+   DecRefcount();
+
+   if (!main_.Terminated()) {
+      main_.FlushServerState();
    }
 }
 
@@ -221,11 +228,7 @@ Window<WINDOW>::Dispatch(std::function<void()> func) const {
 template <WIN WINDOW>
 Window<WINDOW>::~Window() {
    if constexpr (WIN::EFB == WINDOW) {
-      Dispatch([this]() constexpr {
-         if (Main::Running()) {
-            Main::Get()->UnsetMessageHandler(std::bit_cast<std::size_t>(this));
-         }
-      });
+      Dispatch([this]() constexpr { main_.UnsetMessageHandler(std::bit_cast<std::size_t>(this)); });
    }
 
    Dispatch([]() constexpr { PostQuitMessage(0); });
@@ -246,14 +249,11 @@ Window<WINDOW>::Hide() const {
 
 template <WIN WINDOW>
 void
-Window<WINDOW>::DecRefcount() {
+Window<WINDOW>::DecRefcount() const {
    if constexpr (WINDOW != WIN::TASKBAR_TOOLTIP) {
-      if (!--s__refcount) {
+      if (!--s__refcount && !main_.Terminated()) {
          // Show ToolTip
-
-         if (Main::Running()) {
-            Main::Get()->OpenToolTip();
-         }
+         main_.OpenToolTip();
       }
    }
 }
