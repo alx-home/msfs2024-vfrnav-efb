@@ -15,11 +15,14 @@
 
 #pragma once
 
+#include "ATC/ATCHandler.h"
+#include "ATC/IAHandler.h"
 #include "Server/Server.h"
 #include "Server/WebSockets/Messages/Messages.h"
 #include "SimConnect/SimConnect.h"
 #include "Window/template/Window.h"
 
+#include <utils/MessageQueue.h>
 #include <memory>
 #include <promise/promise.h>
 #include <unordered_map>
@@ -29,7 +32,14 @@
 #include <windows/SystemTray.h>
 #include <wrl/client.h>
 
-class Main : public win32::SystemTray {
+namespace beast = boost::beast;
+namespace http  = beast::http;
+namespace asio  = boost::asio;
+using tcp       = asio::ip::tcp;
+
+class Main
+   : public win32::SystemTray
+   , public MessageQueue {
 public:
    Main(bool minimized, bool configure, bool open_efb, bool open_web);
    ~Main() override;
@@ -75,8 +85,73 @@ public:
       }
    }
 
-   [[nodiscard]] bool SimConnect(std::function<void(api::SimConnect&)>&& callback) {
+   auto Pool(std::optional<Poll::time_point> until = std::nullopt) const {
+      return poll_.dispatch_(until);
+   }
+   auto Pool(Poll::duration delay) const { return poll_.dispatch_(delay); }
+
+   WPromise<std::string> PostHttpRequest(
+     std::string const&                                                    host,
+     std::string const&                                                    port,
+     std::string const&                                                    target,
+     std::optional<std::function<void(http::request<http::string_body>&)>> build_request =
+       std::nullopt,
+     http::verb verb = http::verb::get
+   );
+
+   template <class T>
+      requires(!std::is_void_v<T> && !promise::IS_WPROMISE<T>)
+   [[nodiscard]] constexpr WPromise<T> SimConnect(std::function<T(smc::api::SimConnect&)>&& callback
+   ) {
       return sim_connect_(std::move(callback));
+   }
+   template <class T>
+      requires(promise::IS_WPROMISE<T>)
+   [[nodiscard]] constexpr T SimConnect(std::function<T(smc::api::SimConnect&)>&& callback) {
+      using Return                    = promise::return_t<T>;
+      auto [promise, resolve, reject] = promise::Pure<Return>();
+      if (!sim_connect_([resolve, reject, callback = std::move(callback)](
+                          smc::api::SimConnect& simConnect
+                        ) constexpr {
+             if constexpr (std::is_void_v<Return>) {
+                callback(simConnect)
+                  .Then([resolve = std::move(resolve)]() constexpr { (*resolve)(); })
+                  .Catch([reject = std::move(reject)](std::exception const& e) constexpr {
+                     (*reject)(e);
+                  })
+                  .Detach();
+             } else {
+                callback(simConnect)
+                  .Then([resolve = std::move(resolve)](Return const& assigned) constexpr {
+                     (*resolve)(assigned);
+                  })
+                  .Catch([reject = std::move(reject)](std::exception const& e) constexpr {
+                     (*reject)(e);
+                  })
+                  .Detach();
+             }
+          })) {
+         MakeReject<std::runtime_error>(*reject, "SimConnect is stopped");
+      }
+
+      return promise;
+   }
+
+   template <class T>
+      requires(std::is_void_v<T>)
+   [[nodiscard]] constexpr bool SimConnect(std::function<T(smc::api::SimConnect&)>&& callback) {
+      return sim_connect_(std::move(callback));
+   }
+
+   template <class FUN>
+   [[nodiscard]] constexpr auto SimConnect(FUN&& callback) {
+      return SimConnect(std::function{std::forward<FUN>(callback)});
+   }
+
+   [[nodiscard]] constexpr auto& SimConnect() { return sim_connect_; }
+
+   [[nodiscard]] bool ATC(std::function<void(atc::Handler&)>&& callback) {
+      return atc_handler_(std::move(callback));
    }
 
    bool Terminated() const noexcept { return terminated_; }
@@ -115,8 +190,10 @@ private:
    }
 
    // Must be before windows to resolve every promises
-   ::SimConnect sim_connect_{*this};
-   Server       server_{*this};
+   ::SimConnect    sim_connect_{*this};
+   Server          server_{*this};
+   ia::Handler     ia_handler_{*this};
+   atc::ATCHandler atc_handler_{*this};
 
    Window<WIN::TASKBAR>         taskbar_{*this, [this]() { taskbar_.OnTerminate(); }};
    Window<WIN::TASKBAR_TOOLTIP> taskbar_tooltip_{*this, [this]() {

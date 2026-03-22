@@ -17,7 +17,8 @@
 
 #include "SimConnect.inl"
 
-#include "ServerPort.h"
+#include "Data/GroundInfo.h"
+#include "Data/ServerPort.h"
 
 #include <chrono>
 #include <cstdint>
@@ -25,6 +26,7 @@
 #include <iostream>
 #include <memory>
 #include <SimConnect.h>
+#include <string_view>
 #include <synchapi.h>
 #include <thread>
 #include <utils/MessageQueue.h>
@@ -34,7 +36,7 @@
 #include <winspool.h>
 #include <winuser.h>
 
-namespace priv {
+namespace smc::priv {
 
 WPromise<bool>
 SimConnect::SetServerPort(uint32_t port) {
@@ -62,13 +64,11 @@ SimConnect::SetServerPort(uint32_t port) {
 
                if (!MessageQueue::Dispatch(
                      [reject = reject.shared_from_this()]() constexpr {
-                        MakeReject<sim_connect::Timeout>(
-                          *reject, "Timed out while creating simulated object"
-                        );
+                        MakeReject<Timeout>(*reject, "Timed out while creating simulated object");
                      },
                      5s
                    )) {
-                  MakeReject<sim_connect::UnknownError>(reject, "App is stopping");
+                  MakeReject<UnknownError>(reject, "App is stopping");
                   co_return;
                }
 
@@ -83,14 +83,14 @@ SimConnect::SetServerPort(uint32_t port) {
                      sizeof(server_port),
                      &server_port
                    )) {
-                  MakeReject<sim_connect::UnknownError>(
+                  MakeReject<UnknownError>(
                     reject,
                     "SimConnect: Failed to set server port to " + std::to_string(server_port_)
                   );
                   co_return;
                } else {
                   auto const& data = co_await RequestDataOnSimObject<DataId::SET_PORT, ServerPort>(
-                    SIMCONNECT_PERIOD_ONCE, SIMCONNECT_OBJECT_ID_USER, handle
+                    SIMCONNECT_OBJECT_ID_USER, handle
                   );
 
                   auto const port = data.dw_data_.value_;
@@ -102,7 +102,7 @@ SimConnect::SetServerPort(uint32_t port) {
                      resolve(true);
                      co_return;
                   } else {
-                     MakeReject<sim_connect::UnknownError>(
+                     MakeReject<UnknownError>(
                        reject,
                        "Failed to set server port in simulator, got " + std::to_string(port)
                          + " expected " + std::to_string(server_port_)
@@ -122,4 +122,102 @@ SimConnect::SetServerPort(uint32_t port) {
       co_return co_await SetServerPort(server_port_);
    });
 }
-}  // namespace priv
+
+WPromise<double>
+SimConnect::GetGroundInfo(double lat, double lon) {
+   using enum DataId;
+
+   return MakePromise(
+     [this,
+      lat,
+      lon](Resolve<double> const& resolve, Reject const& reject) -> Promise<double, true> {
+        auto handle = handle_.lock();
+        if (!handle) {
+           MakeReject<Disconnected>(reject);
+           co_return;
+        }
+
+        // Create a temporary AI object on the ground at the specified location, then request its
+        // ground altitude. This is a workaround to get the ground altitude at a specific location,
+        auto const& ai_object = co_await AICreateSimulatedObject(
+          "TerrainProbe",
+          {
+            .Latitude  = lat,
+            .Longitude = lon,
+            .Altitude  = 1,
+            // The next fields doesn't matter, as the object will be teleported to
+            // ground immediately after creation
+            .Pitch = 0,
+
+            .Bank    = 0,
+            .Heading = 0,
+            // Force the object to be on the ground so that we can get the
+            // ground altitude immediately
+            .OnGround = 1,
+            .Airspeed = INITPOSITION_AIRSPEED_KEEP,
+          },
+          handle
+        );
+
+        ScopeExit _{[&handle, &ai_object]() constexpr {
+           // Remove the probe object
+           SimConnect_AIRemoveObject(*handle, ai_object.dwObjectID, ai_object.dwRequestID);
+        }};
+
+        // Request ground altitude once the probe exists
+        auto const& ground_object =
+          co_await RequestDataOnSimObject<GROUND_INFO, GroundInfo>(ai_object.dwObjectID, handle);
+        auto const& ground_info = ground_object.dw_data_;
+        resolve(ground_info.altitude_);
+
+        co_return;
+     }
+   );
+}
+
+WPromise<TrafficInfo>
+SimConnect::GetUserAircraftInfo() noexcept(true) {
+   using enum DataId;
+
+   return MakePromise(
+     [this](
+       Resolve<TrafficInfo> const& resolve, Reject const& reject
+     ) -> Promise<TrafficInfo, true> {
+        auto handle = handle_.lock();
+        if (!handle) {
+           MakeReject<Disconnected>(reject);
+           co_return;
+        }
+
+        auto const& data = co_await RequestDataOnSimObject<TRAFFIC_INFO, TrafficInfo>(
+          SIMCONNECT_OBJECT_ID_USER, handle
+        );
+        resolve(data.dw_data_);
+
+        co_return;
+     }
+   );
+}
+
+WPromise<TrafficInfo>
+SimConnect::GetAircraftInfo(ObjectId id) noexcept(true) {
+   using enum DataId;
+
+   return MakePromise(
+     [this,
+      id](Resolve<TrafficInfo> const& resolve, Reject const& reject) -> Promise<TrafficInfo, true> {
+        auto handle = handle_.lock();
+        if (!handle) {
+           MakeReject<Disconnected>(reject);
+           co_return;
+        }
+
+        auto const& data =
+          co_await RequestDataOnSimObject<TRAFFIC_INFO, TrafficInfo>(id.dwObjectID, handle);
+        resolve(data.dw_data_);
+
+        co_return;
+     }
+   );
+}
+}  // namespace smc::priv

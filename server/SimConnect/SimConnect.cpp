@@ -19,7 +19,9 @@
 
 #include "main.h"
 
-#include "ServerPort.h"
+#include "Data/GroundInfo.h"
+#include "Data/ServerPort.h"
+#include "Data/TrafficInfo.h"
 
 #include <chrono>
 #include <condition_variable>
@@ -42,7 +44,7 @@
 
 using namespace std::chrono_literals;
 
-namespace priv {
+namespace smc::priv {
 
 SimConnect::SimConnect(Main& main)
    : MessageQueue{"SimConnect"}
@@ -103,33 +105,131 @@ SimConnect::AICreateSimulatedObject(
         if (!handle) {
            handle = handle_.lock();
            if (!handle) {
-              MakeReject<sim_connect::Disconnected>(reject);
+              MakeReject<Disconnected>(reject);
               co_return;
            }
         }
 
         if (!MessageQueue::Dispatch(
               [reject = reject.shared_from_this()]() constexpr {
-                 MakeReject<sim_connect::Disconnected>(*reject);
+                 MakeReject<Disconnected>(*reject);
               },
               5s
             )) {
-           MakeReject<sim_connect::UnknownError>(reject, "App is stopping");
+           MakeReject<UnknownError>(reject, "App is stopping");
            co_return;
         }
 
         auto const request_id = ++request_id_;
-        if (SimConnect_AICreateSimulatedObject(*handle, title.data(), pos, request_id) == S_OK) {
+        pending_assigned_.emplace(
+          request_id,
+          [resolve = resolve.shared_from_this()](SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned
+          ) { (*resolve)(assigned); }
+        );
+        if (SimConnect_AICreateSimulatedObject(*handle, title.data(), pos, request_id) != S_OK) {
+           pending_assigned_.erase(request_id);
+           MakeReject<UnknownError>(reject, "Failed to create simulated object");
+           co_return;
+        }
+     }
+   );
+}
+
+WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>
+SimConnect::AICreateSimulatedObject(std::string_view title, SIMCONNECT_DATA_INITPOSITION pos) {
+   auto handle = handle_.lock();
+
+   if (!handle) {
+      return Promise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>::Reject<Disconnected>();
+   }
+
+   return AICreateSimulatedObject(title, pos, handle);
+}
+
+WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>
+SimConnect::AICreateNonATCAircraft(
+  std::string_view             title,
+  std::string_view             tail_number,
+  SIMCONNECT_DATA_INITPOSITION pos,
+  std::shared_ptr<void*>       handle
+) {
+   return MakePromise(
+     [this, handle, title = std::string{title}, tail_number = std::string{tail_number}, pos](
+       Resolve<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> const& resolve, Reject const& reject
+     ) mutable -> Promise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID, true> {
+        if (!handle) {
+           handle = handle_.lock();
+           if (!handle) {
+              MakeReject<Disconnected>(reject);
+              co_return;
+           }
+        }
+
+        if (!MessageQueue::Dispatch(
+              [reject = reject.shared_from_this()]() constexpr {
+                 MakeReject<Disconnected>(*reject);
+              },
+              5s
+            )) {
+           MakeReject<UnknownError>(reject, "App is stopping");
+           co_return;
+        }
+
+        auto const request_id = ++request_id_;
+        if (SimConnect_AICreateNonATCAircraft(
+              *handle, title.data(), tail_number.data(), pos, request_id
+            )
+            == S_OK) {
            pending_assigned_.emplace(
              request_id,
              [&resolve](SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned) { resolve(assigned); }
            );
         } else {
-           MakeReject<sim_connect::UnknownError>(reject, "Failed to create simulated object");
+           MakeReject<UnknownError>(reject, "Failed to create non-ATC aircraft");
            co_return;
         }
      }
    );
+}
+
+WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>
+SimConnect::AICreateNonATCAircraft(
+  std::string_view             title,
+  std::string_view             tail_number,
+  SIMCONNECT_DATA_INITPOSITION pos
+) {
+   auto handle = handle_.lock();
+
+   if (!handle) {
+      return Promise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>::Reject<Disconnected>();
+   }
+
+   return AICreateNonATCAircraft(title, tail_number, pos, handle);
+}
+
+bool
+SimConnect::SetDataOnSimObjectImpl(
+  DataId               id,
+  SIMCONNECT_OBJECT_ID objectId,
+  DWORD                flags,
+  DWORD                unitSize,
+  size_t               count,
+  void*                data
+) {
+   auto handle = handle_.lock();
+   if (!handle) {
+      return false;
+   }
+   return SimConnect_SetDataOnSimObject(
+            *handle,
+            static_cast<uint32_t>(id),
+            objectId,
+            flags,
+            static_cast<DWORD>(count),
+            static_cast<DWORD>(unitSize),
+            data
+          )
+          == S_OK;
 }
 
 void
@@ -138,6 +238,8 @@ SimConnect::Run(std::stop_token const& stoken) {
    using enum DataId;
 
    connected_ = false;
+   pending_simobject_.clear();
+   pending_simobject_type_.clear();
 
    if (!AddToDataDefinition<SET_PORT, ServerPort>(handle)) {
       std::cerr << "SimConnect: Failed to add data definition for server port" << std::endl;
@@ -145,7 +247,40 @@ SimConnect::Run(std::stop_token const& stoken) {
       return;
    }
 
+   // Define traffic info data structure
+   if (!AddToDataDefinition<TRAFFIC_INFO, TrafficInfo>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for traffic info" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<HELI_TRAFFIC_INFO, TrafficInfo>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for helicopter traffic info"
+                << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<GROUND_INFO, GroundInfo>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for ground info" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_WAYPOINTS>(
+         handle, "AI WAYPOINT LIST", SIMCONNECT_DATATYPE_WAYPOINT, "number"
+       )) {
+      std::cerr << "SimConnect: Failed to add data definition for waypoints" << std::endl;
+      Sleep(5000);
+      return;
+   }
+
+   // Request data for all aircraft in range (radius 0 = unlimited)
+   // RequestDataOnSimObjectType<TRAFFIC_INFO>(SIMCONNECT_SIMOBJECT_TYPE_AIRCRAFT, 0, handle);
+   // RequestDataOnSimObjectType<HELI_TRAFFIC_INFO>(SIMCONNECT_SIMOBJECT_TYPE_HELICOPTER, 0,
+   // handle);
+
+   // Leave some time for the client to initialize
+   Sleep(1000);
    (void)MessageQueue::Dispatch([this]() constexpr { SetServerPort(server_port_).Detach(); });
+   (void)MessageQueue::Dispatch([this]() constexpr { SetTrafficTitles(); });
 
    uint32_t result;
    while ((result = ::WaitForSingleObject(event_, INFINITE)),
@@ -163,6 +298,119 @@ SimConnect::Run(std::stop_token const& stoken) {
       }
    }
    std::cout << "SimConnect: Stopping SimConnect thread, result " << result << std::endl;
+}
+
+void
+SimConnect::SetTrafficTitles() {
+   traffic_titles_ =
+     std::make_shared<WPromise<api::Liveries>>(MakePromise([this] -> Promise<api::Liveries> {
+        while (true) {
+           auto const handle = handle_.lock();
+           if (!handle) {
+              co_await dispatch_(5s);
+              continue;
+           }
+
+           try {
+              co_return co_await EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE_AIRCRAFT);
+           } catch (std::exception const& e) {
+              //   std::cerr << "SimConnect: Failed to enumerate sim objects and liveries: " <<
+              //   e.what()
+              //             << std::endl;
+           }
+           co_await dispatch_(5s);
+        }
+     }));
+}
+
+WPromise<api::Liveries>
+SimConnect::GetTrafficTitles() const {
+   return MakePromise([this]() -> Promise<api::Liveries> {
+      co_await ensure_();
+
+      assert(traffic_titles_);
+      co_return (co_await *traffic_titles_);
+   });
+}
+
+WPromise<api::Liveries>
+SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType) {
+   auto const request_id = ++request_id_;
+   return MakePromise(
+            [this, objectType, request_id](
+              Resolve<api::Liveries> const& resolve, Reject const& reject
+            ) -> Promise<api::Liveries, true> {
+               co_await ensure_();
+               auto const handle = handle_.lock();
+               if (!handle) {
+                  reject.Apply<Disconnected>();
+                  co_return;
+               }
+
+               auto const remaining =
+                 std::make_shared<std::size_t>(std::numeric_limits<std::size_t>::max());
+
+               MakePromise(
+                 [this, reject = reject.shared_from_this(), remaining]() -> Promise<void> {
+                    co_await ensure_();
+
+                    std::size_t last_remaining = *remaining;
+                    while (last_remaining) {
+                       co_await dispatch_(5s);
+                       if (*remaining == last_remaining) {
+                          MakeReject<Timeout>(
+                            *reject, "Timed out while requesting data on sim object"
+                          );
+                       }
+
+                       last_remaining = *remaining;
+                    }
+                    co_return;
+                 }
+               ).Detach();
+
+               pending_enumerated_simobjects_.emplace(
+                 request_id,
+                 [result  = api::Liveries{},
+                  resolve = resolve.shared_from_this(),
+                  reject  = reject.shared_from_this(),
+                  remaining](SIMCONNECT_RECV_ENUMERATE_SIMOBJECT_AND_LIVERY_LIST const& data
+                 ) constexpr mutable {
+                    if (*remaining == std::numeric_limits<std::size_t>::max()) {
+                       *remaining = data.dwOutOf;
+                    }
+                    if (*remaining == 0) {
+                       reject->Apply<UnknownError>(
+                         "Received sim object enumeration with zero total count"
+                       );
+                       return;
+                    }
+
+                    --*remaining;
+
+                    for (std::size_t i = 0; i < data.dwArraySize; ++i) {
+                       auto const& livery = data.rgData[i];
+                       result.emplace_back(
+                         std::string{livery.AircraftTitle}, std::string{livery.LiveryName}
+                       );
+                    }
+
+                    if (data.dwEntryNumber == (data.dwOutOf - 1)) {
+                       assert(*remaining == 0);
+                       (*resolve)(std::move(result));
+                    }
+                 }
+               );
+               if (SimConnect_EnumerateSimObjectsAndLiveries(*handle, request_id, objectType)
+                   != S_OK) {
+                  reject.Apply<UnknownError>("Failed to enumerate sim objects and liveries");
+                  co_return;
+               }
+            }
+   ).Finally([this, request_id]() {
+      (void
+      )Ensure([this, request_id] constexpr { pending_enumerated_simobjects_.erase(request_id); });
+   });
 }
 
 bool
@@ -204,6 +452,20 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
          }
       } break;
 
+      case SIMCONNECT_RECV_ID_ENUMERATE_SIMOBJECT_AND_LIVERY_LIST: {
+         auto const& enumerated =
+           static_cast<SIMCONNECT_RECV_ENUMERATE_SIMOBJECT_AND_LIVERY_LIST const&>(data);
+         auto request = pending_enumerated_simobjects_.find(enumerated.dwRequestID);
+
+         if (request != pending_enumerated_simobjects_.end()) {
+            request->second(enumerated);
+         } else {
+            std::cerr << "SimConnect: Received ENUMERATE_SIMOBJECT_AND_LIVERY_LIST for unknown "
+                         "request ID "
+                      << enumerated.dwRequestID << std::endl;
+         }
+      } break;
+
       case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: {
          auto const& simobj  = static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA const&>(data);
          auto        request = pending_simobject_.find(simobj.dwRequestID);
@@ -216,6 +478,17 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
          }
       } break;
 
+      case SIMCONNECT_RECV_ID_SIMOBJECT_DATA_BYTYPE: {
+         auto const& simobj  = static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE const&>(data);
+         auto        request = pending_simobject_type_.find(simobj.dwRequestID);
+         if (request != pending_simobject_type_.end()) {
+            request->second(simobj);
+         } else {
+            std::cerr << "SimConnect: Received SIMOBJECT_DATA_BYTYPE for unknown request ID "
+                      << simobj.dwRequestID << std::endl;
+         }
+      } break;
+
       case SIMCONNECT_RECV_ID_QUIT: {
          std::cout << "SimConnect: Simulator quit" << std::endl;
          handle_.reset();
@@ -224,4 +497,4 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
    }
 }
 
-}  // namespace priv
+}  // namespace smc::priv

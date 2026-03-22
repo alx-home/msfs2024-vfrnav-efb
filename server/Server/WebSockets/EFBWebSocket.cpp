@@ -100,7 +100,7 @@ Server::EFBWebSocket::VSendMessage(std::size_t id, ws::Message&& message) {
          (void)server_.Dispatch([self = shared_from_this(), id = id]() {
             if (auto const message_handler = self->server_.message_handlers_.find(id);
                 message_handler != self->server_.message_handlers_.end()) {
-               message_handler->second(1, ws::msg::ServerState{.state_ = self->server_.runing_});
+               message_handler->second(1, ws::msg::ServerState{.state_ = self->server_.running_});
             }
          });
       } else {

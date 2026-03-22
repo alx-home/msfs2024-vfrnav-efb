@@ -97,6 +97,14 @@ struct Params<WINDOW> {
    static constexpr wchar_t const* NAME   = L"EFB Webview";
 };
 
+template <WIN WINDOW>
+   requires(WINDOW == WIN::PROCESSING)
+struct Params<WINDOW> {
+   static constexpr bool           MODAL  = false;
+   static constexpr bool           HIDDEN = true;
+   static constexpr wchar_t const* NAME   = L"Processing Webview";
+};
+
 }  // namespace
 
 template <WIN WINDOW>
@@ -137,6 +145,7 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
                Params<WINDOW>::HIDDEN
              );
 
+             webview_->Hide();
              if constexpr (Params<WINDOW>::HIDDEN) {
                 // Nothing to do, the window remains hidden
              } else if constexpr (Params<WINDOW>::MODAL) {
@@ -158,15 +167,7 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
              if constexpr (Params<WINDOW>::MODAL) {
                 webview_->SetSize(1024, 680, webview::Hint::NONE);
                 webview_->SetSize(500, 320, webview::Hint::MIN);
-
-                // Windows starts visible
-                ++s__refcount;
-                // Bring it to foreground
-                webview_->Show();
              } else {
-                // Do not decrement tooltip refcount
-                webview_->Hide();
-
                 if constexpr (WINDOW == WIN::TASKBAR_TOOLTIP) {
                    webview_->SetSize(250, 180, webview::Hint::STATIC);
 
@@ -181,13 +182,15 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
                 webview_->SetTopMost();
              }
 
-             InstallBindings();
+             if constexpr (WINDOW != WIN::PROCESSING) {
+                InstallBindings();
 
 #ifdef WATCH_MODE
-             webview_->Navigate("http://localhost:" + std::to_string(Params<WINDOW>::PORT));
+                webview_->Navigate("http://localhost:" + std::to_string(Params<WINDOW>::PORT));
 #else
-             webview_->Navigate("app://app/index.html");
+                webview_->Navigate("app://app/index.html");
 #endif
+             }
           };
 
           webview_->Run();
@@ -314,51 +317,53 @@ Window<WINDOW>::GetBounds() const {
 template <WIN WINDOW>
 void
 Window<WINDOW>::InstallResourceHandler() {
-   auto const filters = []() constexpr -> std::vector<std::string_view> {
-      if constexpr (WINDOW == WIN::EFB) {
-         // Passthrough other requests
-         return {"app://*"};
-      } else {
-         return {"*"};
-      }
-   }();
-   webview_->RegisterUrlHandlers(
-     filters,
-     [](webview::http::request_t const& request, std::unique_ptr<webview::MakeDeferred>) constexpr
-       -> std::optional<webview::http::response_t> {
-        std::string file;
-        bool        found{false};
-        if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
-           file  = request.uri.substr(origin.size());
-           found = true;
-        }
-        if (found) {
-           auto const& resources = Params<WINDOW>::s__resources;
-           auto const  resource  = resources.find(file);
-           if (resource != resources.end()) {
-              std::vector<char> data{};
-              data.resize(resource->second.size());
-              std::ranges::copy(resource->second, reinterpret_cast<std::byte*>(data.data()));
-
-              auto const ext         = file.substr(file.find_last_of('.') + 1);
-              auto const contentType = ext == "js" ? "text/javascript" : "text/html";
-
-              return webview::http::response_t{
-                .body         = data,
-                .reasonPhrase = "Ok",
-                .statusCode   = 200,
-                .headers = {{"Content-Type", contentType}, {"Access-Control-Allow-Origin", "*"}}
-              };
+   if constexpr (WINDOW != WIN::PROCESSING) {
+      auto const filters = []() constexpr -> std::vector<std::string_view> {
+         if constexpr (WINDOW == WIN::EFB) {
+            // Passthrough other requests
+            return {"app://*"};
+         } else {
+            return {"*"};
+         }
+      }();
+      webview_->RegisterUrlHandlers(
+        filters,
+        [](webview::http::request_t const& request, std::unique_ptr<webview::MakeDeferred>) constexpr
+          -> std::optional<webview::http::response_t> {
+           std::string file;
+           bool        found{false};
+           if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
+              file  = request.uri.substr(origin.size());
+              found = true;
            }
+           if (found) {
+              auto const& resources = Params<WINDOW>::s__resources;
+              auto const  resource  = resources.find(file);
+              if (resource != resources.end()) {
+                 std::vector<char> data{};
+                 data.resize(resource->second.size());
+                 std::ranges::copy(resource->second, reinterpret_cast<std::byte*>(data.data()));
+
+                 auto const ext         = file.substr(file.find_last_of('.') + 1);
+                 auto const contentType = ext == "js" ? "text/javascript" : "text/html";
+
+                 return webview::http::response_t{
+                   .body         = data,
+                   .reasonPhrase = "Ok",
+                   .statusCode   = 200,
+                   .headers = {{"Content-Type", contentType}, {"Access-Control-Allow-Origin", "*"}}
+                 };
+              }
+           }
+
+           return webview::http::response_t{
+             .body = {}, .reasonPhrase = "Not Found", .statusCode = 404, .headers = {}
+           };
         }
+      );
 
-        return webview::http::response_t{
-          .body = {}, .reasonPhrase = "Not Found", .statusCode = 404, .headers = {}
-        };
-     }
-   );
-
-   webview_->InstallResourceHandler();
+      webview_->InstallResourceHandler();
+   }
 }
 #endif
 

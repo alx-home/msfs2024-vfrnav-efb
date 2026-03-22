@@ -13,14 +13,23 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ServerPort.h"
+#include "../Data/GroundInfo.h"
+#include "../Data/TrafficInfo.h"
+#include "../Data/ServerPort.h"
+#include "../Data/Waypoint.h"
 
 #include "StaticCast.inl"
 
-namespace priv {
+namespace smc::priv {
 
-template ServerPort SimConnect::StaticCast<ServerPort>(DWORD const& data);
+template GroundInfo  SimConnect::StaticCast<GroundInfo>(DWORD const& data);
+template TrafficInfo SimConnect::StaticCast<TrafficInfo>(DWORD const& data);
+template ServerPort  SimConnect::StaticCast<ServerPort>(DWORD const& data);
+template Waypoint    SimConnect::StaticCast<Waypoint>(DWORD const& data);
 
+template std::size_t SimConnect::Size<GroundInfo>();
+template std::size_t SimConnect::Size<TrafficInfo>();
 template std::size_t SimConnect::Size<ServerPort>();
+template std::size_t SimConnect::Size<Waypoint>();
 
-}  // namespace priv
+}  // namespace smc::priv

@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "SimConnect.h"
+#include "../SimConnect.h"
 
 #include <Windows.h>
 #include <tuple>
@@ -21,7 +21,7 @@
 template <typename>
 inline constexpr bool ALWAYS_FALSE = false;
 
-namespace priv {
+namespace smc::priv {
 
 template <class T>
 T
@@ -137,4 +137,4 @@ SimConnect::Size() {
       return size;
    }();
 }
-}  // namespace priv
+}  // namespace smc::priv

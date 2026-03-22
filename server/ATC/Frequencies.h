@@ -15,14 +15,30 @@
 
 #pragma once
 
-#include "DataType.h"
+#include <string>
+#include <json/json.h>
 
-#include <tuple>
+struct Frequency {
+   struct Name {
+      std::string local_{"unknown"};
+      std::string english_{"unknown"};
 
-struct ServerPort {
-   double value_{};
+      static constexpr js::Proto PROTOTYPE{
+        js::_{"local", &Name::local_},
+        js::_{"english", &Name::english_},
+      };
+   };
+   Name        name_{};
+   double      value_{0};
+   std::string type_{"UNKNOWN"};
+   std::string hor_{"UNKNOWN"};
+   std::string comment_{"UNKNOWN"};
 
-   static constexpr std::tuple MEMBERS{std::make_tuple(
-     sm::_m{"L:VFRNAV_SET_PORT", sm::_t<SIMCONNECT_DATATYPE_FLOAT64>{}, "", &ServerPort::value_}
-   )};
+   static constexpr js::Proto PROTOTYPE{
+     js::_{"name", &Frequency::name_},
+     js::_{"frequency", &Frequency::value_},
+     js::_{"type", &Frequency::type_},
+     js::_{"hor", &Frequency::hor_},
+     js::_{"comment", &Frequency::comment_},
+   };
 };
