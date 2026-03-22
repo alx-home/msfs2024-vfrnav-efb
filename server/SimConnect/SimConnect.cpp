@@ -40,6 +40,8 @@
 #include <winspool.h>
 #include <winuser.h>
 
+using namespace std::chrono_literals;
+
 SimConnect::SimConnect()
    : MessageQueue{"SimConnect"}
    , thread_{[this](std::stop_token stoken) {
@@ -68,9 +70,7 @@ SimConnect::SimConnect()
          // Wait 1 second before retrying
          std::mutex       mutex{};
          std::unique_lock lock{mutex};
-         std::condition_variable_any{}.wait_for(lock, stoken, std::chrono::seconds{1}, []() {
-            return false;
-         });
+         std::condition_variable_any{}.wait_for(lock, stoken, 1s, []() { return false; });
       }
    }} {}
 
@@ -106,7 +106,7 @@ SimConnect::AICreateSimulatedObject(
           [reject = reject.shared_from_this()]() constexpr {
              MakeReject<std::runtime_error>(*reject, "Timed out while creating simulated object");
           },
-          std::chrono::seconds{5}
+          5s
         );
 
         auto const request_id = ++request_id_;

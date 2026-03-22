@@ -26,6 +26,8 @@
 #include <string_view>
 #include <tuple>
 
+using namespace std::chrono_literals;
+
 template <DataId ID>
 void
 SimConnect::AddToDataDefinition(
@@ -163,7 +165,7 @@ SimConnect::RequestDataOnSimObject(
                *reject, "Timed out while requesting data on sim object"
              );
           },
-          std::chrono::seconds{5}
+          5s
         );
 
         auto const request_id = ++request_id_;

@@ -66,7 +66,7 @@ SimConnect::SetServerPort(uint32_t port) {
                       *reject, "Timed out while creating simulated object"
                     );
                  },
-                 std::chrono::seconds{5}
+                 5s
                );
 
                std::cout << "SimConnect: Setting server port to " << server_port_ << std::endl;
@@ -113,7 +113,7 @@ SimConnect::SetServerPort(uint32_t port) {
 
       // Retry setting the port after some delay, in case the failure is due to a temporary issue
       // with the connection to the simulator
-      co_await dispatch_(std::chrono::seconds{5});
+      co_await dispatch_(5s);
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
       co_return co_await SetServerPort(server_port_);
