@@ -20,6 +20,7 @@
 #include "Server/WebSockets/Messages/Messages.h"
 #include "Window/template/Window.h"
 #include "windows/Process.h"
+#include "windows/SystemTray.h"
 
 #include <windows/Lock.h>
 #include <json/json.h>
@@ -47,7 +48,6 @@
 #include <stop_token>
 #include <string_view>
 #include <thread>
-#include <type_traits>
 #include <atltypes.h>
 
 using namespace std::chrono_literals;
@@ -58,6 +58,7 @@ AppStopping::AppStopping()
 static uint32_t const MF_MOUSE_EVENT = ::RegisterWindowMessage("MainFrameMouseEvent");
 Main::Main(bool minimized, bool configure, bool open_efb, bool open_web)
    : win32::SystemTray("MSFS2024 VFRNav' Server", "MSFS2024 VFRNav' Server")
+   , MessageQueue{"Main"}
    , mouse_watcher_([this](std::stop_token stop_token) constexpr {
       bool was_l_down{false};
       bool was_r_down{false};
@@ -105,10 +106,7 @@ Main::Main(bool minimized, bool configure, bool open_efb, bool open_web)
    }
 
    if (open_web) {
-      // todo
-   }
-
-   if (!minimized && !open_efb && !open_web && !configure) {
+      OpenWebEFB();
       OpenToolTip();
    }
 
@@ -219,11 +217,11 @@ Main::OpenEFB() {
    static std::atomic<std::size_t> s__uid = 0;
    std::size_t                     uid    = ++s__uid;
 
-   Dispatch([this, uid]() {
+   SystemTray::Dispatch([this, uid]() {
       auto erased = std::make_shared<bool>(false);
 
       auto window = std::make_unique<Window<WIN::EFB>>(*this, [this, uid, erased]() {
-         this->Dispatch([this, uid, erased = std::move(erased)]() {
+         this->SystemTray::Dispatch([this, uid, erased = std::move(erased)]() {
             if (auto elem = efbs_.find(uid); elem != efbs_.end()) {
                elem->second->OnTerminate();
                efbs_.erase(elem);
@@ -233,6 +231,8 @@ Main::OpenEFB() {
             *erased = true;
          });
       });
+
+      window->Show();
 
       if (!*erased) {
          efbs_.emplace(uid, std::move(window));
@@ -273,7 +273,10 @@ Main::SetServerPort(uint16_t port) {
 
 void
 Main::SendServerPortToEFB(uint32_t port) {
-   sim_connect_([port](api::SimConnect& sc) constexpr { sc.SetServerPort(port).Detach(); });
+   if (!sim_connect_([port](smc::api::SimConnect& sc) constexpr { sc.SetServerPort(port).Detach(); }
+       )) {
+      std::cerr << "Failed to send server port to EFB: SimConnect is stopped" << std::endl;
+   }
 }
 
 void
@@ -283,7 +286,7 @@ Main::Terminate() {
    }
 
    server_.RejectAll();
-   Dispatch([]() constexpr { PostQuitMessage(0); });
+   SystemTray::Dispatch([]() constexpr { PostQuitMessage(0); });
 }
 
 void

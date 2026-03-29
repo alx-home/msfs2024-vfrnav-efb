@@ -67,7 +67,7 @@
 
 ServerState
 Server::GetState(Server::Lock) const {
-   if (runing_) {
+   if (running_) {
       return "running";
    } else if (GetPort() == 0) {
       return "invalid_port";
@@ -172,25 +172,37 @@ Server::Server(Main& main)
                continue;
             }
 
-            tcp_ = std::make_unique<Tcp>(tcp::endpoint{tcp::v4(), port});
+            try {
+               tcp_ = std::make_unique<Tcp>(tcp::endpoint{tcp::v4(), port});
 
-            ScopeExit _{[this]() constexpr { tcp_ = nullptr; }};
-            if (!tcp_->acceptor_.is_open()) {
-               Notify("invalid_port", lock);
-            } else {
-               tcp_->acceptor_.async_accept(boost::beast::bind_front_handler(&Server::Accept, this)
-               );
+               ScopeExit _{[this]() constexpr { tcp_ = nullptr; }};
+               if (!tcp_->acceptor_.is_open()) {
+                  throw std::runtime_error("Failed to open TCP acceptor");
+               } else {
+                  tcp_->acceptor_.async_accept(
+                    boost::beast::bind_front_handler(&Server::Accept, this)
+                  );
 
-               runing_ = true;
-               Notify("running", lock);
+                  running_ = true;
+                  Notify("running", lock);
 
-               lock.unlock();
-               {
-                  main_.SendServerPortToEFB(port);
-                  tcp_->ioc_.run();
-                  main_.SendServerPortToEFB(0);
+                  lock.unlock();
+                  {
+                     main_.SendServerPortToEFB(port);
+                     tcp_->ioc_.run();
+                     main_.SendServerPortToEFB(0);
+                  }
+                  lock.lock();
                }
-               lock.lock();
+            } catch (std::exception const& e) {
+               std::cerr << "Error starting server: " << e.what() << std::endl;
+               if (!lock.owns_lock()) {
+                  lock.lock();
+               }
+
+               want_run_ = false;
+               running_  = false;
+               Notify("invalid_port", lock);
             }
 
             efb_socket_ = nullptr;
@@ -200,7 +212,7 @@ Server::Server(Main& main)
             web_sockets_.clear();
          }
 
-         runing_   = false;
+         running_  = false;
          want_run_ = false;
          Notify(GetState(lock), lock);
       }

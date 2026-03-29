@@ -16,9 +16,11 @@
 #pragma once
 
 #include "Request.h"
+#include "Data/TrafficInfo.h"
 
 #include <promise/promise.h>
 #include <utils/MessageQueue.h>
+#include <type_traits>
 #include <utils/MessageQueueProxy.inl>
 #include <windows/Event.h>
 #include <windows/Window.h>
@@ -32,16 +34,16 @@
 #include <windef.h>
 #include <winnt.h>
 #include <winuser.h>
-#include <chrono>
 #include <cstdint>
-#include <map>
 #include <memory>
+#include <string>
 #include <stdexcept>
 #include <thread>
+#include <unordered_map>
 
 class Main;
 
-namespace sim_connect {
+namespace smc {
 
 struct Disconnected : std::runtime_error {
    Disconnected()
@@ -71,14 +73,28 @@ struct Parameter<Message::SIMCONNECT_SET_SERVER_PORT> {
    uint32_t port_;
 };
 
-}  // namespace sim_connect
-
-using ServerPortParam = sim_connect::Parameter<sim_connect::Message::SIMCONNECT_SET_SERVER_PORT>;
+using ServerPortParam = Parameter<Message::SIMCONNECT_SET_SERVER_PORT>;
 
 enum class DataId : uint32_t {
    SET_PORT,
+   EVENT_FRAME,
+   TRAFFIC,
+   TRAFFIC_INFO,
+   HELI_TRAFFIC_INFO,
+   TAXIWAY_PATH,
+   USER_INFO,
+   GROUND_INFO,
+   SET_WAYPOINTS,
+   SET_BREAK,
+   SET_GEAR,
+   SET_FLAPS,
 
-   MAX_VALUE
+   MAX_VALUE,
+};
+
+enum class ClientEventId : uint32_t {
+   FLAPS_SET = 0x10000,
+   PARKING_BRAKES_SET,
 };
 
 template <class DATA_TYPE>
@@ -99,13 +115,83 @@ struct SimobjectData {
 };
 
 namespace api {
+
+using Livery   = std::pair<std::string, std::string>;
+using Liveries = std::vector<Livery>;
+
+template <class T>
+struct IsStdArray : std::false_type {};
+
+template <class T, std::size_t N>
+struct IsStdArray<std::array<T, N>> : std::true_type {};
+
+template <class T>
+inline constexpr bool IS_STD_ARRAY = IsStdArray<std::remove_cvref_t<T>>::value;
+template <class T>
+inline constexpr bool IS_VECTOR = requires(T t) {
+   std::is_same_v<std::remove_cvref_t<T>, std::vector<typename std::remove_cvref_t<T>::value_type>>;
+};
+
 class SimConnect {
+public:
+   using ObjectId = SIMCONNECT_RECV_ASSIGNED_OBJECT_ID;
+
 protected:
    SimConnect()          = default;
    virtual ~SimConnect() = default;
 
 public:
-   [[nodiscard]] virtual WPromise<bool> SetServerPort(uint32_t port) = 0;
+   [[nodiscard]] virtual WPromise<bool>        SetServerPort(uint32_t port)                     = 0;
+   [[nodiscard]] virtual WPromise<void>        SetFlapsHandleIndex(ObjectId id, uint32_t index) = 0;
+   [[nodiscard]] virtual WPromise<double>      GetGroundInfo(double lat, double lon)            = 0;
+   [[nodiscard]] virtual WPromise<TrafficInfo> GetUserAircraftInfo() noexcept(true)             = 0;
+   [[nodiscard]] virtual WPromise<TrafficInfo> GetAircraftInfo(ObjectId id) noexcept(true)      = 0;
+   [[nodiscard]] virtual WPromise<Liveries>    GetTrafficTitles() const                         = 0;
+
+   template <class TYPE, size_t N>
+   [[nodiscard]] WPromise<void> SetDataOnSimObject(
+     DataId                id,
+     SIMCONNECT_OBJECT_ID  objectId,
+     DWORD                 flags,
+     std::array<TYPE, N>&& data
+   );
+
+   template <class TYPE>
+   [[nodiscard]] WPromise<void> SetDataOnSimObject(
+     DataId               id,
+     SIMCONNECT_OBJECT_ID objectId,
+     DWORD                flags,
+     std::vector<TYPE>&&  data
+   );
+
+   template <class TYPE>
+
+      requires(!IS_STD_ARRAY<TYPE> && !IS_VECTOR<TYPE>)
+   [[nodiscard]] WPromise<void>
+   SetDataOnSimObject(DataId id, SIMCONNECT_OBJECT_ID objectId, DWORD flags, TYPE&& data);
+
+   [[nodiscard]] virtual WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>
+   AICreateSimulatedObject(std::string_view title, SIMCONNECT_DATA_INITPOSITION pos) = 0;
+
+   [[nodiscard]] virtual WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> AICreateNonATCAircraft(
+     std::string_view             title,
+     std::string_view             tail_number,
+     SIMCONNECT_DATA_INITPOSITION pos
+   ) = 0;
+
+   [[nodiscard]] virtual WPromise<Liveries> EnumerateSimObjectsAndLiveries(
+     SIMCONNECT_SIMOBJECT_TYPE objectType
+   ) = 0;
+
+private:
+   virtual bool SetDataOnSimObjectImpl(
+     DataId               id,
+     SIMCONNECT_OBJECT_ID objectId,
+     DWORD                flags,
+     DWORD                unitSize,
+     size_t               count,
+     void*                data
+   ) = 0;
 };
 }  // namespace api
 
@@ -120,7 +206,11 @@ public:
    ~SimConnect() override;
 
 private:
-   [[nodiscard]] WPromise<bool> SetServerPort(uint32_t port) override;
+   [[nodiscard]] WPromise<bool>        SetServerPort(uint32_t port) override;
+   [[nodiscard]] WPromise<void>        SetFlapsHandleIndex(ObjectId id, uint32_t index) override;
+   [[nodiscard]] WPromise<double>      GetGroundInfo(double lat, double lon) override;
+   [[nodiscard]] WPromise<TrafficInfo> GetUserAircraftInfo() noexcept(true) override;
+   [[nodiscard]] WPromise<TrafficInfo> GetAircraftInfo(ObjectId id) noexcept(true) override;
 
    bool ShouldStop(std::stop_token const& stoken) const noexcept;
    void Run(std::stop_token const& stoken);
@@ -153,25 +243,55 @@ private:
    template <DataId ID, class T>
    [[nodiscard]] bool AddToFacilityDefinition();
 
-   template <DataId ID>
-   [[nodiscard]] bool RequestDataOnSimObjectType(
+   template <DataId ID, class T>
+   [[nodiscard]] WPromise<std::vector<T>> RequestDataOnSimObjectType(
      SIMCONNECT_SIMOBJECT_TYPE objectType,
      uint32_t                  radius = 0,
      std::shared_ptr<void*>    handle = nullptr
    );
 
    template <DataId ID, class DATA_TYPE>
-   [[nodiscard]] WPromise<SimobjectData<DATA_TYPE>> RequestDataOnSimObject(
-     SIMCONNECT_PERIOD      period,
-     uint32_t               objectId,
-     std::shared_ptr<void*> handle
-   );
+   [[nodiscard]] WPromise<SimobjectData<DATA_TYPE>>
+   RequestDataOnSimObject(uint32_t objectId, std::shared_ptr<void*> handle);
 
    [[nodiscard]] WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> AICreateSimulatedObject(
      std::string_view             title,
      SIMCONNECT_DATA_INITPOSITION pos,
      std::shared_ptr<void*>       handle
    );
+
+   [[nodiscard]] WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> AICreateNonATCAircraft(
+     std::string_view             title,
+     std::string_view             tail_number,
+     SIMCONNECT_DATA_INITPOSITION pos,
+     std::shared_ptr<void*>       handle
+   );
+
+   [[nodiscard]] WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>
+   AICreateSimulatedObject(std::string_view title, SIMCONNECT_DATA_INITPOSITION pos) override;
+
+   [[nodiscard]] WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> AICreateNonATCAircraft(
+     std::string_view             title,
+     std::string_view             tail_number,
+     SIMCONNECT_DATA_INITPOSITION pos
+   ) override;
+
+   [[nodiscard]] WPromise<api::Liveries> EnumerateSimObjectsAndLiveries(
+     SIMCONNECT_SIMOBJECT_TYPE objectType
+   ) override;
+
+   void SetTrafficTitles();
+
+   [[nodiscard]] WPromise<api::Liveries> GetTrafficTitles() const override;
+
+   bool SetDataOnSimObjectImpl(
+     DataId               id,
+     SIMCONNECT_OBJECT_ID objectId,
+     DWORD                flags,
+     DWORD                unitSize,
+     size_t               count,
+     void*                data
+   ) override;
 
    template <class T>
    static T StaticCast(DWORD const& data);
@@ -187,13 +307,29 @@ private:
      map<SIMCONNECT_DATA_REQUEST_ID, std::function<void(SIMCONNECT_RECV_SIMOBJECT_DATA const&)>>;
    WaitingSimObject pending_simobject_{};
 
+   using WaitingSimObjectType = std::map<
+     SIMCONNECT_DATA_REQUEST_ID,
+     std::function<void(SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE const&)>>;
+   WaitingSimObjectType pending_simobject_type_{};
+
+   using WaitingEnumeratedSimObjects = std::map<
+     SIMCONNECT_DATA_REQUEST_ID,
+     std::function<void(SIMCONNECT_RECV_ENUMERATE_SIMOBJECT_AND_LIVERY_LIST const&)>>;
+   WaitingEnumeratedSimObjects pending_enumerated_simobjects_{};
+
    using WaitingAssignedObject = std::map<
      SIMCONNECT_DATA_REQUEST_ID,
      std::function<void(SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const&)>>;
    WaitingAssignedObject pending_assigned_{};
 
+   std::unordered_map<DWORD, std::string> packet_debug_{};
+
    using time_point = std::chrono::steady_clock::time_point;
 
+   using TrafficTitles = std::shared_ptr<WPromise<api::Liveries>>;
+   TrafficTitles traffic_titles_{
+     std::make_shared<WPromise<api::Liveries>>(Promise<api::Liveries>::Reject<Disconnected>())
+   };
    Main&        main_;
    win32::Event event_{win32::CreateEvent()};
    int64_t      server_port_{48578};
@@ -208,4 +344,6 @@ private:
 };
 }  // namespace priv
 
-using SimConnect = utils::queue::Proxy<priv::SimConnect, api::SimConnect>;
+}  // namespace smc
+
+using SimConnect = utils::queue::Proxy<smc::priv::SimConnect, smc::api::SimConnect>;

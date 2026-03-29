@@ -20,6 +20,7 @@
 #include "SimConnect/SimConnect.h"
 #include "Window/template/Window.h"
 
+#include <utils/MessageQueue.h>
 #include <memory>
 #include <promise/promise.h>
 #include <unordered_map>
@@ -29,7 +30,9 @@
 #include <windows/SystemTray.h>
 #include <wrl/client.h>
 
-class Main : public win32::SystemTray {
+class Main
+   : public win32::SystemTray
+   , public MessageQueue {
 public:
    Main(bool minimized, bool configure, bool open_efb, bool open_web);
    ~Main() override;
@@ -75,9 +78,61 @@ public:
       }
    }
 
-   [[nodiscard]] bool SimConnect(std::function<void(api::SimConnect&)>&& callback) {
+   auto Pool(std::optional<Poll::time_point> until = std::nullopt) const {
+      return poll_.dispatch_(until);
+   }
+   auto Pool(Poll::duration delay) const { return poll_.dispatch_(delay); }
+
+   template <class T>
+      requires(!std::is_void_v<T> && !promise::IS_WPROMISE<T>)
+   [[nodiscard]] constexpr WPromise<T> SimConnect(std::function<T(smc::api::SimConnect&)>&& callback
+   ) {
       return sim_connect_(std::move(callback));
    }
+   template <class T>
+      requires(promise::IS_WPROMISE<T>)
+   [[nodiscard]] constexpr T SimConnect(std::function<T(smc::api::SimConnect&)>&& callback) {
+      using Return                    = promise::return_t<T>;
+      auto [promise, resolve, reject] = promise::Pure<Return>();
+      if (!sim_connect_([resolve, reject, callback = std::move(callback)](
+                          smc::api::SimConnect& simConnect
+                        ) constexpr {
+             if constexpr (std::is_void_v<Return>) {
+                callback(simConnect)
+                  .Then([resolve = std::move(resolve)]() constexpr { (*resolve)(); })
+                  .Catch([reject = std::move(reject)](std::exception const& e) constexpr {
+                     (*reject)(e);
+                  })
+                  .Detach();
+             } else {
+                callback(simConnect)
+                  .Then([resolve = std::move(resolve)](Return const& assigned) constexpr {
+                     (*resolve)(assigned);
+                  })
+                  .Catch([reject = std::move(reject)](std::exception const& e) constexpr {
+                     (*reject)(e);
+                  })
+                  .Detach();
+             }
+          })) {
+         MakeReject<std::runtime_error>(*reject, "SimConnect is stopped");
+      }
+
+      return promise;
+   }
+
+   template <class T>
+      requires(std::is_void_v<T>)
+   [[nodiscard]] constexpr bool SimConnect(std::function<T(smc::api::SimConnect&)>&& callback) {
+      return sim_connect_(std::move(callback));
+   }
+
+   template <class FUN>
+   [[nodiscard]] constexpr auto SimConnect(FUN&& callback) {
+      return SimConnect(std::function{std::forward<FUN>(callback)});
+   }
+
+   [[nodiscard]] constexpr auto& SimConnect() { return sim_connect_; }
 
    bool Terminated() const noexcept { return terminated_; }
 

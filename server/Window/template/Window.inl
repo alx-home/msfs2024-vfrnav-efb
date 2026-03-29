@@ -137,6 +137,7 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
                Params<WINDOW>::HIDDEN
              );
 
+             webview_->Hide();
              if constexpr (Params<WINDOW>::HIDDEN) {
                 // Nothing to do, the window remains hidden
              } else if constexpr (Params<WINDOW>::MODAL) {
@@ -158,15 +159,7 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
              if constexpr (Params<WINDOW>::MODAL) {
                 webview_->SetSize(1024, 680, webview::Hint::NONE);
                 webview_->SetSize(500, 320, webview::Hint::MIN);
-
-                // Windows starts visible
-                ++s__refcount;
-                // Bring it to foreground
-                webview_->Show();
              } else {
-                // Do not decrement tooltip refcount
-                webview_->Hide();
-
                 if constexpr (WINDOW == WIN::TASKBAR_TOOLTIP) {
                    webview_->SetSize(250, 180, webview::Hint::STATIC);
 

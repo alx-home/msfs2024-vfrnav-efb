@@ -122,7 +122,7 @@ struct Server : public MessageQueue {
    void WatchServerState(Resolve<ServerState> const& resolve, Reject const& reject);
 
    Main&                       main_;
-   bool                        runing_ = false;
+   bool                        running_ = false;
    mutable std::shared_mutex   mutex_{};
    std::condition_variable_any cv_{};
    Resolvers<ServerState>      resolvers_{};

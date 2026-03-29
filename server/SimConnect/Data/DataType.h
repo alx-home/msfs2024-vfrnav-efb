@@ -21,7 +21,7 @@
 #include <string_view>
 #include <tuple>
 
-namespace sm {
+namespace smc {
 template <SIMCONNECT_DATATYPE VALUE>
 struct Type {
    static constexpr SIMCONNECT_DATATYPE VALUE_S = VALUE;
@@ -31,4 +31,4 @@ using _t = Type<VALUE>;
 
 template <SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
 using _m = std::tuple<std::string_view, _t<TYPE>, std::optional<std::string_view>, T CLASS::*>;
-}  // namespace sm
+}  // namespace smc
