@@ -44,6 +44,7 @@
 #include <winreg.h>
 #include <winuser.h>
 
+#include <condition_variable>
 #include <exception>
 #include <filesystem>
 #include <fstream>
@@ -116,7 +117,7 @@ Server::Switch() {
    std::unique_lock lock{mutex_};
    want_run_ = !want_run_;
    if (tcp_) {
-      tcp_->ioc_.stop();
+      CloseSockets();
    }
    cv_.notify_all();
 }
@@ -126,9 +127,40 @@ Server::Stop() {
    std::unique_lock lock{mutex_};
    want_run_ = false;
    if (tcp_) {
-      tcp_->ioc_.stop();
+      CloseSockets();
    }
    cv_.notify_all();
+}
+
+void
+Server::CloseSockets() {
+   std::mutex              mutex{};
+   std::condition_variable cv{};
+   bool                    done  = false;
+   auto const              clear = [this, &mutex, &cv, &done]() {
+      if (efb_socket_) {
+         efb_socket_->Stop();
+         efb_socket_ = nullptr;
+      }
+
+      for (auto const& socket : web_sockets_) {
+         socket->Stop();
+      }
+      web_sockets_.clear();
+
+      tcp_->ioc_.stop();
+
+      std::lock_guard lock{mutex};
+      done = true;
+      cv.notify_all();
+   };
+   if (!Ensure(clear)) {
+      clear();
+      assert(false && "Failed to dispatch clear on EFB WebSocket");
+   }
+
+   std::unique_lock lock{mutex};
+   cv.wait(lock, [&done]() { return done; });
 }
 
 void
@@ -175,6 +207,11 @@ Server::Server(Main& main)
             try {
                tcp_ = std::make_unique<Tcp>(tcp::endpoint{tcp::v4(), port});
 
+               ScopeExit _{[this] constexpr {
+                  assert(!efb_socket_);
+                  assert(web_sockets_.empty());
+               }};
+
                ScopeExit _{[this]() constexpr { tcp_ = nullptr; }};
                if (!tcp_->acceptor_.is_open()) {
                   throw std::runtime_error("Failed to open TCP acceptor");
@@ -204,12 +241,6 @@ Server::Server(Main& main)
                running_  = false;
                Notify("invalid_port", lock);
             }
-
-            efb_socket_ = nullptr;
-            for (auto const& socket : web_sockets_) {
-               socket->Stop();
-            }
-            web_sockets_.clear();
          }
 
          running_  = false;

@@ -89,6 +89,8 @@ struct Server : public MessageQueue {
    void RejectAll();
    void Notify(ServerState state, Lock);
 
+   void CloseSockets();
+
    void Switch();
    void Stop();
    void Start();

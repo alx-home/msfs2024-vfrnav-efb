@@ -72,6 +72,15 @@ Server::EFBWebSocket::~EFBWebSocket() {
       std::unique_lock lock{mutex_};
       cv_.wait(lock, [this]() constexpr { return promises_ == 0; });
    }
+
+   boost::beast::error_code ec;
+   ws_.next_layer().cancel(ec);
+   ec = {};
+   ws_.close({}, ec);
+   if (ec && ec != websocket::error::closed && ec != net::error::operation_aborted
+       && ec != net::error::bad_descriptor) {
+      std::cerr << "Error closing WebSocket: " << ec.message() << std::endl;
+   }
 }
 
 void
@@ -119,15 +128,16 @@ Server::EFBWebSocket::VSendMessage(std::size_t id, ws::Message&& message) {
 
 void
 Server::EFBWebSocket::Stop() {
-   std::mutex       mutex{};
-   std::unique_lock lock{mutex};
+   std::mutex mutex{};
 
    std::condition_variable cv{};
    bool                    closed = false;
 
-   if (!server_.Dispatch([self = shared_from_this(), &cv, &mutex, &closed]() {
-          self->ws_.next_layer().cancel();
-          self->ws_.close({});
+   if (!server_.Ensure([self = shared_from_this(), &cv, &mutex, &closed]() {
+          boost::beast::error_code ec;
+          self->ws_.next_layer().cancel(ec);
+          ec = {};
+          self->ws_.close({}, ec);
 
           std::lock_guard lock{mutex};
           closed = true;
@@ -136,6 +146,7 @@ Server::EFBWebSocket::Stop() {
       assert(false && "Failed to dispatch stop on EFB WebSocket");
    }
 
+   std::unique_lock lock{mutex};
    cv.wait(lock, [&closed]() { return closed; });
 }
 
@@ -220,6 +231,7 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
 
             assert(false);
          } else {
+            assert(self->server_.efb_socket_ == self);
             self->server_.efb_socket_ = nullptr;
          }
       });
