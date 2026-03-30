@@ -196,7 +196,9 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
       Dispatch([this]() constexpr {
          auto const id = std::bit_cast<std::size_t>(this);
          main_.SetMessageHandler(id, {[this](std::size_t, ws::Message message) constexpr {
-                                    webview_->Call<void>("vfrnav_onmessage", std::move(message));
+                                    if (webview_) {
+                                       webview_->Call<void>("vfrnav_onmessage", std::move(message));
+                                    }
                                  }});
       });
    }
