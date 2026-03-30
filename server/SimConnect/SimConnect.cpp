@@ -19,6 +19,7 @@
 
 #include "main.h"
 
+#include "Data/Flaps.h"
 #include "Data/GearDown.h"
 #include "Data/GroundInfo.h"
 #include "Data/ServerPort.h"
@@ -209,34 +210,35 @@ SimConnect::AICreateNonATCAircraft(
    return AICreateNonATCAircraft(title, tail_number, pos, handle);
 }
 
-WPromise<void>
-SimConnect::SetFlapsHandleIndex(ObjectId id, uint32_t index) {
-   return MakePromise(
-     [this, id, index](Resolve<void> const& resolve, Reject const& reject) -> Promise<void, true> {
-        auto const handle = handle_.lock();
-        if (!handle) {
-           MakeReject<Disconnected>(reject);
-           co_return;
-        }
+// WPromise<void>
+// SimConnect::SetFlapsHandleIndex(ObjectId id, uint32_t index) {
+//    return MakePromise(
+//      [this, id, index](Resolve<void> const& resolve, Reject const& reject) -> Promise<void, true>
+//      {
+//         auto const handle = handle_.lock();
+//         if (!handle) {
+//            MakeReject<Disconnected>(reject);
+//            co_return;
+//         }
 
-        if (SimConnect_TransmitClientEvent(
-              *handle,
-              id.dwObjectID,
-              static_cast<SIMCONNECT_CLIENT_EVENT_ID>(ClientEventId::FLAPS_SET),
-              index,
-              SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-              SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
-            )
-            != S_OK) {
-           MakeReject<UnknownError>(reject, "Failed to set flaps handle index");
-           co_return;
-        }
+//         if (SimConnect_TransmitClientEvent(
+//               *handle,
+//               id.dwObjectID,
+//               static_cast<SIMCONNECT_CLIENT_EVENT_ID>(ClientEventId::FLAPS_SET),
+//               index,
+//               SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+//               SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+//             )
+//             != S_OK) {
+//            MakeReject<UnknownError>(reject, "Failed to set flaps handle index");
+//            co_return;
+//         }
 
-        resolve();
-        co_return;
-     }
-   );
-}
+//         resolve();
+//         co_return;
+//      }
+//    );
+// }
 
 bool
 SimConnect::SetDataOnSimObjectImpl(
@@ -310,6 +312,11 @@ SimConnect::Run(std::stop_token const& stoken) {
       Sleep(5000);
       return;
    }
+   if (!AddToDataDefinition<SET_FLAPS, Flaps>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for flaps" << std::endl;
+      Sleep(5000);
+      return;
+   }
 
    if (SimConnect_MapClientEventToSimEvent(
          *handle, static_cast<SIMCONNECT_CLIENT_EVENT_ID>(ClientEventId::FLAPS_SET), "FLAPS_SET"
@@ -331,7 +338,15 @@ SimConnect::Run(std::stop_token const& stoken) {
       return;
    }
 
+   // Request data for all aircraft in range (radius 0 = unlimited)
+   // RequestDataOnSimObjectType<TRAFFIC_INFO>(SIMCONNECT_SIMOBJECT_TYPE_AIRCRAFT, 0, handle);
+   // RequestDataOnSimObjectType<HELI_TRAFFIC_INFO>(SIMCONNECT_SIMOBJECT_TYPE_HELICOPTER, 0,
+   // handle);
+
+   // Leave some time for the client to initialize
+   Sleep(1000);
    (void)MessageQueue::Dispatch([this]() constexpr { SetServerPort(server_port_).Detach(); });
+   (void)MessageQueue::Dispatch([this]() constexpr { SetTrafficTitles(); });
 
    uint32_t result;
    while ((result = ::WaitForSingleObject(event_, INFINITE)),
@@ -368,7 +383,6 @@ SimConnect::SetTrafficTitles() {
               //   std::cerr << "SimConnect: Failed to enumerate sim objects and liveries: " <<
               //   e.what()
               //             << std::endl;
-              // @todo https://github.com/llvm/llvm-project/issues/182584
            }
            co_await dispatch_(5s);
         }

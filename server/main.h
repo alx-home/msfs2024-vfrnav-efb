@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "ATC/ATCHandler.h"
+#include "ATC/IAHandler.h"
 #include "Server/Server.h"
 #include "Server/WebSockets/Messages/Messages.h"
 #include "SimConnect/SimConnect.h"
@@ -29,6 +31,11 @@
 #include <windows/Env.h>
 #include <windows/SystemTray.h>
 #include <wrl/client.h>
+
+namespace beast = boost::beast;
+namespace http  = beast::http;
+namespace asio  = boost::asio;
+using tcp       = asio::ip::tcp;
 
 class Main
    : public win32::SystemTray
@@ -83,6 +90,15 @@ public:
    }
    auto Pool(Poll::duration delay) const { return poll_.dispatch_(delay); }
 
+   WPromise<std::string> PostHttpRequest(
+     std::string const&                                                    host,
+     std::string const&                                                    port,
+     std::string const&                                                    target,
+     std::optional<std::function<void(http::request<http::string_body>&)>> build_request =
+       std::nullopt,
+     http::verb verb = http::verb::get
+   );
+
    template <class T>
       requires(!std::is_void_v<T> && !promise::IS_WPROMISE<T>)
    [[nodiscard]] constexpr WPromise<T> SimConnect(std::function<T(smc::api::SimConnect&)>&& callback
@@ -134,6 +150,10 @@ public:
 
    [[nodiscard]] constexpr auto& SimConnect() { return sim_connect_; }
 
+   [[nodiscard]] bool ATC(std::function<void(atc::Handler&)>&& callback) {
+      return atc_handler_(std::move(callback));
+   }
+
    bool Terminated() const noexcept { return terminated_; }
 
 private:
@@ -170,8 +190,10 @@ private:
    }
 
    // Must be before windows to resolve every promises
-   ::SimConnect sim_connect_{*this};
-   Server       server_{*this};
+   ::SimConnect    sim_connect_{*this};
+   Server          server_{*this};
+   ia::Handler     ia_handler_{*this};
+   atc::ATCHandler atc_handler_{*this};
 
    Window<WIN::TASKBAR>         taskbar_{*this, [this]() { taskbar_.OnTerminate(); }};
    Window<WIN::TASKBAR_TOOLTIP> taskbar_tooltip_{*this, [this]() {

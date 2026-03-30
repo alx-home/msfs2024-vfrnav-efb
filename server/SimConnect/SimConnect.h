@@ -141,12 +141,13 @@ protected:
    virtual ~SimConnect() = default;
 
 public:
-   [[nodiscard]] virtual WPromise<bool>        SetServerPort(uint32_t port)                     = 0;
-   [[nodiscard]] virtual WPromise<void>        SetFlapsHandleIndex(ObjectId id, uint32_t index) = 0;
-   [[nodiscard]] virtual WPromise<double>      GetGroundInfo(double lat, double lon)            = 0;
-   [[nodiscard]] virtual WPromise<TrafficInfo> GetUserAircraftInfo() noexcept(true)             = 0;
-   [[nodiscard]] virtual WPromise<TrafficInfo> GetAircraftInfo(ObjectId id) noexcept(true)      = 0;
-   [[nodiscard]] virtual WPromise<Liveries>    GetTrafficTitles() const                         = 0;
+   [[nodiscard]] virtual WPromise<bool> SetServerPort(uint32_t port) = 0;
+   //  [[nodiscard]] virtual WPromise<void>        SetFlapsHandleIndex(ObjectId id, uint32_t index)
+   //  = 0;
+   [[nodiscard]] virtual WPromise<double>      GetGroundInfo(double lat, double lon)       = 0;
+   [[nodiscard]] virtual WPromise<TrafficInfo> GetUserAircraftInfo() noexcept(true)        = 0;
+   [[nodiscard]] virtual WPromise<TrafficInfo> GetAircraftInfo(ObjectId id) noexcept(true) = 0;
+   [[nodiscard]] virtual WPromise<Liveries>    GetTrafficTitles() const                    = 0;
 
    template <class TYPE, size_t N>
    [[nodiscard]] WPromise<void> SetDataOnSimObject(
@@ -206,8 +207,9 @@ public:
    ~SimConnect() override;
 
 private:
-   [[nodiscard]] WPromise<bool>        SetServerPort(uint32_t port) override;
-   [[nodiscard]] WPromise<void>        SetFlapsHandleIndex(ObjectId id, uint32_t index) override;
+   [[nodiscard]] WPromise<bool> SetServerPort(uint32_t port) override;
+   //  [[nodiscard]] WPromise<void>        SetFlapsHandleIndex(ObjectId id, uint32_t index)
+   //  override;
    [[nodiscard]] WPromise<double>      GetGroundInfo(double lat, double lon) override;
    [[nodiscard]] WPromise<TrafficInfo> GetUserAircraftInfo() noexcept(true) override;
    [[nodiscard]] WPromise<TrafficInfo> GetAircraftInfo(ObjectId id) noexcept(true) override;
