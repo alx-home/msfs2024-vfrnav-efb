@@ -57,7 +57,7 @@ Handler::UserAircraftInfoLoop() noexcept(true) {
 
             assert(std::this_thread::get_id() == MessageQueue::ThreadId());
          } catch (smc::Disconnected const&) {
-            std::cerr << "ATC: SimConnect disconnected, stopping user aircraft info loop"
+            std::cerr << "ATC: SimConnect disconnected, retrying user aircraft info loop"
                       << std::endl;
          } catch (smc::Timeout const&) {
             std::cerr

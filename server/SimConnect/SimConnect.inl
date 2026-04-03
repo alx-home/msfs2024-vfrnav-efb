@@ -311,8 +311,10 @@ SimConnect::RequestDataOnSimObject(uint32_t objectId, std::shared_ptr<void*> han
         auto const request_id = ++request_id_;
         pending_simobject_.emplace(
           request_id,
-          [resolve = resolve.shared_from_this(),
-           reject  = reject.shared_from_this()](SIMCONNECT_RECV_SIMOBJECT_DATA const& data) {
+          [resolve = resolve.shared_from_this(), reject = reject.shared_from_this()](
+            SIMCONNECT_RECV_SIMOBJECT_DATA const&        data,
+            std::chrono::steady_clock::time_point const& last_update
+          ) {
              if (data.dwDefineID != static_cast<DWORD>(ID)) {
                 MakeReject<UnknownError>(
                   *reject, "Received data for unknown request ID or data type mismatch"
@@ -334,16 +336,17 @@ SimConnect::RequestDataOnSimObject(uint32_t objectId, std::shared_ptr<void*> han
              }
 
              SimobjectData<DATA_TYPE> simobject_data{
-               .dw_version_      = data.dwVersion,
-               .dw_id_           = data.dwID,
-               .dw_request_id_   = data.dwRequestID,
-               .dw_object_id_    = data.dwObjectID,
-               .dw_define_id_    = data.dwDefineID,
-               .dw_flags_        = data.dwFlags,
-               .dw_entry_number_ = data.dwentrynumber,
-               .dw_out_of_       = data.dwoutof,
-               .dw_define_count_ = data.dwDefineCount,
-               .dw_data_         = StaticCast<DATA_TYPE>(data.dwData),
+               .dw_version_       = data.dwVersion,
+               .dw_id_            = data.dwID,
+               .dw_request_id_    = data.dwRequestID,
+               .dw_object_id_     = data.dwObjectID,
+               .dw_define_id_     = data.dwDefineID,
+               .dw_flags_         = data.dwFlags,
+               .dw_entry_number_  = data.dwentrynumber,
+               .dw_out_of_        = data.dwoutof,
+               .dw_define_count_  = data.dwDefineCount,
+               .last_update_time_ = last_update,
+               .dw_data_          = StaticCast<DATA_TYPE>(data.dwData),
              };
 
              (*resolve)(simobject_data);

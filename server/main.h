@@ -109,7 +109,7 @@ public:
       requires(promise::IS_WPROMISE<T>)
    [[nodiscard]] constexpr T SimConnect(std::function<T(smc::api::SimConnect&)>&& callback) {
       using Return                    = promise::return_t<T>;
-      auto [promise, resolve, reject] = promise::Pure<Return>();
+      auto [promise, resolve, reject] = promise::Create<Return>();
       if (!sim_connect_([resolve, reject, callback = std::move(callback)](
                           smc::api::SimConnect& simConnect
                         ) constexpr {

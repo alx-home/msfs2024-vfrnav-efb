@@ -22,11 +22,11 @@
 
 namespace smc {
 
-struct Flaps {
-   int index_{};
+struct SimRate {
+   int time_{};
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
-     smc::_m{"FLAPS HANDLE INDEX", smc::_t<SIMCONNECT_DATATYPE_INT32>{}, "Number", &Flaps::index_}
+     smc::_m{"ABSOLUTE TIME", smc::_t<SIMCONNECT_DATATYPE_INT32>{}, "Seconds", &SimRate::time_}
    )};
 };
 

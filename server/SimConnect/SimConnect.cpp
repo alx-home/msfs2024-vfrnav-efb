@@ -20,6 +20,7 @@
 #include "main.h"
 
 #include "Data/Flaps.h"
+#include "Data/SimRate.h"
 #include "Data/GearDown.h"
 #include "Data/GroundInfo.h"
 #include "Data/ServerPort.h"
@@ -46,6 +47,7 @@
 #include <winuser.h>
 
 using namespace std::chrono_literals;
+using namespace std::chrono;
 
 namespace smc::priv {
 
@@ -317,6 +319,11 @@ SimConnect::Run(std::stop_token const& stoken) {
       Sleep(5000);
       return;
    }
+   if (!AddToDataDefinition<GET_SIMRATE, SimRate>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for sim rate" << std::endl;
+      Sleep(5000);
+      return;
+   }
 
    if (SimConnect_MapClientEventToSimEvent(
          *handle, static_cast<SIMCONNECT_CLIENT_EVENT_ID>(ClientEventId::FLAPS_SET), "FLAPS_SET"
@@ -347,6 +354,71 @@ SimConnect::Run(std::stop_token const& stoken) {
    Sleep(1000);
    (void)MessageQueue::Dispatch([this]() constexpr { SetServerPort(server_port_).Detach(); });
    (void)MessageQueue::Dispatch([this]() constexpr { SetTrafficTitles(); });
+
+   auto sim_rate_promise = std::make_shared<WPromise<void>>(MakePromise([this] -> Promise<void> {
+      co_await ensure_();
+
+      auto        last_update_time = steady_clock::now();
+      std::size_t last_time        = 0;
+      while (true) {
+         auto const handle = handle_.lock();
+         if (!handle) {
+            break;
+         }
+
+         try {
+            auto const now      = steady_clock::now();
+            auto       sim_rate = co_await RequestDataOnSimObject<GET_SIMRATE, SimRate>(
+              SIMCONNECT_OBJECT_ID_USER, handle
+            );
+
+            if (now - sim_rate.last_update_time_ > 10ms) {
+               std::cout
+                 << "SimConnect: Received sim rate data, but it's too old (last update time: "
+                 << duration_cast<milliseconds>(now - sim_rate.last_update_time_).count() << "ms)"
+                 << std::endl;
+               continue;
+            }
+
+            auto est_rate = std::max(
+              0.25f,
+              (last_time == 0)
+                ? last_sim_rate_
+                : static_cast<float>(sim_rate.dw_data_.time_ - last_time)
+                    / std::chrono::duration<float>(sim_rate.last_update_time_ - last_update_time)
+                        .count()
+            );
+            est_rate = static_cast<int>(std::round(std::log2(est_rate)));
+            est_rate = std::clamp(std::pow(2.f, est_rate), 0.25f, 16.0f);
+
+            last_time        = sim_rate.dw_data_.time_;
+            last_update_time = sim_rate.last_update_time_;
+
+            if (est_rate != last_sim_rate_) {
+               co_await ensure_();
+               last_sim_rate_ = est_rate;
+
+               auto pending = std::move(pending_sim_rate_);
+               assert(pending_sim_rate_.empty());
+
+               for (auto const& [resolve, _] : pending) {
+                  (*resolve)(est_rate);
+               }
+            }
+
+            co_await dispatch_(1s);
+            continue;
+         } catch (std::exception const& e) {
+            std::cerr << "SimConnect: Failed to watch sim rate: "
+                      //<< e.what() #TODO: https://github.com/llvm/llvm-project/issues/182584
+                      << std::endl;
+         }
+
+         co_await dispatch_(5s);
+      }
+
+      co_return;
+   }));
 
    uint32_t result;
    while ((result = ::WaitForSingleObject(event_, INFINITE)),
@@ -391,12 +463,23 @@ SimConnect::SetTrafficTitles() {
 
 WPromise<api::Liveries>
 SimConnect::GetTrafficTitles() const {
-   return MakePromise([this]() -> Promise<api::Liveries> {
-      co_await ensure_();
+   assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+   assert(traffic_titles_);
+   return *traffic_titles_;
+}
 
-      assert(traffic_titles_);
-      co_return (co_await *traffic_titles_);
-   });
+WPromise<float>
+SimConnect::WatchSimRate(std::optional<float> current) const {
+   assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+   if (current && (*current != last_sim_rate_)) {
+      return Promise<float>::Resolve(last_sim_rate_);
+   }
+
+   auto [promise, resolve, reject] = Promise<float>::Create();
+   assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+   pending_sim_rate_.emplace_back(resolve, reject);
+
+   return std::move(promise);
 }
 
 WPromise<api::Liveries>
@@ -535,11 +618,13 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
       } break;
 
       case SIMCONNECT_RECV_ID_SIMOBJECT_DATA: {
+         auto const now = std::chrono::steady_clock::now();
+
          auto const& simobj  = static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA const&>(data);
          auto        request = pending_simobject_.find(simobj.dwRequestID);
          if (request != pending_simobject_.end()) {
             ScopeExit _{[this, request]() constexpr { pending_simobject_.erase(request); }};
-            request->second(simobj);
+            request->second(simobj, now);
          } else {
             std::cerr << "SimConnect: Received SIMOBJECT_DATA for unknown request ID "
                       << simobj.dwRequestID << std::endl;

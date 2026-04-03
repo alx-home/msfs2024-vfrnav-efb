@@ -20,6 +20,7 @@
 
 #include <promise/promise.h>
 #include <utils/MessageQueue.h>
+#include <chrono>
 #include <type_traits>
 #include <utils/MessageQueueProxy.inl>
 #include <windows/Event.h>
@@ -84,6 +85,9 @@ enum class DataId : uint32_t {
    TAXIWAY_PATH,
    USER_INFO,
    GROUND_INFO,
+
+   GET_SIMRATE,
+
    SET_WAYPOINTS,
    SET_BREAK,
    SET_GEAR,
@@ -111,7 +115,11 @@ struct SimobjectData {
    DWORD dw_out_of_;        // note: starts with 1, not 0.
    DWORD dw_define_count_;  // data count (number of datums, *not* byte count)
                             //
-   DATA_TYPE dw_data_;      // data begins here, dw_define_count_ data items
+                            //
+   std::chrono::steady_clock::time_point
+     last_update_time_;  // not part of SimConnect data, but useful
+                         // for tracking when the data was received
+   DATA_TYPE dw_data_;   // data begins here, dw_define_count_ data items
 };
 
 namespace api {
@@ -148,6 +156,8 @@ public:
    [[nodiscard]] virtual WPromise<TrafficInfo> GetUserAircraftInfo() noexcept(true)        = 0;
    [[nodiscard]] virtual WPromise<TrafficInfo> GetAircraftInfo(ObjectId id) noexcept(true) = 0;
    [[nodiscard]] virtual WPromise<Liveries>    GetTrafficTitles() const                    = 0;
+   [[nodiscard]] virtual WPromise<float> WatchSimRate(std::optional<float> current = std::nullopt)
+     const = 0;
 
    template <class TYPE, size_t N>
    [[nodiscard]] WPromise<void> SetDataOnSimObject(
@@ -285,6 +295,7 @@ private:
    void SetTrafficTitles();
 
    [[nodiscard]] WPromise<api::Liveries> GetTrafficTitles() const override;
+   [[nodiscard]] WPromise<float>         WatchSimRate(std::optional<float> current) const override;
 
    bool SetDataOnSimObjectImpl(
      DataId               id,
@@ -305,8 +316,10 @@ private:
 
    SIMCONNECT_DATA_REQUEST_ID request_id_{0};
 
-   using WaitingSimObject = std::
-     map<SIMCONNECT_DATA_REQUEST_ID, std::function<void(SIMCONNECT_RECV_SIMOBJECT_DATA const&)>>;
+   using WaitingSimObject = std::map<
+     SIMCONNECT_DATA_REQUEST_ID,
+     std::function<
+       void(SIMCONNECT_RECV_SIMOBJECT_DATA const&, std::chrono::steady_clock::time_point const&)>>;
    WaitingSimObject pending_simobject_{};
 
    using WaitingSimObjectType = std::map<
@@ -323,6 +336,10 @@ private:
      SIMCONNECT_DATA_REQUEST_ID,
      std::function<void(SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const&)>>;
    WaitingAssignedObject pending_assigned_{};
+
+   using SimRateResolver = std::pair<std::shared_ptr<Resolve<float>>, std::shared_ptr<Reject>>;
+   mutable std::vector<SimRateResolver> pending_sim_rate_{};
+   float                                last_sim_rate_{1.0f};
 
    std::unordered_map<DWORD, std::string> packet_debug_{};
 

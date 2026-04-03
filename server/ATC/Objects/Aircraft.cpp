@@ -13,25 +13,35 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "Aircraft.h"
+#include "Aircraft.inl"
 
+#include "Aircraft.h"
 #include "main.h"
 #include "Waypoint.h"
 
 #include "SimConnect/SimConnect.inl"
 #include "SimConnect/Data/GearDown.h"
 #include "SimConnect/Data/Flaps.h"
+#include "utils/Scoped.h"
 
 #include <promise/promise.h>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <numbers>
+#include <stdexcept>
 
 using namespace std::chrono_literals;
+using namespace std::chrono;
 
 Aircraft::Aircraft(Main& main)
    : main_(main) {};
+
+Aircraft::~Aircraft() {
+   running_ = false;
+   NotifyException<std::runtime_error>("Aircraft destroyed, stopping aircraft loop");
+}
 
 WPromise<Aircraft::ObjectId>
 Aircraft::SetID() {
@@ -66,82 +76,7 @@ Aircraft::SetID() {
 
 std::vector<Waypoint>
 Aircraft::InitWaypoint() {
-   return StandardPattern({48.75133, 2.09865}, {48.75451, 2.11282}, false);
-   //  return {
-   //    {
-   //      .lat_      = 48.75435,
-   //      .lon_      = 2.11282,
-   //      .alt_      = 1000,
-   //      .is_agl_   = true,
-   //      .throttle_ = 100,
-   //    },
-   //    {
-   //      .lat_    = 48.75797,
-   //      .lon_    = 2.13193,
-   //      .alt_    = 1000,
-   //      .is_agl_ = true,
-   //      .speed_  = 80,
-   //    },
-   //    {
-   //      .lat_    = 48.77271,
-   //      .lon_    = 2.12648,
-   //      .alt_    = 1000,
-   //      .is_agl_ = true,
-   //      .speed_  = 80,
-   //    },
-   //    {
-   //      .lat_    = 48.76643,
-   //      .lon_    = 2.08975,
-   //      .alt_    = 1000,
-   //      .is_agl_ = true,
-   //      .speed_  = 70,
-   //    },
-   //    {
-   //      .lat_       = 48.76349,
-   //      .lon_       = 2.07275,
-   //      .alt_       = 400,
-   //      .is_agl_    = true,
-   //      .speed_     = 70,
-   //      .gear_down_ = true,
-   //    },
-   //    {
-   //      .lat_    = 48.74747,
-   //      .lon_    = 2.08047,
-   //      .alt_    = 100,
-   //      .is_agl_ = true,
-   //      .speed_  = 70,
-   //    },
-   //    {
-   //      .lat_       = 48.75102,
-   //      .lon_       = 2.09784,
-   //      .tolerance_ = 0,
-   //      .alt_       = 1,
-   //      .is_agl_    = true,
-   //      .speed_     = 20,
-   //    },
-   //    {
-   //      .lat_       = 48.75148,
-   //      .lon_       = 2.10000,
-   //      .tolerance_ = 0,
-   //      .alt_       = 1,
-   //      .is_agl_    = true,
-   //      .speed_     = 20,
-   //    },
-   //    {
-   //      .lat_       = 48.75264,
-   //      .lon_       = 2.10511,
-   //      .tolerance_ = 0,
-   //      .alt_       = 0,
-   //      .speed_     = 0.,
-   //    },
-   //    {
-   //      .lat_       = 48.75289,
-   //      .lon_       = 2.10618,
-   //      .tolerance_ = 0,
-   //      .alt_       = 0,
-   //      .throttle_  = 0.,
-   //    },
-   //  };
+   return TransformWaypoints(StandardPattern({48.75133, 2.09865}, {48.75451, 2.11282}, false));
 }
 
 double
@@ -154,237 +89,298 @@ Aircraft::Distance(double lat1, double lon1, double lat2, double lon2) {
           );
 }
 
-WPromise<void>
-Aircraft::AircraftLoop() {
-   return MakePromise([this]() -> Promise<void> {
-      auto id = co_await ID;
-      co_await main_.Pool(5s);
+std::vector<Waypoint>
+Aircraft::TransformWaypoints(std::vector<Waypoint> const& waypoints) {
+   std::vector<Waypoint> transformed_waypoints{};
+   // In the worst case, we can have up to 2 waypoints per original waypoint
+   transformed_waypoints.reserve(waypoints.size() * 2);
 
-      auto& simconnect = co_await main_.SimConnect();
-      co_await simconnect.SetDataOnSimObject(
-        smc::DataId::SET_GEAR, id.dwObjectID, 0, smc::GearDown{.gear_down_ = 1.0}
-      );
-      co_await simconnect.SetDataOnSimObject(
-        smc::DataId::SET_FLAPS, id.dwObjectID, 0, smc::Flaps{.index_ = 2}
-      );
-      // co_await simconnect.SetFlapsHandleIndex(id, 2);
+   for (std::size_t i = 0; i < waypoints.size(); ++i) {
+      if ((i == 0) || (i == waypoints.size() - 1) || (waypoints[i].tolerance_ == 0)
+          || (waypoints[i].alt_ == 0)) {
+         transformed_waypoints.emplace_back(waypoints[i]);
+      } else {
+         auto const& prev_wp    = waypoints[i - 1];
+         auto const& current_wp = waypoints[i];
+         auto const& next_wp    = waypoints[i + 1];
 
-      std::vector<SIMCONNECT_DATA_WAYPOINT> waypoints{};
-      for (std::size_t i = 0; i < wp_.size(); ++i) {
-         if ((i == 0) || (i == wp_.size() - 1) || (wp_[i].tolerance_ == 0) || (wp_[i].alt_ == 0)) {
-            waypoints.emplace_back(wp_[i].Raw());
-         } else {
-            auto const& prev_wp    = wp_[i - 1];
-            auto const& current_wp = wp_[i];
-            auto const& next_wp    = wp_[i + 1];
+         {
+            auto const segment_distance =
+              Distance(prev_wp.lat_, prev_wp.lon_, current_wp.lat_, current_wp.lon_);
+            auto const offset_from_prev = std::clamp(
+              segment_distance - std::clamp(current_wp.tolerance_, 0.0, segment_distance),
+              0.0,
+              segment_distance
+            );
+            auto const t = (segment_distance > 1e-6) ? (offset_from_prev / segment_distance) : 0.0;
 
-            {
-               auto const segment_distance =
-                 Distance(prev_wp.lat_, prev_wp.lon_, current_wp.lat_, current_wp.lon_);
-               auto const offset_from_prev = std::clamp(
-                 segment_distance - std::clamp(current_wp.tolerance_, 0.0, segment_distance),
-                 0.0,
-                 segment_distance
-               );
-               auto const t =
-                 (segment_distance > 1e-6) ? (offset_from_prev / segment_distance) : 0.0;
+            auto segment_wp = current_wp;
+            segment_wp.lat_ = prev_wp.lat_ + (current_wp.lat_ - prev_wp.lat_) * t;
+            segment_wp.lon_ = prev_wp.lon_ + (current_wp.lon_ - prev_wp.lon_) * t;
+            transformed_waypoints.emplace_back(segment_wp);
+         }
+         {
+            auto const segment_distance =
+              Distance(current_wp.lat_, current_wp.lon_, next_wp.lat_, next_wp.lon_);
+            auto const t =
+              (segment_distance > 1e-6)
+                ? (std::clamp(current_wp.tolerance_, 0.0, segment_distance) / segment_distance)
+                : 0.0;
+            auto segment_wp = current_wp;
 
-               auto segment_wp = current_wp;
-               segment_wp.lat_ = prev_wp.lat_ + (current_wp.lat_ - prev_wp.lat_) * t;
-               segment_wp.lon_ = prev_wp.lon_ + (current_wp.lon_ - prev_wp.lon_) * t;
-               waypoints.emplace_back(segment_wp.Raw());
-            }
-            {
-               auto const segment_distance =
-                 Distance(current_wp.lat_, current_wp.lon_, next_wp.lat_, next_wp.lon_);
-               auto const t =
-                 (segment_distance > 1e-6)
-                   ? (std::clamp(current_wp.tolerance_, 0.0, segment_distance) / segment_distance)
-                   : 0.0;
-               auto segment_wp = current_wp;
+            segment_wp.gear_down_ = std::nullopt;
+            segment_wp.flaps_     = std::nullopt;
+            segment_wp.lat_       = current_wp.lat_ + (next_wp.lat_ - current_wp.lat_) * t;
+            segment_wp.lon_       = current_wp.lon_ + (next_wp.lon_ - current_wp.lon_) * t;
 
-               segment_wp.lat_ = current_wp.lat_ + (next_wp.lat_ - current_wp.lat_) * t;
-               segment_wp.lon_ = current_wp.lon_ + (next_wp.lon_ - current_wp.lon_) * t;
-
-               waypoints.emplace_back(segment_wp.Raw());
-            }
+            transformed_waypoints.emplace_back(segment_wp);
          }
       }
+   }
 
-      co_await (co_await main_.SimConnect())
-        .SetDataOnSimObject(smc::DataId::SET_WAYPOINTS, id.dwObjectID, 0, std::move(waypoints));
+   return transformed_waypoints;
+}
 
-      co_return;
+void
+Aircraft::Notify() {
+   if (!running_) {
+      return;
+   }
 
-      // std::size_t wp_index = 0;
-      // while (true) {
-      //    bool error = false;
-      //    try {
-      //       co_await main_.ensure_();
-      //       auto       wp               = wp_[wp_index];
-      //       auto       last_wp          = wp_index == 0 ? wp_.back() : wp_[wp_index - 1];
-      //       auto const segment_distance = Distance(last_wp.lat_, last_wp.lon_, wp.lat_, wp.lon_);
-      //       co_await main_.Pool();
+   auto const [_, resolve, _] = [this] constexpr {
+      std::shared_lock lock{mutex_};
+      return *update_pcv_;
+   }();
 
-      //       co_await (co_await main_.SimConnect())
-      //         .SetDataOnSimObject(
-      //           smc::DataId::SET_WAYPOINTS, id.dwObjectID, 0, std::array<WP, 1>{wp}
-      //         );
+   (*resolve)();
+}
 
-      //       ++wp_index;
-      //       if (wp_index == wp_.size()) {
-      //          wp_index = 0;
-      //       }
+WPromise<void>
+Aircraft::Wait(std::optional<std::chrono::steady_clock::duration> duration) {
+   return MakePromise(
+            [this,
+             duration](Resolve<void> const& resolve, Reject const& reject) -> Promise<void, true> {
+               {
+                  std::unique_lock lock{mutex_};
+                  std::get<0>(*update_pcv_)
+                    .Then([resolve = resolve.shared_from_this()]() constexpr { (*resolve)(); })
+                    .Catch([reject = reject.shared_from_this()](std::exception_ptr exception
+                           ) constexpr { (*reject)(std::move(exception)); })
+                    .Detach();
+               }
 
-      //       using namespace std::chrono;
+               if (duration) {
+                  try {
+                     co_await main_.Pool(*duration);
+                     resolve();
+                  } catch (...) {
+                     reject(std::current_exception());
+                     co_return;
+                  }
+               }
 
-      //       double last_distance = std::numeric_limits<double>::max();
+               co_return;
+            }
+   ).Finally([this]() constexpr {
+      std::unique_lock lock{mutex_};
+      // We resolve the promise in case of timeout and reset it for the next wait
+      (*std::get<1>(*update_pcv_))();
+      update_pcv_ = std::make_unique<PromiseData>(promise::Create<void>());
+   });
+}
 
-      //       bool error                 = false;
-      //       auto last_commanded_target = std::optional<std::pair<double, double>>{};
-      //       auto next_command_time     = steady_clock::now();
-      //       // Wait until the aircraft reaches the current waypoint before sending the next one
-      //       while (true) {
-      //          try {
-      //             auto const& info = co_await (co_await main_.SimConnect()).GetAircraftInfo(id);
+WPromise<void>
+Aircraft::AircraftLoop() {
+   constexpr double deg2rad = std::numbers::pi / 180.0;
+   constexpr double rad2deg = 180.0 / std::numbers::pi;
 
-      //             auto const [lat, lon, distance, total_distance] =
-      //               [&] constexpr -> std::array<double, 4> {
-      //                if (wp.interpolate_) {
-      //                   if (segment_distance > 1200.0) {
-      //                      return Interpolate(
-      //                        last_wp.lat_,
-      //                        last_wp.lon_,
-      //                        wp.lat_,
-      //                        wp.lon_,
-      //                        info.lat_,
-      //                        info.lon_,
-      //                        info.true_heading_,
-      //                        info.ground_velocity_
-      //                      );
-      //                   }
-      //                }
+   return MakePromise([this]() -> Promise<void> {
+      auto sim_rate_promise = MakePromise([this]() -> Promise<void> {
+         while (running_) {
+            auto const sim_rate = co_await (co_await main_.SimConnect()).WatchSimRate(sim_rate_);
 
-      //                auto const distance = Distance(info.lat_, info.lon_, wp.lat_, wp.lon_);
-      //                return {wp.lat_, wp.lon_, distance, distance};
-      //             }();
-      //             ScopeExit _{[&]() constexpr { last_distance = total_distance; }};
+            if (sim_rate != sim_rate_) {
+               sim_rate_ = sim_rate;
 
-      //             if (total_distance - last_distance > 300.0) {
-      //                std::cout << "Aircraft is moving away from the waypoint" << std::endl;
-      //             }
+               std::cout << "Sim rate changed: " << sim_rate_ << std::endl;
+               Notify();
+            }
+         }
+      });
 
-      //             if (total_distance < wp.tolerance_) {
-      //                break;
-      //             }
+      SIMCONNECT_RECV_ASSIGNED_OBJECT_ID id{};
 
-      //             std::cout << distance << " " << total_distance << " " << wp.tolerance_ << " "
-      //                       << std::min(
-      //                            distance, std::max(wp.tolerance_, total_distance -
-      //                            wp.tolerance_)
-      //                          )
-      //                       << std::endl;
+      // We loop on aircraft creation until we succeed without an unexpected error
+      while (running_) {
+         try {
+            id = co_await ID;
+            std::cout << "Aircraft created with ID: " << id.dwObjectID << std::endl;
+            break;
+         } catch (smc::Disconnected const&) {
+            std::cerr << "SimConnect disconnected while creating aircraft, retrying aircraft loop"
+                      << std::endl;
+            continue;
+         } catch (smc::Timeout const&) {
+            std::cerr << "Timeout while creating aircraft, retrying aircraft loop" << std::endl;
+            continue;
+         } catch (smc::UnknownError const& e) {
+            std::cerr << "Error while creating aircraft: " << e.what() << ", stopping aircraft loop"
+                      << std::endl;
+         } catch (std::exception const& e) {
+            std::cerr << "Unexpected error while creating aircraft: " << e.what()
+                      << ", stopping aircraft loop" << std::endl;
+         }
 
-      //             auto const now = steady_clock::now();
-      //             if (now < next_command_time) {
-      //                co_await main_.Pool(next_command_time);
-      //                continue;
-      //             }
+         running_ = false;
+         co_return;
+      }
 
-      //             if (last_commanded_target) {
-      //                auto const target_delta = Distance(
-      //                  lat, lon, last_commanded_target->first, last_commanded_target->second
-      //                );
+      if (!running_) {
+         co_return;
+      }
 
-      //                if (target_delta < 25.0 && total_distance > wp.tolerance_ + 120.0) {
-      //                   co_await main_.Pool(800ms);
-      //                   continue;
-      //                }
-      //             }
-      //             // Estimate time to reach the waypoint based on current ground speed. Using
-      //             half
-      //             // the remaining distance for polling provides better reactivity when the
-      //             aircraft
-      //             // deviates from the track (measured by both cross-track and heading
-      //             alignment). auto const time_to_next_wp =
-      //               steady_clock::now()
-      //               + duration_cast<steady_clock::duration>(duration<double>{
-      //                 std::min(distance, std::max(wp.tolerance_, total_distance - wp.tolerance_))
-      //                 * 0.5
-      //                 / (std::max<double>(info.ground_velocity_, wp.speed_.value_or(0.)) *
-      //                 0.51444)
-      //               });
+      std::vector<Waypoint> waypoints{};
+      auto                  it = waypoints.begin();
 
-      //             co_await (co_await main_.SimConnect())
-      //               .SetDataOnSimObject(
-      //                 smc::DataId::SET_WAYPOINTS,
-      //                 id.dwObjectID,
-      //                 0,
-      //                 Waypoint{
-      //                   .lat_      = lat,
-      //                   .lon_      = lon,
-      //                   .alt_      = wp.alt_,
-      //                   .is_agl_   = wp.is_agl_,
-      //                   .speed_    = wp.speed_,
-      //                   .throttle_ = wp.throttle_,
-      //                 }
-      //                   .Raw()
-      //               );
+      auto const updateWaypoints = [&]() constexpr {
+         {
+            std::shared_lock lock{mutex_};
+            waypoints.reserve(wp_.size());
+            std::ranges::copy(wp_, std::back_inserter(waypoints));
+         }
+         it = waypoints.begin();
 
-      //             last_commanded_target = std::make_pair(lat, lon);
-      //             next_command_time     = steady_clock::now() + 1200ms;
+         std::vector<SIMCONNECT_DATA_WAYPOINT> sc_waypoints{};
+         sc_waypoints.reserve(waypoints.size());
+         for (auto const& wp : waypoints) {
+            sc_waypoints.emplace_back(wp.Raw());
+         }
 
-      //             std::cout << "Setting next waypoint: " << lat << ", " << lon << " - " <<
-      //             wp.lat_
-      //                       << ", " << wp.lon_ << ", distance: " << distance
-      //                       << ", total_distance: " << total_distance << ", index: " << wp_index
-      //                       << ", time to next wp: "
-      //                       << duration_cast<seconds>(time_to_next_wp -
-      //                       steady_clock::now()).count()
-      //                       << "s, aircraft speed: " << info.ground_velocity_
-      //                       << "kts position: " << info.lat_ << ", " << info.lon_ << std::endl;
+         return MakePromise([&]() -> Promise<void> {
+            co_await (co_await main_.SimConnect())
+              .SetDataOnSimObject(
+                smc::DataId::SET_WAYPOINTS, id.dwObjectID, 0, std::move(sc_waypoints)
+              );
+         });
+      };
 
-      //             // Poll the user aircraft info every time_to_next_wp to keep it up to date
-      //             co_await main_.Pool(time_to_next_wp);
-      //          } catch (smc::Disconnected const&) {
-      //             std::cout << "SimConnect disconnected, stopping aircraft loop" << std::endl;
-      //             throw;
-      //          } catch (std::exception const& e) {
-      //             error = true;
-      //             // std::cerr << "Exception in aircraft loop: " << e.what() << std::endl;
-      //          } catch (...) {
-      //             error = true;
-      //             std::cerr << "Unknown exception in aircraft loop" << std::endl;
-      //          }
+      auto const next_wp = [&] constexpr {
+         return MakePromise([&] -> Promise<bool> {
+            std::cout << "Waypoint Reached: " << it->lat_ << ", " << it->lon_ << std::endl;
+            ++it;
 
-      //          if (error) {
-      //             error = false;
-      //             // In case of error, wait a bit before retrying to avoid spamming the logs and
-      //             // giving time for transient issues to resolve (e.g. temporary SimConnect
-      //             hiccup
-      //             // or user taking control of the aircraft).
-      //             co_await main_.Pool(5s);
-      //          }
-      //       }
-      //    } catch (smc::Disconnected const&) {
-      //       std::cout << "SimConnect disconnected, stopping aircraft loop" << std::endl;
-      //       throw;
-      //    } catch (std::exception const& e) {
-      //       error = true;
-      //       // std::cerr << "Exception in aircraft loop: " << e.what() << std::endl;
-      //    } catch (...) {
-      //       error = true;
-      //       std::cerr << "Unknown exception in aircraft loop" << std::endl;
-      //    }
+            if (it == waypoints.end()) {
+               co_await Wait();
+               co_await updateWaypoints();
+               co_return true;
+            }
 
-      //    if (error) {
-      //       error = false;
-      //       // In case of error, wait a bit before retrying to avoid spamming the logs and giving
-      //       // time for transient issues to resolve (e.g. temporary SimConnect hiccup or user
-      //       // taking control of the aircraft).
-      //       co_await main_.Pool(5s);
-      //    }
-      // }
+            co_return false;
+         });
+      };
+
+      bool init      = true;
+      bool set_extra = true;
+      while (running_) {
+         try {
+            if (init) {
+               co_await updateWaypoints();
+               init = false;
+            }
+
+            if (set_extra) {
+               auto& sim_connect = co_await main_.SimConnect();
+
+               if (it->gear_down_) {
+                  std::cout << "Setting gear down" << std::endl;
+                  co_await sim_connect.SetDataOnSimObject(
+                    smc::DataId::SET_GEAR,
+                    id.dwObjectID,
+                    0,
+                    smc::GearDown{.gear_down_ = (it->gear_down_.value() ? 1. : 0.)}
+                  );
+               }
+
+               if (it->flaps_) {
+                  std::cout << "Setting flaps to index " << *it->flaps_ << std::endl;
+                  co_await sim_connect.SetDataOnSimObject(
+                    smc::DataId::SET_FLAPS, id.dwObjectID, 0, smc::Flaps{.index_ = *it->flaps_}
+                  );
+               }
+
+               set_extra = false;
+            }
+
+            auto const& info = co_await (co_await main_.SimConnect()).GetAircraftInfo(id);
+
+            // Compare aircraft heading with the direction to the next waypoint
+            double lat1  = info.lat_ * deg2rad;
+            double lon1  = info.lon_ * deg2rad;
+            double lat2  = it->lat_ * deg2rad;
+            double lon2  = it->lon_ * deg2rad;
+            double d_lon = lon2 - lon1;
+            double y     = std::sin(d_lon) * std::cos(lat2);
+            double x =
+              std::cos(lat1) * std::sin(lat2) - std::sin(lat1) * std::cos(lat2) * std::cos(d_lon);
+            double heading = std::atan2(y, x) * rad2deg;
+            if (heading < 0) {
+               heading += 360;
+            }
+
+            auto const wp_distance = co_await [&] constexpr {
+               return MakePromise([&] -> Promise<double> {
+                  auto const wp_distance = Distance(info.lat_, info.lon_, it->lat_, it->lon_);
+
+                  // If the aircraft is not heading towards the waypoint or closed to it, we
+                  // consider that it has reached it
+                  if ((std::abs(heading - info.true_heading_) > 90)
+                      || (wp_distance < 300. + it->tolerance_)) {
+                     co_await next_wp();
+                     set_extra = true;
+
+                     // Recompute distance to the next waypoint after switching to it
+                     co_return Distance(info.lat_, info.lon_, it->lat_, it->lon_);
+                  }
+
+                  co_return wp_distance;
+               });
+            }();
+
+            auto const est_speed = std::max<double>(info.ground_velocity_, it->speed_.value_or(0.))
+                                   * 0.51444;  // Convert from knots to m/s
+
+            std::chrono::seconds const next_wp_est_time{static_cast<uint64_t>(
+              est_speed > 0 ? std::max(0.0, wp_distance - it->tolerance_) / est_speed
+                            : std::numeric_limits<double>::infinity()
+            )};
+
+            std::cout << sim_rate_ << std::endl;
+            co_await Wait(
+              std::clamp(duration_cast<seconds>((next_wp_est_time * 7) / (8 * sim_rate_)), 1s, 30s)
+            );
+            continue;
+         } catch (smc::Disconnected const&) {
+            std::cerr << "SimConnect disconnected, stopping aircraft loop" << std::endl;
+            running_ = false;
+            break;
+         } catch (smc::Timeout const&) {
+            std::cerr << "Timeout while waiting for SimConnect, retrying aircraft loop"
+                      << std::endl;
+         } catch (smc::UnknownError const& e) {
+            std::cerr << "Error while waiting for SimConnect: " << e.what()
+                      << ", retrying aircraft loop" << std::endl;
+            running_ = false;
+            break;
+         } catch (std::exception const& e) {
+            std::cerr << "Unexpected error while waiting for SimConnect: " << e.what()
+                      << ", retrying aircraft loop" << std::endl;
+            running_ = false;
+            break;
+         }
+
+         // If we catch an error, we wait 5 seconds before retrying
+         co_await Wait(5s);
+      }
 
       co_return;
    });

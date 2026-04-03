@@ -15,19 +15,19 @@
 
 #pragma once
 
-#include "DataType.h"
-#include <SimConnect.h>
+#include "Aircraft.h"
 
-#include <tuple>
+template <class TYPE, class... ARGS>
+void
+Aircraft::NotifyException(ARGS&&... args) {
+   if (!running_) {
+      return;
+   }
 
-namespace smc {
+   auto const [_, _, reject] = [this] constexpr {
+      std::shared_lock lock{mutex_};
+      return *update_pcv_;
+   }();
 
-struct Flaps {
-   int index_{};
-
-   static constexpr std::tuple MEMBERS{std::make_tuple(
-     smc::_m{"FLAPS HANDLE INDEX", smc::_t<SIMCONNECT_DATATYPE_INT32>{}, "Number", &Flaps::index_}
-   )};
-};
-
-}  // namespace smc
+   reject->template Apply<TYPE>(std::forward<ARGS>(args)...);
+}
