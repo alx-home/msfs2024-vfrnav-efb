@@ -307,6 +307,15 @@ private:
    template <class T>
    static std::size_t Size();
 
+   [[nodiscard]] bool
+   TrackRequestSendId(std::shared_ptr<void*> const& handle, SIMCONNECT_DATA_REQUEST_ID requestId);
+   [[nodiscard]] std::optional<DWORD>
+   TrackPendingSendId(std::shared_ptr<void*> const& handle, std::shared_ptr<Reject const> reject);
+   void ClearTrackedSendId(SIMCONNECT_DATA_REQUEST_ID requestId);
+   [[nodiscard]] std::optional<SIMCONNECT_DATA_REQUEST_ID> FindRequestIdForSendId(DWORD sendId
+   ) const;
+   [[nodiscard]] std::shared_ptr<Reject const>             FindRejectForSendId(DWORD sendId) const;
+
    void Dispatch(SIMCONNECT_RECV const& data);
 
    SIMCONNECT_DATA_REQUEST_ID request_id_{0};
@@ -356,6 +365,19 @@ private:
        std::function<void(SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const&)>,
        std::shared_ptr<Reject const>>>;
    WaitingAssignedObject pending_assigned_{};
+
+   static constexpr std::tuple PENDING_MEMBERS{
+     &SimConnect::pending_simobject_,
+     &SimConnect::pending_facility_,
+     &SimConnect::pending_simobject_type_,
+     &SimConnect::pending_enumerated_simobjects_,
+     &SimConnect::pending_facilities_list_,
+     &SimConnect::pending_assigned_
+   };
+
+   std::map<DWORD, SIMCONNECT_DATA_REQUEST_ID>    send_id_to_request_id_{};
+   std::map<SIMCONNECT_DATA_REQUEST_ID, DWORD>    request_id_to_send_id_{};
+   std::map<DWORD, std::shared_ptr<Reject const>> send_id_to_reject_{};
 
    using time_point = std::chrono::steady_clock::time_point;
 

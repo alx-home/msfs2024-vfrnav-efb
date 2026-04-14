@@ -121,90 +121,112 @@ SimConnect::AIReleaseControl(SIMCONNECT_OBJECT_ID objectId) {
 
 WPromise<bool>
 SimConnect::SetServerPort(uint32_t port) {
-   return Proxy<bool>([this, port] constexpr {
+   auto const set_port_send_id{std::make_shared<std::optional<size_t>>(std::nullopt)};
+   return Proxy<bool>([this, port, set_port_send_id] constexpr {
       return MakePromise(
-        [this,
-         port](Resolve<bool> const& resolve, Reject const& reject) mutable -> Promise<bool, true> {
-           while (true) {
-              co_await Connected();
+               [this, port, set_port_send_id](
+                 Resolve<bool> const& resolve, Reject const& reject
+               ) mutable -> Promise<bool, true> {
+                  while (true) {
+                     co_await Connected();
 
-              try {
-                 assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+                     try {
+                        assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
-                 server_port_ = port;
-                 if (sent_port_ == server_port_) {
-                    resolve(true);
-                    co_return;
-                 }
+                        server_port_ = port;
+                        if (sent_port_ == server_port_) {
+                           resolve(true);
+                           co_return;
+                        }
 
-                 auto handle = handle_.lock();
+                        auto handle = handle_.lock();
 
-                 if (!handle) {
-                    std::cout
-                      << "SimConnect: Not connected to simulator, server port will be set on "
-                         "next connection"
-                      << std::endl;
-                    resolve(true);
-                    co_return;
-                 }
+                        if (!handle) {
+                           std::cout << "SimConnect: Not connected to simulator, server port will "
+                                        "be set on "
+                                        "next connection"
+                                     << std::endl;
+                           resolve(true);
+                           co_return;
+                        }
 
-                 auto server_port = static_cast<double>(server_port_);
+                        auto server_port = static_cast<double>(server_port_);
 
-                 std::cout << "SimConnect: Setting server port to " << server_port_ << std::endl;
-                 if (S_OK
-                     != SimConnect_SetDataOnSimObject(
-                       *handle,
-                       static_cast<uint32_t>(DataId::SET_PORT),
-                       SIMCONNECT_OBJECT_ID_USER,
-                       0,
-                       0,
-                       sizeof(server_port),
-                       &server_port
-                     )) {
-                    throw UnknownError(
-                      "SimConnect: Failed to set server port to " + std::to_string(server_port_)
-                    );
-                 } else {
-                    auto const& data =
-                      co_await RequestDataOnSimObject<DataId::SET_PORT, ServerPort>(
-                        SIMCONNECT_OBJECT_ID_USER, handle
-                      );
-                    assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+                        std::cout << "SimConnect: Setting server port to " << server_port_
+                                  << std::endl;
+                        if (S_OK
+                            != SimConnect_SetDataOnSimObject(
+                              *handle,
+                              static_cast<uint32_t>(DataId::SET_PORT),
+                              SIMCONNECT_OBJECT_ID_USER,
+                              0,
+                              0,
+                              sizeof(server_port),
+                              &server_port
+                            )) {
+                           throw UnknownError(
+                             "SimConnect: Failed to set server port to "
+                             + std::to_string(server_port_)
+                           );
+                        } else {
+                           assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+                           if (*set_port_send_id) {
+                              this->send_id_to_reject_.erase(**set_port_send_id);
+                           }
 
-                    auto const port = data.dw_data_.value_;
-                    sent_port_      = port;
+                           *set_port_send_id =
+                             TrackPendingSendId(handle, reject.shared_from_this());
+                           if (!*set_port_send_id) {
+                              throw UnknownError("Failed to track server port send request");
+                           }
 
-                    if (port == server_port_) {
-                       std::cout << "SimConnect: Server port " << port
-                                 << " set successfully in simulator" << std::endl;
-                       resolve(true);
-                       co_return;
-                    } else {
-                       reject.Apply<UnknownError>(
-                         "Failed to set server port in simulator, got " + std::to_string(port)
-                         + " expected " + std::to_string(server_port_)
-                       );
-                       co_return;
-                    }
-                 }
+                           auto const& data =
+                             co_await RequestDataOnSimObject<DataId::SET_PORT, ServerPort>(
+                               SIMCONNECT_OBJECT_ID_USER, handle
+                             );
+                           assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
-                 assert(false);
-                 co_return;
-              } catch (std::exception const& e) {
-                 std::cerr << "SimConnect: Failed to set server port: "
-                           // << e.what() #TODO: https://github.com/llvm/llvm-project/issues/182584
-                           << std::endl;
-              }
+                           auto const port = data.dw_data_.value_;
+                           sent_port_      = port;
 
-              // Retry setting the port after some delay, in case the failure is due to a
-              // temporary issue with the connection to the simulator
-              co_await Wait(5s);
-              assert(std::this_thread::get_id() == MessageQueue::ThreadId());
-           }
+                           if (port == server_port_) {
+                              std::cout << "SimConnect: Server port " << port
+                                        << " set successfully in simulator" << std::endl;
+                              resolve(true);
+                              co_return;
+                           } else {
+                              reject.Apply<UnknownError>(
+                                "Failed to set server port in simulator, got "
+                                + std::to_string(port) + " expected " + std::to_string(server_port_)
+                              );
+                              co_return;
+                           }
+                        }
 
-           throw Disconnected();
-        }
-      );
+                        assert(false);
+                        co_return;
+                     } catch (std::exception const& e) {
+                        std::cerr
+                          << "SimConnect: Failed to set server port: "
+                          // << e.what() #TODO: https://github.com/llvm/llvm-project/issues/182584
+                          << std::endl;
+                     }
+
+                     // Retry setting the port after some delay, in case the failure is due to a
+                     // temporary issue with the connection to the simulator
+                     co_await Wait(5s);
+                     assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+                  }
+
+                  throw Disconnected();
+               }
+      ).Finally([this, set_port_send_id]() {
+         assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+         assert(set_port_send_id);
+         if (*set_port_send_id) {
+            this->send_id_to_reject_.erase(**set_port_send_id);
+         }
+      });
    });
 }
 
@@ -430,10 +452,15 @@ SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType)
                      throw UnknownError("Failed to enumerate sim objects and liveries");
                   }
 
+                  if (!TrackRequestSendId(handle, request_id)) {
+                     throw UnknownError("Failed to track sim object enumeration request");
+                  }
+
                   co_return;
                }
       ).Finally([this, request_id]() {
          assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+         ClearTrackedSendId(request_id);
          pending_enumerated_simobjects_.erase(request_id);
       });
    });

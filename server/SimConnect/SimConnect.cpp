@@ -52,6 +52,38 @@ using namespace std::chrono;
 
 namespace smc {
 
+namespace {
+
+std::string
+MakeSimConnectExceptionMessage(
+  SIMCONNECT_RECV_EXCEPTION const&          exception,
+  std::optional<SIMCONNECT_DATA_REQUEST_ID> request_id = std::nullopt
+) {
+   auto const request = request_id ? std::to_string(*request_id) : std::string{"unknown"};
+   return "SimConnect exception (" + std::to_string(exception.dwException) + ") for request ID "
+          + request + " via send packet " + std::to_string(exception.dwSendID) + " at index "
+          + std::to_string(exception.dwIndex);
+}
+
+template <class PENDING>
+bool
+RejectPendingOnException(
+  PENDING&                         pending,
+  SIMCONNECT_DATA_REQUEST_ID       request_id,
+  SIMCONNECT_RECV_EXCEPTION const& exception
+) {
+   auto request = pending.find(request_id);
+   if (request == pending.end()) {
+      return false;
+   }
+
+   auto const reject = request->second.second;
+   reject->template Apply<UnknownError>(MakeSimConnectExceptionMessage(exception, request_id));
+   return true;
+}
+
+}  // namespace
+
 SimConnect::SimConnect(Main& main)
    : MessageQueue{"SimConnect"}
    , main_(main)
@@ -103,6 +135,82 @@ SimConnect::~SimConnect() {
    });
 }
 
+bool
+SimConnect::TrackRequestSendId(
+  std::shared_ptr<void*> const& handle,
+  SIMCONNECT_DATA_REQUEST_ID    request_id
+) {
+   assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+   DWORD send_id = 0;
+   if (SimConnect_GetLastSentPacketID(*handle, &send_id) != S_OK) {
+      return false;
+   }
+
+   if (auto const existing = request_id_to_send_id_.find(request_id);
+       existing != request_id_to_send_id_.end()) {
+      assert(false);
+      send_id_to_request_id_.erase(existing->second);
+   }
+
+   request_id_to_send_id_[request_id] = send_id;
+   send_id_to_request_id_[send_id]    = request_id;
+   return true;
+}
+
+std::optional<DWORD>
+SimConnect::TrackPendingSendId(
+  std::shared_ptr<void*> const& handle,
+  std::shared_ptr<Reject const> reject
+) {
+   assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+   DWORD send_id = 0;
+   if (SimConnect_GetLastSentPacketID(*handle, &send_id) != S_OK) {
+      return std::nullopt;
+   }
+
+   send_id_to_reject_[send_id] = std::move(reject);
+   return send_id;
+}
+
+void
+SimConnect::ClearTrackedSendId(SIMCONNECT_DATA_REQUEST_ID request_id) {
+   assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+   auto send_id = request_id_to_send_id_.find(request_id);
+   if (send_id == request_id_to_send_id_.end()) {
+      return;
+   }
+
+   send_id_to_request_id_.erase(send_id->second);
+   request_id_to_send_id_.erase(send_id);
+}
+
+std::optional<SIMCONNECT_DATA_REQUEST_ID>
+SimConnect::FindRequestIdForSendId(DWORD send_id) const {
+   assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+   auto request_id = send_id_to_request_id_.find(send_id);
+   if (request_id == send_id_to_request_id_.end()) {
+      return std::nullopt;
+   }
+
+   return request_id->second;
+}
+
+std::shared_ptr<Reject const>
+SimConnect::FindRejectForSendId(DWORD send_id) const {
+   assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+   auto reject = send_id_to_reject_.find(send_id);
+   if (reject == send_id_to_reject_.end()) {
+      return {};
+   }
+
+   return reject->second;
+}
+
 WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>
 SimConnect::AICreateSimulatedObject(
   std::string_view             title,
@@ -146,9 +254,15 @@ SimConnect::AICreateSimulatedObject(
                   reject.Apply<UnknownError>("App is stopping");
                   co_return;
                }
+
+               if (!TrackRequestSendId(handle, request_id)) {
+                  reject.Apply<UnknownError>("Failed to track simulated object request");
+                  co_return;
+               }
             }
    ).Finally([this, request_id] constexpr {
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+      ClearTrackedSendId(request_id);
       pending_assigned_.erase(request_id);
    });
 }
@@ -184,28 +298,34 @@ SimConnect::AICreateNonATCAircraft(
                   }
                }
 
+               pending_assigned_.try_emplace(
+                 request_id,
+                 [this, resolve = resolve.shared_from_this()](
+                   SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned
+                 ) {
+                    (void)this;
+                    assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+                    (*resolve)(assigned);
+                 },
+                 reject.shared_from_this()
+               );
+
                if (SimConnect_AICreateNonATCAircraft_EX1(
                      *handle, title.data(), livery.data(), tail_number.data(), pos, request_id
                    )
-                   == S_OK) {
-                  pending_assigned_.try_emplace(
-                    request_id,
-                    [this, resolve = resolve.shared_from_this()](
-                      SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned
-                    ) {
-                       (void)this;
-                       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
-                       (*resolve)(assigned);
-                    },
-                    reject.shared_from_this()
-                  );
-               } else {
+                   != S_OK) {
                   reject.Apply<UnknownError>("Failed to create non-ATC aircraft");
+                  co_return;
+               }
+
+               if (!TrackRequestSendId(handle, request_id)) {
+                  reject.Apply<UnknownError>("Failed to track non-ATC aircraft request");
                   co_return;
                }
             }
    ).Finally([this, request_id] constexpr {
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+      ClearTrackedSendId(request_id);
       pending_assigned_.erase(request_id);
    });
 }
@@ -253,12 +373,12 @@ SimConnect::Run(std::stop_token const& stoken) {
             }
          };
       };
-      clearPending(makeCleaner(&SimConnect::pending_assigned_));
-      clearPending(makeCleaner(&SimConnect::pending_simobject_));
-      clearPending(makeCleaner(&SimConnect::pending_simobject_type_));
-      clearPending(makeCleaner(&SimConnect::pending_facility_));
-      clearPending(makeCleaner(&SimConnect::pending_facilities_list_));
-      clearPending(makeCleaner(&SimConnect::pending_enumerated_simobjects_));
+      std::apply(
+        [&clearPending, &makeCleaner](auto&&... elem) constexpr {
+           (clearPending(makeCleaner(elem)), ...);
+        },
+        PENDING_MEMBERS
+      );
 
       // Wait until all pending requests have been cleared.
       std::unique_lock lock{mutex};
@@ -450,6 +570,23 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
 
       case SIMCONNECT_RECV_ID_EXCEPTION: {
          auto const& exception = static_cast<SIMCONNECT_RECV_EXCEPTION const&>(data);
+
+         if (auto const request_id = FindRequestIdForSendId(exception.dwSendID)) {
+            if (std::apply(
+                  [this, request_id, exception](auto&... pending) constexpr {
+                     return (
+                       RejectPendingOnException(this->*pending, *request_id, exception) || ...
+                     );
+                  },
+                  PENDING_MEMBERS
+                )) {
+               break;
+            }
+         } else if (auto reject = FindRejectForSendId(exception.dwSendID)) {
+            reject->template Apply<UnknownError>(MakeSimConnectExceptionMessage(exception));
+            break;
+         }
+
          std::cerr << "SimConnect: Exception (" << exception.dwException
                    << ") send_id=" << exception.dwSendID << " index=" << exception.dwIndex
                    << " id=" << exception.dwID << std::endl;
@@ -536,7 +673,6 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
          auto const& simobj  = static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA const&>(data);
          auto        request = pending_simobject_.find(simobj.dwRequestID);
          if (request != pending_simobject_.end()) {
-            ScopeExit _{[this, request]() constexpr { pending_simobject_.erase(request); }};
             request->second.first(simobj, now);
          } else {
             std::cerr << "SimConnect: Received SIMOBJECT_DATA for unknown request ID "
