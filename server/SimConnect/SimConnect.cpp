@@ -452,7 +452,7 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
          auto const& exception = static_cast<SIMCONNECT_RECV_EXCEPTION const&>(data);
          std::cerr << "SimConnect: Exception (" << exception.dwException
                    << ") send_id=" << exception.dwSendID << " index=" << exception.dwIndex
-                   << std::endl;
+                   << " id=" << exception.dwID << std::endl;
       } break;
 
       case SIMCONNECT_RECV_ID_ASSIGNED_OBJECT_ID: {

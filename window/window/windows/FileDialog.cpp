@@ -164,8 +164,8 @@ Open(std::string_view path, std::vector<Filter> filters) {
      ) -> Promise<std::string, true> {
         {
            std::lock_guard lock{s__thread_mutex};
-           std::jthread    thread{[&reject,
-                                &resolve,
+           std::jthread    thread{[resolve = resolve.shared_from_this(),
+                                reject  = reject.shared_from_this(),
                                 filters = std::move(filters),
                                 value = std::filesystem::path{ReplaceEnv(std::string{path})}]() {
               ScopeExit _{[]() constexpr {
@@ -213,12 +213,12 @@ Open(std::string_view path, std::vector<Filter> filters) {
                  }
 
                  if (!fdialog.Show()) {
-                    return reject.Apply<Exception>("FileDialog closed");
+                    return reject->Apply<Exception>("FileDialog closed");
                  }
 
-                 return resolve(utils::NarrowString(fdialog.GetResult()));
+                 return (*resolve)(utils::NarrowString(fdialog.GetResult()));
               } catch (...) {
-                 return reject(std::current_exception());
+                 return (*reject)(std::current_exception());
               }
            }};
            s__threads.emplace(thread.get_id(), std::move(thread));
