@@ -23,16 +23,20 @@
 #include <utils/MessageQueue.h>
 #include <memory>
 #include <promise/promise.h>
+#include <promise/Pool.h>
+#include <promise/CVPromise.h>
+#include <optional>
 #include <unordered_map>
-#include <utility>
 #include <webview/webview.h>
 #include <windows/Env.h>
 #include <windows/SystemTray.h>
 #include <wrl/client.h>
 
+using MainPool = promise::Pool<50>;
+
 class Main
    : public win32::SystemTray
-   , public MessageQueue {
+   , public MainPool {
 public:
    Main(bool minimized, bool configure, bool open_efb, bool open_web);
    ~Main() override;
@@ -65,109 +69,23 @@ public:
 
    void SendServerPortToEFB(uint32_t port);
 
-   template <class FUN>
-   auto PoolDispatch(FUN&& func) {
-      if constexpr (promise::IS_FUNCTION<FUN>) {
-         if constexpr (std::is_same_v<void, promise::return_t<FUN>>) {
-            return PoolDispatchImp(std::forward<FUN>(func));
-         } else {
-            return PoolDispatchImp(std::forward<FUN>(func));
-         }
-      } else {
-         return PoolDispatch(std::function{std::forward<FUN>(func)});
-      }
-   }
-
-   auto Pool(std::optional<Poll::time_point> until = std::nullopt) const {
-      return poll_.dispatch_(until);
-   }
-   auto Pool(Poll::duration delay) const { return poll_.dispatch_(delay); }
-
-   template <class T>
-      requires(!std::is_void_v<T> && !promise::IS_WPROMISE<T>)
-   [[nodiscard]] constexpr WPromise<T> SimConnect(std::function<T(smc::api::SimConnect&)>&& callback
-   ) {
-      return sim_connect_(std::move(callback));
-   }
-   template <class T>
-      requires(promise::IS_WPROMISE<T>)
-   [[nodiscard]] constexpr T SimConnect(std::function<T(smc::api::SimConnect&)>&& callback) {
-      using Return                    = promise::return_t<T>;
-      auto [promise, resolve, reject] = promise::Pure<Return>();
-      if (!sim_connect_([resolve, reject, callback = std::move(callback)](
-                          smc::api::SimConnect& simConnect
-                        ) constexpr {
-             if constexpr (std::is_void_v<Return>) {
-                callback(simConnect)
-                  .Then([resolve = std::move(resolve)]() constexpr { (*resolve)(); })
-                  .Catch([reject = std::move(reject)](std::exception const& e) constexpr {
-                     (*reject)(e);
-                  })
-                  .Detach();
-             } else {
-                callback(simConnect)
-                  .Then([resolve = std::move(resolve)](Return const& assigned) constexpr {
-                     (*resolve)(assigned);
-                  })
-                  .Catch([reject = std::move(reject)](std::exception const& e) constexpr {
-                     (*reject)(e);
-                  })
-                  .Detach();
-             }
-          })) {
-         MakeReject<std::runtime_error>(*reject, "SimConnect is stopped");
-      }
-
-      return promise;
-   }
-
-   template <class T>
-      requires(std::is_void_v<T>)
-   [[nodiscard]] constexpr bool SimConnect(std::function<T(smc::api::SimConnect&)>&& callback) {
-      return sim_connect_(std::move(callback));
-   }
-
-   template <class FUN>
-   [[nodiscard]] constexpr auto SimConnect(FUN&& callback) {
-      return SimConnect(std::function{std::forward<FUN>(callback)});
-   }
+   WPromise<void> Wait(Pool::duration timeout) const;
+   WPromise<void> Wait(Pool::time_point until) const;
 
    [[nodiscard]] constexpr auto& SimConnect() { return sim_connect_; }
 
    bool Terminated() const noexcept { return terminated_; }
 
+   CVPromise const& TerminatePromise() const noexcept { return terminate_promise_; }
+   WPromise<>       WaitTerminate() const noexcept { return *terminate_promise_; }
+
 private:
-   Poll<50>     poll_{"Poll"};
    std::jthread mouse_watcher_;
    LRESULT      OnTrayNotification(WPARAM wParam, LPARAM lParam) override;
    LRESULT      OnMessageImpl(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) override;
 
+   CVPromise         terminate_promise_{};
    std::atomic<bool> terminated_{false};
-
-   bool PoolDispatchImp(std::function<void()>);
-
-   template <class RETURN>
-   auto PoolDispatchImp(std::function<void(Resolve<RETURN> const&, Reject const&)>&& func) {
-      return MakePromise(
-        [this, func = std::move(func)](
-          Resolve<std::string> const& resolve, Reject const& reject
-        ) -> Promise<std::string, true> {
-           if (!poll_.Dispatch([resolve = resolve.shared_from_this(),
-                                reject  = reject.shared_from_this(),
-                                func    = std::move(func)]() {
-                  try {
-                     (func)(*resolve, *reject);
-                  } catch (...) {
-                     (*reject)(std::current_exception());
-                  }
-               })) {
-              MakeReject<std::runtime_error>(reject, "App is stopping");
-           }
-
-           co_return;
-        }
-      );
-   }
 
    // Must be before windows to resolve every promises
    ::SimConnect sim_connect_{*this};

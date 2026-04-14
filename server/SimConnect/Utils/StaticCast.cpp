@@ -13,23 +13,29 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "../Data/Break.h"
+#include "../Data/Flaps.h"
 #include "../Data/GroundInfo.h"
-#include "../Data/TrafficInfo.h"
 #include "../Data/ServerPort.h"
+#include "../Data/TrafficInfo.h"
 #include "../Data/Waypoint.h"
 
 #include "StaticCast.inl"
 
-namespace smc::priv {
+namespace smc {
 
+template Break       SimConnect::StaticCast<Break>(DWORD const& data);
+template Flaps       SimConnect::StaticCast<Flaps>(DWORD const& data);
 template GroundInfo  SimConnect::StaticCast<GroundInfo>(DWORD const& data);
-template TrafficInfo SimConnect::StaticCast<TrafficInfo>(DWORD const& data);
 template ServerPort  SimConnect::StaticCast<ServerPort>(DWORD const& data);
+template TrafficInfo SimConnect::StaticCast<TrafficInfo>(DWORD const& data);
 template Waypoint    SimConnect::StaticCast<Waypoint>(DWORD const& data);
 
+template std::size_t SimConnect::Size<Break>();
+template std::size_t SimConnect::Size<Flaps>();
 template std::size_t SimConnect::Size<GroundInfo>();
-template std::size_t SimConnect::Size<TrafficInfo>();
 template std::size_t SimConnect::Size<ServerPort>();
+template std::size_t SimConnect::Size<TrafficInfo>();
 template std::size_t SimConnect::Size<Waypoint>();
 
-}  // namespace smc::priv
+}  // namespace smc

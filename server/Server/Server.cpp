@@ -57,14 +57,7 @@
 #include <unordered_map>
 #include <utility>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlanguage-extension-token"
-#pragma clang diagnostic ignored "-Wgnu-anonymous-struct"
-#pragma clang diagnostic ignored "-Wnested-anon-types"
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wdeprecated-missing-comma-variadic-parameter"
 #include <boost/url.hpp>
-#pragma clang diagnostic pop
 
 ServerState
 Server::GetState(Server::Lock) const {
@@ -154,9 +147,11 @@ Server::CloseSockets() {
       done = true;
       cv.notify_all();
    };
-   if (!Ensure(clear)) {
-      clear();
+   try {
+      Ensure(clear);
+   } catch (QueueStopped const&) {
       assert(false && "Failed to dispatch clear on EFB WebSocket");
+      clear();
    }
 
    std::unique_lock lock{mutex};
@@ -208,6 +203,7 @@ Server::Server(Main& main)
                tcp_ = std::make_unique<Tcp>(tcp::endpoint{tcp::v4(), port});
 
                ScopeExit _{[this] constexpr {
+                  (void)this;
                   assert(!efb_socket_);
                   assert(web_sockets_.empty());
                }};
@@ -791,9 +787,14 @@ Server::VDispatchMessage(std::size_t id, ws::Message&& message) {
    } else if (std::holds_alternative<ws::msg::dev::GetPresets>(message)) {
       HandleGetDeviationPresets(id);
    } else if (efb_socket) {
-      return Dispatch([efb_socket, id, message = std::move(message)]() mutable {
-         efb_socket->VDispatchMessage(id, std::move(message));
-      });
+      try {
+         Dispatch([efb_socket, id, message = std::move(message)]() mutable {
+            efb_socket->VDispatchMessage(id, std::move(message));
+         });
+      } catch (QueueStopped const&) {
+         std::cerr << "Failed to dispatch message to EFB WebSocket" << std::endl;
+         return false;
+      }
    } else if (std::holds_alternative<ws::msg::GetFacilities>(message)) {
       (void)Dispatch([this, id, message = std::move(message)]() constexpr {
          if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
@@ -827,10 +828,12 @@ Server::SetMessageHandler(std::size_t id, MessageHandler&& message_handler) {
 
 void
 Server::UnsetMessageHandler(std::size_t id) {
-   if (!Dispatch([this, id]() constexpr {
-          auto const _ = message_handlers_.erase(id);
-          assert(_ == 1);
-       })) {
+   try {
+      Dispatch([this, id]() constexpr {
+         auto const _ = message_handlers_.erase(id);
+         assert(_ == 1);
+      });
+   } catch (QueueStopped const&) {
       assert(message_handlers_.empty());
    }
 }

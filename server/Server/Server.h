@@ -21,7 +21,7 @@
 #include "Window/template/Window.h"
 
 #include <utils/MessageQueue.h>
-#include <utils/Poll.h>
+#include <utils/Pool.h>
 #include <promise/promise.h>
 #include <minwindef.h>
 
@@ -34,11 +34,7 @@
 #include <vector>
 
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlanguage-extension-token"
-#pragma clang diagnostic ignored "-Wgnu-anonymous-struct"
-#pragma clang diagnostic ignored "-Wnested-anon-types"
-#pragma clang diagnostic ignored "-Wunknown-warning-option"
-#pragma clang diagnostic ignored "-Wdeprecated-missing-comma-variadic-parameter"
+#pragma clang diagnostic ignored "-Weverything"
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
 #include <boost/beast/core/error.hpp>
@@ -65,7 +61,7 @@ public:
 #include "Resolvers.inl"
 
 class Main;
-struct Server : public MessageQueue {
+struct Server : public MessageQueue<true> {
    Server(Main& main);
    ~Server() override;
 
@@ -195,8 +191,8 @@ public:
    EFBWebSocket(Server::WebSocket&& socket, bool web_browser);
    ~EFBWebSocket();
 
-   void Start();
-   void Stop();
+   void Start() noexcept(false);
+   void Stop() noexcept(false);
 
    void VDispatchMessage(std::size_t id, ws::Message&& message);
    void VSendMessage(std::size_t id, ws::Message&& message);
@@ -214,7 +210,7 @@ private:
    tcp::endpoint                                peer_;
    boost::beast::websocket::stream<tcp::socket> ws_;
 
-   Poll<10> poll_{"ServPoll"};
+   Pool<true, 10> poll_{"ServPoll"};
 
    std::shared_mutex           mutex_{};
    std::condition_variable_any cv_{};

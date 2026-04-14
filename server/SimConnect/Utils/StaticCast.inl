@@ -21,7 +21,7 @@
 template <typename>
 inline constexpr bool ALWAYS_FALSE = false;
 
-namespace smc::priv {
+namespace smc {
 
 template <class T>
 T
@@ -137,4 +137,4 @@ SimConnect::Size() {
       return size;
    }();
 }
-}  // namespace smc::priv
+}  // namespace smc

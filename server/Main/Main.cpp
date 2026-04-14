@@ -58,7 +58,7 @@ AppStopping::AppStopping()
 static uint32_t const MF_MOUSE_EVENT = ::RegisterWindowMessage("MainFrameMouseEvent");
 Main::Main(bool minimized, bool configure, bool open_efb, bool open_web)
    : win32::SystemTray("MSFS2024 VFRNav' Server", "MSFS2024 VFRNav' Server")
-   , MessageQueue{"Main"}
+   , promise::Pool<50>{"Main Pool"}
    , mouse_watcher_([this](std::stop_token stop_token) constexpr {
       bool was_l_down{false};
       bool was_r_down{false};
@@ -120,6 +120,16 @@ Main::Main(bool minimized, bool configure, bool open_efb, bool open_web)
 Main::~Main() {
    mouse_watcher_.request_stop();
    server_.Stop();
+}
+
+WPromise<void>
+Main::Wait(Pool::duration timeout) const {
+   return promise::Race(*terminate_promise_, Pool::Dispatch(timeout));
+}
+
+WPromise<void>
+Main::Wait(Pool::time_point until) const {
+   return promise::Race(*terminate_promise_, Pool::Dispatch(until));
 }
 
 LRESULT
@@ -261,11 +271,6 @@ Main::OpenWebEFB() {
    );
 }
 
-bool
-Main::PoolDispatchImp(std::function<void()> func) {
-   return poll_.Dispatch(std::move(func));
-}
-
 void
 Main::SetServerPort(uint16_t port) {
    return server_.SetServerPort(port);
@@ -273,10 +278,7 @@ Main::SetServerPort(uint16_t port) {
 
 void
 Main::SendServerPortToEFB(uint32_t port) {
-   if (!sim_connect_([port](smc::api::SimConnect& sc) constexpr { sc.SetServerPort(port).Detach(); }
-       )) {
-      std::cerr << "Failed to send server port to EFB: SimConnect is stopped" << std::endl;
-   }
+   sim_connect_.SetServerPort(port).Detach();
 }
 
 void
@@ -285,6 +287,7 @@ Main::Terminate() {
       return;
    }
 
+   terminate_promise_.Reject<AppStopping>();
    server_.RejectAll();
    SystemTray::Dispatch([]() constexpr { PostQuitMessage(0); });
 }

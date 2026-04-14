@@ -50,23 +50,18 @@ Server::EFBWebSocket::~EFBWebSocket() {
    std::cout << "Session " << peer_ << " closed" << std::endl;
 
    if (web_browser_) {
-      if (!server_.Dispatch([&server = server_, id = my_id_]() { server.UnsetMessageHandler(id); }
-          )) {
-         assert(false && "Failed to dispatch message handler removal on EFB WebSocket destruction");
-      }
+      server_.Dispatch([&server = server_, id = my_id_]() { server.UnsetMessageHandler(id); });
    } else {
       // EFB MSFS App Closed - Notify server state
 
-      if (!server_.Dispatch([&server = server_, my_id = my_id_]() {
-             server.efb_connected_ = false;
-             server.UnsetMessageHandler(0);
+      server_.Dispatch([&server = server_, my_id = my_id_]() {
+         server.efb_connected_ = false;
+         server.UnsetMessageHandler(0);
 
-             for (auto const& [id, handler] : server.message_handlers_) {
-                handler(my_id, ws::msg::EFBState{.state_ = false});
-             }
-          })) {
-         assert(false && "Failed to dispatch server state update on EFB WebSocket destruction");
-      }
+         for (auto const& [id, handler] : server.message_handlers_) {
+            handler(my_id, ws::msg::EFBState{.state_ = false});
+         }
+      });
 
       // Wait promises to be done
       std::unique_lock lock{mutex_};
@@ -76,7 +71,9 @@ Server::EFBWebSocket::~EFBWebSocket() {
    boost::beast::error_code ec;
    ws_.next_layer().cancel(ec);
    ec = {};
-   ws_.close({}, ec);
+   if (ws_.is_open()) {
+      ws_.close({}, ec);
+   }
    if (ec && ec != websocket::error::closed && ec != net::error::operation_aborted
        && ec != net::error::bad_descriptor) {
       std::cerr << "Error closing WebSocket: " << ec.message() << std::endl;
@@ -127,75 +124,74 @@ Server::EFBWebSocket::VSendMessage(std::size_t id, ws::Message&& message) {
 }
 
 void
-Server::EFBWebSocket::Stop() {
+Server::EFBWebSocket::Stop() noexcept(false) {
    std::mutex mutex{};
 
    std::condition_variable cv{};
    bool                    closed = false;
 
-   if (!server_.Ensure([self = shared_from_this(), &cv, &mutex, &closed]() {
-          boost::beast::error_code ec;
-          self->ws_.next_layer().cancel(ec);
-          ec = {};
-          self->ws_.close({}, ec);
+   server_.Ensure([self = shared_from_this(), &cv, &mutex, &closed]() {
+      boost::beast::error_code ec;
+      self->ws_.next_layer().cancel(ec);
+      ec = {};
 
-          std::lock_guard lock{mutex};
-          closed = true;
-          cv.notify_all();
-       })) {
-      assert(false && "Failed to dispatch stop on EFB WebSocket");
-   }
+      if (self->ws_.is_open()) {
+         self->ws_.close({}, ec);
+      }
+
+      std::lock_guard lock{mutex};
+      closed = true;
+      cv.notify_all();
+   });
 
    std::unique_lock lock{mutex};
    cv.wait(lock, [&closed]() { return closed; });
 }
 
 void
-Server::EFBWebSocket::Start() {
+Server::EFBWebSocket::Start() noexcept(false) {
    if (!server_.want_run_) {
       return;
    }
 
    my_id_ = web_browser_ ? std::bit_cast<std::size_t>(this) : 0;
 
-   if (!server_.Dispatch([self = shared_from_this()]() constexpr {
-          self->VSendMessage(1, ws::msg::HelloWorld{.type_ = "Server"});
+   server_.Dispatch([self = shared_from_this()]() constexpr {
+      self->VSendMessage(1, ws::msg::HelloWorld{.type_ = "Server"});
 
-          self->server_.SetMessageHandler(
-            self->my_id_,
-            {[self = self->weak_from_this()](std::size_t id, ws::Message message) constexpr {
-               auto const ptr = self.lock();
-               if (ptr) {
-                  ptr->VDispatchMessage(id, std::move(message));
-               }
-            }}
-          );
+      self->server_.SetMessageHandler(
+        self->my_id_,
+        {[self = self->weak_from_this()](std::size_t id, ws::Message message) constexpr {
+           auto const ptr = self.lock();
+           if (ptr) {
+              ptr->VDispatchMessage(id, std::move(message));
+           }
+        }}
+      );
 
-          if (self->web_browser_) {
-             self->VSendMessage(1, ws::msg::SetId{.id_ = self->my_id_});
-             self->VSendMessage(1, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
-          } else {
-             // EFB MSFS App
-             self->server_.efb_connected_ = true;
+      if (self->web_browser_) {
+         self->VSendMessage(1, ws::msg::SetId{.id_ = self->my_id_});
+         self->VSendMessage(1, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
+      } else {
+         // EFB MSFS App
+         self->server_.efb_connected_ = true;
 
-             self->VSendMessage(1, ws::msg::GetRecords{});
+         self->VSendMessage(1, ws::msg::GetRecords{});
 
-             for (auto const& [id, handler] : self->server_.message_handlers_) {
-                handler(1, ws::msg::EFBState{.state_ = true});
+         for (auto const& [id, handler] : self->server_.message_handlers_) {
+            handler(1, ws::msg::EFBState{.state_ = true});
 
-                if (handler.lat_ > -500) {
-                   self->VSendMessage(
-                     id, ws::msg::GetFacilities{.lat_ = handler.lat_, .lon_ = handler.lon_}
-                   );
-                }
-             }
-          }
+            if (handler.lat_ > -500) {
+               self->VSendMessage(
+                 id, ws::msg::GetFacilities{.lat_ = handler.lat_, .lon_ = handler.lon_}
+               );
+            }
+         }
+      }
 
-          self->VSendMessage(1, ws::msg::fuel::GetPresets{});
-          self->VSendMessage(1, ws::msg::dev::GetPresets{});
-       })) {
-      return;
-   }
+      self->VSendMessage(1, ws::msg::fuel::GetPresets{});
+      self->VSendMessage(1, ws::msg::dev::GetPresets{});
+   });
 
    Read();
 }
