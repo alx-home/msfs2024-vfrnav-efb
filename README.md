@@ -1,7 +1,9 @@
 [<img src="https://liberapay.com/assets/widgets/donate.svg">](https://liberapay.com/alex-home/donate) \
 [<img src="https://img.shields.io/liberapay/goal/alex-home.svg?logo=liberapay">](https://liberapay.com/alex-home/donate) \
 [<img src="https://github.com/user-attachments/assets/2e494c0c-6085-4e2f-a728-77a1d3bafc71">](https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=UFLZE3KQB78Z4) \
-[![Build](https://github.com/alx-home/msfs2024-vfrnav-efb/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/alx-home/msfs2024-vfrnav-efb/actions/workflows/build.yml) 
+[![Build](https://github.com/alx-home/msfs2024-vfrnav-efb/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/alx-home/msfs2024-vfrnav-efb/actions/workflows/build.yml)
+[![Quality Gate Status](https://sonarqube.alex-home.fr/api/project_badges/measure?project=alx-home_msfs2024-vfrnav-efb_33170064-2b0f-4c54-8aa2-683124a1bd83&metric=alert_status&token=sqb_5951198d7fb73ef737343ef9fd87c2a30096a3a6)](https://sonarqube.alex-home.fr/dashboard?id=alx-home_msfs2024-vfrnav-efb_33170064-2b0f-4c54-8aa2-683124a1bd83) \
+<a href="https://discord.gg/BAJpKMEJk" title="Join the chat at Discord"><img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0b5061df29d55a92d945_full_logo_blurple_RGB.svg" alt="Discord" height="20" /></a>
 
 # <p align="center">VFR tools for Flight Simulator 2024 EFB / Outils de VFR pour Microsoft Flight Simulator 2024</p>
 
@@ -9,21 +11,21 @@
 <br> 
 Pluggin pour l'EFB intégré de Fligth simulator 2024.
 
--  Lecteur de cartes de navigation (VAC/pdf/...)
--  Cartes VFR (OACI/Bing/Altitude/OpenStreetMap) (mais sans la position de l'avion !!)
--  Plan(s) de vol sur la carte
--  Navlog basé sur le(s) flight plan
+- Lecteur de cartes de navigation (VAC/pdf/...)
+- Cartes VFR (OACI/Bing/Altitude/OpenStreetMap) (mais sans la position de l'avion !!)
+- Plan(s) de vol sur la carte
+- Navlog basé sur le(s) flight plan
 
 ---
 
 This is a pluggin for Microsoft simulator 2024 embeded EFB.
 
--  Enroute chart reader (VAC/pdf/...)
--  VFR Maps (OACI/Bing/Elevation/OpenStreetMap) (without aircraft position !!)
--  Flight Plan(s) over the map
--  Navlog based on map flight plan(s)
-   <br>
-   <br>
+- Enroute chart reader (VAC/pdf/...)
+- VFR Maps (OACI/Bing/Elevation/OpenStreetMap) (without aircraft position !!)
+- Flight Plan(s) over the map
+- Navlog based on map flight plan(s)
+  <br>
+  <br>
 
 ![demo](https://github.com/user-attachments/assets/ac67060b-d26c-40d1-b385-e11fa8e43bbc)
 
@@ -42,25 +44,25 @@ https://github.com/alx-home/msfs2024-vfrnav-efb/wiki
 
 ## For building this project / Pour compiler ce projet
 
--  Commencer par suivre les instructions de https://github.com/coreybutler/nvm-windows pour installer npm sous windows
--  Installez les modules node `npm install --save`
--  Compillez le projet `npm run build`
--  Ouvrez FlightSimulator
--  Activez le mode développeur
--  Selectionnez `file/open project`
--  Selectionnez le projet `msfs2024-vfrnavProject.xml`
--  Clickez sur `Build All In Project`
+- Commencer par suivre les instructions de https://github.com/coreybutler/nvm-windows pour installer npm sous windows
+- Installez les modules node `npm install --save`
+- Compillez le projet `npm run build`
+- Ouvrez FlightSimulator
+- Activez le mode développeur
+- Selectionnez `file/open project`
+- Selectionnez le projet `msfs2024-vfrnavProject.xml`
+- Clickez sur `Build All In Project`
 
 ---
 
--  First install npm for windows as per https://github.com/coreybutler/nvm-windows
--  Install node modules `npm install --save`
--  Build the project `npm run build`
--  Open FlightSimulator
--  Enable dev mode
--  Go to `file/open project`
--  Select `msfs2024-vfrnavProject.xml` project
--  Click on `Build All In Project`
+- First install npm for windows as per https://github.com/coreybutler/nvm-windows
+- Install node modules `npm install --save`
+- Build the project `npm run build`
+- Open FlightSimulator
+- Enable dev mode
+- Go to `file/open project`
+- Select `msfs2024-vfrnavProject.xml` project
+- Click on `Build All In Project`
 
 <br>
 <br>
@@ -69,16 +71,16 @@ https://github.com/alx-home/msfs2024-vfrnav-efb/wiki
 
 ### OpenLayers
 
--  © <a href="https://github.com/openlayers/openlayers/blob/main/LICENSE.md" target="_blank">openlayers</a>.
+- © <a href="https://github.com/openlayers/openlayers/blob/main/LICENSE.md" target="_blank">openlayers</a>.
 
 ### OpenLayers Layers
 
--  © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors.
--  Microsoft <a className="ol-attribution-bing-tos" href="https://www.microsoft.com/maps/product/terms.html" target="_blank">Terms of Use</a>.
--  Microsoft Terms of Use.
--  Earthstar Geographics SIO.
--  © 2024 TomTom.
+- © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors.
+- Microsoft <a className="ol-attribution-bing-tos" href="https://www.microsoft.com/maps/product/terms.html" target="_blank">Terms of Use</a>.
+- Microsoft Terms of Use.
+- Earthstar Geographics SIO.
+- © 2024 TomTom.
 
 ### MSFS2024 VFRNav'
 
--  © <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/blob/master/LICENSE" target="_blank">MSFS2024 VFRNav&apos;</a>.
+- © <a href="https://github.com/alx-home/msfs2024-vfrnav-efb/blob/master/LICENSE" target="_blank">MSFS2024 VFRNav&apos;</a>.
