@@ -47,7 +47,6 @@
 #include <filesystem>
 #include <format>
 #include <iostream>
-#include <memory>
 #include <string_view>
 #include <tuple>
 #include <io.h>
@@ -106,6 +105,183 @@ ParseArgs(std::string_view cmd) {
    return std::make_tuple(minimized, uninstall, configure, open_web, open_efb);
 }
 
+auto
+BuildLaunchModeErrorString(std::vector<std::string> const& error) {
+   std::string error_str{};
+   for (auto const& value : error) {
+      error_str += value + " ";
+   }
+   return error_str;
+}
+
+int
+HandleUninstallStep1() {
+   if (auto const result = MessageBox(
+         nullptr,
+         "MSFS2024 VFRNav' Server is about to be uninstalled.\nDo you wish to proceed?",
+         "MSFS2024 VFRNav' Server uninstaller",
+         MB_ICONERROR | MB_OKCANCEL
+       );
+       result != IDOK) {
+      return EXIT_FAILURE;
+   }
+
+   auto const uninstaller = std::filesystem::temp_directory_path() / "msfs2024-vfrnav_uninstaller.exe";
+   auto const path        = win32::GetExecutablePath();
+
+   if (!((!std::filesystem::exists(uninstaller) || std::filesystem::remove(uninstaller))
+         && std::filesystem::copy_file(path, uninstaller))) {
+      MessageBox(
+        nullptr,
+        ("Couldn't create \"" + uninstaller.string() + "\" file").c_str(),
+        "MSFS2024 VFRNav' Server uninstaller",
+        MB_OK | MB_ICONERROR
+      );
+   }
+
+   try {
+      win32::NewProcess(uninstaller.string(), "--uninstall2");
+   } catch (std::exception const& e) {
+      MessageBox(nullptr, e.what(), "MSFS2024 VFRNav' Server uninstaller", MB_OK | MB_ICONERROR);
+      return EXIT_FAILURE;
+   }
+
+   return EXIT_SUCCESS;
+}
+
+int
+HandleUninstallStep2() {
+   ScopeExit _{[&]() constexpr {
+      win32::NewProcess(
+        R"(C:\Windows\System32\cmd.exe)",
+        std::format("/c ping localhost -n 3 > nul & del {} & pause", win32::GetExecutablePath()),
+        {},
+        false,
+        true
+      );
+   }};
+
+   auto lock = win32::CreateLock("MSFS_VFR_NAV_SERVER");
+   while (!lock) {
+      auto const result = MessageBox(
+        nullptr,
+        "Please close all MSFS2024 VFRNav' Server instances",
+        "MSFS2024 VFRNav' Server uninstaller",
+        MB_ICONERROR | MB_OKCANCEL
+      );
+
+      if (result != IDOK) {
+        return EXIT_FAILURE;
+      }
+
+      lock = win32::CreateLock("MSFS_VFR_NAV_SERVER");
+   }
+
+   auto& registry = registry::Get();
+   auto& settings = registry.alx_home_->settings_;
+
+   auto const destination = *settings->destination_;
+   auto const addon       = *settings->addon_;
+
+   if (auto const error = launch_mode::Never(); error.size()) {
+      auto const error_str = BuildLaunchModeErrorString(error);
+      MessageBox(
+        nullptr, error_str.c_str(), "MSFS2024 VFRNav' Server uninstaller", MB_OK | MB_ICONWARNING
+      );
+   }
+   registry.Clear();
+
+   auto const shortcutPath =
+     GetAppData() + R"(\Microsoft\Windows\Start Menu\Programs\MSFS2024 VFRNav' Server.lnk)";
+   if (std::filesystem::exists(shortcutPath) && !std::filesystem::remove(shortcutPath)) {
+      MessageBox(
+        nullptr,
+        ("Couldn't remove shortcut " + shortcutPath).c_str(),
+        "MSFS2024 VFRNav' Server uninstaller",
+        MB_OK | MB_ICONWARNING
+      );
+   }
+
+   if (std::filesystem::exists(destination) && !std::filesystem::remove_all(destination)) {
+      MessageBox(
+        nullptr,
+        ("Couldn't clean " + destination).c_str(),
+        "MSFS2024 VFRNav' Server uninstaller",
+        MB_OK | MB_ICONWARNING
+      );
+   }
+
+   if (std::filesystem::exists(addon) && !std::filesystem::remove_all(addon)) {
+      MessageBox(
+        nullptr,
+        ("Couldn't clean " + addon).c_str(),
+        "MSFS2024 VFRNav' Server uninstaller",
+        MB_OK | MB_ICONWARNING
+      );
+   }
+
+   MessageBox(
+     nullptr,
+     "MSFS2024 VFRNav' Server is uninstalled !",
+     "MSFS2024 VFRNav' Server uninstaller",
+     MB_OK | MB_ICONINFORMATION
+   );
+
+   return EXIT_SUCCESS;
+}
+
+int
+HandleAlreadyRunning(bool configure, bool open_web, bool open_efb) {
+   if (auto window = FindWindow("system_tray", "MSFS2024 VFRNav' Server"); window) {
+      if (configure) {
+         SendMessageA(window, WM_OPEN_SETTINGS, 0ul, 0ul);
+      }
+      if (open_web) {
+         SendMessageA(window, WM_OPEN_WEB, 0ul, 0ul);
+      }
+      if (open_efb) {
+         SendMessageA(window, WM_OPEN_EFB, 0ul, 0ul);
+      }
+      return EXIT_SUCCESS;
+   }
+
+   MessageBox(nullptr, "Fatal error !", "MSFS2024 VFRNav' Server", MB_OK | MB_ICONERROR);
+   return EXIT_FAILURE;
+}
+
+void
+SetupDebugConsole() {
+#ifndef NDEBUG
+   if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
+      FILE* old = nullptr;
+      freopen_s(&old, "CONOUT$", "w", stdout);
+      freopen_s(&old, "CONOUT$", "w", stderr);
+   }
+
+   // Switch console to UTF-8
+   SetConsoleOutputCP(CP_UTF8);
+   SetConsoleCP(CP_UTF8);
+
+   // Disable legacy translation
+   std::ios_base::sync_with_stdio(false);
+   // Force stdout to binary mode (no CRLF mangling, no translation)
+   _setmode(_fileno(stdout), _O_BINARY);
+#endif  // NDEBUG
+}
+
+int
+RunMainApp(bool minimized, bool configure, bool open_efb, bool open_web) {
+   try {
+      SetupDebugConsole();
+      Main main{minimized, configure, open_efb, open_web};
+   } catch (const webview::Exception& e) {
+      std::cerr << e.what() << '\n';
+      return EXIT_FAILURE;
+   }
+
+   return EXIT_SUCCESS;
+}
+
 #ifdef _WIN32
 int WINAPI
 WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR lpCmdLine, int /*nCmdShow*/) {
@@ -121,167 +297,21 @@ main() {
    auto const [minimized, uninstall, configure, open_web, open_efb] = ParseArgs(lpCmdLine);
 
    if (uninstall == Uninstall::STEP1) {
+      return HandleUninstallStep1();
+   }
 
-      if (auto const result = MessageBox(
-            nullptr,
-            "MSFS2024 VFRNav' Server is about to be uninstalled.\nDo you wish to proceed?",
-            "MSFS2024 VFRNav' Server uninstaller",
-            MB_ICONERROR | MB_OKCANCEL
-          );
-          result != IDOK) {
-         return EXIT_FAILURE;
-      }
-
-      auto const uninstaller =
-        std::filesystem::temp_directory_path() / "msfs2024-vfrnav_uninstaller.exe";
-      auto const path = win32::GetExecutablePath();
-
-      if (!((!std::filesystem::exists(uninstaller) || std::filesystem::remove(uninstaller))
-            && std::filesystem::copy_file(path, uninstaller))) {
-         MessageBox(
-           nullptr,
-           ("Couldn't create \"" + uninstaller.string() + "\" file").c_str(),
-           "MSFS2024 VFRNav' Server uninstaller",
-           MB_OK | MB_ICONERROR
-         );
-      }
-
-      try {
-         win32::NewProcess(uninstaller.string(), "--uninstall2");
-      } catch (std::exception const& e) {
-         MessageBox(nullptr, e.what(), "MSFS2024 VFRNav' Server uninstaller", MB_OK | MB_ICONERROR);
-         return EXIT_FAILURE;
-      }
-      return EXIT_SUCCESS;
-   } else if (uninstall == Uninstall::STEP2) {
-      ScopeExit _{[&]() constexpr {
-         win32::NewProcess(
-           R"(C:\Windows\System32\cmd.exe)",
-           std::format("/c ping localhost -n 3 > nul & del {} & pause", win32::GetExecutablePath()),
-           {},
-           false,
-           true
-         );
-      }};
-
-      auto lock = win32::CreateLock("MSFS_VFR_NAV_SERVER");
-      while (!lock) {
-         auto const result = MessageBox(
-           nullptr,
-           "Please close all MSFS2024 VFRNav' Server instances",
-           "MSFS2024 VFRNav' Server uninstaller",
-           MB_ICONERROR | MB_OKCANCEL
-         );
-
-         if (result != IDOK) {
-            return EXIT_FAILURE;
-         }
-
-         lock = win32::CreateLock("MSFS_VFR_NAV_SERVER");
-      }
-
-      auto& registry = registry::Get();
-      auto& settings = registry.alx_home_->settings_;
-
-      auto const destination = *settings->destination_;
-      auto const addon       = *settings->addon_;
-
-      if (auto const error = launch_mode::Never(); error.size()) {
-         std::string error_str{};
-         for (auto const& value : error) {
-            error_str += value + " ";
-         }
-         MessageBox(
-           nullptr, error_str.c_str(), "MSFS2024 VFRNav' Server uninstaller", MB_OK | MB_ICONWARNING
-         );
-      }
-      registry.Clear();
-
-      auto const shortcutPath =
-        GetAppData() + R"(\Microsoft\Windows\Start Menu\Programs\MSFS2024 VFRNav' Server.lnk)";
-      if (std::filesystem::exists(shortcutPath) && !std::filesystem::remove(shortcutPath)) {
-         MessageBox(
-           nullptr,
-           ("Couldn't remove shortcut " + shortcutPath).c_str(),
-           "MSFS2024 VFRNav' Server uninstaller",
-           MB_OK | MB_ICONWARNING
-         );
-      }
-
-      if (std::filesystem::exists(destination) && !std::filesystem::remove_all(destination)) {
-         MessageBox(
-           nullptr,
-           ("Couldn't clean " + destination).c_str(),
-           "MSFS2024 VFRNav' Server uninstaller",
-           MB_OK | MB_ICONWARNING
-         );
-      }
-
-      if (std::filesystem::exists(addon) && !std::filesystem::remove_all(addon)) {
-         MessageBox(
-           nullptr,
-           ("Couldn't clean " + addon).c_str(),
-           "MSFS2024 VFRNav' Server uninstaller",
-           MB_OK | MB_ICONWARNING
-         );
-      }
-
-      MessageBox(
-        nullptr,
-        "MSFS2024 VFRNav' Server is uninstalled !",
-        "MSFS2024 VFRNav' Server uninstaller",
-        MB_OK | MB_ICONINFORMATION
-      );
-
-      return EXIT_SUCCESS;
+   if (uninstall == Uninstall::STEP2) {
+      return HandleUninstallStep2();
    }
 
    auto const lock = win32::CreateLock("MSFS_VFR_NAV_SERVER");
    if (!lock) {
-      if (auto window = FindWindow("system_tray", "MSFS2024 VFRNav' Server"); window) {
-         if (configure) {
-            SendMessageA(window, WM_OPEN_SETTINGS, 0ul, 0ul);
-         }
-         if (open_web) {
-            SendMessageA(window, WM_OPEN_WEB, 0ul, 0ul);
-         }
-         if (open_efb) {
-            SendMessageA(window, WM_OPEN_EFB, 0ul, 0ul);
-         }
-         return EXIT_SUCCESS;
-      } else {
-         MessageBox(nullptr, "Fatal error !", "MSFS2024 VFRNav' Server", MB_OK | MB_ICONERROR);
-         return EXIT_FAILURE;
-      }
+      return HandleAlreadyRunning(configure, open_web, open_efb);
    }
 
 #ifdef PROMISE_MEMCHECK
    auto const _{promise::Memcheck()};
 #endif
 
-   try {
-#ifndef NDEBUG
-      if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
-         FILE* old = nullptr;
-         freopen_s(&old, "CONOUT$", "w", stdout);
-         freopen_s(&old, "CONOUT$", "w", stderr);
-      }
-
-      // Switch console to UTF‑8
-      SetConsoleOutputCP(CP_UTF8);
-      SetConsoleCP(CP_UTF8);
-
-      // Disable legacy translation
-      std::ios_base::sync_with_stdio(false);
-      // Force stdout to binary mode (no CRLF mangling, no translation)
-      _setmode(_fileno(stdout), _O_BINARY);
-#endif  // DEBUG
-
-      Main main{minimized, configure, open_efb, open_web};
-   } catch (const webview::Exception& e) {
-      std::cerr << e.what() << '\n';
-      return 1;
-   }
-
-   return 0;
+   return RunMainApp(minimized, configure, open_efb, open_web);
 }
