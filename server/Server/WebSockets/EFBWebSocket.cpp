@@ -29,7 +29,6 @@
 #include <processthreadsapi.h>
 #include <exception>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <ranges>
@@ -87,39 +86,63 @@ Server::EFBWebSocket::VDispatchMessage(std::size_t id, ws::Message&& message) {
    });
 }
 
+bool
+Server::EFBWebSocket::HandleOutgoingMessage(std::size_t id, ws::Message const& message) {
+   if (std::holds_alternative<ws::msg::GetSettings>(message)
+       || std::holds_alternative<ws::msg::Settings>(message)) {
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::GetEFBState>(message)) {
+      SendEFBState(id);
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::GetServerState>(message)) {
+      SendServerState(id);
+      return true;
+   }
+
+   return false;
+}
+
+void
+Server::EFBWebSocket::SendEFBState(std::size_t id) {
+   (void)server_.Dispatch([self = shared_from_this(), id]() {
+      if (auto const message_handler = self->server_.message_handlers_.find(id);
+          message_handler != self->server_.message_handlers_.end()) {
+         message_handler->second(1, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
+      }
+   });
+}
+
+void
+Server::EFBWebSocket::SendServerState(std::size_t id) {
+   (void)server_.Dispatch([self = shared_from_this(), id]() {
+      if (auto const message_handler = self->server_.message_handlers_.find(id);
+          message_handler != self->server_.message_handlers_.end()) {
+         message_handler->second(1, ws::msg::ServerState{.state_ = self->server_.running_});
+      }
+   });
+}
+
 void
 Server::EFBWebSocket::VSendMessage(std::size_t id, ws::Message&& message) {
-   if (ws_.is_open()) {
-      if (std::holds_alternative<ws::msg::GetSettings>(message)
-          || std::holds_alternative<ws::msg::Settings>(message)) {
-         // @todo
-      } else if (std::holds_alternative<ws::msg::GetEFBState>(message)) {
-         (void)server_.Dispatch([self = shared_from_this(), id = id]() {
-            if (auto const message_handler = self->server_.message_handlers_.find(id);
-                message_handler != self->server_.message_handlers_.end()) {
-               message_handler->second(
-                 1, ws::msg::EFBState{.state_ = self->server_.efb_connected_}
-               );
-            }
-         });
-      } else if (std::holds_alternative<ws::msg::GetServerState>(message)) {
-         (void)server_.Dispatch([self = shared_from_this(), id = id]() {
-            if (auto const message_handler = self->server_.message_handlers_.find(id);
-                message_handler != self->server_.message_handlers_.end()) {
-               message_handler->second(1, ws::msg::ServerState{.state_ = self->server_.running_});
-            }
-         });
-      } else {
-         try {
-            auto const message_str =
-              js::Stringify(ws::Proxy{.id_ = id, .content_ = std::move(message)});
+   if (!ws_.is_open()) {
+      return;
+   }
 
-            ws_.text(true);
-            ws_.write(net::buffer(message_str));
-         } catch (std::exception const& e) {
-            std::cerr << "Write error: " << e.what() << std::endl;
-         }
-      }
+   if (HandleOutgoingMessage(id, message)) {
+      return;
+   }
+
+   try {
+      auto const message_str = js::Stringify(ws::Proxy{.id_ = id, .content_ = std::move(message)});
+
+      ws_.text(true);
+      ws_.write(net::buffer(message_str));
+   } catch (std::exception const& e) {
+      std::cerr << "Write error: " << e.what() << std::endl;
    }
 }
 
@@ -203,6 +226,175 @@ Server::EFBWebSocket::Read() {
    }
 }
 
+bool
+Server::EFBWebSocket::HandleFuelMessage(ws::Proxy& message) {
+   if (std::holds_alternative<ws::msg::fuel::Presets>(message.content_)) {
+      server_.HandleFuelPresets(my_id_, std::move(message.content_));
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::fuel::Curves>(message.content_)) {
+      server_.HandleFuelCurve(my_id_, std::move(message.content_));
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::fuel::DefaultPreset>(message.content_)) {
+      server_.HandleDefaultFuelPreset(my_id_, std::move(message.content_));
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::fuel::GetPresets>(message.content_)) {
+      server_.HandleGetFuelPresets(my_id_);
+      return true;
+   }
+
+   return false;
+}
+
+bool
+Server::EFBWebSocket::HandleDeviationMessage(ws::Proxy& message) {
+   if (std::holds_alternative<ws::msg::dev::Presets>(message.content_)) {
+      server_.HandleDeviationPresets(my_id_, std::move(message.content_));
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::dev::Curve>(message.content_)) {
+      server_.HandleDeviationCurve(my_id_, std::move(message.content_));
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::dev::DefaultPreset>(message.content_)) {
+      server_.HandleDefaultDeviationPreset(my_id_, std::move(message.content_));
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::dev::GetPresets>(message.content_)) {
+      server_.HandleGetDeviationPresets(my_id_);
+      return true;
+   }
+
+   return false;
+}
+
+bool
+Server::EFBWebSocket::HandleStateMessage(ws::Proxy const& message) {
+   if (std::holds_alternative<ws::msg::GetEFBState>(message.content_)) {
+      assert(message.id_ != 2);
+      assert(message.id_ != 1);
+
+      (void)server_.Dispatch([self = shared_from_this(), id = my_id_]() {
+         self->VSendMessage(id, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
+      });
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::GetServerState>(message.content_)) {
+      assert(false);
+      return true;
+   }
+
+   return false;
+}
+
+bool
+Server::EFBWebSocket::HandleFileMessage(ws::Proxy const& message) {
+   if (std::holds_alternative<ws::msg::FileExists>(message.content_)) {
+      assert(message.id_ == 1);
+      auto const& msg = std::get<ws::msg::FileExists>(message.content_);
+
+      VDispatchMessage(
+        message.id_,
+        ws::msg::FileExistsResponse{.id_ = msg.id_, .result_ = std::filesystem::is_regular_file(msg.path_)}
+      );
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::OpenFile>(message.content_)) {
+      assert(message.id_ == 1);
+      auto const& msg = std::get<ws::msg::OpenFile>(message.content_);
+
+      ++promises_;
+      dialog::OpenFile(msg.path_, {{.name_ = "Pdf File", .value_ = {"*.pdf"}}})
+        .Then([self = shared_from_this(), id = message.id_, req_id = msg.id_](std::string const& path) constexpr {
+           (void)self->server_.Dispatch([self = std::move(self), id, req_id, path]() {
+              self->VSendMessage(id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path});
+              std::shared_lock lock{self->mutex_};
+              --self->promises_;
+              self->cv_.notify_all();
+           });
+        })
+        .Catch([self = shared_from_this()](std::exception_ptr const& exc) constexpr {
+           std::shared_lock lock{self->mutex_};
+           --self->promises_;
+           self->cv_.notify_all();
+           std::rethrow_exception(exc);
+        })
+        .Detach();
+      return true;
+   }
+
+   if (std::holds_alternative<ws::msg::GetFile>(message.content_)) {
+      assert(message.id_ == 1);
+      auto const& msg = std::get<ws::msg::GetFile>(message.content_);
+
+      if (auto const data = Base64Open(msg.path_); data.empty()) {
+         VDispatchMessage(message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .num_blobs_ = 0});
+      } else {
+         static constexpr std::size_t CHUNK_SIZE = 100 * 1024;
+         std::size_t                  num_blobs{(data.size() + CHUNK_SIZE - 1) / CHUNK_SIZE};
+
+         VDispatchMessage(message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .num_blobs_ = num_blobs});
+
+         for (std::size_t i = 0; i < data.size(); i += CHUNK_SIZE) {
+            auto const chunk =
+              std::string_view{data.data() + i, std::min(data.size() - i, CHUNK_SIZE)};
+            auto const id = i / CHUNK_SIZE;
+
+            VDispatchMessage(
+              1,
+              ws::msg::FileBlob{.file_id_ = msg.id_, .id_ = id, .data_ = std::string{chunk}}
+            );
+         }
+      }
+      return true;
+   }
+
+   return false;
+}
+
+void
+Server::EFBWebSocket::ForwardMessage(ws::Proxy&& message) {
+   assert(message.id_ != 2);
+
+   if (message.id_ == 1) {
+      (void)server_.Dispatch([&server = server_, my_id = my_id_, message = std::move(message)]() {
+         for (auto const message_handler : server.message_handlers_) {
+            if (message_handler.first != my_id) {
+               message_handler.second(my_id, std::move(message.content_));
+            }
+         }
+      });
+      return;
+   }
+
+   (void)server_.Dispatch([&server = server_, my_id = my_id_, message = std::move(message)]() {
+      if (auto const message_handler = server.message_handlers_.find(message.id_);
+          message_handler != server.message_handlers_.end()) {
+         message_handler->second(my_id, std::move(message.content_));
+      }
+   });
+}
+
+void
+Server::EFBWebSocket::HandleParsedMessage(ws::Proxy&& message) {
+   if (HandleFuelMessage(message) || HandleDeviationMessage(message)
+       || HandleStateMessage(message) || HandleFileMessage(message)) {
+      return;
+   }
+
+   ForwardMessage(std::move(message));
+}
+
 void
 Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
    if (!server_.want_run_) {
@@ -241,117 +433,7 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
    (void)poll_.Dispatch([this, data = std::move(data)]() mutable {
       try {
          auto message = js::Parse<ws::Proxy>(data);
-
-         if (std::holds_alternative<ws::msg::fuel::Presets>(message.content_)) {
-            server_.HandleFuelPresets(my_id_, std::move(message.content_));
-         } else if (std::holds_alternative<ws::msg::fuel::Curves>(message.content_)) {
-            server_.HandleFuelCurve(my_id_, std::move(message.content_));
-         } else if (std::holds_alternative<ws::msg::fuel::DefaultPreset>(message.content_)) {
-            server_.HandleDefaultFuelPreset(my_id_, std::move(message.content_));
-         } else if (std::holds_alternative<ws::msg::fuel::GetPresets>(message.content_)) {
-            server_.HandleGetFuelPresets(my_id_);
-         } else if (std::holds_alternative<ws::msg::dev::Presets>(message.content_)) {
-            server_.HandleDeviationPresets(my_id_, std::move(message.content_));
-         } else if (std::holds_alternative<ws::msg::dev::Curve>(message.content_)) {
-            server_.HandleDeviationCurve(my_id_, std::move(message.content_));
-         } else if (std::holds_alternative<ws::msg::dev::DefaultPreset>(message.content_)) {
-            server_.HandleDefaultDeviationPreset(my_id_, std::move(message.content_));
-         } else if (std::holds_alternative<ws::msg::dev::GetPresets>(message.content_)) {
-            server_.HandleGetDeviationPresets(my_id_);
-         } else if (std::holds_alternative<ws::msg::GetEFBState>(message.content_)) {
-            assert(message.id_ != 2);
-            assert(message.id_ != 1);
-
-            (void)server_.Dispatch([self = shared_from_this(), id = my_id_]() {
-               self->VSendMessage(id, ws::msg::EFBState{.state_ = self->server_.efb_connected_});
-            });
-         } else if (std::holds_alternative<ws::msg::GetServerState>(message.content_)) {
-            assert(false);
-         } else if (std::holds_alternative<ws::msg::FileExists>(message.content_)) {
-            assert(message.id_ == 1);
-            auto const& msg = std::get<ws::msg::FileExists>(message.content_);
-
-            VDispatchMessage(
-              message.id_,
-              ws::msg::FileExistsResponse{
-                .id_ = msg.id_, .result_ = std::filesystem::is_regular_file(msg.path_)
-              }
-            );
-         } else if (std::holds_alternative<ws::msg::OpenFile>(message.content_)) {
-            assert(message.id_ == 1);
-            auto const& msg = std::get<ws::msg::OpenFile>(message.content_);
-
-            ++promises_;
-            dialog::OpenFile(msg.path_, {{.name_ = "Pdf File", .value_ = {"*.pdf"}}})
-              .Then([self   = shared_from_this(),
-                     id     = message.id_,
-                     req_id = msg.id_](std::string const& path) constexpr {
-                 (void)self->server_.Dispatch([self = std::move(self), id, req_id, path]() {
-                    self->VSendMessage(id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path});
-                    std::shared_lock lock{self->mutex_};
-                    --self->promises_;
-                    self->cv_.notify_all();
-                 });
-              })
-              .Catch([self = shared_from_this()](std::exception_ptr const& exc) constexpr {
-                 std::shared_lock lock{self->mutex_};
-                 --self->promises_;
-                 self->cv_.notify_all();
-                 std::rethrow_exception(exc);
-              })
-              .Detach();
-         } else if (std::holds_alternative<ws::msg::GetFile>(message.content_)) {
-            assert(message.id_ == 1);
-            auto const& msg = std::get<ws::msg::GetFile>(message.content_);
-
-            if (auto const data = Base64Open(msg.path_); data.empty()) {
-               VDispatchMessage(
-                 message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .num_blobs_ = 0}
-               );
-            } else {
-               static constexpr std::size_t CHUNK_SIZE = 100 * 1024;  // 100KB
-               std::size_t                  num_blobs{(data.size() + CHUNK_SIZE - 1) / CHUNK_SIZE};
-
-               VDispatchMessage(
-                 message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .num_blobs_ = num_blobs}
-               );
-
-               for (std::size_t i = 0; i < data.size(); i += CHUNK_SIZE) {
-                  auto const chunk =
-                    std::string_view{data.data() + i, std::min(data.size() - i, CHUNK_SIZE)};
-                  auto const id = i / CHUNK_SIZE;
-
-                  VDispatchMessage(
-                    1,
-                    ws::msg::FileBlob{.file_id_ = msg.id_, .id_ = id, .data_ = std::string{chunk}}
-                  );
-               }
-            }
-         } else {
-            assert(message.id_ != 2);
-
-            if (message.id_ == 1) {
-               // Broadcast
-               (void)server_.Dispatch(
-                 [&server = server_, my_id = my_id_, message = std::move(message)]() {
-                    for (auto const message_handler : server.message_handlers_) {
-                       if (message_handler.first != my_id) {
-                          message_handler.second(my_id, std::move(message.content_));
-                       }
-                    }
-                 }
-               );
-            } else {
-               (void)server_.Dispatch(
-                 [&server = server_, my_id = my_id_, message = std::move(message)]() {
-                    if (auto const message_handler = server.message_handlers_.find(message.id_);
-                        message_handler != server.message_handlers_.end()) {
-                       message_handler->second(my_id, std::move(message.content_));
-                    }
-                 }
-               );
-            }
-         }
+         HandleParsedMessage(std::move(message));
       } catch (std::exception const& e) {
          std::cerr << "Message parsing error: " << e.what() << std::endl;
       }

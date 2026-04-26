@@ -198,6 +198,17 @@ public:
    void VSendMessage(std::size_t id, ws::Message&& message);
 
 private:
+   bool HandleOutgoingMessage(std::size_t id, ws::Message const& message);
+   void SendEFBState(std::size_t id);
+   void SendServerState(std::size_t id);
+
+   void HandleParsedMessage(ws::Proxy&& message);
+   bool HandleFuelMessage(ws::Proxy& message);
+   bool HandleDeviationMessage(ws::Proxy& message);
+   bool HandleStateMessage(ws::Proxy const& message);
+   bool HandleFileMessage(ws::Proxy const& message);
+   void ForwardMessage(ws::Proxy&& message);
+
    void Read();
    void OnRead(boost::beast::error_code ec, size_t n);
    void OnWrite(boost::beast::error_code ec, size_t n);
