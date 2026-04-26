@@ -9,10 +9,17 @@ Related skill: `release-note`.
 
 Create and apply the next release note entry in `vfrnav_efb/EFB/release_notes.json` using repository changes since the previous release.
 
-## Tooling Restriction
+## Tooling Requirements
 
 - Agent tools are allowed for this prompt.
+- Git and history operations shall be performed with GitKraken/MCP git tooling (for example: git status/log/diff/tag lookup/blame via the available GitKraken git tool groups).
+- For commit collection and baseline resolution, prefer GitKraken git tooling over any terminal command.
+- File content inspection and edits shall use workspace tools (`read_file`, `apply_patch`, search tools).
+
+## Tooling Prohibitions
+
 - Do not execute external shell/runtime commands (for example: `node`, `python`, `cmd`, `powershell`, `bash`, `sh`).
+- Do not use terminal-based git commands; use GitKraken/MCP git tooling instead.
 - Do not use helper scripts for parsing/validation; rely on workspace file reads/edits and agent-native tooling only.
 
 ## Required Workflow
