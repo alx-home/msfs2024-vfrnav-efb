@@ -49,6 +49,7 @@ Create and apply the next release note entry in `vfrnav_efb/EFB/release_notes.js
 9. Write each item as EN line then FR line, preserving indentation/style already used in the file.
 10.   Append exactly one new release object at the end of `release_notes`.
 11.   Keep all existing entries untouched and preserve valid JSON.
+12.   Create `Release.md` at the workspace root (overwrite if it already exists) containing a GitHub release note for the new version (see **Release.md Format** below).
 
 ## Efficiency Constraints
 
@@ -64,9 +65,71 @@ Create and apply the next release note entry in `vfrnav_efb/EFB/release_notes.js
 - Prefer tag baseline (`<lastVersion>..HEAD`) over blame/boundary baseline.
 - If both improvement and fix are possible, choose the category that best reflects user impact.
 
+## Release.md Format
+
+`Release.md` must contain four sections in order and follow the markdown style exactly:
+
+### 0 — Title
+
+The first line must be a generated H1 title:
+
+```
+# <generated title>
+```
+
+The title must be short, release-oriented, and based on the most impactful user-facing changes in this release.
+
+### 1 — Brief
+
+Use heading `## Brief`.
+
+Write a short paragraph (2–5 sentences) in English summarising the highlights at a high level, followed by a `<hr>` tag on its own line, then the same paragraph translated into French.
+
+### 2 — Detailed changes
+
+Use heading `## Detailed changes`.
+
+Reproduce the full notes added to `release_notes.json`, using the following layout (omit a section/header when it has no items):
+
+```
+### <Area>
+
+**🔧 Improvements / Améliorations:**
+
+- <EN sentence>\
+  <FR sentence>
+
+**🐞 Fixes / Corrections:**
+
+- <EN sentence>\
+  <FR sentence>
+```
+
+Areas must appear in this order when present: `### ALL`, `### Installer/Server (new)`, `### EFB`.
+Each item is exactly two lines: English on the first line, French immediately below.
+Use a markdown line break (`\`) at the end of the English line and two-space indentation before the French line.
+
+### 3 — What's Changed
+
+Use heading `## What's Changed`.
+
+List every PR that contributed a user-facing change included in the notes, one bullet per PR, in the format:
+
+```
+* <PR title>  #<issue> by @<author> in https://github.com/alx-home/msfs2024-vfrnav-efb/pull/<PR number>
+```
+
+Derive PR numbers and authors from the commit messages / git log metadata. Only include PRs that map to at least one item in the detailed changes section. If no PR number is available for a commit, omit the bullet.
+
+End the file with:
+
+```
+**Full Changelog**: https://github.com/alx-home/msfs2024-vfrnav-efb/compare/<lastVersion>...<newVersion>
+```
+
 ## Output
 
-- Apply file edits directly.
+- Apply file edits directly (both `release_notes.json` and `Release.md`).
 - Provide a short summary listing:
    - baseline used (`<tag>..HEAD` or fallback boundary)
    - release version/date used
