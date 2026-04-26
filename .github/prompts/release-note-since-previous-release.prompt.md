@@ -29,32 +29,22 @@ Create and apply the next release note entry in `vfrnav_efb/EFB/release_notes.js
    - find the commit that introduced/updated the previous release entry in `release_notes.json`
    - use `boundaryCommit..HEAD`
 5. Collect commits once from the selected baseline to `HEAD`.
-6. Build exclusion set before drafting any note text:
-   - IDs already used in previous entry (example: `#306`, `#308`)
-   - equivalent EN/FR phrases already present in previous entry
-7. Classify candidates using this gate:
+6. Classify candidates using this gate:
    - include only user-facing behavior/UI/stability changes
    - exclude by default: release tooling, prompt/instruction updates, Sonar config, license-only changes, pure refactors, dependency/submodule bumps without visible impact
-8. Map included items to areas:
+7. Map included items to areas:
    - `### EFB ###`
    - `### Installer/Server (new) ###`
    - `### ALL ###`
-9. Build notes with existing style headers only:
+8. Build notes with existing style headers only:
    - `***🔧 Improvements / Améliorations:***`
    - `***🐞 Fixes / Corrections:***`
-10.   Write each item as EN line then FR line, preserving indentation/style already used in the file.
-11.   Duplicate guard (mandatory, final pass before write):
-
-- drop any item already represented in immediate previous release entry
-- drop any item whose ID is in exclusion set
-
-12. Append exactly one new release object at the end of `release_notes`.
-13. Keep all existing entries untouched and preserve valid JSON.
+9. Write each item as EN line then FR line, preserving indentation/style already used in the file.
+10.   Append exactly one new release object at the end of `release_notes`.
+11.   Keep all existing entries untouched and preserve valid JSON.
 
 ## Efficiency Constraints
 
-- Prefer one-pass collection and filtering over repeated git scans.
-- Do not inspect full diffs for every commit; inspect details only for borderline user-facing commits.
 - Stop early on clearly non-user-facing commits based on commit subject and changed file paths.
 - Edit target JSON directly in-place; avoid temporary helper scripts for file editing.
 
@@ -65,7 +55,6 @@ Create and apply the next release note entry in `vfrnav_efb/EFB/release_notes.js
 - If no user-facing changes exist, create a minimal maintenance note.
 - Keep wording concise and factual.
 - Prefer tag baseline (`<lastVersion>..HEAD`) over blame/boundary baseline.
-- Never duplicate an item already listed in the immediate previous release entry.
 - If both improvement and fix are possible, choose the category that best reflects user impact.
 
 ## Output
