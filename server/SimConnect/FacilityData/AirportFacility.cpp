@@ -19,6 +19,9 @@
 
 namespace smc::facility {
 
+template struct ProcessorImpl<AirportData::Runway::Threshold>;
+template struct ProcessorImpl<AirportData::Runway>;
+template struct ProcessorImpl<AirportData>;
 template struct ProcessorImpl<Airport>;
 
 }  // namespace smc::facility
