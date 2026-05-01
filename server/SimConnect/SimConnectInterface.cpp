@@ -466,6 +466,44 @@ SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType)
    });
 }
 
+WPromise<Liveries>
+SimConnect::GetTrafficTitles() const {
+   auto const titles = [this] constexpr {
+      std::shared_lock lock{mutex_};
+      return traffic_titles_;
+   }();
+
+   assert(titles);
+   return *titles;
+}
+
+WPromise<Airports>
+SimConnect::GetAirportList() const {
+   auto const airports = [this] constexpr {
+      std::shared_lock lock{mutex_};
+      return airport_list_;
+   }();
+
+   assert(airports);
+   return *airports;
+}
+
+WPromise<float>
+SimConnect::WatchSimRate(std::optional<float> current) const {
+   return Proxy<float>([this, current] constexpr {
+      assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+      if (current && (*current != last_sim_rate_)) {
+         return Promise<float>::Resolve(last_sim_rate_);
+      }
+
+      auto [promise, resolve, reject] = Promise<float>::Create();
+      pending_sim_rate_.emplace_back(resolve, reject);
+
+      return std::move(promise);
+   });
+}
+
 WPromise<bool>
 SimConnect::SetDataOnSimObjectImpl(
   DataId                   id,

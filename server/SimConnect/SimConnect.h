@@ -92,6 +92,8 @@ enum class DataId : uint32_t {
    USER_INFO,
    GROUND_INFO,
 
+   GET_SIMRATE,
+
    GET_AIRPORT_FACILITY,
 
    SET_WAYPOINTS,
@@ -215,8 +217,11 @@ public:
 
    [[nodiscard]] WPromise<void>
    TransmitClientEvent(SIMCONNECT_OBJECT_ID objectId, smc::EventId eventId, DWORD eventData);
-   [[nodiscard]] WPromise<void> AIReleaseControl(SIMCONNECT_OBJECT_ID objectId);
-   [[nodiscard]] WPromise<bool> SetServerPort(uint32_t port);
+   [[nodiscard]] WPromise<void>     AIReleaseControl(SIMCONNECT_OBJECT_ID objectId);
+   [[nodiscard]] WPromise<bool>     SetServerPort(uint32_t port);
+   [[nodiscard]] WPromise<Liveries> GetTrafficTitles() const;
+   [[nodiscard]] WPromise<Airports> GetAirportList() const;
+   [[nodiscard]] WPromise<float>    WatchSimRate(std::optional<float> current) const;
 
    WPromise<bool> SetDataOnSimObjectImpl(
      DataId                   id,
@@ -301,6 +306,9 @@ private:
      std::shared_ptr<void*>       handle
    );
 
+   void SetTrafficTitles();
+   void SetAirportList();
+
    template <class T>
    static T StaticCast(DWORD const& data);
 
@@ -366,6 +374,12 @@ private:
        std::shared_ptr<Reject const>>>;
    WaitingAssignedObject pending_assigned_{};
 
+   using SimRateResolver =
+     std::pair<std::shared_ptr<Resolve<float>>, std::shared_ptr<Reject const>>;
+   mutable std::vector<SimRateResolver> pending_sim_rate_{};
+
+   float last_sim_rate_{1.0f};
+
    static constexpr std::tuple PENDING_MEMBERS{
      &SimConnect::pending_simobject_,
      &SimConnect::pending_facility_,
@@ -382,6 +396,16 @@ private:
    using time_point = std::chrono::steady_clock::time_point;
 
    mutable std::shared_mutex mutex_{};
+   using TrafficTitles = std::shared_ptr<WPromise<Liveries>>;
+   // Warn: Resolved on main_ pool threads, so must be thread safe
+   TrafficTitles traffic_titles_{
+     std::make_shared<WPromise<Liveries>>(Promise<Liveries>::Reject<Disconnected>())
+   };
+   using AirportList = std::shared_ptr<WPromise<Airports>>;
+   // Warn: Resolved on main_ pool threads, so must be thread safe
+   AirportList airport_list_{
+     std::make_shared<WPromise<Airports>>(Promise<Airports>::Reject<Disconnected>())
+   };
 
    Main&        main_;
    win32::Event event_{win32::CreateEvent()};
