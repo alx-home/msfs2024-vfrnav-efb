@@ -37,14 +37,16 @@ public:
 
    void Notify();
 
+   WPromise<void> JoinTrafficPattern(std::string_view icao);
+
 private:
    using ObjectId = SIMCONNECT_RECV_ASSIGNED_OBJECT_ID;
 
-   WPromise<ObjectId>   SetID();
-   WPromise<void>       AircraftLoop();
-   WPromise<void>       SimRateLoop();
-   WPromise<void>       InitWaypoint();
-   std::deque<Waypoint> TransformWaypoints(std::vector<Waypoint> const& waypoints);
+   WPromise<ObjectId> SetID();
+   WPromise<void>     AircraftLoop();
+   WPromise<void>     SimRateLoop();
+   template <class... WAYPOINTS>
+   std::deque<Waypoint> TransformWaypoints(std::vector<WAYPOINTS> const&... waypoints);
 
    WPromise<void> Wait(std::optional<std::chrono::steady_clock::duration> timeout = std::nullopt);
 
@@ -62,5 +64,5 @@ private:
    WPromise<ObjectId> const ID{SetID()};
    WPromise<void> const     PROMISE{AircraftLoop()};
    WPromise<void> const     SIM_RATE_PROMISE{SimRateLoop()};
-   WPromise<void> const     INIT_PROMISE{InitWaypoint()};
+   WPromise<void> const     INIT_PROMISE{JoinTrafficPattern("LFPN")};
 };

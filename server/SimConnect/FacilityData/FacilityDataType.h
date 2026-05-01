@@ -36,20 +36,18 @@ struct Processor : std::function<ProcessorReturn(SIMCONNECT_RECV_FACILITY_DATA c
 template <class SELF>
 struct ProcessorImpl {
 protected:
-   std::shared_ptr<Processor> GetProcessor(this SELF& self);
+   std::shared_ptr<Processor>
+   GetProcessor(this SELF& self, std::shared_ptr<Processor> const& parent_processor = nullptr);
 
 private:
    template <class...>
       requires(requires { SELF::MEMBERS; })
    std::string ProcessMembers(this SELF& self, SIMCONNECT_RECV_FACILITY_DATA const& data);
 
-   template <class...>
-      requires(requires { SELF::SECTIONS; })
-   std::shared_ptr<Processor> GetSectionsProcessor(this SELF& self);
-
    template <std::size_t INDEX>
       requires(requires { SELF::SECTIONS; })
-   Processor MakeSectionProcessor(this SELF& self, std::shared_ptr<Processor> const& process_ptr);
+   std::shared_ptr<Processor>
+   MakeSectionProcessor(this SELF& self, std::shared_ptr<Processor> const& parent_processor);
 };
 
 }  // namespace smc::facility

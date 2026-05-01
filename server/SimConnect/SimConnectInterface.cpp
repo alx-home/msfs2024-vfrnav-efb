@@ -340,9 +340,17 @@ SimConnect::GetAirportFacility(std::string_view icao, std::string_view region) n
            throw Disconnected();
         }
 
-        return RequestFacilityData<GET_AIRPORT_FACILITY, facility::AirportData>(
+        if (auto const it = airport_facility_cache_.find(icao + ":" + region);
+            it != airport_facility_cache_.end()) {
+           return it->second;
+        }
+
+        auto const promise = RequestFacilityData<GET_AIRPORT_FACILITY, facility::AirportData>(
           std::move(icao), std::move(region)
         );
+
+        airport_facility_cache_.emplace(icao + ":" + region, promise);
+        return promise;
      }
    );
 }

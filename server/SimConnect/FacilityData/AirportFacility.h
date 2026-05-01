@@ -16,7 +16,9 @@
 #pragma once
 
 #include "FacilityDataType.h"
+#include "ATC/Objects/Coords.h"
 
+#include <array>
 #include <tuple>
 #include <vector>
 
@@ -110,8 +112,148 @@ struct AirportData : ProcessorImpl<AirportData> {
    };
    std::vector<Runway> runways_{};
 
+   struct TaxiPath : ProcessorImpl<TaxiPath> {
+      enum class Type : int32_t {
+         NONE        = 0,
+         TAXI        = 1,
+         RUNWAY      = 2,
+         PARKING     = 3,
+         PATH        = 4,
+         CLOSED      = 5,
+         VEHICLE     = 6,
+         ROAD        = 7,
+         PAINTEDLINE = 8
+      };
+
+      Type               type_{};
+      int32_t            runway_number_{};
+      Runway::Designator runway_designator_{};
+
+      int32_t start_{};
+      int32_t end_{};
+      int32_t name_index_{};
+
+      using ProcessorImpl::GetProcessor;
+      static constexpr std::tuple MEMBERS{
+        _m{"TYPE", &TaxiPath::type_},
+        _m{"RUNWAY_NUMBER", &TaxiPath::runway_number_},
+        _m{"RUNWAY_DESIGNATOR", &TaxiPath::runway_designator_},
+        _m{"START", &TaxiPath::start_},
+        _m{"END", &TaxiPath::end_},
+        _m{"NAME_INDEX", &TaxiPath::name_index_},
+      };
+   };
+   std::vector<TaxiPath> taxi_paths_{};
+
+   struct TaxiName : ProcessorImpl<TaxiName> {
+      std::array<char, 32> name_{};
+
+      using ProcessorImpl::GetProcessor;
+      static constexpr std::tuple MEMBERS{std::make_tuple(_m{"NAME", &TaxiName::name_})};
+   };
+   std::vector<TaxiName> taxi_names_{};
+
+   struct TaxiPoint : ProcessorImpl<TaxiPoint> {
+      int32_t type_{};
+      enum class Orientation : int32_t {
+         FORWARD = 0,
+         REVERSE = 1,
+      };
+      Orientation orientation_{};
+      float       x_{};  // meters offset from airport reference point
+      float       y_{};  // meters offset from airport reference point
+
+      using ProcessorImpl::GetProcessor;
+      static constexpr std::tuple MEMBERS{
+        _m{"TYPE", &TaxiPoint::type_},
+        _m{"ORIENTATION", &TaxiPoint::orientation_},
+        _m{"BIAS_X", &TaxiPoint::x_},
+        _m{"BIAS_Z", &TaxiPoint::y_},
+      };
+   };
+   std::vector<TaxiPoint> taxi_points_{};
+
+   struct TaxiParking : ProcessorImpl<TaxiParking> {
+      enum class ParkingType : int32_t {
+         NONE            = 0,
+         RAMP_GA         = 1,
+         RAMP_GA_SMALL   = 2,
+         RAMP_GA_MEDIUM  = 3,
+         RAMP_GA_LARGE   = 4,
+         RAMP_CARGO      = 5,
+         RAMP_MIL_CARGO  = 6,
+         RAMP_MIL_COMBAT = 7,
+         GATE_SMALL      = 8,
+         GATE_MEDIUM     = 9,
+         GATE_HEAVY      = 10,
+         DOCK_GA         = 11,
+         FUEL            = 12,
+         VEHICLE         = 13,
+         RAMP_GA_EXTRA   = 14,
+         GATE_EXTRA      = 15
+      };
+      ParkingType parking_type_{};
+
+      enum class Type : int32_t {
+         NONE                   = 0,
+         NORMAL                 = 1,
+         HOLD_SHORT             = 2,
+         ILS_HOLD_SHORT         = 4,
+         HOLD_SHORT_NO_DRAW     = 5,
+         ILS_HOLD_SHORT_NO_DRAW = 6
+      };
+      Type type_{};
+
+      enum class Orientation : int32_t {
+         FORWARD = 0,
+         REVERSE = 1,
+      };
+      Orientation orientation_{};
+
+      int32_t  name_{};
+      int32_t  suffix_{};
+      uint32_t number_{};
+
+      float heading_{};
+      float x_{};  // meters offset from airport reference point
+      float y_{};  // meters offset from airport reference point
+
+      using ProcessorImpl::GetProcessor;
+      static constexpr std::tuple MEMBERS{
+        _m{"TYPE", &TaxiParking::parking_type_},
+        _m{"TAXI_POINT_TYPE", &TaxiParking::type_},
+        _m{"ORIENTATION", &TaxiParking::orientation_},
+        _m{"HEADING", &TaxiParking::heading_},
+        _m{"BIAS_X", &TaxiParking::x_},
+        _m{"BIAS_Z", &TaxiParking::y_},
+        _m{"NAME", &TaxiParking::name_},
+        _m{"SUFFIX", &TaxiParking::suffix_},
+        _m{"NUMBER", &TaxiParking::number_},
+      };
+   };
+   std::vector<TaxiParking> taxi_parkings_{};
+
+   std::vector<TaxiPoint>::const_iterator FindClosestTaxiPoint(Coords<2> position) const;
+   std::vector<Coords<2>>                 GetTaxiPath(Coords<2> from, Coords<2> to) const;
+
    using ProcessorImpl::GetProcessor;
-   static constexpr std::tuple SECTIONS{std::make_tuple(_m{"RUNWAY", &AirportData::runways_})};
+
+   double lat_{};
+   double lon_{};
+   double altitude_{};
+
+   static constexpr std::tuple MEMBERS{
+     _m{"LATITUDE", &AirportData::lat_},
+     _m{"LONGITUDE", &AirportData::lon_},
+     _m{"ALTITUDE", &AirportData::altitude_},
+   };
+   static constexpr std::tuple SECTIONS{
+     _m{"RUNWAY", &AirportData::runways_},
+     _m{"TAXI_POINT", &AirportData::taxi_points_},
+     _m{"TAXI_PARKING", &AirportData::taxi_parkings_},
+     _m{"TAXI_NAME", &AirportData::taxi_names_},
+     _m{"TAXI_PATH", &AirportData::taxi_paths_},
+   };
 };
 
 struct Airport : ProcessorImpl<Airport> {

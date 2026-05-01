@@ -16,7 +16,7 @@
 #include "Aircraft.h"
 
 #include "main.h"
-#include "Waypoint.h"
+#include "TrafficPattern.h"
 
 #include "SimConnect/SimConnect.h"
 #include "SimConnect/SimConnect.inl"
@@ -33,8 +33,10 @@
 #include <cstdint>
 #include <mutex>
 #include <numbers>
+#include <ranges>
 #include <shared_mutex>
 #include <stdexcept>
+#include <string>
 
 using namespace std::chrono_literals;
 using namespace std::chrono;
@@ -61,19 +63,19 @@ Aircraft::SetID() {
               *(co_await promise::Race(main_.SimConnect().GetTrafficTitles(), state_.WaitDone()));
             assert(titles.size() > 0);
 
-            auto const& [title, livery] = titles.at(850);
+            auto const& [title, livery] = titles.at(272);
             co_return *(co_await promise::Race(
               main_.SimConnect().AICreateNonATCAircraft(
                 title,
                 livery,
                 "LF-KYUW",
                 {
-                  .Latitude  = 48.75120,
-                  .Longitude = 2.09872,
-                  .Altitude  = 1500,
+                  .Latitude  = 48.76219,
+                  .Longitude = 2.09394,
+                  .Altitude  = 2000,
                   .Pitch     = 0,
                   .Bank      = 0,
-                  .Heading   = 80,
+                  .Heading   = 180,
                   .OnGround  = FALSE,
                   .Airspeed  = 80,
                 }
@@ -98,33 +100,55 @@ Aircraft::SetID() {
 }
 
 WPromise<void>
-Aircraft::InitWaypoint() {
-   return MakePromise([this] -> Promise<void> {
+Aircraft::JoinTrafficPattern(std::string_view icao) {
+   return MakePromise([this, icao = std::string{icao}] -> Promise<void> {
       ScopeExit _{[] constexpr {
-         std::cout << "Aircraft[init_waypoint]: InitWaypoint loop ended" << std::endl;
+         std::cout << "Aircraft[init_waypoint]: JoinTrafficPattern loop ended" << std::endl;
       }};
 
       co_await state_.Wait();
 
       while (true) {
          try {
-            auto       airport = *(co_await promise::Race(
-              main_.SimConnect().GetAirportFacility("LFPN"), state_.WaitDone()
+            auto const airport_data = *(
+              co_await promise::Race(main_.SimConnect().GetAirportFacility(icao), state_.WaitDone())
+            );
+
+            auto const pattern = Pattern::Make(airport_data);
+            auto const origin  = Coords<2>{airport_data.lat_, airport_data.lon_};
+
+            auto const taxi_start_it =
+              airport_data.FindClosestTaxiPoint({pattern.end_[0], pattern.end_[1]});
+            auto const taxi_end_it = airport_data.FindClosestTaxiPoint(Waypoint::ToDeg(
+              origin, {airport_data.taxi_parkings_[14].x_, airport_data.taxi_parkings_[14].y_}
             ));
-            auto const runway  = airport.runways_[0];
 
-            Coords const origin{runway.latitude_, runway.longitude_};
-            auto const   heading     = runway.heading_ * std::numbers::pi / 180.0;
-            auto const   half_length = runway.length_ / 2.0;
-            Coords const dir{std::sin(heading), std::cos(heading)};
-            auto const   offset{dir * half_length};
+            auto const taxi_start = Waypoint::ToDeg(origin, {taxi_start_it->x_, taxi_start_it->y_});
+            auto const taxi_end   = Waypoint::ToDeg(origin, {taxi_end_it->x_, taxi_end_it->y_});
 
-            // @todo thresholds
-            Coords const start{-offset};
-            Coords const end{offset};
+            std::cout << "Aircraft[init_waypoint]: Taxi start: (" << taxi_start[0] << ", "
+                      << taxi_start[1] << "), Taxi end: (" << taxi_end[0] << ", " << taxi_end[1]
+                      << ")" << std::endl;
+
+            auto taxi = airport_data.GetTaxiPath(taxi_start, taxi_end)
+                        | std::views::transform([](Coords<2> const& coords) {
+                             return Waypoint{
+                               .lat_       = coords[0],
+                               .lon_       = coords[1],
+                               .alt_       = 0,
+                               .is_agl_    = true,
+                               .on_ground_ = true,
+                             };
+                          })
+                        | std::ranges::to<std::vector<Waypoint>>();
+
+            for (auto const& wp : taxi) {
+               std::cout << "Aircraft[init_waypoint]: Taxi waypoint: (" << wp.lat_ << ", "
+                         << wp.lon_ << ")" << std::endl;
+            }
 
             auto const wp = TransformWaypoints(
-              StandardPattern(Waypoint::ToDeg(origin, start), Waypoint::ToDeg(origin, end), false)
+              pattern.Join(), pattern.Circulate(), pattern.Land(), std::move(taxi)
             );
 
             {
@@ -163,12 +187,15 @@ Aircraft::Distance(double lat1, double lon1, double lat2, double lon2) {
           );
 }
 
+template <class... WAYPOINTS>
 std::deque<Waypoint>
-Aircraft::TransformWaypoints(std::vector<Waypoint> const& waypoints) {
+Aircraft::TransformWaypoints(std::vector<WAYPOINTS> const&... waypoints_list) {
    std::deque<Waypoint> transformed_waypoints{};
 
-   for (std::size_t i = 0; i < waypoints.size(); ++i) {
-      transformed_waypoints.emplace_back(waypoints[i]);
+   for (auto const& waypoints : {std::vector<Waypoint>{waypoints_list}...}) {
+      for (std::size_t i = 0; i < waypoints.size(); ++i) {
+         transformed_waypoints.emplace_back(waypoints[i]);
+      }
    }
 
    return transformed_waypoints;
@@ -241,9 +268,6 @@ Aircraft::SimRateLoop() {
 
 WPromise<void>
 Aircraft::AircraftLoop() {
-   constexpr double deg2rad = std::numbers::pi / 180.0;
-   constexpr double rad2deg = 180.0 / std::numbers::pi;
-
    return MakePromise([this]() -> Promise<void> {
       ScopeExit _{[] constexpr { std::cout << "Aircraft[main_loop]: loop ended" << std::endl; }};
 
@@ -415,40 +439,21 @@ Aircraft::AircraftLoop() {
             auto const& info =
               *(co_await promise::Race(main_.SimConnect().GetAircraftInfo(id), state_.WaitDone()));
 
-            // Compare aircraft heading with the direction to the next waypoint
-            double lat1  = info.lat_ * deg2rad;
-            double lon1  = info.lon_ * deg2rad;
-            double lat2  = current_wp->lat_ * deg2rad;
-            double lon2  = current_wp->lon_ * deg2rad;
-            double d_lon = lon2 - lon1;
-            double y     = std::sin(d_lon) * std::cos(lat2);
-            double x =
-              std::cos(lat1) * std::sin(lat2) - std::sin(lat1) * std::cos(lat2) * std::cos(d_lon);
-            double heading = std::atan2(y, x) * rad2deg;
-            if (heading < 0) {
-               heading += 360;
-            }
-
             auto const wp_distance = co_await MakePromise([&] -> Promise<std::optional<double>> {
                auto const wp_distance =
                  Distance(info.lat_, info.lon_, current_wp->lat_, current_wp->lon_);
 
-               // If the aircraft is not heading towards the waypoint or closed to it, we
-               // consider that it has reached it
-
-               auto const heading_diff =
-                 std::fmod((heading - info.true_heading_) + 540.0, 360.0) - 180.0;
-               auto const invalid_heading = (std::abs(heading_diff) > 90);
-               if (invalid_heading || (wp_distance < current_wp->tolerance_)) {
-                  if (invalid_heading) {
-                     std::cout << "Aircraft[main_loop]: Invalid heading to waypoint: "
-                               << current_wp->lat_ << ", " << current_wp->lon_
-                               << " heading: " << heading << " vs " << info.true_heading_
-                               << " diff: " << heading_diff << std::endl;
+               if (current_wp->entered_) {
+                  if (wp_distance > current_wp->last_distance_) {
+                     co_await next_wp(false);
+                     co_return std::nullopt;
                   }
-
-                  co_await next_wp(invalid_heading);
-                  co_return std::nullopt;
+                  current_wp->last_distance_ = wp_distance;
+               } else if (wp_distance < 600.) {
+                  current_wp->entered_       = true;
+                  current_wp->last_distance_ = wp_distance;
+               } else {
+                  co_return wp_distance - 300.;
                }
 
                co_return wp_distance;
@@ -458,12 +463,14 @@ Aircraft::AircraftLoop() {
                continue;
             }
 
+            assert(*wp_distance >= 0);
+
             auto const est_speed =
               std::max<double>(info.ground_velocity_, current_wp->speed_.value_or(0.))
               * 0.51444;  // Convert from knots to m/s
 
             std::chrono::seconds const next_wp_est_time{static_cast<uint64_t>(
-              est_speed > 0 ? std::max(0.0, *wp_distance - current_wp->tolerance_)
+              est_speed > 0 ? *wp_distance
                                 / (
                                   // Over estimating the speed by 5% to avoid being late on the
                                   // next waypoint in case of speed variations
@@ -472,8 +479,11 @@ Aircraft::AircraftLoop() {
                             : std::numeric_limits<double>::infinity()
             )};
 
-            co_await Wait(std::min(duration_cast<seconds>(next_wp_est_time / sim_rate_.load()), 10s)
-            );
+            co_await Wait(std::clamp(
+              duration_cast<seconds>(next_wp_est_time / sim_rate_.load()),
+              duration_cast<seconds>(10ms),
+              10s
+            ));
             continue;
          } catch (smc::Timeout const&) {
             std::cerr

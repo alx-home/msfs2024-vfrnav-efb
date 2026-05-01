@@ -407,6 +407,8 @@ private:
      std::make_shared<WPromise<Airports>>(Promise<Airports>::Reject<Disconnected>())
    };
 
+   std::unordered_map<std::string, WPromise<facility::AirportData>> airport_facility_cache_{};
+
    Main&        main_;
    win32::Event event_{win32::CreateEvent()};
    int64_t      server_port_{48578};

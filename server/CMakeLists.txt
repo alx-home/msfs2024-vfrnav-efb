@@ -16,31 +16,32 @@ set(SOURCES
 
     Main/Main.cpp
 
-    HttpRequest.cpp
     Base64Utils.cpp
+    HttpRequest.cpp
 
     Window/template/Window.cpp
 
     Server/Server.cpp
 
-    Server/WebSockets/WebSocket.cpp
     Server/WebSockets/EFBWebSocket.cpp
+    Server/WebSockets/WebSocket.cpp
 
     ATC/ATCHandler.cpp
     ATC/IAHandler.cpp
-    ATC/Utilities/PdfExtract.cpp
-    ATC/Utilities/SiaPdfFetch.cpp
-    ATC/Utilities/SIAExtractor.cpp
     ATC/Objects/Aircraft.cpp
+    ATC/Objects/TrafficPattern.cpp
     ATC/Objects/Waypoint.cpp
+    ATC/Utilities/PdfExtract.cpp
+    ATC/Utilities/SIAExtractor.cpp
+    ATC/Utilities/SiaPdfFetch.cpp
 
+    SimConnect/FacilityData/AirportFacility.cpp
     SimConnect/SimConnect.cpp
     SimConnect/SimConnectInterface.cpp
     SimConnect/Utils/StaticCast.cpp
-    SimConnect/FacilityData/AirportFacility.cpp
 
-    Window/template/Bindings/log.cpp
     Window/template/Bindings/Files.cpp
+    Window/template/Bindings/log.cpp
 )
 
 set(LLM_API_KEY CACHE STRING "API key for the IA service. If not set, IA features will be disabled.")
