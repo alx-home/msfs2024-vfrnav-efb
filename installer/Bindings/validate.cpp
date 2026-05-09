@@ -39,14 +39,6 @@
 #include <processthreadsapi.h>
 #include <synchapi.h>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated"
-#pragma clang diagnostic ignored "-Wdeprecated-copy-with-user-provided-copy"
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/iostreams/filter/zlib.hpp>
-#pragma clang diagnostic pop
-
 struct ManifestReleaseNotes {
    struct Neutral {
       std::string last_update_{};
