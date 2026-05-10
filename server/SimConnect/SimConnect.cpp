@@ -438,6 +438,64 @@ SimConnect::Run(std::stop_token const& stoken) {
       Sleep(5000);
       return;
    }
+   if (!AddToDataDefinition<SET_CONTROL_SURFACES, ControlSurfaces>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for control surfaces" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_ALTITUDE_CONTROL, AltitudeControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for altitude control" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_GROUND_ALTITUDE_CONTROL, GroundAltitudeControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for ground altitude control"
+                << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_GROUND_ALTITUDE, GroundAltitude>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for ground altitude control"
+                << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_HEADING_CONTROL, HeadingControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for heading control" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_PITCH_CONTROL, PitchControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for pitch control" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_ON_GROUND, SetOnGround>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for on ground" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_BANK_CONTROL, BankControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for bank control" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_AIRSPEED_CONTROL, AirspeedControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for airspeed control" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_VSPEED_CONTROL, VSpeedControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for vertical speed control"
+                << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<GET_SIMRATE, SimRate>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for sim rate" << std::endl;
+      Sleep(5000);
+      return;
+   }
 
    if (!AddToFacilityDefinition<GET_AIRPORT_FACILITY, facility::Airport>(handle)) {
       std::cerr << "SimConnect: Failed to add data definition for airport info" << std::endl;
@@ -472,6 +530,56 @@ SimConnect::Run(std::stop_token const& stoken) {
      != S_OK
    ) {
       std::cerr << "SimConnect: Failed to map AP_ATT_HOLD event" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::FREEZE_LATLON_SET), "FREEZE_LATITUDE_LONGITUDE_SET"
+     )
+     != S_OK
+   ) {
+      std::cerr << "SimConnect: Failed to map FREEZE_LATITUDE_LONGITUDE_SET event" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::FREEZE_ALTITUDE_SET), "FREEZE_ALTITUDE_SET"
+     )
+     != S_OK
+   ) {
+      std::cerr << "SimConnect: Failed to map FREEZE_ALTITUDE_SET event" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::FREEZE_ATTITUDE_SET), "FREEZE_ATTITUDE_SET"
+     )
+     != S_OK
+   ) {
+      std::cerr << "SimConnect: Failed to map FREEZE_ATTITUDE_SET event" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::FREEZE_SLEW), "SLEW_FREEZE"
+     )
+     != S_OK
+   ) {
+      std::cerr << "SimConnect: Failed to map FREEZE_SLEW event" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::AXIS_SLEW_BANK_SET), "AXIS_SLEW_BANK_SET"
+     )
+     != S_OK
+   ) {
+      std::cerr << "SimConnect: Failed to map AXIS_SLEW_BANK_SET event" << std::endl;
       Sleep(5000);
       return;
    }

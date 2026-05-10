@@ -31,17 +31,26 @@ struct TrafficInfo {
    int32_t is_user_sim_{};
    int32_t wing_span_{};
 
-   float  altitude_{};
+   double altitude_{};
+   double ground_altitude_{};
    double lat_{};
    double lon_{};
-   float  ground_velocity_{};
+   double ground_velocity_{};
 
-   float true_heading_{};
+   double true_heading_{};
+   double pitch_{};
+   double bank_{};
+
+   double static_pitch_{};
+   double static_cg_to_ground_{};
+
+   double lateral_velocity_{};
+   double yaw_rate_{};
 
    int32_t sim_on_ground_{};
 
-   float true_airspeed_{};
-   float vspeed_{};
+   double true_airspeed_{};
+   double vspeed_{};
 
    int32_t transponder_{};
 
@@ -53,120 +62,166 @@ struct TrafficInfo {
 
    static constexpr auto MEMBERS = std::make_tuple(
      smc::_m{
-       "ATC Type",
+       "ATC TYPE",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        std::nullopt,
        &TrafficInfo::atc_type_,
      },
      smc::_m{
-       "ATC Model",
+       "ATC MODEL",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        std::nullopt,
        &TrafficInfo::atc_model_,
      },
      smc::_m{
-       "ATC Id",
+       "ATC ID",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        std::nullopt,
        &TrafficInfo::atc_id_,
      },
      smc::_m{
-       "Category",
+       "CATEGORY",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        std::nullopt,
        &TrafficInfo::category_,
      },
 
      smc::_m{
-       "Is User Sim",
+       "IS USER SIM",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
        "bool",
        &TrafficInfo::is_user_sim_,
      },
      smc::_m{
-       "Wing Span",
+       "WING SPAN",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
        "feet",
        &TrafficInfo::wing_span_,
      },
 
      smc::_m{
-       "Plane Altitude",
-       smc::_t<SIMCONNECT_DATATYPE_FLOAT32>{},
+       "PLANE ALTITUDE",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "feet",
        &TrafficInfo::altitude_,
      },
      smc::_m{
-       "Plane Latitude",
+       "PLANE ALT ABOVE GROUND",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "feet",
+       &TrafficInfo::ground_altitude_,
+     },
+     smc::_m{
+       "PLANE LATITUDE",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "degrees",
        &TrafficInfo::lat_
      },
      smc::_m{
-       "Plane Longitude",
+       "PLANE LONGITUDE",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "degrees",
        &TrafficInfo::lon_
      },
      smc::_m{
-       "Ground Velocity",
-       smc::_t<SIMCONNECT_DATATYPE_FLOAT32>{},
+       "GROUND VELOCITY",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "knots",
        &TrafficInfo::ground_velocity_
      },
 
      smc::_m{
-       "Plane Heading Degrees True",
-       smc::_t<SIMCONNECT_DATATYPE_FLOAT32>{},
-       "degrees",
+       "STATIC PITCH",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "radians",
+       &TrafficInfo::static_pitch_
+     },
+     smc::_m{
+       "STATIC CG TO GROUND",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "feet",
+       &TrafficInfo::static_cg_to_ground_
+     },
+
+     smc::_m{
+       "PLANE HEADING DEGREES TRUE",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "radians",
        &TrafficInfo::true_heading_
      },
 
      smc::_m{
-       "Sim On Ground",
+       "PLANE BANK DEGREES",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "radians",
+       &TrafficInfo::bank_
+     },
+
+     smc::_m{
+       "PLANE PITCH DEGREES",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "radians",
+       &TrafficInfo::pitch_
+     },
+
+     smc::_m{
+       "VELOCITY BODY X",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "feet per second",
+       &TrafficInfo::lateral_velocity_
+     },
+     smc::_m{
+       "ROTATION VELOCITY BODY Y",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "feet per second",
+       &TrafficInfo::yaw_rate_
+     },
+
+     smc::_m{
+       "SIM ON GROUND",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
        "bool",
        &TrafficInfo::sim_on_ground_,
      },
      smc::_m{
-       "Airspeed True",
-       smc::_t<SIMCONNECT_DATATYPE_FLOAT32>{},
+       "AIRSPEED TRUE",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "knots",
        &TrafficInfo::true_airspeed_,
      },
      smc::_m{
-       "Vertical Speed",
-       smc::_t<SIMCONNECT_DATATYPE_FLOAT32>{},
+       "VERTICAL SPEED",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "feet per second",
        &TrafficInfo::vspeed_
      },
      smc::_m{
-       "Transponder Code:1",
+       "TRANSPONDER CODE:1",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
        "number",
        &TrafficInfo::transponder_
      },
      smc::_m{
-       "Number of Engines",
+       "NUMBER OF ENGINES",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
        "number",
        &TrafficInfo::num_engines_
      },
      smc::_m{
-       "Engine Type",
+       "ENGINE TYPE",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
        "number",
        &TrafficInfo::engine_type_,
      },
 
      smc::_m{
-       "AI Traffic Fromairport",
+       "AI TRAFFIC FROMAIRPORT",
        smc::_t<SIMCONNECT_DATATYPE_STRING32>{},
        std::nullopt,
        &TrafficInfo::atc_from_airport_
      },
      smc::_m{
-       "AI Traffic Toairport",
+       "AI TRAFFIC TOAIRPORT",
        smc::_t<SIMCONNECT_DATATYPE_STRING32>{},
        std::nullopt,
        &TrafficInfo::atc_to_airport_

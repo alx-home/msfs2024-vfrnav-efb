@@ -62,6 +62,14 @@ SimConnect::StaticCast(DWORD const& data) {
                   it, it + sizeof(float), reinterpret_cast<char*>(&(result.*std::get<3>(member)))
                 );
                 it += sizeof(float);
+             } else if constexpr (std::tuple_element_t<1, M>::VALUE_S == SIMCONNECT_DATATYPE_INT8) {
+                static_assert(std::is_same_v<
+                              std::remove_reference_t<decltype(result.*std::get<3>(member))>,
+                              int8_t>);
+                std::move(
+                  it, it + sizeof(int8_t), reinterpret_cast<char*>(&(result.*std::get<3>(member)))
+                );
+                it += sizeof(int8_t);
              } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
                                   == SIMCONNECT_DATATYPE_INT32) {
                 static_assert(std::is_same_v<
@@ -118,6 +126,9 @@ SimConnect::Size() {
                 } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
                                      == SIMCONNECT_DATATYPE_FLOAT32) {
                    size += sizeof(float);
+                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
+                                     == SIMCONNECT_DATATYPE_INT8) {
+                   size += sizeof(int8_t);
                 } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
                                      == SIMCONNECT_DATATYPE_INT32) {
                    size += sizeof(int32_t);

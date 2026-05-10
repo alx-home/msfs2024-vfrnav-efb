@@ -28,6 +28,7 @@ set(SOURCES
     SimConnect/SimConnect.cpp
     SimConnect/SimConnectInterface.cpp
     SimConnect/Utils/StaticCast.cpp
+    SimConnect/FacilityData/AirportFacility.cpp
 
     Window/template/Bindings/Files.cpp
     Window/template/Bindings/log.cpp

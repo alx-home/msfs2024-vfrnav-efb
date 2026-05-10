@@ -94,6 +94,8 @@ enum class DataId : uint32_t {
    USER_INFO,
    GROUND_INFO,
 
+   GET_SIMRATE,
+
    GET_AIRPORT_FACILITY,
 
    SET_WAYPOINTS,
@@ -101,6 +103,16 @@ enum class DataId : uint32_t {
    SET_GEAR,
    SET_FLAPS,
    SET_THROTTLE,
+   SET_CONTROL_SURFACES,
+   SET_ALTITUDE_CONTROL,
+   SET_GROUND_ALTITUDE_CONTROL,
+   SET_HEADING_CONTROL,
+   SET_PITCH_CONTROL,
+   SET_ON_GROUND,
+   SET_BANK_CONTROL,
+   SET_GROUND_ALTITUDE,
+   SET_AIRSPEED_CONTROL,
+   SET_VSPEED_CONTROL,
 
    MAX_VALUE,
 };
@@ -109,6 +121,11 @@ enum class EventId : uint32_t {
    AP_MASTER,
    AP_ALT_HOLD,
    AP_ATT_HOLD,
+   FREEZE_LATLON_SET,
+   FREEZE_ALTITUDE_SET,
+   FREEZE_ATTITUDE_SET,
+   FREEZE_SLEW,
+   AXIS_SLEW_BANK_SET,
    AXIS_ELEVATOR_SET,
    AXIS_AILERONS_SET,
    AXIS_RUDDER_SET,
@@ -141,8 +158,7 @@ struct SimobjectData {
    DATA_TYPE dw_data_;   // data begins here, dw_define_count_ data items
 };
 
-using Livery   = std::pair<std::string, std::string>;
-using Liveries = std::vector<Livery>;
+using Liveries = std::multimap<std::string, std::string>;
 
 struct AirportInfo {
    std::string indent_;
