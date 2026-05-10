@@ -125,7 +125,7 @@ struct Server : public MessageQueue<true> {
    std::condition_variable_any cv_{};
    Resolvers<ServerState>      resolvers_{};
    bool                        efb_connected_{false};
-   bool                        want_run_{[]() constexpr {
+   bool                        want_run_{[]() {
       auto& registry = registry::Get();
       return *registry.alx_home_->settings_->auto_start_server_;
    }()};

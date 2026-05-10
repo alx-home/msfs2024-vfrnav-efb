@@ -27,7 +27,7 @@ struct Break {
    int32_t left_{};  // 0 to 32 000
    int32_t right_{};
 
-   static constexpr std::tuple MEMBERS{std::make_tuple(
+   static constexpr auto MEMBERS = std::make_tuple(
      smc::_m{
        "BRAKE LEFT POSITION",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
@@ -40,7 +40,7 @@ struct Break {
        "Position",
        &Break::right_
      }
-   )};
+   );
 };
 
 }  // namespace smc

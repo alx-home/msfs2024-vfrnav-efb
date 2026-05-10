@@ -29,7 +29,6 @@
 #include <processthreadsapi.h>
 #include <exception>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <ranges>
@@ -65,7 +64,7 @@ Server::EFBWebSocket::~EFBWebSocket() {
 
       // Wait promises to be done
       std::unique_lock lock{mutex_};
-      cv_.wait(lock, [this]() constexpr { return promises_ == 0; });
+      cv_.wait(lock, [this]() { return promises_ == 0; });
    }
 
    boost::beast::error_code ec;
@@ -74,8 +73,10 @@ Server::EFBWebSocket::~EFBWebSocket() {
    if (ws_.is_open()) {
       ws_.close({}, ec);
    }
-   if (ec && ec != websocket::error::closed && ec != net::error::operation_aborted
-       && ec != net::error::bad_descriptor) {
+   if (
+     ec && ec != websocket::error::closed && ec != net::error::operation_aborted
+     && ec != net::error::bad_descriptor
+   ) {
       std::cerr << "Error closing WebSocket: " << ec.message() << std::endl;
    }
 }
@@ -90,13 +91,17 @@ Server::EFBWebSocket::VDispatchMessage(std::size_t id, ws::Message&& message) {
 void
 Server::EFBWebSocket::VSendMessage(std::size_t id, ws::Message&& message) {
    if (ws_.is_open()) {
-      if (std::holds_alternative<ws::msg::GetSettings>(message)
-          || std::holds_alternative<ws::msg::Settings>(message)) {
+      if (
+        std::holds_alternative<ws::msg::GetSettings>(message)
+        || std::holds_alternative<ws::msg::Settings>(message)
+      ) {
          // @todo
       } else if (std::holds_alternative<ws::msg::GetEFBState>(message)) {
          (void)server_.Dispatch([self = shared_from_this(), id = id]() {
-            if (auto const message_handler = self->server_.message_handlers_.find(id);
-                message_handler != self->server_.message_handlers_.end()) {
+            if (
+              auto const message_handler = self->server_.message_handlers_.find(id);
+              message_handler != self->server_.message_handlers_.end()
+            ) {
                message_handler->second(
                  1, ws::msg::EFBState{.state_ = self->server_.efb_connected_}
                );
@@ -104,8 +109,10 @@ Server::EFBWebSocket::VSendMessage(std::size_t id, ws::Message&& message) {
          });
       } else if (std::holds_alternative<ws::msg::GetServerState>(message)) {
          (void)server_.Dispatch([self = shared_from_this(), id = id]() {
-            if (auto const message_handler = self->server_.message_handlers_.find(id);
-                message_handler != self->server_.message_handlers_.end()) {
+            if (
+              auto const message_handler = self->server_.message_handlers_.find(id);
+              message_handler != self->server_.message_handlers_.end()
+            ) {
                message_handler->second(1, ws::msg::ServerState{.state_ = self->server_.running_});
             }
          });
@@ -156,12 +163,11 @@ Server::EFBWebSocket::Start() noexcept(false) {
 
    my_id_ = web_browser_ ? std::bit_cast<std::size_t>(this) : 0;
 
-   server_.Dispatch([self = shared_from_this()]() constexpr {
+   server_.Dispatch([self = shared_from_this()]() {
       self->VSendMessage(1, ws::msg::HelloWorld{.type_ = "Server"});
 
       self->server_.SetMessageHandler(
-        self->my_id_,
-        {[self = self->weak_from_this()](std::size_t id, ws::Message message) constexpr {
+        self->my_id_, {[self = self->weak_from_this()](std::size_t id, ws::Message message) {
            auto const ptr = self.lock();
            if (ptr) {
               ptr->VDispatchMessage(id, std::move(message));
@@ -285,7 +291,7 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
             dialog::OpenFile(msg.path_, {{.name_ = "Pdf File", .value_ = {"*.pdf"}}})
               .Then([self   = shared_from_this(),
                      id     = message.id_,
-                     req_id = msg.id_](std::string const& path) constexpr {
+                     req_id = msg.id_](std::string const& path) {
                  (void)self->server_.Dispatch([self = std::move(self), id, req_id, path]() {
                     self->VSendMessage(id, ws::msg::OpenFileResponse{.id_ = req_id, .path_ = path});
                     std::shared_lock lock{self->mutex_};
@@ -293,7 +299,7 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
                     self->cv_.notify_all();
                  });
               })
-              .Catch([self = shared_from_this()](std::exception_ptr const& exc) constexpr {
+              .Catch([self = shared_from_this()](std::exception_ptr const& exc) {
                  std::shared_lock lock{self->mutex_};
                  --self->promises_;
                  self->cv_.notify_all();
@@ -344,8 +350,10 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
             } else {
                (void)server_.Dispatch(
                  [&server = server_, my_id = my_id_, message = std::move(message)]() {
-                    if (auto const message_handler = server.message_handlers_.find(message.id_);
-                        message_handler != server.message_handlers_.end()) {
+                    if (
+                      auto const message_handler = server.message_handlers_.find(message.id_);
+                      message_handler != server.message_handlers_.end()
+                    ) {
                        message_handler->second(my_id, std::move(message.content_));
                     }
                  }

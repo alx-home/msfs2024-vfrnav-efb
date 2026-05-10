@@ -433,9 +433,7 @@ SimConnect::RequestFacilitiesList(SIMCONNECT_FACILITY_LIST_TYPE type) {
                     while (last_remaining) {
                        co_await Wait(5s);
                        if (*remaining == last_remaining) {
-                          MakeReject<Timeout>(
-                            *reject, "Timed out while requesting data on sim object"
-                          );
+                          reject->Apply<Timeout>("Timed out while requesting facilities list");
                        }
 
                        last_remaining = *remaining;
@@ -514,8 +512,8 @@ SimConnect::RequestDataOnSimObject(uint32_t objectId, std::shared_ptr<void*> han
                    std::chrono::steady_clock::time_point const& last_update
                  ) {
                     if (data.dwDefineID != static_cast<DWORD>(ID)) {
-                       MakeReject<UnknownError>(
-                         *reject, "Received data for unknown request ID or data type mismatch"
+                       reject->Apply<UnknownError>(
+                         "Received data for unknown request ID or data type mismatch"
                        );
                        return;
                     }
@@ -524,11 +522,10 @@ SimConnect::RequestDataOnSimObject(uint32_t objectId, std::shared_ptr<void*> han
                           sizeof(SIMCONNECT_RECV_SIMOBJECT_DATA) - sizeof(data.dwSize);
                         Size<DATA_TYPE>() > (data.dwSize - header_size)) {
 
-                       MakeReject<UnknownError>(
-                         *reject,
+                       reject->Apply<UnknownError>(
                          "Received data size does not match expected size for requested data type ("
-                           + std::to_string(data.dwSize - header_size) + " vs "
-                           + std::to_string(Size<DATA_TYPE>()) + ")"
+                         + std::to_string(data.dwSize - header_size) + " vs "
+                         + std::to_string(Size<DATA_TYPE>()) + ")"
                        );
                        return;
                     }
@@ -560,12 +557,12 @@ SimConnect::RequestDataOnSimObject(uint32_t objectId, std::shared_ptr<void*> han
                      SIMCONNECT_PERIOD_ONCE
                    )
                    != S_OK) {
-                  MakeReject<UnknownError>(reject, "Failed to request data on sim object");
+                  reject.Apply<UnknownError>("Failed to request data on sim object");
                   co_return;
                }
 
                if (!TrackRequestSendId(handle, request_id)) {
-                  MakeReject<UnknownError>(reject, "Failed to track data-on-simobject request");
+                  reject.Apply<UnknownError>("Failed to track data-on-simobject request");
                   co_return;
                }
             }

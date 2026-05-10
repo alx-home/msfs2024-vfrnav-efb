@@ -113,8 +113,10 @@ WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR lpCmdLine, int /*nCm
 int
 main() {
 #endif
-   if (auto const hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-       !SUCCEEDED(hr)) {
+   if (
+     auto const hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+     !SUCCEEDED(hr)
+   ) {
       std::cerr << "Coinitialized failed (" << hr << ")" << std::endl;
    }
 
@@ -122,13 +124,15 @@ main() {
 
    if (uninstall == Uninstall::STEP1) {
 
-      if (auto const result = MessageBox(
-            nullptr,
-            "MSFS2024 VFRNav' Server is about to be uninstalled.\nDo you wish to proceed?",
-            "MSFS2024 VFRNav' Server uninstaller",
-            MB_ICONERROR | MB_OKCANCEL
-          );
-          result != IDOK) {
+      if (
+        auto const result = MessageBox(
+          nullptr,
+          "MSFS2024 VFRNav' Server is about to be uninstalled.\nDo you wish to proceed?",
+          "MSFS2024 VFRNav' Server uninstaller",
+          MB_ICONERROR | MB_OKCANCEL
+        );
+        result != IDOK
+      ) {
          return EXIT_FAILURE;
       }
 
@@ -154,7 +158,7 @@ main() {
       }
       return EXIT_SUCCESS;
    } else if (uninstall == Uninstall::STEP2) {
-      ScopeExit _{[&]() constexpr {
+      ScopeExit _{[&]() {
          win32::NewProcess(
            R"(C:\Windows\System32\cmd.exe)",
            std::format("/c ping localhost -n 3 > nul & del {} & pause", win32::GetExecutablePath()),

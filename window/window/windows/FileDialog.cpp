@@ -50,16 +50,18 @@ public:
    using Fdialog = std::unique_ptr<IFileOpenDialog, void (*)(IFileOpenDialog*)>;
 
    FileDialog()
-      : fdialog_{[]() constexpr {
+      : fdialog_{[]() {
          // CREATE FileOpenDialog OBJECT
          IFileOpenDialog* fdialog_ptr;
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wlanguage-extension-token"
-         if (HRESULT result = CoCreateInstance(
-               CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&fdialog_ptr)
-             );
-             FAILED(result)) {
+         if (
+           HRESULT result = CoCreateInstance(
+             CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&fdialog_ptr)
+           );
+           FAILED(result)
+         ) {
             throw Exception{"FileDialog::CoCreateInstance error: " + std::to_string(result)};
          }
 #pragma clang diagnostic pop
@@ -93,9 +95,11 @@ public:
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wlanguage-extension-token"
-         if (HRESULT result =
-               SHCreateItemFromParsingName(path.c_str(), nullptr, IID_PPV_ARGS(&cur_folder));
-             FAILED(result)) {
+         if (
+           HRESULT result =
+             SHCreateItemFromParsingName(path.c_str(), nullptr, IID_PPV_ARGS(&cur_folder));
+           FAILED(result)
+         ) {
             throw Exception{
               "FileDialog::SHCreateItemFromParsingName error: " + std::to_string(result)
             };
@@ -165,9 +169,9 @@ Open(std::string_view path, std::vector<Filter> filters) {
         {
            std::lock_guard lock{s__thread_mutex};
            std::jthread    thread{[resolve = resolve.shared_from_this(),
-                                reject  = reject.shared_from_this(),
-                                filters = std::move(filters),
-                                value = std::filesystem::path{ReplaceEnv(std::string{path})}]() {
+                                   reject  = reject.shared_from_this(),
+                                   filters = std::move(filters),
+                                   value = std::filesystem::path{ReplaceEnv(std::string{path})}]() {
               ScopeExit _{[]() constexpr {
                  std::lock_guard lock{s__thread_mutex};
 

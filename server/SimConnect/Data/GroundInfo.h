@@ -24,12 +24,14 @@ namespace smc {
 struct GroundInfo {
    float altitude_{};
 
-   static constexpr std::tuple MEMBERS{std::make_tuple(smc::_m{
-     "Ground Altitude",
-     smc::_t<SIMCONNECT_DATATYPE_FLOAT32>{},
-     "feet",
-     &GroundInfo::altitude_
-   })};
+   static constexpr auto MEMBERS = std::make_tuple(
+     smc::_m{
+       "Ground Altitude",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT32>{},
+       "feet",
+       &GroundInfo::altitude_
+     }
+   );
 };
 
 }  // namespace smc

@@ -51,7 +51,8 @@ struct ManifestReleaseNotes {
    };
    Neutral neutral_{};
 
-   static constexpr js::Proto PROTOTYPE{js::Proto{js::_{"neutral", &ManifestReleaseNotes::neutral_}}
+   static constexpr js::Proto PROTOTYPE{
+     js::Proto{js::_{"neutral", &ManifestReleaseNotes::neutral_}}
    };
 };
 struct ResourcesReleaseNote {
@@ -160,23 +161,29 @@ Main::Validate(
       );
    }
 
-   if (std::filesystem::path const path{installPath};
-       !path.has_parent_path() || !std::filesystem::exists(path.parent_path())) {
+   if (
+     std::filesystem::path const path{installPath};
+     !path.has_parent_path() || !std::filesystem::exists(path.parent_path())
+   ) {
       co_return Fatal("Parent path not found : ", "\"" + installPath + "\"");
    }
 
-   if (std::filesystem::path const path{addonPath};
-       !path.has_parent_path() || !std::filesystem::exists(path.parent_path())) {
+   if (
+     std::filesystem::path const path{addonPath};
+     !path.has_parent_path() || !std::filesystem::exists(path.parent_path())
+   ) {
       co_return Fatal("Parent path not found : ", "\"" + addonPath + "\"");
    }
 
    auto& registry = registry::Get();
    auto& settings = registry.alx_home_->settings_;
 
-   if (auto const addon = settings->addon_       ? *settings->addon_
-                          : settings->community_ ? *settings->community_
-                                                 : "";
-       addon.size() && std::filesystem::exists(addon)) {
+   if (
+     auto const addon = settings->addon_       ? *settings->addon_
+                        : settings->community_ ? *settings->community_
+                                               : "";
+     addon.size() && std::filesystem::exists(addon)
+   ) {
       if (co_await webview_.Call<bool>("clean_path", addon)) {
          std::error_code ec{};
          if (std::filesystem::remove_all(addon, ec) == static_cast<std::uintmax_t>(-1)) {
@@ -198,8 +205,10 @@ Main::Validate(
       }
    }
 
-   if (auto const oldInstall = (settings->destination_ ? *settings->destination_ : "");
-       oldInstall.size() && (installPath != oldInstall) && std::filesystem::exists(oldInstall)) {
+   if (
+     auto const oldInstall = (settings->destination_ ? *settings->destination_ : "");
+     oldInstall.size() && (installPath != oldInstall) && std::filesystem::exists(oldInstall)
+   ) {
       if (co_await webview_.Call<bool>("clean_path", oldInstall)) {
          std::error_code ec{};
          if (std::filesystem::remove_all(oldInstall, ec) == static_cast<std::uintmax_t>(-1)) {
@@ -268,10 +277,12 @@ Main::Validate(
 
    auto const shortcutPath =
      GetAppData() + R"(\Microsoft\Windows\Start Menu\Programs\MSFS2024 VFRNav' Server.lnk)";
-   if (auto result = win32::CreateLink(
-         installPath + "\\msfs2024-vfrnav_server.exe", shortcutPath, "MSFS2024 VFRNav' Server"
-       );
-       !SUCCEEDED(result)) {
+   if (
+     auto result = win32::CreateLink(
+       installPath + "\\msfs2024-vfrnav_server.exe", shortcutPath, "MSFS2024 VFRNav' Server"
+     );
+     !SUCCEEDED(result)
+   ) {
       Warning("Couldn't create shortcut (" + std::to_string(result) + "):", shortcutPath);
    }
 
@@ -336,7 +347,7 @@ Main::Validate(
       auto const last_slash = name.find_last_of("/");
       auto const file_name  = name.substr(last_slash == std::string::npos ? 0 : last_slash + 1);
       auto const directory  = addonPath + "/html_ui/efb_ui/efb_apps/msfs2024-vfrnav/"
-                             + name.substr(0, last_slash == std::string::npos ? 0 : last_slash);
+                              + name.substr(0, last_slash == std::string::npos ? 0 : last_slash);
       std::error_code ec{};
       std::filesystem::create_directories(directory, ec);
       if (ec) {
@@ -394,18 +405,19 @@ Main::Validate(
      };
 
    manifest.release_notes_ = ManifestReleaseNotes{
-     .neutral_ =
-       {.last_update_ = transform_note(
-          *manifest.package_version_, release_notes.back().date_, release_notes.back().notes_
-        ),
-        .older_history_ = std::reduce(
-          release_notes.begin(),
-          std::prev(release_notes.end()),
-          ""_str,
-          [&](std::string const& left, ResourcesReleaseNote const& right) constexpr {
-             return left + transform_note(right.version_, right.date_, right.notes_);
-          }
-        )}
+     .neutral_ = {
+       .last_update_ = transform_note(
+         *manifest.package_version_, release_notes.back().date_, release_notes.back().notes_
+       ),
+       .older_history_ = std::reduce(
+         release_notes.begin(),
+         std::prev(release_notes.end()),
+         ""_str,
+         [&](std::string const& left, ResourcesReleaseNote const& right) constexpr {
+            return left + transform_note(right.version_, right.date_, right.notes_);
+         }
+       )
+     }
    };
 
    auto const manifest_str = js::Stringify<2>(manifest, true);
@@ -443,12 +455,12 @@ Main::Validate(
    // Open your newly crafted toy ? :)
 
    if (co_await webview_.Call<bool>("start_program")) {
-      webview_.Dispatch([this, installPath]() constexpr {
+      webview_.Dispatch([this, installPath]() {
          win32::NewProcess(installPath + "\\msfs2024-vfrnav_server.exe", "--configure");
          Abort()();
       });
    } else {
-      webview_.Dispatch([this]() constexpr { Abort()(); });
+      webview_.Dispatch([this]() { Abort()(); });
    }
 
    co_return;

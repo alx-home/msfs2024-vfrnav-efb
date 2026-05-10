@@ -51,7 +51,7 @@ struct TrafficInfo {
    std::string atc_from_airport_{};
    std::string atc_to_airport_{};
 
-   static constexpr std::tuple MEMBERS{
+   static constexpr auto MEMBERS = std::make_tuple(
      smc::_m{
        "ATC Type",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
@@ -171,7 +171,7 @@ struct TrafficInfo {
        std::nullopt,
        &TrafficInfo::atc_to_airport_
      }
-   };
+   );
 };
 
 }  // namespace smc

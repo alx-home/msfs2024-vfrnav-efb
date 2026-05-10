@@ -30,5 +30,76 @@ template <SIMCONNECT_DATATYPE VALUE>
 using _t = Type<VALUE>;
 
 template <SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
-using _m = std::tuple<std::string_view, _t<TYPE>, std::optional<std::string_view>, T CLASS::*>;
+struct _m {
+   std::string_view                name_{};
+   _t<TYPE>                        type_{};
+   std::optional<std::string_view> unit_{};
+   T CLASS::* member_{};
+
+   constexpr _m(
+     std::string_view                name,
+     _t<TYPE>                        type,
+     std::optional<std::string_view> unit,
+     T CLASS::* member
+   )
+      : name_{name}
+      , type_{type}
+      , unit_{unit}
+      , member_{member} {}
+};
+
+template <SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
+constexpr auto
+make_m(
+  std::string_view                name,
+  _t<TYPE>                        type,
+  std::optional<std::string_view> unit,
+  T CLASS::* member
+) -> _m<TYPE, CLASS, T> {
+   return _m<TYPE, CLASS, T>{name, type, unit, member};
+}
 }  // namespace smc
+
+namespace std {
+template <SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
+struct tuple_size<smc::_m<TYPE, CLASS, T>> : std::integral_constant<size_t, 4> {};
+
+template <size_t INDEX, SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
+struct tuple_element<INDEX, smc::_m<TYPE, CLASS, T>> {
+   using type = std::conditional_t<
+     INDEX == 0,
+     std::string_view,
+     std::conditional_t<
+       INDEX == 1,
+       smc::_t<TYPE>,
+       std::conditional_t<INDEX == 2, std::optional<std::string_view>, T CLASS::*>>>;
+};
+
+template <size_t INDEX, SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
+constexpr auto&
+get(smc::_m<TYPE, CLASS, T>& member) noexcept {
+   if constexpr (INDEX == 0) {
+      return member.name_;
+   } else if constexpr (INDEX == 1) {
+      return member.type_;
+   } else if constexpr (INDEX == 2) {
+      return member.unit_;
+   } else {
+      return member.member_;
+   }
+}
+
+template <size_t INDEX, SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
+constexpr auto const&
+get(smc::_m<TYPE, CLASS, T> const& member) noexcept {
+   if constexpr (INDEX == 0) {
+      return member.name_;
+   } else if constexpr (INDEX == 1) {
+      return member.type_;
+   } else if constexpr (INDEX == 2) {
+      return member.unit_;
+   } else {
+      return member.member_;
+   }
+}
+}  // namespace std

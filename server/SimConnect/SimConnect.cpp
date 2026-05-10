@@ -20,11 +20,13 @@
 #include "main.h"
 
 #include "Data/Flaps.h"
+#include "Data/SimRate.h"
 #include "Data/GearDown.h"
 #include "Data/GroundInfo.h"
 #include "Data/ServerPort.h"
 #include "Data/TrafficInfo.h"
 #include "Data/Break.h"
+#include "Data/ManualControl.h"
 #include "FacilityData/AirportFacility.h"
 
 #include <chrono>
@@ -92,9 +94,9 @@ SimConnect::SimConnect(Main& main)
          throw std::runtime_error("Couldn't create event");
       }
 
-      ScopeExit _{[this]() constexpr {
+      ScopeExit _{[this]() {
          std::cout << "SimConnect: Main loop ended" << std::endl;
-         auto const _ = MessageQueue::Dispatch([this]() constexpr { connection_promise_.Done(); });
+         auto const _ = MessageQueue::Dispatch([this]() { connection_promise_.Done(); });
       }};
 
       while (!stoken.stop_requested()) {
@@ -102,7 +104,7 @@ SimConnect::SimConnect(Main& main)
          if (SUCCEEDED(SimConnect_Open(&handle, "MSFS VFRNav'", nullptr, 0, event_, 0))) {
             std::shared_ptr<HANDLE> handle_ptr{
               new HANDLE(handle),
-              [this](HANDLE* ptr) constexpr {
+              [this](HANDLE* ptr) {
                  std::cout << "SimConnect: Disconnected from simulator" << std::endl;
                  SimConnect_Close(*ptr);
                  delete ptr;
@@ -126,7 +128,7 @@ SimConnect::~SimConnect() {
    assert(thread_.joinable());
    thread_.request_stop();
 
-   auto const _ = MessageQueue::Dispatch([this]() constexpr {
+   auto const _ = MessageQueue::Dispatch([this]() {
       connection_promise_.Done();
 
       if (event_) {
@@ -147,8 +149,10 @@ SimConnect::TrackRequestSendId(
       return false;
    }
 
-   if (auto const existing = request_id_to_send_id_.find(request_id);
-       existing != request_id_to_send_id_.end()) {
+   if (
+     auto const existing = request_id_to_send_id_.find(request_id);
+     existing != request_id_to_send_id_.end()
+   ) {
       assert(false);
       send_id_to_request_id_.erase(existing->second);
    }
@@ -249,8 +253,9 @@ SimConnect::AICreateSimulatedObject(
                  reject.shared_from_this()
                );
 
-               if (SimConnect_AICreateSimulatedObject(*handle, title.data(), pos, request_id)
-                   != S_OK) {
+               if (
+                 SimConnect_AICreateSimulatedObject(*handle, title.data(), pos, request_id) != S_OK
+               ) {
                   reject.Apply<UnknownError>("App is stopping");
                   co_return;
                }
@@ -260,7 +265,7 @@ SimConnect::AICreateSimulatedObject(
                   co_return;
                }
             }
-   ).Finally([this, request_id] constexpr {
+   ).Finally([this, request_id] {
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
       ClearTrackedSendId(request_id);
       pending_assigned_.erase(request_id);
@@ -310,10 +315,12 @@ SimConnect::AICreateNonATCAircraft(
                  reject.shared_from_this()
                );
 
-               if (SimConnect_AICreateNonATCAircraft_EX1(
-                     *handle, title.data(), livery.data(), tail_number.data(), pos, request_id
-                   )
-                   != S_OK) {
+               if (
+                 SimConnect_AICreateNonATCAircraft_EX1(
+                   *handle, title.data(), livery.data(), tail_number.data(), pos, request_id
+                 )
+                 != S_OK
+               ) {
                   reject.Apply<UnknownError>("Failed to create non-ATC aircraft");
                   co_return;
                }
@@ -323,7 +330,7 @@ SimConnect::AICreateNonATCAircraft(
                   co_return;
                }
             }
-   ).Finally([this, request_id] constexpr {
+   ).Finally([this, request_id] {
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
       ClearTrackedSendId(request_id);
       pending_assigned_.erase(request_id);
@@ -335,37 +342,37 @@ SimConnect::Run(std::stop_token const& stoken) {
    using enum DataId;
 
    {
-      auto const _ = MessageQueue::Dispatch([this]() constexpr { connection_promise_.Reset(); });
+      auto const _ = MessageQueue::Dispatch([this]() { connection_promise_.Reset(); });
    }
 
-   ScopeExit _{[this] constexpr {
+   ScopeExit cleanup_pending{[this] {
       std::condition_variable  cv{};
       std::mutex               mutex{};
       std::atomic<std::size_t> pending_count = 0;
 
-      auto const _ = MessageQueue::Dispatch([this]() constexpr { connection_promise_.Done(); });
+      auto const _ = MessageQueue::Dispatch([this]() { connection_promise_.Done(); });
 
-      auto const clearPending = [this, &cv, &mutex, &pending_count](std::function<void()>&& invoke
-                                ) {
-         try {
-            ++pending_count;
-            MessageQueue::Dispatch([&cv, &mutex, &pending_count, invoke] constexpr {
-               ScopeExit _{[&cv, &pending_count, &mutex] constexpr {
-                  std::unique_lock lock{mutex};
-                  --pending_count;
-                  cv.notify_all();
-               }};
-               invoke();
-            }).Detach();
-         } catch (QueueStopped const&) {
-            --pending_count;
-            assert(false && "Failed to dispatch clear on SimConnect message queue");
-            invoke();
-         }
-      };
+      auto const clearPending =
+        [this, &cv, &mutex, &pending_count](std::function<void()>&& invoke) {
+           try {
+              ++pending_count;
+              MessageQueue::Dispatch([&cv, &mutex, &pending_count, invoke] {
+                 ScopeExit _{[&cv, &pending_count, &mutex] {
+                    std::unique_lock lock{mutex};
+                    --pending_count;
+                    cv.notify_all();
+                 }};
+                 invoke();
+              }).Detach();
+           } catch (QueueStopped const&) {
+              --pending_count;
+              assert(false && "Failed to dispatch clear on SimConnect message queue");
+              invoke();
+           }
+        };
 
-      auto const makeCleaner = [this]<class M>(M SimConnect::* elem) constexpr {
-         return [this, elem] constexpr {
+      auto const makeCleaner = [this]<class M>(M SimConnect::* elem) {
+         return [this, elem] {
             auto pending = std::move(this->*elem);
             assert((this->*elem).empty());
             for (auto& elem : pending) {
@@ -374,9 +381,7 @@ SimConnect::Run(std::stop_token const& stoken) {
          };
       };
       std::apply(
-        [&clearPending, &makeCleaner](auto&&... elem) constexpr {
-           (clearPending(makeCleaner(elem)), ...);
-        },
+        [&clearPending, &makeCleaner](auto&&... elem) { (clearPending(makeCleaner(elem)), ...); },
         PENDING_MEMBERS
       );
 
@@ -440,59 +445,73 @@ SimConnect::Run(std::stop_token const& stoken) {
       return;
    }
 
-   if (SimConnect_MapClientEventToSimEvent(
-         *handle, static_cast<uint32_t>(EventId::AP_MASTER), "AP_MASTER"
-       )
-       != S_OK) {
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::AP_MASTER), "AP_MASTER"
+     )
+     != S_OK
+   ) {
       std::cerr << "SimConnect: Failed to map AP_MASTER event" << std::endl;
       Sleep(5000);
       return;
    }
-   if (SimConnect_MapClientEventToSimEvent(
-         *handle, static_cast<uint32_t>(EventId::AP_ALT_HOLD), "AP_ALT_HOLD"
-       )
-       != S_OK) {
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::AP_ALT_HOLD), "AP_ALT_HOLD"
+     )
+     != S_OK
+   ) {
       std::cerr << "SimConnect: Failed to map AP_ALT_HOLD event" << std::endl;
       Sleep(5000);
       return;
    }
-   if (SimConnect_MapClientEventToSimEvent(
-         *handle, static_cast<uint32_t>(EventId::AP_ATT_HOLD), "AP_ATT_HOLD"
-       )
-       != S_OK) {
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::AP_ATT_HOLD), "AP_ATT_HOLD"
+     )
+     != S_OK
+   ) {
       std::cerr << "SimConnect: Failed to map AP_ATT_HOLD event" << std::endl;
       Sleep(5000);
       return;
    }
 
-   if (SimConnect_MapClientEventToSimEvent(
-         *handle, static_cast<uint32_t>(EventId::AXIS_ELEVATOR_SET), "AXIS_ELEVATOR_SET"
-       )
-       != S_OK) {
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::AXIS_ELEVATOR_SET), "AXIS_ELEVATOR_SET"
+     )
+     != S_OK
+   ) {
       std::cerr << "SimConnect: Failed to map AXIS_ELEVATOR_SET event" << std::endl;
       Sleep(5000);
       return;
    }
-   if (SimConnect_MapClientEventToSimEvent(
-         *handle, static_cast<uint32_t>(EventId::AXIS_AILERONS_SET), "AXIS_AILERONS_SET"
-       )
-       != S_OK) {
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::AXIS_AILERONS_SET), "AXIS_AILERONS_SET"
+     )
+     != S_OK
+   ) {
       std::cerr << "SimConnect: Failed to map AXIS_AILERONS_SET event" << std::endl;
       Sleep(5000);
       return;
    }
-   if (SimConnect_MapClientEventToSimEvent(
-         *handle, static_cast<uint32_t>(EventId::AXIS_RUDDER_SET), "AXIS_RUDDER_SET"
-       )
-       != S_OK) {
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::AXIS_RUDDER_SET), "AXIS_RUDDER_SET"
+     )
+     != S_OK
+   ) {
       std::cerr << "SimConnect: Failed to map AXIS_RUDDER_SET event" << std::endl;
       Sleep(5000);
       return;
    }
-   if (SimConnect_MapClientEventToSimEvent(
-         *handle, static_cast<uint32_t>(EventId::THROTTLE_SET), "THROTTLE_SET"
-       )
-       != S_OK) {
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::THROTTLE_SET), "THROTTLE_SET"
+     )
+     != S_OK
+   ) {
       std::cerr << "SimConnect: Failed to map THROTTLE_SET event" << std::endl;
       Sleep(5000);
       return;
@@ -505,15 +524,15 @@ SimConnect::Run(std::stop_token const& stoken) {
 
    SetServerPort(server_port_).Detach();
 
-   ScopeExit _{[this] constexpr { connection_promise_.Done(); }};
+   ScopeExit connection_done{[this] { connection_promise_.Done(); }};
 
    uint32_t result;
    while ((result = ::WaitForSingleObject(event_, INFINITE)),
           (result == WAIT_OBJECT_0) && !ShouldStop(stoken)) {
-      MessageQueue::Dispatch([this, handle]() constexpr {
+      MessageQueue::Dispatch([this, handle]() {
          SimConnect_CallDispatch(
            *handle,
-           [](SIMCONNECT_RECV* data, DWORD, void* self) constexpr {
+           [](SIMCONNECT_RECV* data, DWORD, void* self) {
               reinterpret_cast<SimConnect*>(self)->Dispatch(*data);
            },
            this
@@ -559,7 +578,7 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
          // setting the port and requesting data, otherwise we might get errors from
          // the simulator
          MessageQueue::Dispatch(
-           [this] constexpr {
+           [this] {
               assert(std::this_thread::get_id() == MessageQueue::ThreadId());
               connection_promise_.Ready();
            },
@@ -572,14 +591,14 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
          auto const& exception = static_cast<SIMCONNECT_RECV_EXCEPTION const&>(data);
 
          if (auto const request_id = FindRequestIdForSendId(exception.dwSendID)) {
-            if (std::apply(
-                  [this, request_id, exception](auto&... pending) constexpr {
-                     return (
-                       RejectPendingOnException(this->*pending, *request_id, exception) || ...
-                     );
-                  },
-                  PENDING_MEMBERS
-                )) {
+            if (
+              std::apply(
+                [this, request_id, exception](auto&... pending) {
+                   return (RejectPendingOnException(this->*pending, *request_id, exception) || ...);
+                },
+                PENDING_MEMBERS
+              )
+            ) {
                break;
             }
          } else if (auto reject = FindRejectForSendId(exception.dwSendID)) {

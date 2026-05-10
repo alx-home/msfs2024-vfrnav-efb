@@ -59,7 +59,7 @@ static uint32_t const MF_MOUSE_EVENT = ::RegisterWindowMessage("MainFrameMouseEv
 Main::Main(bool minimized, bool configure, bool open_efb, bool open_web)
    : win32::SystemTray("MSFS2024 VFRNav' Server", "MSFS2024 VFRNav' Server")
    , promise::Pool<50>{"Main Pool"}
-   , mouse_watcher_([this](std::stop_token stop_token) constexpr {
+   , mouse_watcher_([this](std::stop_token stop_token) {
       bool was_l_down{false};
       bool was_r_down{false};
 
@@ -289,7 +289,7 @@ Main::Terminate() {
 
    terminate_promise_.Reject<AppStopping>();
    server_.RejectAll();
-   SystemTray::Dispatch([]() constexpr { PostQuitMessage(0); });
+   SystemTray::Dispatch([]() { PostQuitMessage(0); });
 }
 
 void

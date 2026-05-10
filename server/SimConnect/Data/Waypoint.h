@@ -29,7 +29,7 @@ struct Waypoint {
    std::string on_ground_{};
    std::string speed_{};
 
-   static constexpr std::tuple MEMBERS{
+   static constexpr auto MEMBERS = std::make_tuple(
      smc::_m{
        "Plane Latitude",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
@@ -60,8 +60,8 @@ struct Waypoint {
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        "knots",
        &Waypoint::speed_,
-     },
-   };
+     }
+   );
 };
 
 }  // namespace smc

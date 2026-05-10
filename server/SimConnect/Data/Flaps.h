@@ -25,9 +25,9 @@ namespace smc {
 struct Flaps {
    int index_{};
 
-   static constexpr std::tuple MEMBERS{std::make_tuple(
+   static constexpr auto MEMBERS = std::make_tuple(
      smc::_m{"FLAPS HANDLE INDEX", smc::_t<SIMCONNECT_DATATYPE_INT32>{}, "Number", &Flaps::index_}
-   )};
+   );
 };
 
 }  // namespace smc

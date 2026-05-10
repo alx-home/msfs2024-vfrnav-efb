@@ -28,6 +28,12 @@ namespace smc::facility {
 template <class CLASS, class T>
 using _m = std::tuple<std::string_view, T CLASS::*>;
 
+template <class CLASS, class T>
+constexpr auto
+make_m(std::string_view name, T CLASS::* member) -> _m<CLASS, T> {
+   return {name, member};
+}
+
 struct Processor;
 using ProcessorReturn = std::tuple<std::shared_ptr<Processor>, std::string>;
 
@@ -36,20 +42,18 @@ struct Processor : std::function<ProcessorReturn(SIMCONNECT_RECV_FACILITY_DATA c
 template <class SELF>
 struct ProcessorImpl {
 protected:
-   std::shared_ptr<Processor> GetProcessor(this SELF& self);
+   std::shared_ptr<Processor>
+   GetProcessor(this SELF& self, std::shared_ptr<Processor> const& parent_processor = nullptr);
 
 private:
    template <class...>
       requires(requires { SELF::MEMBERS; })
    std::string ProcessMembers(this SELF& self, SIMCONNECT_RECV_FACILITY_DATA const& data);
 
-   template <class...>
-      requires(requires { SELF::SECTIONS; })
-   std::shared_ptr<Processor> GetSectionsProcessor(this SELF& self);
-
    template <std::size_t INDEX>
       requires(requires { SELF::SECTIONS; })
-   Processor MakeSectionProcessor(this SELF& self, std::shared_ptr<Processor> const& process_ptr);
+   std::shared_ptr<Processor>
+   MakeSectionProcessor(this SELF& self, std::shared_ptr<Processor> const& parent_processor);
 };
 
 }  // namespace smc::facility

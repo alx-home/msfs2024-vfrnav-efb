@@ -22,16 +22,15 @@ set(SOURCES
 
     Server/Server.cpp
 
-    Server/WebSockets/WebSocket.cpp
     Server/WebSockets/EFBWebSocket.cpp
+    Server/WebSockets/WebSocket.cpp
 
     SimConnect/SimConnect.cpp
     SimConnect/SimConnectInterface.cpp
     SimConnect/Utils/StaticCast.cpp
-    SimConnect/FacilityData/AirportFacility.cpp
 
-    Window/template/Bindings/log.cpp
     Window/template/Bindings/Files.cpp
+    Window/template/Bindings/log.cpp
 )
 
 win32_executable(TARGET_NAME server

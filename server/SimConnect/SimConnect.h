@@ -65,7 +65,9 @@ struct UnknownError : std::runtime_error {
    UnknownError(std::string_view message)
       : std::runtime_error(
           "MSFS error " + (message.size() ? (": " + std::string{message}) : ""_str) + "!"
-        ) {}
+        ) {
+      assert(false);
+   }
 };
 
 enum class Message : UINT {
@@ -312,9 +314,10 @@ private:
    [[nodiscard]] std::optional<DWORD>
    TrackPendingSendId(std::shared_ptr<void*> const& handle, std::shared_ptr<Reject const> reject);
    void ClearTrackedSendId(SIMCONNECT_DATA_REQUEST_ID requestId);
-   [[nodiscard]] std::optional<SIMCONNECT_DATA_REQUEST_ID> FindRequestIdForSendId(DWORD sendId
+   [[nodiscard]] std::optional<SIMCONNECT_DATA_REQUEST_ID> FindRequestIdForSendId(
+     DWORD sendId
    ) const;
-   [[nodiscard]] std::shared_ptr<Reject const>             FindRejectForSendId(DWORD sendId) const;
+   [[nodiscard]] std::shared_ptr<Reject const> FindRejectForSendId(DWORD sendId) const;
 
    void Dispatch(SIMCONNECT_RECV const& data);
 
@@ -366,14 +369,14 @@ private:
        std::shared_ptr<Reject const>>>;
    WaitingAssignedObject pending_assigned_{};
 
-   static constexpr std::tuple PENDING_MEMBERS{
+   static constexpr auto PENDING_MEMBERS = std::make_tuple(
      &SimConnect::pending_simobject_,
      &SimConnect::pending_facility_,
      &SimConnect::pending_simobject_type_,
      &SimConnect::pending_enumerated_simobjects_,
      &SimConnect::pending_facilities_list_,
      &SimConnect::pending_assigned_
-   };
+   );
 
    std::map<DWORD, SIMCONNECT_DATA_REQUEST_ID>    send_id_to_request_id_{};
    std::map<SIMCONNECT_DATA_REQUEST_ID, DWORD>    request_id_to_send_id_{};

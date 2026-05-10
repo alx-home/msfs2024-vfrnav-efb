@@ -17,7 +17,10 @@
 
 #include "main.h"
 
-#include "Resources.h"
+#ifndef WATCH_MODE
+#   include "AppResources.h"
+#endif
+
 #include "main.h"
 #include "Registry/Registry.h"
 #include "Server/WebSockets/Messages/Messages.h"
@@ -175,7 +178,7 @@ Server::Server(Main& main)
    , main_{main}
    , thread_{[this](std::stop_token stoken) {
       SetThreadDescription(GetCurrentThread(), L"Server");
-      ScopeExit _{[this]() constexpr { FlushState(); }};
+      ScopeExit flush_on_exit{[this]() { FlushState(); }};
 
       std::unique_lock lock{mutex_};
 
@@ -202,13 +205,13 @@ Server::Server(Main& main)
             try {
                tcp_ = std::make_unique<Tcp>(tcp::endpoint{tcp::v4(), port});
 
-               ScopeExit _{[this] constexpr {
+               ScopeExit verify_shutdown{[this] {
                   (void)this;
                   assert(!efb_socket_);
                   assert(web_sockets_.empty());
                }};
 
-               ScopeExit _{[this]() constexpr { tcp_ = nullptr; }};
+               ScopeExit clear_tcp{[this]() { tcp_ = nullptr; }};
                if (!tcp_->acceptor_.is_open()) {
                   throw std::runtime_error("Failed to open TCP acceptor");
                } else {
@@ -439,7 +442,7 @@ Server::LoadFuelPresets() {
 
 void
 Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
-   (void)Dispatch([this, id, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, id, message = std::move(message)]() {
       auto const& [_, fuel_presets] = std::get<ws::msg::fuel::Presets>(message);
 
       bool                            save = false;
@@ -523,7 +526,7 @@ Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
 
 void
 Server::HandleFuelCurve(std::size_t, ws::Message&& message) {
-   (void)Dispatch([this, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, message = std::move(message)]() {
       auto const& fuel_preset = std::get<ws::msg::fuel::Curves>(message);
 
       bool update = false;
@@ -557,10 +560,12 @@ Server::HandleFuelCurve(std::size_t, ws::Message&& message) {
 
 void
 Server::HandleDefaultFuelPreset(std::size_t, ws::Message&& message) {
-   (void)Dispatch([this, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, message = std::move(message)]() {
       auto const& default_fuel_preset = std::get<ws::msg::fuel::DefaultPreset>(message);
-      if (this->default_fuel_preset_.name_.empty()
-          || (this->default_fuel_preset_.date_ < default_fuel_preset.date_)) {
+      if (
+        this->default_fuel_preset_.name_.empty()
+        || (this->default_fuel_preset_.date_ < default_fuel_preset.date_)
+      ) {
          this->default_fuel_preset_ = default_fuel_preset;
          {
             auto& registry                                      = registry::Get();
@@ -630,7 +635,7 @@ Server::LoadDeviationPresets() {
 
 void
 Server::HandleDeviationPresets(std::size_t id, ws::Message&& message) {
-   (void)Dispatch([this, id, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, id, message = std::move(message)]() {
       auto const& [_, dev_presets] = std::get<ws::msg::dev::Presets>(message);
 
       bool                            save = false;
@@ -714,7 +719,7 @@ Server::HandleDeviationPresets(std::size_t id, ws::Message&& message) {
 
 void
 Server::HandleDeviationCurve(std::size_t, ws::Message&& message) {
-   (void)Dispatch([this, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, message = std::move(message)]() {
       auto const& dev_preset = std::get<ws::msg::dev::Curve>(message);
 
       bool update = false;
@@ -747,10 +752,12 @@ Server::HandleDeviationCurve(std::size_t, ws::Message&& message) {
 
 void
 Server::HandleDefaultDeviationPreset(std::size_t, ws::Message&& message) {
-   (void)Dispatch([this, message = std::move(message)]() constexpr {
+   (void)Dispatch([this, message = std::move(message)]() {
       auto const& default_dev_preset = std::get<ws::msg::dev::DefaultPreset>(message);
-      if (this->default_deviation_preset_.name_.empty()
-          || (this->default_deviation_preset_.date_ < default_dev_preset.date_)) {
+      if (
+        this->default_deviation_preset_.name_.empty()
+        || (this->default_deviation_preset_.date_ < default_dev_preset.date_)
+      ) {
          this->default_deviation_preset_ = default_dev_preset;
          {
             auto& registry = registry::Get();
@@ -796,7 +803,7 @@ Server::VDispatchMessage(std::size_t id, ws::Message&& message) {
          return false;
       }
    } else if (std::holds_alternative<ws::msg::GetFacilities>(message)) {
-      (void)Dispatch([this, id, message = std::move(message)]() constexpr {
+      (void)Dispatch([this, id, message = std::move(message)]() {
          if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
             // Cache latitude and longitude to send GetFacilities later when the server becomes
             // available
@@ -812,7 +819,7 @@ Server::VDispatchMessage(std::size_t id, ws::Message&& message) {
 
 void
 Server::SetMessageHandler(std::size_t id, MessageHandler&& message_handler) {
-   (void)Dispatch([this, id, message_handler = std::move(message_handler)]() constexpr {
+   (void)Dispatch([this, id, message_handler = std::move(message_handler)]() {
       auto const [handler, _] = message_handlers_.emplace(id, std::move(message_handler));
       assert(_);
 
@@ -829,7 +836,7 @@ Server::SetMessageHandler(std::size_t id, MessageHandler&& message_handler) {
 void
 Server::UnsetMessageHandler(std::size_t id) {
    try {
-      Dispatch([this, id]() constexpr {
+      Dispatch([this, id]() {
          auto const _ = message_handlers_.erase(id);
          assert(_ == 1);
       });

@@ -17,6 +17,7 @@
 
 #include "FacilityDataType.h"
 
+#include <array>
 #include <tuple>
 #include <vector>
 
@@ -52,10 +53,8 @@ struct AirportData : ProcessorImpl<AirportData> {
          int32_t enabled_{};
 
          using ProcessorImpl::GetProcessor;
-         static constexpr std::tuple MEMBERS{
-           _m{"LENGTH", &Threshold::length_},
-           _m{"ENABLE", &Threshold::enabled_},
-         };
+         static constexpr auto MEMBERS =
+           std::make_tuple(_m("LENGTH", &Threshold::length_), _m("ENABLE", &Threshold::enabled_));
       };
 
       Threshold primary_threshold_{};
@@ -91,34 +90,34 @@ struct AirportData : ProcessorImpl<AirportData> {
       }
 
       using ProcessorImpl::GetProcessor;
-      static constexpr std::tuple MEMBERS{
-        _m{"LATITUDE", &Runway::latitude_},
-        _m{"LONGITUDE", &Runway::longitude_},
-        _m{"ALTITUDE", &Runway::altitude_},
-        _m{"LENGTH", &Runway::length_},
-        _m{"HEADING", &Runway::heading_},
-        _m{"PRIMARY_NUMBER", &Runway::prim_number_},
-        _m{"PRIMARY_DESIGNATOR", &Runway::prim_designator_},
-        _m{"SECONDARY_NUMBER", &Runway::sec_number_},
-        _m{"SECONDARY_DESIGNATOR", &Runway::sec_designator_},
-      };
+      static constexpr auto MEMBERS = std::make_tuple(
+        _m("LATITUDE", &Runway::latitude_),
+        _m("LONGITUDE", &Runway::longitude_),
+        _m("ALTITUDE", &Runway::altitude_),
+        _m("LENGTH", &Runway::length_),
+        _m("HEADING", &Runway::heading_),
+        _m("PRIMARY_NUMBER", &Runway::prim_number_),
+        _m("PRIMARY_DESIGNATOR", &Runway::prim_designator_),
+        _m("SECONDARY_NUMBER", &Runway::sec_number_),
+        _m("SECONDARY_DESIGNATOR", &Runway::sec_designator_)
+      );
 
-      static constexpr std::tuple SECTIONS{
-        _m{"PRIMARY_THRESHOLD", &Runway::primary_threshold_},
-        _m{"SECONDARY_THRESHOLD", &Runway::secondary_threshold_},
-      };
+      static constexpr auto SECTIONS = std::make_tuple(
+        _m("PRIMARY_THRESHOLD", &Runway::primary_threshold_),
+        _m("SECONDARY_THRESHOLD", &Runway::secondary_threshold_)
+      );
    };
    std::vector<Runway> runways_{};
 
    using ProcessorImpl::GetProcessor;
-   static constexpr std::tuple SECTIONS{std::make_tuple(_m{"RUNWAY", &AirportData::runways_})};
+   static constexpr auto SECTIONS = std::make_tuple(_m("RUNWAY", &AirportData::runways_));
 };
 
 struct Airport : ProcessorImpl<Airport> {
    AirportData data_{};
 
    using ProcessorImpl::GetProcessor;
-   static constexpr std::tuple SECTIONS{std::make_tuple(_m{"AIRPORT", &Airport::data_})};
+   static constexpr auto SECTIONS = std::make_tuple(_m("AIRPORT", &Airport::data_));
 };
 
 }  // namespace smc::facility

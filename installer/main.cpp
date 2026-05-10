@@ -59,7 +59,7 @@ main() {
       }
 #endif  // DEBUG
 
-      ScopeExit _{[&]() constexpr {
+      ScopeExit _{[&]() {
          win32::NewProcess(
            R"(C:\Windows\System32\cmd.exe)",
            std::format("/c ping localhost -n 3 > nul & rmdir /s /q \"{}\" & pause", Main::TEMP_DIR),
@@ -89,7 +89,7 @@ Main::Main()
        false,
 #endif
        nullptr,
-       []() constexpr {
+       []() {
           auto const options{webview::detail::Win32EdgeEngine::MakeOptions()};
           webview::detail::Win32EdgeEngine::SetSchemesOption({"app", "coui"}, options);
           return options;
@@ -129,8 +129,9 @@ void
 Main::InstallResourceHandler() {
    webview_.RegisterUrlHandler(
      "*",
-     [](webview::http::request_t const& request, std::unique_ptr<webview::MakeDeferred>) constexpr
-       -> std::optional<webview::http::response_t> {
+     [](
+       webview::http::request_t const& request, std::unique_ptr<webview::MakeDeferred>
+     ) -> std::optional<webview::http::response_t> {
         if (std::string const origin = "app://app/"; request.uri.starts_with(origin)) {
            auto const file = request.uri.substr(origin.size());
 
@@ -167,7 +168,7 @@ Main::InstallResourceHandler() {
 template <class RETURN, class... ARGS>
 void
 Main::Bind(std::string_view name, RETURN (Main::*member_ptr)(ARGS...)) {
-   [&]<std::size_t... INDEX>(std::index_sequence<INDEX...>) constexpr {
+   [&]<std::size_t... INDEX>(std::index_sequence<INDEX...>) {
       webview_.Bind(
         name, std::function<RETURN(ARGS...)>{std::bind(member_ptr, this, std::_Ph<INDEX + 1>{}...)}
       );

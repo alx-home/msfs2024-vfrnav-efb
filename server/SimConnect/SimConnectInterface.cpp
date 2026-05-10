@@ -42,9 +42,7 @@ namespace smc {
 WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>
 SimConnect::AICreateSimulatedObject(std::string_view title, SIMCONNECT_DATA_INITPOSITION pos) {
    return Proxy<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID>(
-     [this,
-      title = std::string{title},
-      pos] constexpr -> WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> {
+     [this, title = std::string{title}, pos] -> WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> {
         auto handle = handle_.lock();
 
         if (!handle) {
@@ -65,7 +63,7 @@ SimConnect::TransmitClientEvent(
    return Proxy<void>([this,
                        object_id  = std::move(objectId),
                        event_id   = std::move(eventId),
-                       event_data = std::move(eventData)] constexpr {
+                       event_data = std::move(eventData)] {
       return MakePromise(
         [this,
          object_id  = std::move(object_id),
@@ -81,15 +79,17 @@ SimConnect::TransmitClientEvent(
               throw Disconnected();
            }
 
-           if (SimConnect_TransmitClientEvent(
-                 *handle,
-                 object_id,
-                 static_cast<SIMCONNECT_CLIENT_EVENT_ID>(event_id),
-                 event_data,
-                 SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-                 SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
-               )
-               != S_OK) {
+           if (
+             SimConnect_TransmitClientEvent(
+               *handle,
+               object_id,
+               static_cast<SIMCONNECT_CLIENT_EVENT_ID>(event_id),
+               event_data,
+               SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+               SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+             )
+             != S_OK
+           ) {
               throw UnknownError("Failed to transmit client event");
            }
         }
@@ -99,7 +99,7 @@ SimConnect::TransmitClientEvent(
 
 [[nodiscard]] WPromise<void>
 SimConnect::AIReleaseControl(SIMCONNECT_OBJECT_ID objectId) {
-   return Proxy<void>([this, object_id = std::move(objectId)] constexpr {
+   return Proxy<void>([this, object_id = std::move(objectId)] {
       return MakePromise([this, object_id = std::move(object_id)]() mutable -> Promise<void> {
          co_await Connected();
 
@@ -122,7 +122,7 @@ SimConnect::AIReleaseControl(SIMCONNECT_OBJECT_ID objectId) {
 WPromise<bool>
 SimConnect::SetServerPort(uint32_t port) {
    auto const set_port_send_id{std::make_shared<std::optional<size_t>>(std::nullopt)};
-   return Proxy<bool>([this, port, set_port_send_id] constexpr {
+   return Proxy<bool>([this, port, set_port_send_id] {
       return MakePromise(
                [this, port, set_port_send_id](
                  Resolve<bool> const& resolve, Reject const& reject
@@ -154,16 +154,18 @@ SimConnect::SetServerPort(uint32_t port) {
 
                         std::cout << "SimConnect: Setting server port to " << server_port_
                                   << std::endl;
-                        if (S_OK
-                            != SimConnect_SetDataOnSimObject(
-                              *handle,
-                              static_cast<uint32_t>(DataId::SET_PORT),
-                              SIMCONNECT_OBJECT_ID_USER,
-                              0,
-                              0,
-                              sizeof(server_port),
-                              &server_port
-                            )) {
+                        if (
+                          S_OK
+                          != SimConnect_SetDataOnSimObject(
+                            *handle,
+                            static_cast<uint32_t>(DataId::SET_PORT),
+                            SIMCONNECT_OBJECT_ID_USER,
+                            0,
+                            0,
+                            sizeof(server_port),
+                            &server_port
+                          )
+                        ) {
                            throw UnknownError(
                              "SimConnect: Failed to set server port to "
                              + std::to_string(server_port_)
@@ -206,10 +208,8 @@ SimConnect::SetServerPort(uint32_t port) {
                         assert(false);
                         co_return;
                      } catch (std::exception const& e) {
-                        std::cerr
-                          << "SimConnect: Failed to set server port: "
-                          // << e.what() #TODO: https://github.com/llvm/llvm-project/issues/182584
-                          << std::endl;
+                        std::cerr << "SimConnect: Failed to set server port: " << e.what()
+                                  << std::endl;
                      }
 
                      // Retry setting the port after some delay, in case the failure is due to a
@@ -234,7 +234,7 @@ WPromise<double>
 SimConnect::GetGroundInfo(double lat, double lon) {
    using enum DataId;
 
-   return Proxy<double>([this, lat, lon] constexpr {
+   return Proxy<double>([this, lat, lon] {
       return MakePromise([this, lat, lon]() -> Promise<double> {
          assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
@@ -267,7 +267,7 @@ SimConnect::GetGroundInfo(double lat, double lon) {
          );
          assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
-         ScopeExit _{[this, &handle, &ai_object]() constexpr {
+         ScopeExit _{[this, &handle, &ai_object]() {
             (void)this;
             assert(std::this_thread::get_id() == MessageQueue::ThreadId());
             // Remove the probe object
@@ -289,7 +289,7 @@ WPromise<TrafficInfo>
 SimConnect::GetUserAircraftInfo() noexcept(true) {
    using enum DataId;
 
-   return Proxy<TrafficInfo>([this] constexpr {
+   return Proxy<TrafficInfo>([this] {
       return MakePromise([this]() -> Promise<TrafficInfo> {
          assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
@@ -310,7 +310,7 @@ WPromise<TrafficInfo>
 SimConnect::GetAircraftInfo(ObjectId id) noexcept(true) {
    using enum DataId;
 
-   return Proxy<TrafficInfo>([this, id = std::move(id)] constexpr {
+   return Proxy<TrafficInfo>([this, id = std::move(id)] {
       return MakePromise([this, id = std::move(id)]() -> Promise<TrafficInfo> {
          assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
@@ -332,14 +332,13 @@ SimConnect::GetAirportFacility(std::string_view icao, std::string_view region) n
    using enum DataId;
 
    return Proxy<facility::AirportData>(
-     [this, icao = std::string{icao}, region = std::string{region}] constexpr {
+     [this, icao = std::string{icao}, region = std::string{region}] {
         assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
         auto handle = handle_.lock();
         if (!handle) {
            throw Disconnected();
         }
-
         return RequestFacilityData<GET_AIRPORT_FACILITY, facility::AirportData>(
           std::move(icao), std::move(region)
         );
@@ -359,7 +358,7 @@ SimConnect::AICreateNonATCAircraft(
       title       = std::string{title},
       livery      = std::string{livery},
       tail_number = std::string{tail_number},
-      pos] constexpr -> WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> {
+      pos] -> WPromise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> {
         assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
         auto handle = handle_.lock();
@@ -374,7 +373,7 @@ SimConnect::AICreateNonATCAircraft(
 
 WPromise<Liveries>
 SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType) {
-   return Proxy<Liveries>([this, objectType] constexpr {
+   return Proxy<Liveries>([this, objectType] {
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
       auto const request_id = ++request_id_;
 
@@ -402,7 +401,8 @@ SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType)
                           assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
                           if (*remaining == last_remaining) {
-                             reject->Apply<Timeout>("Timed out while requesting data on sim object"
+                             reject->Apply<Timeout>(
+                               "Timed out while requesting data on sim object"
                              );
                              break;
                           }
@@ -419,8 +419,9 @@ SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType)
                      resolve = resolve.shared_from_this(),
                      reject  = reject.shared_from_this(),
                      handler = std::move(handler),
-                     remaining](SIMCONNECT_RECV_ENUMERATE_SIMOBJECT_AND_LIVERY_LIST const& data
-                    ) constexpr mutable {
+                     remaining](
+                      SIMCONNECT_RECV_ENUMERATE_SIMOBJECT_AND_LIVERY_LIST const& data
+                    ) mutable {
                        if (*remaining == std::numeric_limits<std::size_t>::max()) {
                           *remaining = data.dwOutOf;
                        }
@@ -435,9 +436,7 @@ SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType)
 
                        for (std::size_t i = 0; i < data.dwArraySize; ++i) {
                           auto const& livery = data.rgData[i];
-                          result.emplace_back(
-                            std::string{livery.AircraftTitle}, std::string{livery.LiveryName}
-                          );
+                          result.emplace(livery.AircraftTitle, livery.LiveryName);
                        }
 
                        if (data.dwEntryNumber == (data.dwOutOf - 1)) {
@@ -447,8 +446,10 @@ SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType)
                     },
                     reject.shared_from_this()
                   );
-                  if (SimConnect_EnumerateSimObjectsAndLiveries(*handle, request_id, objectType)
-                      != S_OK) {
+                  if (
+                    SimConnect_EnumerateSimObjectsAndLiveries(*handle, request_id, objectType)
+                    != S_OK
+                  ) {
                      throw UnknownError("Failed to enumerate sim objects and liveries");
                   }
 
@@ -476,36 +477,34 @@ SimConnect::SetDataOnSimObjectImpl(
   std::vector<std::byte>&& data
 ) {
    assert(data.size() == (unitSize * count));
-   return Proxy<bool>(
-     [this, id, objectId, flags, unitSize, count, data = std::move(data)] mutable constexpr {
-        assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+   return Proxy<bool>([this, id, objectId, flags, unitSize, count, data = std::move(data)] mutable {
+      assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
-        auto handle = handle_.lock();
-        if (!handle) {
-           throw Disconnected();
-        }
+      auto handle = handle_.lock();
+      if (!handle) {
+         throw Disconnected();
+      }
 
-        std::array<SIMCONNECT_DATA_WAYPOINT, 1> empty_wp{};
-        void*                                   pdata = data.data();
+      std::array<SIMCONNECT_DATA_WAYPOINT, 1> empty_wp{};
+      void*                                   pdata = data.data();
 
-        if (count == 0) {
-           pdata = empty_wp.data();
-        }
+      if (count == 0) {
+         pdata = empty_wp.data();
+      }
 
-        auto const result = SimConnect_SetDataOnSimObject(
-          *handle,
-          static_cast<uint32_t>(id),
-          objectId,
-          flags,
-          static_cast<DWORD>(count),
-          static_cast<DWORD>(unitSize),
-          pdata
-        );
-        assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+      auto const result = SimConnect_SetDataOnSimObject(
+        *handle,
+        static_cast<uint32_t>(id),
+        objectId,
+        flags,
+        static_cast<DWORD>(count),
+        static_cast<DWORD>(unitSize),
+        pdata
+      );
+      assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
-        return Promise<bool>::Resolve(result == S_OK);
-     }
-   );
+      return Promise<bool>::Resolve(result == S_OK);
+   });
 }
 
 }  // namespace smc

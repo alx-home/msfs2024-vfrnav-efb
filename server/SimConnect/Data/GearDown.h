@@ -25,12 +25,14 @@ namespace smc {
 struct GearDown {
    double gear_down_{};
 
-   static constexpr std::tuple MEMBERS{std::make_tuple(smc::_m{
-     "GEAR HANDLE POSITION",
-     smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
-     "Bool",
-     &GearDown::gear_down_
-   })};
+   static constexpr auto MEMBERS = std::make_tuple(
+     smc::_m{
+       "GEAR HANDLE POSITION",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "Bool",
+       &GearDown::gear_down_
+     }
+   );
 };
 
 }  // namespace smc
