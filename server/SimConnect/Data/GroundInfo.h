@@ -26,10 +26,10 @@ struct GroundInfo {
 
    static constexpr auto MEMBERS = std::make_tuple(
      smc::_m{
+       &GroundInfo::altitude_,
        "Ground Altitude",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT32>{},
        "feet",
-       &GroundInfo::altitude_
      }
    );
 };

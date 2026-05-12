@@ -67,6 +67,12 @@ template <class TYPE>
    requires(!IS_STD_ARRAY<TYPE> && !IS_VECTOR<TYPE>)
 WPromise<bool>
 SimConnect::SetDataOnSimObject(DataId id, SIMCONNECT_OBJECT_ID objectId, DWORD flags, TYPE&& data) {
+   if constexpr (std::is_floating_point_v<TYPE>) {
+      assert(
+        !std::isnan(data) && !std::isinf(data)
+        && "Data contains NaN or infinity, which is not allowed"
+      );
+   }
    return SetDataOnSimObject(
      id, objectId, flags, std::array<std::remove_cvref_t<TYPE>, 1>{std::forward<TYPE>(data)}
    );

@@ -27,10 +27,10 @@ struct GearDown {
 
    static constexpr auto MEMBERS = std::make_tuple(
      smc::_m{
+       &GearDown::gear_down_,
        "GEAR HANDLE POSITION",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "Bool",
-       &GearDown::gear_down_
      }
    );
 };

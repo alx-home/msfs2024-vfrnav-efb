@@ -26,7 +26,7 @@ struct Flaps {
    int index_{};
 
    static constexpr auto MEMBERS = std::make_tuple(
-     smc::_m{"FLAPS HANDLE INDEX", smc::_t<SIMCONNECT_DATATYPE_INT32>{}, "Number", &Flaps::index_}
+     smc::_m{&Flaps::index_, "FLAPS HANDLE INDEX", smc::_t<SIMCONNECT_DATATYPE_INT32>{}, "Number"}
    );
 };
 

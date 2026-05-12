@@ -487,9 +487,8 @@ SimConnect::Run(std::stop_token const& stoken) {
       Sleep(5000);
       return;
    }
-   if (!AddToDataDefinition<SET_VSPEED_CONTROL, VSpeedControl>(handle)) {
-      std::cerr << "SimConnect: Failed to add data definition for vertical speed control"
-                << std::endl;
+   if (!AddToDataDefinition<SET_SPEED_CONTROL, SpeedControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for speed control" << std::endl;
       Sleep(5000);
       return;
    }

@@ -29,16 +29,16 @@ struct Break {
 
    static constexpr auto MEMBERS = std::make_tuple(
      smc::_m{
+       &Break::left_,
        "BRAKE LEFT POSITION",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
        "Position",
-       &Break::left_
      },
      smc::_m{
+       &Break::right_,
        "BRAKE RIGHT POSITION",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
        "Position",
-       &Break::right_
      }
    );
 };

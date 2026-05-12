@@ -31,35 +31,35 @@ struct Waypoint {
 
    static constexpr auto MEMBERS = std::make_tuple(
      smc::_m{
+       &Waypoint::lat_,
        "Plane Latitude",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        "degrees",
-       &Waypoint::lat_,
      },
      smc::_m{
+       &Waypoint::lon_,
        "Plane Longitude",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        "degrees",
-       &Waypoint::lon_,
      },
      smc::_m{
+       &Waypoint::altitude_,
        "Plane Altitude",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        "feet",
-       &Waypoint::altitude_,
      },
      smc::_m{
+       &Waypoint::on_ground_,
        "Plane On Ground",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        "bool",
-       &Waypoint::on_ground_,
      },
 
      smc::_m{
+       &Waypoint::speed_,
        "Plane Speed",
        smc::_t<SIMCONNECT_DATATYPE_STRING256>{},
        "knots",
-       &Waypoint::speed_,
      }
    );
 };

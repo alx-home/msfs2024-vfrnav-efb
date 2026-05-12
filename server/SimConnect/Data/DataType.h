@@ -35,17 +35,20 @@ struct _m {
    std::string_view                name_{};
    _t<TYPE>                        type_{};
    std::optional<std::string_view> unit_{};
+   std::optional<DWORD>            group_id_{};
    T CLASS::* member_{};
 
    constexpr _m(
+     T CLASS::*                      member,
      std::string_view                name,
      _t<TYPE>                        type,
-     std::optional<std::string_view> unit,
-     T CLASS::* member
+     std::optional<std::string_view> unit     = std::nullopt,
+     std::optional<DWORD>            group_id = std::nullopt
    )
       : name_(name)
       , type_(type)
       , unit_(unit)
+      , group_id_(group_id)
       , member_(member) {}
 };
 
@@ -59,13 +62,17 @@ template <size_t INDEX, SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
 constexpr auto&
 get(smc::_m<TYPE, CLASS, T>& member) noexcept {
    if constexpr (INDEX == 0) {
-      return member.name_;
-   } else if constexpr (INDEX == 1) {
-      return member.type_;
-   } else if constexpr (INDEX == 2) {
-      return member.unit_;
-   } else {
       return member.member_;
+   } else if constexpr (INDEX == 1) {
+      return member.name_;
+   } else if constexpr (INDEX == 2) {
+      return member.type_;
+   } else if constexpr (INDEX == 3) {
+      return member.unit_;
+   } else if constexpr (INDEX == 4) {
+      return member.group_id_;
+   } else {
+      static_assert(INDEX < 5, "Index out of bounds");
    }
 }
 
@@ -73,13 +80,17 @@ template <size_t INDEX, SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
 constexpr auto const&
 get(smc::_m<TYPE, CLASS, T> const& member) noexcept {
    if constexpr (INDEX == 0) {
-      return member.name_;
-   } else if constexpr (INDEX == 1) {
-      return member.type_;
-   } else if constexpr (INDEX == 2) {
-      return member.unit_;
-   } else {
       return member.member_;
+   } else if constexpr (INDEX == 1) {
+      return member.name_;
+   } else if constexpr (INDEX == 2) {
+      return member.type_;
+   } else if constexpr (INDEX == 3) {
+      return member.unit_;
+   } else if constexpr (INDEX == 4) {
+      return member.group_id_;
+   } else {
+      static_assert(INDEX < 5, "Index out of bounds");
    }
 }
 

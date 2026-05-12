@@ -26,7 +26,12 @@ struct SimRate {
    int time_{};
 
    static constexpr auto MEMBERS = std::make_tuple(
-     smc::_m{"ABSOLUTE TIME", smc::_t<SIMCONNECT_DATATYPE_INT32>{}, "Seconds", &SimRate::time_}
+     smc::_m{
+       &SimRate::time_,
+       "ABSOLUTE TIME",
+       smc::_t<SIMCONNECT_DATATYPE_INT32>{},
+       "Seconds",
+     }
    );
 };
 

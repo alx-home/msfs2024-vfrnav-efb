@@ -33,67 +33,73 @@ SimConnect::StaticCast(DWORD const& data) {
      [&](auto const&... member) constexpr {
         (
           [&]<class M>(M const& member) constexpr {
-             if constexpr (std::tuple_element_t<1, M>::VALUE_S == SIMCONNECT_DATATYPE_STRING256) {
-                result.*std::get<3>(member) = std::string_view{it};
+             if constexpr (std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_STRING256) {
+                result.*std::get<0>(member) = std::string_view{it};
                 it += 256;
-             } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                  == SIMCONNECT_DATATYPE_STRING32) {
-                result.*std::get<3>(member) = std::string_view{it};
+             } else if constexpr (
+               std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_STRING32
+             ) {
+                result.*std::get<0>(member) = std::string_view{it};
                 it += 32;
-             } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                  == SIMCONNECT_DATATYPE_STRING8) {
-                result.*std::get<3>(member) = std::string_view{it};
+             } else if constexpr (
+               std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_STRING8
+             ) {
+                result.*std::get<0>(member) = std::string_view{it};
                 it += 8;
-             } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                  == SIMCONNECT_DATATYPE_FLOAT64) {
+             } else if constexpr (
+               std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_FLOAT64
+             ) {
                 static_assert(std::is_same_v<
-                              std::remove_reference_t<decltype(result.*std::get<3>(member))>,
+                              std::remove_reference_t<decltype(result.*std::get<0>(member))>,
                               double>);
                 std::move(
-                  it, it + sizeof(double), reinterpret_cast<char*>(&(result.*std::get<3>(member)))
+                  it, it + sizeof(double), reinterpret_cast<char*>(&(result.*std::get<0>(member)))
                 );
                 it += sizeof(double);
-             } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                  == SIMCONNECT_DATATYPE_FLOAT32) {
-                static_assert(std::is_same_v<
-                              std::remove_reference_t<decltype(result.*std::get<3>(member))>,
-                              float>);
+             } else if constexpr (
+               std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_FLOAT32
+             ) {
+                static_assert(
+                  std::
+                    is_same_v<std::remove_reference_t<decltype(result.*std::get<0>(member))>, float>
+                );
                 std::move(
-                  it, it + sizeof(float), reinterpret_cast<char*>(&(result.*std::get<3>(member)))
+                  it, it + sizeof(float), reinterpret_cast<char*>(&(result.*std::get<0>(member)))
                 );
                 it += sizeof(float);
-             } else if constexpr (std::tuple_element_t<1, M>::VALUE_S == SIMCONNECT_DATATYPE_INT8) {
+             } else if constexpr (std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_INT8) {
                 static_assert(std::is_same_v<
-                              std::remove_reference_t<decltype(result.*std::get<3>(member))>,
+                              std::remove_reference_t<decltype(result.*std::get<0>(member))>,
                               int8_t>);
                 std::move(
-                  it, it + sizeof(int8_t), reinterpret_cast<char*>(&(result.*std::get<3>(member)))
+                  it, it + sizeof(int8_t), reinterpret_cast<char*>(&(result.*std::get<0>(member)))
                 );
                 it += sizeof(int8_t);
-             } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                  == SIMCONNECT_DATATYPE_INT32) {
+             } else if constexpr (
+               std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_INT32
+             ) {
                 static_assert(std::is_same_v<
-                              std::remove_reference_t<decltype(result.*std::get<3>(member))>,
+                              std::remove_reference_t<decltype(result.*std::get<0>(member))>,
                               int32_t>);
                 std::move(
-                  it, it + sizeof(int32_t), reinterpret_cast<char*>(&(result.*std::get<3>(member)))
+                  it, it + sizeof(int32_t), reinterpret_cast<char*>(&(result.*std::get<0>(member)))
                 );
                 it += sizeof(int32_t);
-             } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                  == SIMCONNECT_DATATYPE_INT64) {
+             } else if constexpr (
+               std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_INT64
+             ) {
                 static_assert(std::is_same_v<
-                              std::remove_reference_t<decltype(result.*std::get<3>(member))>,
+                              std::remove_reference_t<decltype(result.*std::get<0>(member))>,
                               int64_t>);
                 std::move(
-                  it, it + sizeof(int64_t), reinterpret_cast<char*>(&(result.*std::get<3>(member)))
+                  it, it + sizeof(int64_t), reinterpret_cast<char*>(&(result.*std::get<0>(member)))
                 );
                 it += sizeof(int64_t);
              } else {
                 static_assert(ALWAYS_FALSE<M>, "Unsupported type");
              }
           }(member),
-          ...
-        );
+          ...);
      },
      T::MEMBERS
    );
@@ -111,36 +117,43 @@ SimConnect::Size() {
         [&](auto const&... member) constexpr {
            (
              [&]<class M>(M const&) constexpr {
-                if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                              == SIMCONNECT_DATATYPE_STRING256) {
+                if constexpr (
+                  std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_STRING256
+                ) {
                    size += 256;
-                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                     == SIMCONNECT_DATATYPE_STRING32) {
+                } else if constexpr (
+                  std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_STRING32
+                ) {
                    size += 32;
-                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                     == SIMCONNECT_DATATYPE_STRING8) {
+                } else if constexpr (
+                  std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_STRING8
+                ) {
                    size += 8;
-                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                     == SIMCONNECT_DATATYPE_FLOAT64) {
+                } else if constexpr (
+                  std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_FLOAT64
+                ) {
                    size += sizeof(double);
-                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                     == SIMCONNECT_DATATYPE_FLOAT32) {
+                } else if constexpr (
+                  std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_FLOAT32
+                ) {
                    size += sizeof(float);
-                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                     == SIMCONNECT_DATATYPE_INT8) {
+                } else if constexpr (
+                  std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_INT8
+                ) {
                    size += sizeof(int8_t);
-                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                     == SIMCONNECT_DATATYPE_INT32) {
+                } else if constexpr (
+                  std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_INT32
+                ) {
                    size += sizeof(int32_t);
-                } else if constexpr (std::tuple_element_t<1, M>::VALUE_S
-                                     == SIMCONNECT_DATATYPE_INT64) {
+                } else if constexpr (
+                  std::tuple_element_t<2, M>::VALUE_S == SIMCONNECT_DATATYPE_INT64
+                ) {
                    size += sizeof(int64_t);
                 } else {
                    static_assert(ALWAYS_FALSE<M>, "Unsupported type");
                 }
              }(member),
-             ...
-           );
+             ...);
         },
         T::MEMBERS
       );

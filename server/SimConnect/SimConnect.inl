@@ -85,14 +85,15 @@ bool
 SimConnect::AddToDataDefinition(
   std::string_view                datumName,
   SIMCONNECT_DATATYPE             datumType,
-  std::optional<std::string_view> unitsName
+  std::optional<std::string_view> unitsName,
+  DWORD                           groupId
 ) {
    auto handle = handle_.lock();
    if (!handle) {
       return false;
    }
 
-   return AddToDataDefinition<ID>(handle, datumName, datumType, unitsName);
+   return AddToDataDefinition<ID>(handle, datumName, datumType, unitsName, groupId);
 }
 
 template <DataId ID>
@@ -101,14 +102,17 @@ SimConnect::AddToDataDefinition(
   std::shared_ptr<void*> const&   handle,
   std::string_view                datumName,
   SIMCONNECT_DATATYPE             datumType,
-  std::optional<std::string_view> unitsName
+  std::optional<std::string_view> unitsName,
+  std::optional<DWORD>            groupId
 ) {
    return SimConnect_AddToDataDefinition(
             *handle,
             static_cast<uint32_t>(ID),
             datumName.data(),
             unitsName ? unitsName->data() : nullptr,
-            datumType
+            datumType,
+            0,
+            groupId.value_or(SIMCONNECT_UNUSED)
           )
           == S_OK;
 }
@@ -120,7 +124,11 @@ SimConnect::AddToDataDefinition(std::shared_ptr<void*> const& handle) {
      [&](auto&&... member) constexpr {
         return (
           AddToDataDefinition<ID>(
-            handle, std::get<0>(member), std::get<1>(member).VALUE_S, std::get<2>(member)
+            handle,
+            std::get<1>(member),
+            std::get<2>(member).VALUE_S,
+            std::get<3>(member),
+            std::get<4>(member)
           )
           && ...
         );

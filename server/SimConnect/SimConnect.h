@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Data/TrafficInfo.h"
+#include "Data/TrafficStaticInfo.h"
 #include "FacilityData/AirportFacility.h"
 #include "promise/StatePromise.h"
 
@@ -89,6 +90,7 @@ enum class DataId : uint32_t {
    EVENT_FRAME,
    TRAFFIC,
    TRAFFIC_INFO,
+   TRAFFIC_STATIC_INFO,
    HELI_TRAFFIC_INFO,
    TAXIWAY_PATH,
    USER_INFO,
@@ -112,7 +114,7 @@ enum class DataId : uint32_t {
    SET_BANK_CONTROL,
    SET_GROUND_ALTITUDE,
    SET_AIRSPEED_CONTROL,
-   SET_VSPEED_CONTROL,
+   SET_SPEED_CONTROL,
 
    MAX_VALUE,
 };
@@ -211,9 +213,10 @@ public:
    [[nodiscard]] WPromise<bool>
    SetDataOnSimObject(DataId id, SIMCONNECT_OBJECT_ID objectId, DWORD flags, TYPE&& data);
 
-   [[nodiscard]] WPromise<double>      GetGroundInfo(double lat, double lon);
-   [[nodiscard]] WPromise<TrafficInfo> GetUserAircraftInfo() noexcept(true);
-   [[nodiscard]] WPromise<TrafficInfo> GetAircraftInfo(ObjectId id) noexcept(true);
+   [[nodiscard]] WPromise<double>            GetGroundInfo(double lat, double lon);
+   [[nodiscard]] WPromise<TrafficInfo>       GetUserAircraftInfo() noexcept(true);
+   [[nodiscard]] WPromise<TrafficInfo>       GetAircraftInfo(ObjectId id) noexcept(true);
+   [[nodiscard]] WPromise<TrafficStaticInfo> GetAircraftStaticInfo(ObjectId id) noexcept(true);
    [[nodiscard]] WPromise<facility::AirportData>
    GetAirportFacility(std::string_view icao, std::string_view region = {}) noexcept(true);
 
@@ -259,14 +262,16 @@ private:
    [[nodiscard]] bool AddToDataDefinition(
      std::string_view                datumName,
      SIMCONNECT_DATATYPE             datumType,
-     std::optional<std::string_view> unitsName = std::nullopt
+     std::optional<std::string_view> unitsName = std::nullopt,
+     DWORD                           groupId   = 0
    );
    template <DataId ID>
    [[nodiscard]] bool AddToDataDefinition(
      std::shared_ptr<void*> const&   handle,
      std::string_view                datumName,
      SIMCONNECT_DATATYPE             datumType,
-     std::optional<std::string_view> unitsName = std::nullopt
+     std::optional<std::string_view> unitsName = std::nullopt,
+     std::optional<DWORD>            groupId   = std::nullopt
    );
    template <DataId ID, class T>
    [[nodiscard]] bool AddToDataDefinition(std::shared_ptr<void*> const& handle);

@@ -25,7 +25,12 @@ struct ServerPort {
    double value_{};
 
    static constexpr auto MEMBERS = std::make_tuple(
-     smc::_m{"L:VFRNAV_SET_PORT", smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{}, "", &ServerPort::value_}
+     smc::_m{
+       &ServerPort::value_,
+       "L:VFRNAV_SET_PORT",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "",
+     }
    );
 };
 

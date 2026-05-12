@@ -31,28 +31,28 @@ struct ControlSurfaces {
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &ControlSurfaces::elevator_,
        "ELEVATOR DEFLECTION",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "radians",
-       &ControlSurfaces::elevator_
      },
      smc::_m{
+       &ControlSurfaces::aileron_left_,
        "AILERON LEFT DEFLECTION",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "radians",
-       &ControlSurfaces::aileron_left_
      },
      smc::_m{
+       &ControlSurfaces::aileron_right_,
        "AILERON RIGHT DEFLECTION",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "radians",
-       &ControlSurfaces::aileron_right_
      },
      smc::_m{
+       &ControlSurfaces::rudder_,
        "RUDDER DEFLECTION",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "radians",
-       &ControlSurfaces::rudder_
      }
    )};
 };
@@ -63,10 +63,10 @@ struct AltitudeControl {
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &AltitudeControl::value_,
        "PLANE ALTITUDE",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "feet",
-       &AltitudeControl::value_
      }
    )};
 };
@@ -77,10 +77,10 @@ struct GroundAltitudeControl {
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &GroundAltitudeControl::value_,
        "PLANE ALT ABOVE GROUND",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "feet",
-       &GroundAltitudeControl::value_
      }
    )};
 };
@@ -91,10 +91,10 @@ struct HeadingControl {
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &HeadingControl::value_,
        "PLANE HEADING DEGREES TRUE",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "radians",
-       &HeadingControl::value_
      }
    )};
 };
@@ -105,10 +105,10 @@ struct PitchControl {
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &PitchControl::value_,
        "PLANE PITCH DEGREES",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "radians",
-       &PitchControl::value_
      }
    )};
 };
@@ -119,10 +119,10 @@ struct BankControl {
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &BankControl::value_,
        "PLANE BANK DEGREES",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "radians",
-       &BankControl::value_
      }
    )};
 };
@@ -133,24 +133,38 @@ struct AirspeedControl {
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &AirspeedControl::value_,
        "AIRSPEED TRUE",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "knots",
-       &AirspeedControl::value_
      }
    )};
 };
 
 // Vertical speed control
-struct VSpeedControl {
-   double value_{};  // feet per second
+struct SpeedControl {
+   double vertical_{};      // feet/second
+   double longitudinal_{};  // feet/second
+   double lateral_{};       // feet/second
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &SpeedControl::vertical_,
        "VELOCITY BODY Y",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
-       "feet per second",
-       &VSpeedControl::value_
+       "feet/second",
+     },
+     smc::_m{
+       &SpeedControl::longitudinal_,
+       "VELOCITY BODY Z",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "feet/second",
+     },
+     smc::_m{
+       &SpeedControl::lateral_,
+       "VELOCITY BODY X",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "feet/second",
      }
    )};
 };
@@ -161,10 +175,10 @@ struct GroundAltitude {
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &GroundAltitude::value_,
        "PLANE ALT ABOVE GROUND",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
        "feet",
-       &GroundAltitude::value_
      }
    )};
 };
@@ -175,10 +189,10 @@ struct SetOnGround {
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
+       &SetOnGround::value_,
        "SIM SHOULD SET ON GROUND",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
        "boolean",
-       &SetOnGround::value_
      }
    )};
 };
