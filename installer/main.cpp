@@ -47,7 +47,7 @@ main() {
 #endif
 
 #ifdef PROMISE_MEMCHECK
-   auto const _{promise::Memcheck()};
+   auto const memcheck_guard{promise::Memcheck()};
 #endif
 
    try {
@@ -59,7 +59,7 @@ main() {
       }
 #endif  // DEBUG
 
-      ScopeExit _{[&]() {
+      ScopeExit cleanup_on_exit{[&]() {
          win32::NewProcess(
            R"(C:\Windows\System32\cmd.exe)",
            std::format("/c ping localhost -n 3 > nul & rmdir /s /q \"{}\" & pause", Main::TEMP_DIR),

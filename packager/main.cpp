@@ -149,8 +149,8 @@ const std::chrono::file_clock::time_point        TIMESTAMP{
 
       std::size_t resource_index = 0;
 
-      for (auto const& [name, resource_] : app_resources) {
-         auto const& [resource, _, excludes] = resource_;
+      for (auto const& [app_tag, app_resource_data] : app_resources) {
+         auto const& [resource, _, app_excludes] = app_resource_data;
          assert(!_);
 
          std::vector<std::pair<std::string, std::string>> entries{};
@@ -178,7 +178,7 @@ const std::chrono::file_clock::time_point        TIMESTAMP{
                });
 
                if ([&]() constexpr {
-                      for (auto const& exclude : excludes) {
+                      for (auto const& exclude : app_excludes) {
                          if (exclude == relpath) {
                             std::cout << "Skipping: " << relpath << std::endl;
                             return true;
@@ -225,7 +225,7 @@ static std::size_t const {0}_SIZE = {0}_END - {0}_START;
            R"_(
 extern std::unordered_map<std::string, std::span<std::byte const>> const {0};
 std::unordered_map<std::string, std::span<std::byte const>> const {0} {{)_",
-           name
+           app_tag
          ) << std::flush;
 
          for (auto const& [path, label] : entries) {
@@ -242,12 +242,12 @@ std::unordered_map<std::string, std::span<std::byte const>> const {0} {{)_",
 )_" << std::endl;
       }
 
-      for (auto const& [name, resource_] : resources) {
-         auto const& [resource__, zip] = resource_;
+      for (auto const& [resource_tag, resource_data] : resources) {
+         auto const& [resource__, should_zip] = resource_data;
 
          std::filesystem::path resource = resource__;
 
-         if (zip) {
+         if (should_zip) {
             std::vector<char> data{};
             {
                std::ifstream file{resource, std::ios::binary};
@@ -262,7 +262,7 @@ std::unordered_map<std::string, std::span<std::byte const>> const {0} {{)_",
             auto const        hash = std::hash<std::string_view>{}({data.data(), data.size()});
             std::stringstream ss{};
             ss << std::hex << hash;
-            resource = name + "_" + (ss.str() + ".bin");
+            resource = resource_tag + "_" + (ss.str() + ".bin");
 
             if (!std::filesystem::exists(resource)) {
                // Cleanup previous builds
@@ -270,7 +270,7 @@ std::unordered_map<std::string, std::span<std::byte const>> const {0} {{)_",
                     std::filesystem::directory_iterator("." / resource.root_directory())) {
                   if (elem.is_regular_file()) {
                      auto const path_name = elem.path().filename().string();
-                     if (path_name.starts_with(name + "_") && path_name.ends_with(".bin")) {
+                     if (path_name.starts_with(resource_tag + "_") && path_name.ends_with(".bin")) {
                         std::cout << "Removing \"" << path_name << "\"" << std::endl;
                         std::filesystem::remove(path_name);
                      }
@@ -299,7 +299,8 @@ std::unordered_map<std::string, std::span<std::byte const>> const {0} {{)_",
             }
          }
 
-         std::cout << "Generating " << resource << " (" << resource__ << "): " << name << std::endl;
+         std::cout << "Generating " << resource << " (" << resource__ << "): " << resource_tag
+                   << std::endl;
 
          header_out << std::format(
            R"_(
@@ -317,7 +318,7 @@ std::span<std::byte const> const {0}{{
    {0}_SIZE
 }};
 )_",
-           name
+           resource_tag
          ) << std::endl;
 
          asm_out << std::format(
@@ -326,7 +327,7 @@ std::span<std::byte const> const {0}{{
 incbin "{1}"
 {0}_END:
           )_",
-           name,
+           resource_tag,
            resource.string()
          ) << std::endl;
       }
