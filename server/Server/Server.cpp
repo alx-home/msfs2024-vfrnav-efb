@@ -17,10 +17,7 @@
 
 #include "main.h"
 
-#ifndef WATCH_MODE
-#   include "AppResources.h"
-#endif
-
+#include "AppResources.h"
 #include "main.h"
 #include "Registry/Registry.h"
 #include "Server/WebSockets/Messages/Messages.h"
@@ -463,8 +460,11 @@ Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
                   );
                }
             } else {
-               if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-                  it->second(1, ws::msg::fuel::GetCurve{.name_ = preset.name_});
+               if (
+                 auto const handler_it = message_handlers_.find(id);
+                 handler_it != message_handlers_.end()
+               ) {
+                  handler_it->second(1, ws::msg::fuel::GetCurve{.name_ = preset.name_});
                }
             }
          } else {
@@ -482,20 +482,26 @@ Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
                      );
                   }
                } else {
-                  if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-                     it->second(1, ws::msg::fuel::GetCurve{.name_ = preset.name_});
+                  if (
+                    auto const handler_it = message_handlers_.find(id);
+                    handler_it != message_handlers_.end()
+                  ) {
+                     handler_it->second(1, ws::msg::fuel::GetCurve{.name_ = preset.name_});
                   }
                }
             } else if (it->second.date_ > preset.date_) {
-               if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
+               if (
+                 auto const handler_it = message_handlers_.find(id);
+                 handler_it != message_handlers_.end()
+               ) {
                   auto const& data = fuel_presets_.at(preset.name_);
 
                   if (data.curve_.empty()) {
-                     it->second(
+                     handler_it->second(
                        1, ws::msg::fuel::DeletePreset{.name_ = data.name_, .date_ = data.date_}
                      );
                   } else {
-                     it->second(1, data);
+                     handler_it->second(1, data);
                   }
                }
             }
@@ -510,15 +516,20 @@ Server::HandleFuelPresets(std::size_t id, ws::Message&& message) {
          auto const it = current_presets.find(preset.second.name_);
 
          if ((it == current_presets.end()) && preset.second.curve_.size()) {
-            if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-               it->second(1, preset.second);
+            if (
+              auto const handler_it = message_handlers_.find(id);
+              handler_it != message_handlers_.end()
+            ) {
+               handler_it->second(1, preset.second);
             }
          }
       }
 
       if (default_fuel_preset_.name_.size()) {
-         if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-            it->second(1, default_fuel_preset_);
+         if (
+           auto const handler_it = message_handlers_.find(id); handler_it != message_handlers_.end()
+         ) {
+            handler_it->second(1, default_fuel_preset_);
          }
       }
    });
@@ -656,8 +667,11 @@ Server::HandleDeviationPresets(std::size_t id, ws::Message&& message) {
                   );
                }
             } else {
-               if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-                  it->second(1, ws::msg::dev::GetCurve{.name_ = preset.name_});
+               if (
+                 auto const handler_it = message_handlers_.find(id);
+                 handler_it != message_handlers_.end()
+               ) {
+                  handler_it->second(1, ws::msg::dev::GetCurve{.name_ = preset.name_});
                }
             }
          } else {
@@ -675,20 +689,26 @@ Server::HandleDeviationPresets(std::size_t id, ws::Message&& message) {
                      );
                   }
                } else {
-                  if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-                     it->second(1, ws::msg::dev::GetCurve{.name_ = preset.name_});
+                  if (
+                    auto const handler_it = message_handlers_.find(id);
+                    handler_it != message_handlers_.end()
+                  ) {
+                     handler_it->second(1, ws::msg::dev::GetCurve{.name_ = preset.name_});
                   }
                }
             } else if (it->second.date_ > preset.date_) {
-               if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
+               if (
+                 auto const handler_it = message_handlers_.find(id);
+                 handler_it != message_handlers_.end()
+               ) {
                   auto const& data = deviation_presets_.at(preset.name_);
 
                   if (data.curve_.empty()) {
-                     it->second(
+                     handler_it->second(
                        1, ws::msg::dev::DeletePreset{.name_ = data.name_, .date_ = data.date_}
                      );
                   } else {
-                     it->second(1, data);
+                     handler_it->second(1, data);
                   }
                }
             }
@@ -703,15 +723,20 @@ Server::HandleDeviationPresets(std::size_t id, ws::Message&& message) {
          auto const it = current_presets.find(preset.second.name_);
 
          if ((it == current_presets.end()) && preset.second.curve_.size()) {
-            if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-               it->second(1, preset.second);
+            if (
+              auto const handler_it = message_handlers_.find(id);
+              handler_it != message_handlers_.end()
+            ) {
+               handler_it->second(1, preset.second);
             }
          }
       }
 
       if (default_deviation_preset_.name_.size()) {
-         if (auto const it = message_handlers_.find(id); it != message_handlers_.end()) {
-            it->second(1, default_deviation_preset_);
+         if (
+           auto const handler_it = message_handlers_.find(id); handler_it != message_handlers_.end()
+         ) {
+            handler_it->second(1, default_deviation_preset_);
          }
       }
    });
@@ -862,41 +887,41 @@ std::vector<ws::msg::fuel::Curve>
               .alt_ = 0,
               .values_ =
                 {
-                  {-40, 177},
-                  {17, 189},
-                  {30, 179},
-                  {40, 165},
-                  {50, 151},
+                           {-40, 177.0f},
+                           {17, 189.0f},
+                           {30, 179.0f},
+                           {40, 165.0f},
+                           {50, 151.0f},
                 },
             },
             {
               .alt_ = 2000,
               .values_ =
                 {
-                  {-40, 173},
-                  {7, 184},
-                  {25, 170},
-                  {50, 139},
+                           {-40, 173.0f},
+                           {7, 184.0f},
+                           {25, 170.0f},
+                           {50, 139.0f},
                 },
             },
             {
               .alt_ = 4000,
               .values_ =
                 {
-                  {-40, 173},
-                  {-4, 180},
-                  {22, 160},
-                  {50, 126},
+                           {-40, 173.0f},
+                           {-4, 180.0f},
+                           {22, 160.0f},
+                           {50, 126.0f},
                 },
             },
             {
               .alt_ = 6000,
               .values_ =
                 {
-                  {-40, 173},
-                  {-15, 177},
-                  {17, 151},
-                  {50, 122},
+                           {-40, 173.0f},
+                           {-15, 177.0f},
+                           {17, 151.0f},
+                           {50, 122.0f},
                 },
             },
             {
@@ -904,11 +929,11 @@ std::vector<ws::msg::fuel::Curve>
 
               .values_ =
                 {
-                  {-40, 173},
-                  {-30, 177},
-                  {-10, 158},
-                  {15, 142},
-                  {50, 111},
+                           {-40, 173.0f},
+                           {-30, 177.0f},
+                           {-10, 158.0f},
+                           {15, 142.0f},
+                           {50, 111.0f},
                 },
             },
             {
@@ -916,10 +941,10 @@ std::vector<ws::msg::fuel::Curve>
 
               .values_ =
                 {
-                  {-40, 173},
-                  {-15, 151},
-                  {10, 134},
-                  {50, 103},
+                           {-40, 173.0f},
+                           {-15, 151.0f},
+                           {10, 134.0f},
+                           {50, 103.0f},
                 },
             },
             {
@@ -927,42 +952,42 @@ std::vector<ws::msg::fuel::Curve>
 
               .values_ =
                 {
-                  {-40, 158},
-                  {-20, 142},
-                  {5, 126},
-                  {50, 92},
+                           {-40, 158.0f},
+                           {-20, 142.0f},
+                           {5, 126.0f},
+                           {50, 92.0f},
                 },
             },
             {
               .alt_ = 14000,
               .values_ =
                 {
-                  {-40, 146},
-                  {-20, 132},
-                  {0, 120},
-                  {50, 84},
+                           {-40, 146.0f},
+                           {-20, 132.0f},
+                           {0, 120.0f},
+                           {50, 84.0f},
                 },
             },
             {
               .alt_ = 16000,
               .values_ =
                 {
-                  {-40, 135},
-                  {-25, 123},
-                  {-10, 116},
-                  {2, 110},
-                  {50, 75},
+                           {-40, 135.0f},
+                           {-25, 123.0f},
+                           {-10, 116.0f},
+                           {2, 110.0f},
+                           {50, 75.0f},
                 },
             },
             {
               .alt_ = 25000,
               .values_ =
                 {
-                  {-40, 135},
-                  {-25, 123},
-                  {-10, 116},
-                  {2, 110},
-                  {50, 75},
+                           {-40, 135.0f},
+                           {-25, 123.0f},
+                           {-10, 116.0f},
+                           {2, 110.0f},
+                           {50, 75.0f},
                 },
             },
           }

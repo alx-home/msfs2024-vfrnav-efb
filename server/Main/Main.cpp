@@ -224,8 +224,8 @@ Main::CloseToolTip() const {
 
 void
 Main::OpenEFB() {
-   static std::atomic<std::size_t> s__uid = 0;
-   std::size_t                     uid    = ++s__uid;
+   static std::atomic<std::size_t> s__open_efb_uid = 0;
+   std::size_t                     uid             = ++s__open_efb_uid;
 
    SystemTray::Dispatch([this, uid]() {
       auto erased = std::make_shared<bool>(false);

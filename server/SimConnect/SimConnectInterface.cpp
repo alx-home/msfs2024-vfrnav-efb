@@ -121,7 +121,7 @@ SimConnect::AIReleaseControl(SIMCONNECT_OBJECT_ID objectId) {
 
 WPromise<bool>
 SimConnect::SetServerPort(uint32_t port) {
-   auto const set_port_send_id{std::make_shared<std::optional<size_t>>(std::nullopt)};
+   auto const set_port_send_id{std::make_shared<std::optional<DWORD>>(std::nullopt)};
    return Proxy<bool>([this, port, set_port_send_id] {
       return MakePromise(
                [this, port, set_port_send_id](
@@ -188,18 +188,19 @@ SimConnect::SetServerPort(uint32_t port) {
                              );
                            assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
-                           auto const port = data.dw_data_.value_;
-                           sent_port_      = port;
+                           auto const sim_port = data.dw_data_.value_;
+                           sent_port_          = static_cast<int64_t>(sim_port);
 
-                           if (port == server_port_) {
-                              std::cout << "SimConnect: Server port " << port
+                           if (sim_port == server_port_) {
+                              std::cout << "SimConnect: Server port " << sim_port
                                         << " set successfully in simulator" << std::endl;
                               resolve(true);
                               co_return;
                            } else {
                               reject.Apply<UnknownError>(
                                 "Failed to set server port in simulator, got "
-                                + std::to_string(port) + " expected " + std::to_string(server_port_)
+                                + std::to_string(sim_port) + " expected "
+                                + std::to_string(server_port_)
                               );
                               co_return;
                            }

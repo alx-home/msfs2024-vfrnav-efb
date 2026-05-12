@@ -21,8 +21,10 @@
 
 namespace js {
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
+#ifdef __clang__
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wunused-function"
+#endif
 
 template <>
 void JsonImpl<ws::msg::HelloWorld>();
@@ -64,5 +66,7 @@ void JsonImpl<ws::msg::OpenFile>();
 template <>
 void JsonImpl<ws::msg::OpenFileResponse>();
 
-#pragma clang diagnostic pop
+#ifdef __clang__
+#   pragma clang diagnostic pop
+#endif
 }  // namespace js

@@ -251,9 +251,11 @@ SimConnect::RequestDataOnSimObjectType(
                        return;
                     }
 
-                    if (auto const header_size =
-                          sizeof(SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE) - sizeof(data.dwSize);
-                        Size<DATA_TYPE>() > (data.dwSize - header_size)) {
+                    if (
+                      auto const header_size =
+                        sizeof(SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE) - sizeof(data.dwSize);
+                      Size<DATA_TYPE>() > (data.dwSize - header_size)
+                    ) {
 
                        MakeReject<UnknownError>(
                          *reject,
@@ -300,14 +302,16 @@ SimConnect::RequestDataOnSimObjectType(
                     (*resolve)(data);
                  }
                ).Detach();
-               if (SimConnect_RequestDataOnSimObjectType(
-                     *handle,
-                     static_cast<SIMCONNECT_DATA_REQUEST_ID>(request_id),
-                     static_cast<uint32_t>(ID),
-                     static_cast<DWORD>(radius),
-                     objectType
-                   )
-                   != S_OK) {
+               if (
+                 SimConnect_RequestDataOnSimObjectType(
+                   *handle,
+                   static_cast<SIMCONNECT_DATA_REQUEST_ID>(request_id),
+                   static_cast<uint32_t>(ID),
+                   static_cast<DWORD>(radius),
+                   objectType
+                 )
+                 != S_OK
+               ) {
                   MakeReject<UnknownError>(reject, "Failed to request data on sim object");
                   co_return;
                }
@@ -353,8 +357,10 @@ SimConnect::RequestFacilityData(std::string_view icao, std::string_view region) 
                        process = result.GetProcessor();
                     }
 
-                    if (std::holds_alternative<
-                          std::reference_wrapper<SIMCONNECT_RECV_FACILITY_DATA_END const>>(data)) {
+                    if (
+                      std::holds_alternative<
+                        std::reference_wrapper<SIMCONNECT_RECV_FACILITY_DATA_END const>>(data)
+                    ) {
                        if (!process) {
                           MakeReject<UnknownError>(
                             *reject, "Received facility data end without receiving any data"
@@ -383,14 +389,16 @@ SimConnect::RequestFacilityData(std::string_view icao, std::string_view region) 
                  reject.shared_from_this()
                );
 
-               if (SimConnect_RequestFacilityData(
-                     *handle,
-                     static_cast<SIMCONNECT_DATA_DEFINITION_ID>(ID),
-                     static_cast<SIMCONNECT_DATA_REQUEST_ID>(request_id),
-                     icao.c_str(),
-                     region.c_str()
-                   )
-                   != S_OK) {
+               if (
+                 SimConnect_RequestFacilityData(
+                   *handle,
+                   static_cast<SIMCONNECT_DATA_DEFINITION_ID>(ID),
+                   static_cast<SIMCONNECT_DATA_REQUEST_ID>(request_id),
+                   icao.c_str(),
+                   region.c_str()
+                 )
+                 != S_OK
+               ) {
                   reject.Apply<UnknownError>("Failed to request facility data");
                   co_return;
                }
@@ -452,7 +460,8 @@ SimConnect::RequestFacilitiesList(SIMCONNECT_FACILITY_LIST_TYPE type) {
                        *remaining = data.dwOutOf;
                     }
                     if (*remaining == 0) {
-                       reject->Apply<UnknownError>("Received facilities list with zero total count"
+                       reject->Apply<UnknownError>(
+                         "Received facilities list with zero total count"
                        );
                        return;
                     }
@@ -518,9 +527,11 @@ SimConnect::RequestDataOnSimObject(uint32_t objectId, std::shared_ptr<void*> han
                        return;
                     }
 
-                    if (auto const header_size =
-                          sizeof(SIMCONNECT_RECV_SIMOBJECT_DATA) - sizeof(data.dwSize);
-                        Size<DATA_TYPE>() > (data.dwSize - header_size)) {
+                    if (
+                      auto const header_size =
+                        sizeof(SIMCONNECT_RECV_SIMOBJECT_DATA) - sizeof(data.dwSize);
+                      Size<DATA_TYPE>() > (data.dwSize - header_size)
+                    ) {
 
                        reject->Apply<UnknownError>(
                          "Received data size does not match expected size for requested data type ("
@@ -549,14 +560,16 @@ SimConnect::RequestDataOnSimObject(uint32_t objectId, std::shared_ptr<void*> han
                  reject.shared_from_this()
                );
 
-               if (SimConnect_RequestDataOnSimObject(
-                     *handle,
-                     static_cast<SIMCONNECT_DATA_REQUEST_ID>(request_id),
-                     static_cast<uint32_t>(ID),
-                     static_cast<DWORD>(objectId),
-                     SIMCONNECT_PERIOD_ONCE
-                   )
-                   != S_OK) {
+               if (
+                 SimConnect_RequestDataOnSimObject(
+                   *handle,
+                   static_cast<SIMCONNECT_DATA_REQUEST_ID>(request_id),
+                   static_cast<uint32_t>(ID),
+                   static_cast<DWORD>(objectId),
+                   SIMCONNECT_PERIOD_ONCE
+                 )
+                 != S_OK
+               ) {
                   reject.Apply<UnknownError>("Failed to request data on sim object");
                   co_return;
                }

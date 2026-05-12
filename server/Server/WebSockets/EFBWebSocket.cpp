@@ -310,21 +310,22 @@ Server::EFBWebSocket::OnRead(error_code ec, size_t n) {
             assert(message.id_ == 1);
             auto const& msg = std::get<ws::msg::GetFile>(message.content_);
 
-            if (auto const data = Base64Open(msg.path_); data.empty()) {
+            if (auto const file_data = Base64Open(msg.path_); file_data.empty()) {
                VDispatchMessage(
                  message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .num_blobs_ = 0}
                );
             } else {
                static constexpr std::size_t CHUNK_SIZE = 100 * 1024;  // 100KB
-               std::size_t                  num_blobs{(data.size() + CHUNK_SIZE - 1) / CHUNK_SIZE};
+               std::size_t num_blobs{(file_data.size() + CHUNK_SIZE - 1) / CHUNK_SIZE};
 
                VDispatchMessage(
                  message.id_, ws::msg::GetFileResponse{.id_ = msg.id_, .num_blobs_ = num_blobs}
                );
 
-               for (std::size_t i = 0; i < data.size(); i += CHUNK_SIZE) {
-                  auto const chunk =
-                    std::string_view{data.data() + i, std::min(data.size() - i, CHUNK_SIZE)};
+               for (std::size_t i = 0; i < file_data.size(); i += CHUNK_SIZE) {
+                  auto const chunk = std::string_view{
+                    file_data.data() + i, std::min(file_data.size() - i, CHUNK_SIZE)
+                  };
                   auto const id = i / CHUNK_SIZE;
 
                   VDispatchMessage(

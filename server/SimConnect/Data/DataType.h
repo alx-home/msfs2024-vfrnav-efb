@@ -20,6 +20,7 @@
 #include <optional>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 
 namespace smc {
 template <SIMCONNECT_DATATYPE VALUE>
@@ -42,38 +43,17 @@ struct _m {
      std::optional<std::string_view> unit,
      T CLASS::* member
    )
-      : name_{name}
-      , type_{type}
-      , unit_{unit}
-      , member_{member} {}
+      : name_(name)
+      , type_(type)
+      , unit_(unit)
+      , member_(member) {}
 };
 
-template <SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
-constexpr auto
-make_m(
-  std::string_view                name,
-  _t<TYPE>                        type,
-  std::optional<std::string_view> unit,
-  T CLASS::* member
-) -> _m<TYPE, CLASS, T> {
-   return _m<TYPE, CLASS, T>{name, type, unit, member};
-}
 }  // namespace smc
 
 namespace std {
 template <SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
-struct tuple_size<smc::_m<TYPE, CLASS, T>> : std::integral_constant<size_t, 4> {};
-
-template <size_t INDEX, SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
-struct tuple_element<INDEX, smc::_m<TYPE, CLASS, T>> {
-   using type = std::conditional_t<
-     INDEX == 0,
-     std::string_view,
-     std::conditional_t<
-       INDEX == 1,
-       smc::_t<TYPE>,
-       std::conditional_t<INDEX == 2, std::optional<std::string_view>, T CLASS::*>>>;
-};
+struct tuple_size<smc::_m<TYPE, CLASS, T>> : std::integral_constant<size_t, 5> {};
 
 template <size_t INDEX, SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
 constexpr auto&
@@ -102,4 +82,9 @@ get(smc::_m<TYPE, CLASS, T> const& member) noexcept {
       return member.member_;
    }
 }
+
+template <size_t INDEX, SIMCONNECT_DATATYPE TYPE, class CLASS, class T>
+struct tuple_element<INDEX, smc::_m<TYPE, CLASS, T>> {
+   using type = std::remove_cvref_t<decltype(get<INDEX>(std::declval<smc::_m<TYPE, CLASS, T>&>()))>;
+};
 }  // namespace std

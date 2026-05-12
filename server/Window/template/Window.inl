@@ -115,7 +115,7 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
           }};
 
           {
-             ScopeExit _{[this] constexpr {
+             ScopeExit notify_scope{[this] constexpr {
                 std::lock_guard lock{mutex_};
                 cv_.notify_all();
              }};

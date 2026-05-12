@@ -375,13 +375,15 @@ SimConnect::Run(std::stop_token const& stoken) {
          return [this, elem] {
             auto pending = std::move(this->*elem);
             assert((this->*elem).empty());
-            for (auto& elem : pending) {
-               elem.second.second->template Apply<Disconnected>();
+            for (auto& pending_entry : pending) {
+               pending_entry.second.second->template Apply<Disconnected>();
             }
          };
       };
       std::apply(
-        [&clearPending, &makeCleaner](auto&&... elem) { (clearPending(makeCleaner(elem)), ...); },
+        [&clearPending, &makeCleaner](auto&&... pending_member) {
+           (clearPending(makeCleaner(pending_member)), ...);
+        },
         PENDING_MEMBERS
       );
 
@@ -630,7 +632,10 @@ SimConnect::Run(std::stop_token const& stoken) {
    // RequestDataOnSimObjectType<HELI_TRAFFIC_INFO>(SIMCONNECT_SIMOBJECT_TYPE_HELICOPTER, 0,
    // handle);
 
-   SetServerPort(server_port_).Detach();
+   auto const server_port_to_set = static_cast<uint32_t>(std::clamp<int64_t>(
+     server_port_, 0, static_cast<int64_t>(std::numeric_limits<uint32_t>::max())
+   ));
+   SetServerPort(server_port_to_set).Detach();
 
    ScopeExit connection_done{[this] { connection_promise_.Done(); }};
 

@@ -33,13 +33,21 @@
 #include <variant>
 #include <vector>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
+#ifdef __clang__
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Weverything"
+#elif defined(_MSC_VER)
+#   pragma warning(push, 0)
+#endif
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
 #include <boost/beast/core/error.hpp>
 #include <boost/beast/http/string_body_fwd.hpp>
-#pragma clang diagnostic pop
+#ifdef __clang__
+#   pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+#   pragma warning(pop)
+#endif
 
 template <class TYPE>
 class Resolvers

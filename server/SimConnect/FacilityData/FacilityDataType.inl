@@ -24,6 +24,9 @@
 
 namespace smc::facility {
 
+template <class>
+inline constexpr bool ALWAYS_FALSE = false;
+
 template <class SELF>
 std::shared_ptr<Processor>
 ProcessorImpl<SELF>::GetProcessor(
@@ -45,9 +48,9 @@ ProcessorImpl<SELF>::GetProcessor(
            assert(processor);
 
            return std::make_tuple(processor, "");
+        } else {
+           return std::make_tuple(parent_processor, "");
         }
-
-        return std::make_tuple(parent_processor, "");
      }
    );
 }
@@ -67,8 +70,10 @@ ProcessorImpl<SELF>::ProcessMembers(this SELF& self, SIMCONNECT_RECV_FACILITY_DA
         return (
           [&self, &error, &it, &remaining_size](auto const& member) constexpr {
              auto& member_ref = self.*std::get<1>(member);
-             if constexpr (std::is_arithmetic_v<std::remove_cvref_t<decltype(member_ref)>>
-                           || std::is_enum_v<std::remove_cvref_t<decltype(member_ref)>>) {
+             if constexpr (
+               std::is_arithmetic_v<std::remove_cvref_t<decltype(member_ref)>>
+               || std::is_enum_v<std::remove_cvref_t<decltype(member_ref)>>
+             ) {
                 if (remaining_size < sizeof(member_ref)) {
                    error = "Received data size " + std::to_string(remaining_size)
                            + " is smaller than expected size for facility data member "
@@ -107,7 +112,9 @@ ProcessorImpl<SELF>::ProcessMembers(this SELF& self, SIMCONNECT_RECV_FACILITY_DA
 
                 return true;
              } else {
-                static_assert(false, "Unsupported type for facility data member ");
+                static_assert(
+                  ALWAYS_FALSE<decltype(member_ref)>, "Unsupported type for facility data member"
+                );
              }
           }(members)
           && ...
@@ -203,9 +210,6 @@ ProcessorImpl<SELF>::MakeSectionProcessor(
               return std::make_tuple(processor, "");
            }
         }
-
-        assert(false && "Unreachable code in section processor");
-        return std::make_tuple(nullptr, "Unreachable code in section processor");
      }
    };
 

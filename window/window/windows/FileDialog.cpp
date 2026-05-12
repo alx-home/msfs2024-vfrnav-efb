@@ -54,8 +54,10 @@ public:
          // CREATE FileOpenDialog OBJECT
          IFileOpenDialog* fdialog_ptr;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#ifdef __clang__
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#endif
          if (
            HRESULT result = CoCreateInstance(
              CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&fdialog_ptr)
@@ -64,13 +66,15 @@ public:
          ) {
             throw Exception{"FileDialog::CoCreateInstance error: " + std::to_string(result)};
          }
-#pragma clang diagnostic pop
+#ifdef __clang__
+#   pragma clang diagnostic pop
+#endif
          return Fdialog{fdialog_ptr, [](IFileOpenDialog* fdialog) { fdialog->Release(); }};
       }()} {
    }
 
    void SetFileTypes(std::span<COMDLG_FILTERSPEC> types) {
-      fdialog_->SetFileTypes(types.size(), types.data());
+      fdialog_->SetFileTypes(static_cast<UINT>(types.size()), types.data());
    }
 
    void AddOptions(FILEOPENDIALOGOPTIONS option) {
@@ -93,8 +97,10 @@ public:
       {
          IShellItem* cur_folder = nullptr;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#ifdef __clang__
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#endif
          if (
            HRESULT result =
              SHCreateItemFromParsingName(path.c_str(), nullptr, IID_PPV_ARGS(&cur_folder));
@@ -104,7 +110,9 @@ public:
               "FileDialog::SHCreateItemFromParsingName error: " + std::to_string(result)
             };
          }
-#pragma clang diagnostic pop
+#ifdef __clang__
+#   pragma clang diagnostic pop
+#endif
 
          item = {cur_folder, [](IShellItem* pCurFolder) { pCurFolder->Release(); }};
       };
