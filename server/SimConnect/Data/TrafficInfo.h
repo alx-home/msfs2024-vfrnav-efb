@@ -24,8 +24,6 @@
 namespace smc {
 
 struct TrafficInfo {
-   int32_t waypoint_index_{};
-
    double altitude_{};
    double ground_altitude_{};
    double lat_{};
@@ -96,12 +94,6 @@ struct TrafficInfo {
    int32_t transponder_{};
 
    static constexpr auto MEMBERS = std::make_tuple(
-     smc::_m{
-       &TrafficInfo::waypoint_index_,
-       "AI CURRENT WAYPOINT",
-       smc::_t<SIMCONNECT_DATATYPE_INT32>{},
-       "number",
-     },
 
      smc::_m{
        &TrafficInfo::altitude_,

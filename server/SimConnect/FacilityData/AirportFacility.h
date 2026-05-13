@@ -16,6 +16,7 @@
 #pragma once
 
 #include "FacilityDataType.h"
+#include "Coords.h"
 
 #include <array>
 #include <tuple>
@@ -237,6 +238,13 @@ struct AirportData : ProcessorImpl<AirportData> {
       );
    };
    std::vector<TaxiParking> taxi_parkings_{};
+
+   std::vector<TaxiPoint>::const_iterator   FindClosestTaxiPoint(Coords<2> position) const;
+   std::vector<TaxiParking>::const_iterator FindClosestParkingPoint(Coords<2> position) const;
+   std::vector<Coords<2>>                   GetTaxiPath(
+     std::vector<TaxiPoint>::const_iterator from,
+     std::vector<TaxiPoint>::const_iterator to
+   ) const;
 
    using ProcessorImpl::GetProcessor;
 

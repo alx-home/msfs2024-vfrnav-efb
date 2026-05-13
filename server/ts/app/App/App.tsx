@@ -30,6 +30,7 @@ const Header = () => {
 const Trailer = () => {
   const { serverState, serverStateStr, switchServer, serverLock } = useServer();
   const abort = useCallback(() => {
+    window.display_appstopping();
     window.abort();
   }, []);
 

@@ -287,6 +287,7 @@ Main::Terminate() {
       return;
    }
 
+   sim_connect_.Stop();
    terminate_promise_.Reject<AppStopping>();
    server_.RejectAll();
    SystemTray::Dispatch([]() { PostQuitMessage(0); });

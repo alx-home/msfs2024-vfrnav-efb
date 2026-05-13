@@ -30,7 +30,7 @@ struct GearDown {
        &GearDown::gear_down_,
        "GEAR HANDLE POSITION",
        smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
-       "Bool",
+       "percent over 100",
      }
    );
 };

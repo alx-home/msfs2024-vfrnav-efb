@@ -46,7 +46,7 @@ SimConnect::AICreateSimulatedObject(std::string_view title, SIMCONNECT_DATA_INIT
         auto handle = handle_.lock();
 
         if (!handle) {
-           throw AppStopping();
+           throw Disconnected();
         }
 
         return AICreateSimulatedObject(title, pos, handle);
@@ -328,6 +328,29 @@ SimConnect::GetAircraftInfo(ObjectId id) noexcept(true) {
    });
 }
 
+WPromise<TrafficStaticInfo>
+SimConnect::GetAircraftStaticInfo(ObjectId id) noexcept(true) {
+   using enum DataId;
+
+   return Proxy<TrafficStaticInfo>([this, id = std::move(id)] {
+      return MakePromise([this, id = std::move(id)]() -> Promise<TrafficStaticInfo> {
+         assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+         auto handle = handle_.lock();
+         if (!handle) {
+            throw Disconnected();
+         }
+
+         co_return std::move(
+           (co_await RequestDataOnSimObject<TRAFFIC_STATIC_INFO, TrafficStaticInfo>(
+              id.dwObjectID, handle
+            ))
+             .dw_data_
+         );
+      });
+   });
+}
+
 WPromise<facility::AirportData>
 SimConnect::GetAirportFacility(std::string_view icao, std::string_view region) noexcept(true) {
    using enum DataId;
@@ -468,7 +491,7 @@ SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType)
    });
 }
 
-WPromise<bool>
+WPromise<void>
 SimConnect::SetDataOnSimObjectImpl(
   DataId                   id,
   SIMCONNECT_OBJECT_ID     objectId,
@@ -478,7 +501,7 @@ SimConnect::SetDataOnSimObjectImpl(
   std::vector<std::byte>&& data
 ) {
    assert(data.size() == (unitSize * count));
-   return Proxy<bool>([this, id, objectId, flags, unitSize, count, data = std::move(data)] mutable {
+   return Proxy<void>([this, id, objectId, flags, unitSize, count, data = std::move(data)] mutable {
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
       auto handle = handle_.lock();
@@ -504,7 +527,10 @@ SimConnect::SetDataOnSimObjectImpl(
       );
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
-      return Promise<bool>::Resolve(result == S_OK);
+      if (result == S_OK) {
+         return Promise<void>::Resolve();
+      }
+      return Promise<void>::Reject<UnknownError>("Failed to set data on sim object");
    });
 }
 

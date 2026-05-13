@@ -28,7 +28,7 @@ using namespace std::chrono_literals;
 namespace smc {
 
 template <class TYPE, size_t N>
-WPromise<bool>
+WPromise<void>
 SimConnect::SetDataOnSimObject(
   DataId                id,
   SIMCONNECT_OBJECT_ID  objectId,
@@ -45,7 +45,7 @@ SimConnect::SetDataOnSimObject(
 }
 
 template <class TYPE>
-WPromise<bool>
+WPromise<void>
 SimConnect::SetDataOnSimObject(
   DataId               id,
   SIMCONNECT_OBJECT_ID objectId,
@@ -65,7 +65,7 @@ SimConnect::SetDataOnSimObject(
 
 template <class TYPE>
    requires(!IS_STD_ARRAY<TYPE> && !IS_VECTOR<TYPE>)
-WPromise<bool>
+WPromise<void>
 SimConnect::SetDataOnSimObject(DataId id, SIMCONNECT_OBJECT_ID objectId, DWORD flags, TYPE&& data) {
    if constexpr (std::is_floating_point_v<TYPE>) {
       assert(

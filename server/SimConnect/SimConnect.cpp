@@ -34,6 +34,7 @@
 #include <cstdint>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <SimConnect.h>
@@ -124,17 +125,25 @@ SimConnect::SimConnect(Main& main)
       }
    }} {}
 
-SimConnect::~SimConnect() {
-   assert(thread_.joinable());
-   thread_.request_stop();
+SimConnect::~SimConnect() { Stop(); }
 
-   auto const _ = MessageQueue::Dispatch([this]() {
-      connection_promise_.Done();
+void
+SimConnect::Stop() {
+   if (thread_.joinable()) {
+      thread_.request_stop();
 
-      if (event_) {
-         SetEvent(event_);
-      }
-   });
+      auto const _ = MessageQueue::Dispatch([this]() {
+         connection_promise_.Done();
+
+         if (event_) {
+            SetEvent(event_);
+         }
+      });
+
+      thread_.join();
+   } else {
+      assert(connection_promise_.IsDone());
+   }
 }
 
 bool
@@ -401,6 +410,11 @@ SimConnect::Run(std::stop_token const& stoken) {
    }
 
    // Define traffic info data structure
+   if (!AddToDataDefinition<TRAFFIC_STATIC_INFO, TrafficStaticInfo>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for traffic static info" << std::endl;
+      Sleep(5000);
+      return;
+   }
    if (!AddToDataDefinition<TRAFFIC_INFO, TrafficInfo>(handle)) {
       std::cerr << "SimConnect: Failed to add data definition for traffic info" << std::endl;
       Sleep(5000);
@@ -421,6 +435,11 @@ SimConnect::Run(std::stop_token const& stoken) {
          handle, "AI WAYPOINT LIST", SIMCONNECT_DATATYPE_WAYPOINT, "number"
        )) {
       std::cerr << "SimConnect: Failed to add data definition for waypoints" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<WAYPOINT_INDEX, WaypointIndex>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for current waypoint" << std::endl;
       Sleep(5000);
       return;
    }
@@ -467,6 +486,16 @@ SimConnect::Run(std::stop_token const& stoken) {
       Sleep(5000);
       return;
    }
+   if (!AddToDataDefinition<SET_AI_HEADING, AIHeading>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for AI heading" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_AI_SPEED, AISpeed>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for AI speed" << std::endl;
+      Sleep(5000);
+      return;
+   }
    if (!AddToDataDefinition<SET_PITCH_CONTROL, PitchControl>(handle)) {
       std::cerr << "SimConnect: Failed to add data definition for pitch control" << std::endl;
       Sleep(5000);
@@ -489,6 +518,16 @@ SimConnect::Run(std::stop_token const& stoken) {
    }
    if (!AddToDataDefinition<SET_SPEED_CONTROL, SpeedControl>(handle)) {
       std::cerr << "SimConnect: Failed to add data definition for speed control" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_VSPEED_CONTROL, VSpeedControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for vspeed control" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (!AddToDataDefinition<SET_ROTATION_CONTROL, RotationControl>(handle)) {
+      std::cerr << "SimConnect: Failed to add data definition for rotation control" << std::endl;
       Sleep(5000);
       return;
    }
@@ -571,6 +610,16 @@ SimConnect::Run(std::stop_token const& stoken) {
      != S_OK
    ) {
       std::cerr << "SimConnect: Failed to map FREEZE_SLEW event" << std::endl;
+      Sleep(5000);
+      return;
+   }
+   if (
+     SimConnect_MapClientEventToSimEvent(
+       *handle, static_cast<uint32_t>(EventId::SET_SLEW), "SLEW_SET"
+     )
+     != S_OK
+   ) {
+      std::cerr << "SimConnect: Failed to map SET_SLEW event" << std::endl;
       Sleep(5000);
       return;
    }
@@ -718,6 +767,7 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
             break;
          }
 
+         assert(false && "Received SimConnect exception for unknown send ID");
          std::cerr << "SimConnect: Exception (" << exception.dwException
                    << ") send_id=" << exception.dwSendID << " index=" << exception.dwIndex
                    << " id=" << exception.dwID << std::endl;
@@ -849,6 +899,9 @@ SimConnect::Dispatch(SIMCONNECT_RECV const& data) {
          handle_.reset();
          SetEvent(event_);
       } break;
+
+      default:
+         assert(false && "Received unknown SimConnect message type");
    }
 }
 

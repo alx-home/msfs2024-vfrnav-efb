@@ -26,6 +26,7 @@ set(SOURCES
     Server/WebSockets/WebSocket.cpp
 
     SimConnect/FacilityData/AirportFacility.cpp
+    SimConnect/FacilityData/Waypoint.cpp
     SimConnect/SimConnect.cpp
     SimConnect/SimConnectInterface.cpp
     SimConnect/Utils/StaticCast.cpp

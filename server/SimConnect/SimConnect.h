@@ -53,11 +53,6 @@ struct Disconnected : std::runtime_error {
       : std::runtime_error("MSFS not connected!") {}
 };
 
-struct AppStopping : std::runtime_error {
-   AppStopping()
-      : std::runtime_error("Application is stopping!") {}
-};
-
 struct Timeout : std::runtime_error {
    using std::runtime_error::runtime_error;
 };
@@ -96,25 +91,33 @@ enum class DataId : uint32_t {
    USER_INFO,
    GROUND_INFO,
 
+   SET_WAYPOINTS,
+   WAYPOINT_INDEX,
+   SET_AI_HEADING,
+   SET_AI_SPEED,
+
    GET_SIMRATE,
 
    GET_AIRPORT_FACILITY,
 
-   SET_WAYPOINTS,
-   SET_BREAK,
-   SET_GEAR,
-   SET_FLAPS,
-   SET_THROTTLE,
-   SET_CONTROL_SURFACES,
-   SET_ALTITUDE_CONTROL,
-   SET_GROUND_ALTITUDE_CONTROL,
-   SET_HEADING_CONTROL,
-   SET_PITCH_CONTROL,
-   SET_ON_GROUND,
-   SET_BANK_CONTROL,
-   SET_GROUND_ALTITUDE,
    SET_AIRSPEED_CONTROL,
+   SET_ALTITUDE_CONTROL,
+   SET_BANK_CONTROL,
+   SET_BREAK,
+   SET_CONTROL_SURFACES,
+   SET_FLAPS,
+   SET_GEAR,
+   SET_GROUND_ALTITUDE_CONTROL,
+   SET_GROUND_ALTITUDE,
+   SET_HEADING_CONTROL,
+   SET_ON_GROUND,
+   SET_PITCH_CONTROL,
+   SET_ROTATION_CONTROL,
    SET_SPEED_CONTROL,
+   SET_VSPEED_CONTROL,
+   SET_THROTTLE,
+
+   SET_INIT_POSISION,
 
    MAX_VALUE,
 };
@@ -127,6 +130,7 @@ enum class EventId : uint32_t {
    FREEZE_ALTITUDE_SET,
    FREEZE_ATTITUDE_SET,
    FREEZE_SLEW,
+   SET_SLEW,
    AXIS_SLEW_BANK_SET,
    AXIS_ELEVATOR_SET,
    AXIS_AILERONS_SET,
@@ -191,8 +195,10 @@ public:
    SimConnect(Main& main);
    ~SimConnect() override;
 
+   void Stop();
+
    template <class TYPE, size_t N>
-   [[nodiscard]] WPromise<bool> SetDataOnSimObject(
+   [[nodiscard]] WPromise<void> SetDataOnSimObject(
      DataId                id,
      SIMCONNECT_OBJECT_ID  objectId,
      DWORD                 flags,
@@ -200,7 +206,7 @@ public:
    );
 
    template <class TYPE>
-   [[nodiscard]] WPromise<bool> SetDataOnSimObject(
+   [[nodiscard]] WPromise<void> SetDataOnSimObject(
      DataId               id,
      SIMCONNECT_OBJECT_ID objectId,
      DWORD                flags,
@@ -210,7 +216,7 @@ public:
    template <class TYPE>
 
       requires(!IS_STD_ARRAY<TYPE> && !IS_VECTOR<TYPE>)
-   [[nodiscard]] WPromise<bool>
+   [[nodiscard]] WPromise<void>
    SetDataOnSimObject(DataId id, SIMCONNECT_OBJECT_ID objectId, DWORD flags, TYPE&& data);
 
    [[nodiscard]] WPromise<double>            GetGroundInfo(double lat, double lon);
@@ -239,7 +245,7 @@ public:
    [[nodiscard]] WPromise<void> AIReleaseControl(SIMCONNECT_OBJECT_ID objectId);
    [[nodiscard]] WPromise<bool> SetServerPort(uint32_t port);
 
-   WPromise<bool> SetDataOnSimObjectImpl(
+   WPromise<void> SetDataOnSimObjectImpl(
      DataId                   id,
      SIMCONNECT_OBJECT_ID     objectId,
      DWORD                    flags,

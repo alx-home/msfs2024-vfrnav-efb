@@ -141,7 +141,7 @@ struct AirspeedControl {
    )};
 };
 
-// Vertical speed control
+// Speed control
 struct SpeedControl {
    double vertical_{};      // feet/second
    double longitudinal_{};  // feet/second
@@ -169,6 +169,48 @@ struct SpeedControl {
    )};
 };
 
+// VSpeed control
+struct VSpeedControl {
+   double value_{};  // feet/second
+
+   static constexpr std::tuple MEMBERS{std::make_tuple(
+     smc::_m{
+       &VSpeedControl::value_,
+       "VELOCITY BODY Y",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "feet/second",
+     }
+   )};
+};
+
+// Rotation control
+struct RotationControl {
+   double vertical_{};      // radian/second
+   double longitudinal_{};  // radian/second
+   double lateral_{};       // radian/second
+
+   static constexpr std::tuple MEMBERS{std::make_tuple(
+     smc::_m{
+       &RotationControl::vertical_,
+       "ROTATION VELOCITY BODY Y",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "radians per second",
+     },
+     smc::_m{
+       &RotationControl::longitudinal_,
+       "ROTATION VELOCITY BODY Z",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "radians per second",
+     },
+     smc::_m{
+       &RotationControl::lateral_,
+       "ROTATION VELOCITY BODY X",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "radians per second",
+     }
+   )};
+};
+
 // Ground altitude control
 struct GroundAltitude {
    double value_{};  // feet
@@ -185,14 +227,53 @@ struct GroundAltitude {
 
 // Set On Ground (boolean)
 struct SetOnGround {
-   bool value_{};
+   int32_t value_{};
 
    static constexpr std::tuple MEMBERS{std::make_tuple(
      smc::_m{
        &SetOnGround::value_,
        "SIM SHOULD SET ON GROUND",
        smc::_t<SIMCONNECT_DATATYPE_INT32>{},
-       "boolean",
+       "bool",
+     }
+   )};
+};
+
+struct WaypointIndex {
+   int32_t value_{};
+
+   static constexpr std::tuple MEMBERS{std::make_tuple(
+     smc::_m{
+       &WaypointIndex::value_,
+       "AI CURRENT WAYPOINT",
+       smc::_t<SIMCONNECT_DATATYPE_INT32>{},
+       "number",
+     }
+   )};
+};
+
+struct AIHeading {
+   double value_{};
+
+   static constexpr std::tuple MEMBERS{std::make_tuple(
+     smc::_m{
+       &AIHeading::value_,
+       "AI DESIRED HEADING",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "degrees",
+     }
+   )};
+};
+
+struct AISpeed {
+   double value_{};
+
+   static constexpr std::tuple MEMBERS{std::make_tuple(
+     smc::_m{
+       &AISpeed::value_,
+       "AI DESIRED SPEED",
+       smc::_t<SIMCONNECT_DATATYPE_FLOAT64>{},
+       "knots",
      }
    )};
 };
