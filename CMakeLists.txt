@@ -18,6 +18,9 @@ cmake_minimum_required(VERSION 3.20)
 # CMake Options
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/options.cmake)
 
+# vcpkg setup must run before project() to set the toolchain.
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/vcpkg_setup.cmake)
+
 project(vfrnav LANGUAGES CXX)
 
 set(FETCHCONTENT_SOURCE_DIR_TS_UTILS ${CMAKE_SOURCE_DIR}/submodules/ts-utils)
