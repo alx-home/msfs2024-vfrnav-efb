@@ -280,8 +280,11 @@ main() {
       // Force stdout to binary mode (no CRLF mangling, no translation)
       _setmode(_fileno(stdout), _O_BINARY);
 #endif  // DEBUG
-
-      Main main{minimized, configure, open_efb, open_web};
+      ScopeExit main_done{[] {
+         assert(!Main::HasInstance());
+         std::cout << "Main: exiting..." << std::endl;
+      }};
+      auto      main = Main::Create(minimized, configure, open_efb, open_web);
    } catch (const webview::Exception& e) {
       std::cerr << e.what() << '\n';
       return 1;

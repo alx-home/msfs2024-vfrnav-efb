@@ -16,6 +16,7 @@
 #include "Messages/Messages.h"
 #include "../Server.h"
 
+#include <iostream>
 #include <memory>
 
 using namespace boost::beast;

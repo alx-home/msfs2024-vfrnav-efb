@@ -242,8 +242,11 @@ public:
 
    [[nodiscard]] WPromise<void>
    TransmitClientEvent(SIMCONNECT_OBJECT_ID objectId, smc::EventId eventId, DWORD eventData);
-   [[nodiscard]] WPromise<void> AIReleaseControl(SIMCONNECT_OBJECT_ID objectId);
-   [[nodiscard]] WPromise<bool> SetServerPort(uint32_t port);
+   [[nodiscard]] WPromise<void>     AIReleaseControl(SIMCONNECT_OBJECT_ID objectId);
+   [[nodiscard]] WPromise<bool>     SetServerPort(uint32_t port);
+   [[nodiscard]] WPromise<Liveries> GetTrafficTitles() const;
+   [[nodiscard]] WPromise<Airports> GetAirportList() const;
+   [[nodiscard]] WPromise<float>    WatchSimRate(std::optional<float> current) const;
 
    WPromise<void> SetDataOnSimObjectImpl(
      DataId                   id,
@@ -255,14 +258,15 @@ public:
    );
 
    WPromise<void> Connected() const;
+   WPromise<void> Done() const;
 
 private:
    bool           ShouldStop(std::stop_token const& stoken) const noexcept;
    void           Run(std::stop_token const& stoken);
    WPromise<void> Wait(std::chrono::milliseconds timeout) const;
 
-   template <class T>
-   [[nodiscard]] WPromise<T> Proxy(std::function<WPromise<T>()>&& func) const;
+   template <class FUN>
+   [[nodiscard]] WPromise<promise::return_t<promise::return_t<FUN>>> Proxy(FUN&& func) const;
 
    template <DataId ID>
    [[nodiscard]] bool AddToDataDefinition(
@@ -330,6 +334,9 @@ private:
      std::shared_ptr<void*>       handle
    );
 
+   void SetTrafficTitles();
+   void SetAirportList();
+
    template <class T>
    static T StaticCast(DWORD const& data);
 
@@ -396,6 +403,12 @@ private:
        std::shared_ptr<Reject const>>>;
    WaitingAssignedObject pending_assigned_{};
 
+   using SimRateResolver =
+     std::pair<std::shared_ptr<Resolve<float>>, std::shared_ptr<Reject const>>;
+   mutable std::vector<SimRateResolver> pending_sim_rate_{};
+
+   float last_sim_rate_{1.0f};
+
    static constexpr auto PENDING_MEMBERS = std::make_tuple(
      &SimConnect::pending_simobject_,
      &SimConnect::pending_facility_,
@@ -412,6 +425,18 @@ private:
    using time_point = std::chrono::steady_clock::time_point;
 
    mutable std::shared_mutex mutex_{};
+   using TrafficTitles = std::shared_ptr<WPromise<Liveries>>;
+   // Warn: Resolved on main_ pool threads, so must be thread safe
+   TrafficTitles traffic_titles_{
+     std::make_shared<WPromise<Liveries>>(Promise<Liveries>::Reject<Disconnected>())
+   };
+   using AirportList = std::shared_ptr<WPromise<Airports>>;
+   // Warn: Resolved on main_ pool threads, so must be thread safe
+   AirportList airport_list_{
+     std::make_shared<WPromise<Airports>>(Promise<Airports>::Reject<Disconnected>())
+   };
+
+   std::unordered_map<std::string, WPromise<facility::AirportData>> airport_facility_cache_{};
 
    Main&        main_;
    win32::Event event_{win32::CreateEvent()};

@@ -334,6 +334,34 @@ Main::Validate(
       }
    }
 
+   // Probe Object
+   {
+      std::error_code ec{};
+      std::filesystem::create_directories(addonPath + "/SimObjects/Misc/Probe/model", ec);
+      if (ec) {
+         co_return Fatal("Couldn't create community package folder:", ec.message(), addonPath);
+      }
+
+      for (auto const& elem : PROBE_OBJECT) {
+         std::ofstream file{
+           addonPath + "/SimObjects/Misc/Probe/" + elem.first, std::ios::binary | std::ios::trunc
+         };
+         if (!file.is_open()) {
+            co_return Fatal(
+              "Couldn't create file:", addonPath + "/SimObjects/Misc/Probe/" + elem.first
+            );
+         }
+
+         auto const& data = elem.second;
+         file.write(reinterpret_cast<char const*>(data.data()), data.size());
+         if (file.tellp() != data.size()) {
+            co_return Fatal(
+              "Couldn't create file:", addonPath + "/SimObjects/Misc/Probe/" + elem.first
+            );
+         }
+      }
+   }
+
    {
       std::error_code ec{};
       std::filesystem::create_directories(addonPath + "/ContentInfo/alexhome-msfs2024-vfrnav", ec);

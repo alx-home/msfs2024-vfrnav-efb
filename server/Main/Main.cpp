@@ -122,6 +122,33 @@ Main::~Main() {
    server_.Stop();
 }
 
+std::shared_ptr<Main>
+Main::Create(bool minimized, bool configure, bool open_efb, bool open_web) {
+   class MainFriend : public Main {
+   public:
+      MainFriend(bool minimized, bool configure, bool open_efb, bool open_web)
+         : Main(minimized, configure, open_efb, open_web) {}
+   };
+   assert(!instance.lock() && "Main instance already exists");
+   auto new_instance = std::make_shared<MainFriend>(minimized, configure, open_efb, open_web);
+   instance          = new_instance;
+   return new_instance;
+}
+
+std::shared_ptr<Main>
+Main::Get() {
+   auto result = instance.lock();
+   assert(result && "Main instance doesn't exist");
+   return result;
+}
+
+bool
+Main::HasInstance() {
+   return !instance.expired();
+}
+
+std::weak_ptr<Main> Main::instance{};
+
 WPromise<void>
 Main::Wait(Pool::duration timeout) const {
    return promise::Race(*terminate_promise_, Pool::Dispatch(timeout));
