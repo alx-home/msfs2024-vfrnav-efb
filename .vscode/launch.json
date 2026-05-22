@@ -36,7 +36,7 @@
          "name": "(Windows) Launch promise_test",
          "type": "cppvsdbg",
          "request": "launch",
-         "program": "${workspaceFolder}/build/_deps/promise-build/promise_test.exe",
+         "program": "${workspaceFolder}/build/_deps/promise-build/test/promise_test.exe",
          "args": [],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",

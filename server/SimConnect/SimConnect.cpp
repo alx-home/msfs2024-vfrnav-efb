@@ -234,47 +234,45 @@ SimConnect::AICreateSimulatedObject(
 
    auto const request_id = ++request_id_;
 
-   return MakePromise(
-            [this, handle, title = std::string{title}, pos, request_id](
-              Resolve<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> const& resolve, Reject const& reject
-            ) mutable -> Promise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID, true> {
+   return WPromise{
+     [this, handle, title = std::string{title}, pos, request_id](
+       Resolve<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> const& resolve, Reject const& reject
+     ) mutable -> Promise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID, true> {
+        assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+        if (!handle) {
+           handle = handle_.lock();
+           if (!handle) {
+              reject.Apply<Disconnected>();
+              co_return;
+           }
+        }
+
+        pending_assigned_.try_emplace(
+          request_id,
+          std::function<void(SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const&)>(
+            [this,
+             resolve =
+               resolve.shared_from_this()](SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned) {
+               (void)this;
                assert(std::this_thread::get_id() == MessageQueue::ThreadId());
-
-               if (!handle) {
-                  handle = handle_.lock();
-                  if (!handle) {
-                     reject.Apply<Disconnected>();
-                     co_return;
-                  }
-               }
-
-               pending_assigned_.try_emplace(
-                 request_id,
-                 std::function<void(SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const&)>(
-                   [this, resolve = resolve.shared_from_this()](
-                     SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned
-                   ) {
-                      (void)this;
-                      assert(std::this_thread::get_id() == MessageQueue::ThreadId());
-                      (*resolve)(assigned);
-                   }
-                 ),
-                 reject.shared_from_this()
-               );
-
-               if (
-                 SimConnect_AICreateSimulatedObject(*handle, title.data(), pos, request_id) != S_OK
-               ) {
-                  reject.Apply<UnknownError>("App is stopping");
-                  co_return;
-               }
-
-               if (!TrackRequestSendId(handle, request_id)) {
-                  reject.Apply<UnknownError>("Failed to track simulated object request");
-                  co_return;
-               }
+               (*resolve)(assigned);
             }
-   ).Finally([this, request_id] {
+          ),
+          reject.shared_from_this()
+        );
+
+        if (SimConnect_AICreateSimulatedObject(*handle, title.data(), pos, request_id) != S_OK) {
+           reject.Apply<UnknownError>("App is stopping");
+           co_return;
+        }
+
+        if (!TrackRequestSendId(handle, request_id)) {
+           reject.Apply<UnknownError>("Failed to track simulated object request");
+           co_return;
+        }
+     }
+   }.Finally([this, request_id] {
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
       ClearTrackedSendId(request_id);
       pending_assigned_.erase(request_id);
@@ -292,54 +290,54 @@ SimConnect::AICreateNonATCAircraft(
    assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
    auto const request_id = ++request_id_;
-   return MakePromise(
-            [this,
-             handle,
-             title       = std::string{title},
-             livery      = std::string{livery},
-             tail_number = std::string{tail_number},
-             pos,
-             request_id](
-              Resolve<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> const& resolve, Reject const& reject
-            ) mutable -> Promise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID, true> {
-               assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+   return WPromise{
+     [this,
+      handle,
+      title       = std::string{title},
+      livery      = std::string{livery},
+      tail_number = std::string{tail_number},
+      pos,
+      request_id](
+       Resolve<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID> const& resolve, Reject const& reject
+     ) mutable -> Promise<SIMCONNECT_RECV_ASSIGNED_OBJECT_ID, true> {
+        assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
-               if (!handle) {
-                  handle = handle_.lock();
-                  if (!handle) {
-                     reject.Apply<Disconnected>();
-                     co_return;
-                  }
-               }
+        if (!handle) {
+           handle = handle_.lock();
+           if (!handle) {
+              reject.Apply<Disconnected>();
+              co_return;
+           }
+        }
 
-               pending_assigned_.try_emplace(
-                 request_id,
-                 [this, resolve = resolve.shared_from_this()](
-                   SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned
-                 ) {
-                    (void)this;
-                    assert(std::this_thread::get_id() == MessageQueue::ThreadId());
-                    (*resolve)(assigned);
-                 },
-                 reject.shared_from_this()
-               );
+        pending_assigned_.try_emplace(
+          request_id,
+          [this,
+           resolve =
+             resolve.shared_from_this()](SIMCONNECT_RECV_ASSIGNED_OBJECT_ID const& assigned) {
+             (void)this;
+             assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+             (*resolve)(assigned);
+          },
+          reject.shared_from_this()
+        );
 
-               if (
-                 SimConnect_AICreateNonATCAircraft_EX1(
-                   *handle, title.data(), livery.data(), tail_number.data(), pos, request_id
-                 )
-                 != S_OK
-               ) {
-                  reject.Apply<UnknownError>("Failed to create non-ATC aircraft");
-                  co_return;
-               }
+        if (
+          SimConnect_AICreateNonATCAircraft_EX1(
+            *handle, title.data(), livery.data(), tail_number.data(), pos, request_id
+          )
+          != S_OK
+        ) {
+           reject.Apply<UnknownError>("Failed to create non-ATC aircraft");
+           co_return;
+        }
 
-               if (!TrackRequestSendId(handle, request_id)) {
-                  reject.Apply<UnknownError>("Failed to track non-ATC aircraft request");
-                  co_return;
-               }
-            }
-   ).Finally([this, request_id] {
+        if (!TrackRequestSendId(handle, request_id)) {
+           reject.Apply<UnknownError>("Failed to track non-ATC aircraft request");
+           co_return;
+        }
+     }
+   }.Finally([this, request_id] {
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
       ClearTrackedSendId(request_id);
       pending_assigned_.erase(request_id);
@@ -705,14 +703,17 @@ SimConnect::Run(std::stop_token const& stoken) {
 
 WPromise<void>
 SimConnect::Wait(std::chrono::milliseconds timeout) const {
-   return promise::Race(
-     MessageQueue::Dispatch(timeout), connection_promise_.WaitDone(), main_.WaitTerminate()
-   );
+   return promise::Race(MessageQueue::Dispatch(timeout), Done());
 }
 
 WPromise<void>
 SimConnect::Connected() const {
-   return promise::Race(connection_promise_.Wait(), main_.WaitTerminate());
+   return promise::Race(connection_promise_.WaitWithReject(), main_.WaitTerminate());
+}
+
+WPromise<void>
+SimConnect::Done() const {
+   return promise::Race(connection_promise_.WaitDoneWithReject(), main_.WaitTerminate());
 }
 
 bool

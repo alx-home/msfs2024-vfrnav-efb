@@ -44,7 +44,7 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 
-message(STATUS "Fetching alx-home::promise")
+message(STATUS "Fetching alx-home::jsprocpp")
 FetchContent_Declare(
     promise
     GIT_REPOSITORY https://github.com/alx-home/promise

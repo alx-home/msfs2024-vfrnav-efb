@@ -13,18 +13,18 @@
 # not, see <https://www.gnu.org/licenses/>.
 #
 
-win32_library(TARGET_NAME vfrnav_window 
-   FILES 
+win32_library(TARGET_NAME vfrnav_window
+   FILES
       window/windows/FileDialog.cpp
 )
 
 target_include_directories(vfrnav_window PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(vfrnav_window 
-   PUBLIC 
+target_link_libraries(vfrnav_window
+   PUBLIC
       alx-home::cpp_utils
       alx-home::windows
-      alx-home::promise
+      alx-home::jsprocpp
       alx-home::json
 )
 add_library(vfrnav::window ALIAS vfrnav_window)

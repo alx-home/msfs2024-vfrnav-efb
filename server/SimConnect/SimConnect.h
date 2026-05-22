@@ -255,14 +255,15 @@ public:
    );
 
    WPromise<void> Connected() const;
+   WPromise<void> Done() const;
 
 private:
    bool           ShouldStop(std::stop_token const& stoken) const noexcept;
    void           Run(std::stop_token const& stoken);
    WPromise<void> Wait(std::chrono::milliseconds timeout) const;
 
-   template <class T>
-   [[nodiscard]] WPromise<T> Proxy(std::function<WPromise<T>()>&& func) const;
+   template <class FUN>
+   [[nodiscard]] WPromise<promise::return_t<promise::return_t<FUN>>> Proxy(FUN&& func) const;
 
    template <DataId ID>
    [[nodiscard]] bool AddToDataDefinition(

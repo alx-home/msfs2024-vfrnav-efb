@@ -41,7 +41,6 @@ public:
    Main(bool minimized, bool configure, bool open_efb, bool open_web);
    ~Main() override;
 
-public:
    ServerState GetServerState() const;
    void        WatchServerState(promise::Resolve<ServerState> const&, promise::Reject const&);
    void        FlushServerState();
