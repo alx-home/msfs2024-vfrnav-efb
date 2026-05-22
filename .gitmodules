@@ -4,9 +4,6 @@ url = git@github.com:alx-home/webview.git
 [submodule "submodules/json"]
 	path = submodules/json
 	url = git@github.com:alx-home/json.git
-[submodule "submodules/promise"]
-	path = submodules/promise
-	url = git@github.com:alx-home/promise.git
 [submodule "submodules/windows"]
 	path = submodules/windows
 	url = git@github.com:alx-home/windows.git
@@ -19,3 +16,6 @@ url = git@github.com:alx-home/webview.git
 [submodule "submodules/ts-utils"]
 	path = submodules/ts-utils
 	url = git@github.com:alx-home/ts-utils.git
+[submodule "submodules/JSProCpp"]
+	path = submodules/JSProCpp
+	url = git@github.com:alx-home/JSProCpp.git

@@ -30,7 +30,7 @@ win32_executable(TARGET_NAME installer
 target_link_libraries(installer PRIVATE
         alx-home::webview
         alx-home::json
-        alx-home::promise
+        alx-home::jsprocpp
         installer_resources
         vfrnav::common
         vfrnav::window

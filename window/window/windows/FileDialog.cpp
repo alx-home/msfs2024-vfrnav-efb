@@ -170,75 +170,70 @@ Open(std::string_view path, std::vector<Filter> filters) {
    static std::mutex                                        s__thread_mutex{};
    static std::unordered_map<std::thread::id, std::jthread> s__threads{};
 
-   co_return co_await MakePromise(
-     [path, filters = std::move(filters)](
-       Resolve<std::string> const& resolve, Reject const& reject
-     ) -> Promise<std::string, true> {
-        {
-           std::lock_guard lock{s__thread_mutex};
-           std::jthread    thread{[resolve = resolve.shared_from_this(),
-                                   reject  = reject.shared_from_this(),
-                                   filters = std::move(filters),
-                                   value = std::filesystem::path{ReplaceEnv(std::string{path})}]() {
-              ScopeExit _{[]() constexpr {
-                 std::lock_guard lock{s__thread_mutex};
+   co_return co_await [path, filters = std::move(filters)](
+                        Resolve<std::string> const& resolve, Reject const& reject
+                      ) -> Promise<std::string, true> {
+      std::lock_guard lock{s__thread_mutex};
+      std::jthread    thread{[resolve = resolve.shared_from_this(),
+                              reject  = reject.shared_from_this(),
+                              filters = std::move(filters),
+                              value   = std::filesystem::path{ReplaceEnv(std::string{path})}]() {
+         ScopeExit _{[]() constexpr {
+            std::lock_guard lock{s__thread_mutex};
 
-                 auto it = s__threads.find(std::this_thread::get_id());
-                 assert(it != s__threads.end());
-                 it->second.detach();
-                 s__threads.erase(it);
-              }};
+            auto it = s__threads.find(std::this_thread::get_id());
+            assert(it != s__threads.end());
+            it->second.detach();
+            s__threads.erase(it);
+         }};
 
-              try {
-                 FileDialog fdialog{};
+         try {
+            FileDialog fdialog{};
 
-                 if constexpr (TYPE == Type::FILE) {
-                    std::vector<COMDLG_FILTERSPEC>                     file_types{};
-                    std::vector<std::pair<std::wstring, std::wstring>> wfilters;
+            if constexpr (TYPE == Type::FILE) {
+               std::vector<COMDLG_FILTERSPEC>                     file_types{};
+               std::vector<std::pair<std::wstring, std::wstring>> wfilters;
 
-                    for (auto const& filter : filters) {
-                       wfilters.emplace_back(
-                         utils::WidenString(filter.name_),
-                         utils::WidenString(
-                           filter.value_ | std::views::join_with(';')
-                           | std::ranges::to<std::string>()
-                         )
-                       );
-                    }
-                    for (auto const& wfilter : wfilters) {
-                       auto const& [name, filter] = wfilter;
-                       file_types.emplace_back(COMDLG_FILTERSPEC{name.c_str(), filter.c_str()});
-                    }
-                    fdialog.SetFileTypes(file_types);
-                 } else {
-                    fdialog.AddOptions(FOS_PICKFOLDERS);
-                 }
+               for (auto const& filter : filters) {
+                  wfilters.emplace_back(
+                    utils::WidenString(filter.name_),
+                    utils::WidenString(
+                      filter.value_ | std::views::join_with(';') | std::ranges::to<std::string>()
+                    )
+                  );
+               }
+               for (auto const& wfilter : wfilters) {
+                  auto const& [name, filter] = wfilter;
+                  file_types.emplace_back(COMDLG_FILTERSPEC{name.c_str(), filter.c_str()});
+               }
+               fdialog.SetFileTypes(file_types);
+            } else {
+               fdialog.AddOptions(FOS_PICKFOLDERS);
+            }
 
-                 if (std::filesystem::exists(value)) {
+            if (std::filesystem::exists(value)) {
 
-                    std::filesystem::path path{value};
-                    if (!std::filesystem::is_directory(path)) {
-                       path = path.parent_path();
-                    }
+               std::filesystem::path path{value};
+               if (!std::filesystem::is_directory(path)) {
+                  path = path.parent_path();
+               }
 
-                    fdialog.SetFolder(path);
-                 }
+               fdialog.SetFolder(path);
+            }
 
-                 if (!fdialog.Show()) {
-                    return reject->Apply<Exception>("FileDialog closed");
-                 }
+            if (!fdialog.Show()) {
+               return reject->Apply<Exception>("FileDialog closed");
+            }
 
-                 return (*resolve)(utils::NarrowString(fdialog.GetResult()));
-              } catch (...) {
-                 return (*reject)(std::current_exception());
-              }
-           }};
-           s__threads.emplace(thread.get_id(), std::move(thread));
-        }
+            return (*resolve)(utils::NarrowString(fdialog.GetResult()));
+         } catch (...) {
+            return (*reject)(std::current_exception());
+         }
+      }};
+      s__threads.emplace(thread.get_id(), std::move(thread));
 
-        co_return;
-     }
-   );
+      co_return;
+   };
 }
 }  // namespace
 

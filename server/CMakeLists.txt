@@ -47,7 +47,7 @@ target_link_libraries(server
     PRIVATE
         alx-home::webview
         alx-home::json
-        alx-home::promise
+        alx-home::jsprocpp
         vfrnav::common
         vfrnav::window
         msfs_sdk
