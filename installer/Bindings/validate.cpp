@@ -457,10 +457,12 @@ Main::Validate(
    if (co_await webview_.Call<bool>("start_program")) {
       webview_.Dispatch([this, installPath]() {
          win32::NewProcess(installPath + "\\msfs2024-vfrnav_server.exe", "--configure");
-         Abort()();
+         WPromise _{std::function<Promise<void>()>{std::bind(&Main::Abort, this)}};
       });
    } else {
-      webview_.Dispatch([this]() { Abort()(); });
+      webview_.Dispatch([this]() {
+         WPromise _{std::function<Promise<void>()>{std::bind(&Main::Abort, this)}};
+      });
    }
 
    co_return;

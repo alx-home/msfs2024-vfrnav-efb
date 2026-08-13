@@ -86,8 +86,9 @@ private:
 template <class... STR>
 void
 Main::Warning(STR&&... message) {
-   if constexpr ((sizeof...(STR) == 1)
-                 && !(std::is_constructible_v<std::string_view, STR> && ...)) {
+   if constexpr (
+     (sizeof...(STR) == 1) && !(std::is_constructible_v<std::string_view, STR> && ...)
+   ) {
       // message is already a vector
       webview_.Eval(
         R"(window.display_warning()" + js::Stringify(std::forward<STR>(message)...) + R"();)"
@@ -103,8 +104,9 @@ Main::Warning(STR&&... message) {
 template <class... STR>
 void
 Main::Error(STR&&... message) {
-   if constexpr ((sizeof...(STR) == 1)
-                 && !(std::is_constructible_v<std::string_view, STR> && ...)) {
+   if constexpr (
+     (sizeof...(STR) == 1) && !(std::is_constructible_v<std::string_view, STR> && ...)
+   ) {
       // message is already a vector
       webview_.Eval(
         R"(window.display_error()" + js::Stringify(std::forward<STR>(message)...) + R"();)"
@@ -120,8 +122,9 @@ Main::Error(STR&&... message) {
 template <class... STR>
 void
 Main::Fatal(STR&&... message) {
-   if constexpr ((sizeof...(STR) == 1)
-                 && !(std::is_constructible_v<std::string_view, STR> && ...)) {
+   if constexpr (
+     (sizeof...(STR) == 1) && !(std::is_constructible_v<std::string_view, STR> && ...)
+   ) {
       // message is already a vector
       webview_.Eval(
         R"(window.display_fatal()" + js::Stringify(std::forward<STR>(message)...) + R"();)"
@@ -137,8 +140,9 @@ Main::Fatal(STR&&... message) {
 template <class... STR>
 void
 Main::Info(STR&&... message) {
-   if constexpr ((sizeof...(STR) == 1)
-                 && !(std::is_constructible_v<std::string_view, STR> && ...)) {
+   if constexpr (
+     (sizeof...(STR) == 1) && !(std::is_constructible_v<std::string_view, STR> && ...)
+   ) {
       // message is already a vector
       webview_.Eval(
         R"(window.display_info()" + js::Stringify(std::forward<STR>(message)...) + R"();)"

@@ -20,16 +20,20 @@
 
 std::string
 FindCommunity() {
-   if (std::string const steam =
-         ReplaceEnv(R"(%AppData%\Microsoft Flight Simulator 2024\Packages\Community)");
-       std::filesystem::exists(steam)) {
+   if (
+     std::string const steam =
+       ReplaceEnv(R"(%AppData%\Microsoft Flight Simulator 2024\Packages\Community)");
+     std::filesystem::exists(steam)
+   ) {
       return steam + "\\alexhome-msfs2024-vfrnav";
    }
 
-   if (std::string const msStore = ReplaceEnv(
-         R"(%LocalAppData%\Packages\Microsoft.Limitless_8wekyb3d8bbwe\LocalCache\Packages\Community)"
-       );
-       std::filesystem::exists(msStore)) {
+   if (
+     std::string const msStore = ReplaceEnv(
+       R"(%LocalAppData%\Packages\Microsoft.Limitless_8wekyb3d8bbwe\LocalCache\Packages\Community)"
+     );
+     std::filesystem::exists(msStore)
+   ) {
       return msStore + R"(\alexhome-msfs2024-vfrnav)";
    }
 
