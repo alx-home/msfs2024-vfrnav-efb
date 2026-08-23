@@ -45,6 +45,10 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
   private readonly messageHandle = (message: MessageType) => { messageHandler?.send(message) };
   private resizeCallback: (() => void) | undefined = undefined;
+  private resizeEnabled = true;
+  private readonly resizeTimeouts = new Set<number>();
+  private readonly resizeStyles = new Map<HTMLElement, Map<string, { value: string; priority: string }>>();
+  private hiddenResizeContent: { element: HTMLElement; display: string; priority: string } | undefined;
   private widthRatio = 1;
   private heightRatio = 1;
   private captionBar = true;
@@ -71,6 +75,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     const resizeData = GetStoredData(`efb-resize`);
     if (resizeData) {
       const resize = JSON.parse(resizeData as string);
+
+      this.resizeEnabled = resize.enabled ?? true;
       this.captionBar = resize.captionBar ?? true;
       this.xRatio = resize.x ?? 0;
       this.yRatio = resize.y ?? 0;
@@ -88,6 +94,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     messageHandler!.send({
       __SET_PANEL_SIZE__: true,
 
+      enabled: this.resizeEnabled,
       captionBar: this.captionBar,
       x: this.xRatio,
       y: this.yRatio,
@@ -176,7 +183,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     messageHandler!.send(message);
   }
 
-  onSetPanelSize({ width, height, x, y, dpiScale, menuDpiScale, borderScale, captionBar }: SetPanelSize) {
+  onSetPanelSize({ enabled, width, height, x, y, dpiScale, menuDpiScale, borderScale, captionBar }: SetPanelSize) {
+    this.resizeEnabled = enabled;
     this.captionBar = captionBar;
     this.xRatio = x;
     this.yRatio = y;
@@ -187,6 +195,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     this.menuDpiScale = menuDpiScale;
 
     SetStoredData(`efb-resize`, JSON.stringify({
+      enabled: this.resizeEnabled,
       width: this.widthRatio,
       height: this.heightRatio,
       x: this.xRatio,
@@ -196,7 +205,12 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       menuDpiScale: this.menuDpiScale,
       captionBar: this.captionBar
     }));
-    this.resizeCallback?.();
+
+    if (this.resizeEnabled) {
+      this.addResizeCallback();
+    } else {
+      this.disableResize();
+    }
   }
 
   onFuelPresets(message: FuelPresets) {
@@ -224,12 +238,7 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
   destroy(): void {
-    if (this.resizeCallback) {
-      window.removeEventListener('resize', this.resizeCallback as () => void);
-      this.onHideObserver?.disconnect();
-      this.onHideObserver = undefined;
-      this.resizeCallback = undefined;
-    }
+    this.disableResize();
 
     this.stopListenMouseMove();
     this.stopListenMouseUp();
@@ -283,36 +292,100 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
   }
 
 
+  private rememberResizeStyles(element: HTMLElement, properties: string[]): void {
+    let styles = this.resizeStyles.get(element);
+    if (!styles) {
+      styles = new Map();
+      this.resizeStyles.set(element, styles);
+    }
+
+    for (const property of properties) {
+      if (!styles.has(property)) {
+        styles.set(property, {
+          value: element.style.getPropertyValue(property),
+          priority: element.style.getPropertyPriority(property)
+        });
+      }
+    }
+  }
+
+  private restoreResizeContent(): void {
+    if (this.hiddenResizeContent) {
+      const { element, display, priority } = this.hiddenResizeContent;
+      element.style.setProperty('display', display, priority);
+      this.hiddenResizeContent = undefined;
+    }
+  }
+
+  public disableResize = () => {
+    if (this.resizeCallback) {
+      window.removeEventListener('resize', this.resizeCallback);
+      this.resizeCallback = undefined;
+    }
+    this.onHideObserver?.disconnect();
+    this.onHideObserver = undefined;
+
+    for (const timeout of this.resizeTimeouts) {
+      window.clearTimeout(timeout);
+    }
+    this.resizeTimeouts.clear();
+
+    this.resizing = undefined;
+    this.restoreResizeContent();
+    this.resizeOutline?.remove();
+    this.resizeOutline = null;
+
+    for (const [element, styles] of this.resizeStyles) {
+      for (const [property, { value, priority }] of styles) {
+        element.style.setProperty(property, value, priority);
+      }
+    }
+    this.resizeStyles.clear();
+  }
+
   public addResizeCallback = () => {
+    if (!this.resizeEnabled) {
+      this.disableResize();
+      return;
+    }
+
     if (!this.resizeCallback) {
       this.resizeCallback = () => {
         // Delay to ensure EFB is fully loaded
-        setTimeout(() => {
+        const timeout = window.setTimeout(() => {
+          this.resizeTimeouts.delete(timeout);
           const hidden = (document.body.firstElementChild as HTMLElement || null)?.classList.contains('panel-ui-actions--hidden') ?? true;
           const mode = this.props.settings.getSetting('mode').value === 0 ? '2D' : '3D';
 
-          if (mode == '2D' && hidden) {
+          if (mode === '2D' && hidden) {
             return;
           }
 
           const orientation = this.props.settings.getSetting('orientationMode').value === 0 ? 'vertical' : 'horizontal';
-          const viewportWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
-          const viewportHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
-          const panelWidth = Math.floor(viewportWidth * (mode == '2D' ? this.widthRatio : 1));
-          const panelHeight = Math.floor(viewportHeight * (mode == '2D' ? this.heightRatio : 1));
-          const panelOffsetX = Math.floor((viewportWidth - panelWidth)) * (mode == '2D' ? this.xRatio : 0);
-          const panelOffsetY = Math.floor((viewportHeight - panelHeight)) * (mode == '2D' ? this.yRatio : 0);
+          const viewportWidth = Number.parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'), 10);
+          const viewportHeight = Number.parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'), 10);
+          const panelWidth = Math.floor(viewportWidth * (mode === '2D' ? this.widthRatio : 1));
+          const panelHeight = Math.floor(viewportHeight * (mode === '2D' ? this.heightRatio : 1));
+          const panelOffsetX = Math.floor((viewportWidth - panelWidth)) * (mode === '2D' ? this.xRatio : 0);
+          const panelOffsetY = Math.floor((viewportHeight - panelHeight)) * (mode === '2D' ? this.yRatio : 0);
 
           for (const element of document.body.children) {
+            this.rememberResizeStyles(element as HTMLElement, ['--panel-width', '--panel-height', '--orientation', '--mode']);
+
             (element as HTMLElement).style.setProperty('--panel-width', panelWidth.toFixed(0));
             (element as HTMLElement).style.setProperty('--panel-height', panelHeight.toFixed(0));
             (element as HTMLElement).style.setProperty('--orientation', orientation);
             (element as HTMLElement).style.setProperty('--mode', mode);
           }
 
-          this.elementRef.getOrDefault()?.contentWindow?.document.documentElement.style.setProperty('--dpi-scale', mode == '2D' ? (this.menuDpiScale / (this.dpiScale * this.widthRatio)).toString() : '1');
-          this.elementRef.getOrDefault()?.contentWindow?.document.documentElement.style.setProperty('--resize-ratio', mode == '2D' ? this.widthRatio.toFixed(2) : '1');
-          this.elementRef.getOrDefault()?.contentWindow?.document.documentElement.style.setProperty('--font-size', mode == '2D' ? (this.dpiScale * 100).toFixed(0) + '%' : '100%');
+          const iframeRoot = this.elementRef.getOrDefault()?.contentWindow?.document.documentElement;
+          if (iframeRoot) {
+            this.rememberResizeStyles(iframeRoot, ['--dpi-scale', '--resize-ratio', '--font-size']);
+
+            iframeRoot.style.setProperty('--dpi-scale', mode === '2D' ? (this.menuDpiScale / (this.dpiScale * this.widthRatio)).toString() : '1');
+            iframeRoot.style.setProperty('--resize-ratio', mode === '2D' ? this.widthRatio.toFixed(2) : '1');
+            iframeRoot.style.setProperty('--font-size', mode === '2D' ? (this.dpiScale * 100).toFixed(0) + '%' : '100%');
+          }
 
           const firstChild: HTMLElement | null = document.body.querySelector('.panel-ui-actions');
           const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
@@ -321,6 +394,12 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
 
           if (firstChild && lastChild) {
+            this.rememberResizeStyles(firstChild, ['display', 'margin-right', 'transform']);
+            this.rememberResizeStyles(lastChild, [
+              '--border-width', 'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width',
+              'border-top-left-radius', 'border-top-right-radius', 'border-bottom-right-radius', 'border-bottom-left-radius',
+              'border-image-width', 'transform'
+            ]);
             const borderWidth = document.body.style.getPropertyValue('--border-width');
 
             if (this.captionBar) {
@@ -332,13 +411,13 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
             firstChild.style.marginRight = (viewportWidth - panelWidth).toFixed(0) + "px";
             firstChild.style.transform = `translate(${panelOffsetX.toFixed(0)}px, ${panelOffsetY.toFixed(0)}px)`;
 
-            lastChild.style.setProperty('--border-width', (this.borderScale * parseInt(borderWidth)).toFixed(2));
+            lastChild.style.setProperty('--border-width', (this.borderScale * Number.parseInt(borderWidth, 10)).toFixed(2));
             lastChild.style.borderWidth = `calc(1px * ${this.borderScale} * var(--border-height)) calc(1px * var(--border-width))`;
             lastChild.style.borderRadius = `calc(var(--tablet-border-radius) * ${this.borderScale})`;
             lastChild.style.borderImageWidth = `calc(22px * ${this.borderScale})`;
             lastChild.style.transform = `translate(${panelOffsetX.toFixed(0)}px, ${panelOffsetY.toFixed(0)}px)`;
 
-            if ((mode == '2D') && this.resizing) {
+            if ((mode === '2D') && this.resizing) {
               if (!this.resizeOutline) {
                 this.resizeOutline = document.createElement('div');
 
@@ -354,25 +433,35 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
                 this.resizeOutline.style.width = viewportWidth.toFixed(0) + "px";
                 this.resizeOutline.className = 'efb-resize-outline';
 
-                this.resizeOutline.style.top = lastChild.offsetTop + window.scrollY + "px";
-                this.resizeOutline.style.left = lastChild.offsetLeft + window.scrollX + "px";
+                this.resizeOutline.style.top = `${lastChild.offsetTop + window.scrollY}px`;
+                this.resizeOutline.style.left = `${lastChild.offsetLeft + window.scrollX}px`;
 
                 document.body.appendChild(this.resizeOutline);
               }
             } else if (this.resizeOutline) {
-              document.body.removeChild(this.resizeOutline);
+              this.resizeOutline.remove();
               this.resizeOutline = null;
             }
           }
         }, 100);
+        this.resizeTimeouts.add(timeout);
       };
 
-      window.addEventListener('resize', this.resizeCallback as () => void);
+      window.addEventListener('resize', this.resizeCallback);
+      const firstChild = document.body.querySelector('.panel-ui-actions');
+      if (firstChild) {
+        this.onHideObserver = new MutationObserver(() => {
+          this.resizeCallback?.();
+        });
+        this.onHideObserver.observe(firstChild, { attributes: true, attributeFilter: ['class'] });
+      }
     }
+
+    this.resizeCallback?.();
   };
 
-  private mouseMoveCallback(event: MouseEvent) {
-    if (this.resizing) {
+  private readonly mouseMoveCallback = (event: MouseEvent) => {
+    if (this.resizing && this.resizeEnabled) {
       event.stopPropagation();
 
       if ((this.resizing.x === undefined) || (this.resizing.y === undefined)) {
@@ -382,12 +471,14 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
       const deltaX = event.pageX - this.resizing.x;
       const deltaY = event.pageY - this.resizing.y;
-      const panelWidth = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'));
-      const panelHeight = parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'));
+      const panelWidth = Number.parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-width'), 10);
+      const panelHeight = Number.parseInt(window.getComputedStyle(document.body).getPropertyValue('--panel-height'), 10);
 
       if (this.resizing.type === 'move') {
         this.setPanelSize({
           __SET_PANEL_SIZE__: true,
+
+          enabled: this.resizeEnabled,
           captionBar: this.captionBar,
           x: Math.max(0, Math.min(1.0, this.resizing.xRatio + deltaX / (panelWidth - this.resizing.widthRatio * panelWidth))),
           y: Math.max(0, Math.min(1.0, this.resizing.yRatio + deltaY / (panelHeight - this.resizing.heightRatio * panelHeight))),
@@ -411,6 +502,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
         this.setPanelSize({
           __SET_PANEL_SIZE__: true,
+
+          enabled: this.resizeEnabled,
           captionBar: this.captionBar,
           x: Math.max(0, Math.min(1.0, x)),
           y: Math.max(0, Math.min(1.0, y)),
@@ -422,42 +515,43 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
         });
       }
     }
-  }
+  };
 
-  private canDragCallback(event: MouseEvent) {
-    Coherent.trigger("CAN_DRAG", !event.ctrlKey && !event.shiftKey && event.altKey && !this.resizing);
-  }
+  private readonly canDragCallback = (event: MouseEvent) => {
+    if (this.resizeEnabled) {
+      Coherent.trigger("CAN_DRAG", !event.ctrlKey && !event.shiftKey && event.altKey && !this.resizing);
+    }
+  };
 
   public listenCanDrag = () => {
     const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
-    lastChild?.addEventListener('mousemove', this.canDragCallback.bind(this));
-    this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mousemove', this.canDragCallback.bind(this));
+    lastChild?.addEventListener('mousemove', this.canDragCallback);
+    this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mousemove', this.canDragCallback);
   };
 
   private stopListenCanDrag(): void {
-    if (this.canDragCallback) {
-      const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
-      lastChild?.removeEventListener('mousemove', this.canDragCallback);
-      this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mousemove', this.canDragCallback);
-    }
+    const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
+    lastChild?.removeEventListener('mousemove', this.canDragCallback);
+    this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mousemove', this.canDragCallback);
   }
 
   private listenMouseMove(): void {
     const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
-    lastChild?.addEventListener('mousemove', this.mouseMoveCallback.bind(this), { capture: true });
+    lastChild?.addEventListener('mousemove', this.mouseMoveCallback, { capture: true });
   }
 
   private stopListenMouseMove(): void {
     const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
-    lastChild?.removeEventListener('mousemove', this.mouseMoveCallback);
+    lastChild?.removeEventListener('mousemove', this.mouseMoveCallback, { capture: true });
   }
 
 
-  private mouseUpCallback(event: MouseEvent) {
+  private readonly mouseUpCallback = (event: MouseEvent) => {
     this.resizing = undefined;
 
-    const efb = document.body.querySelector('.panel-ui')!.firstChild as HTMLElement;
-    efb.style.display = "";
+    if (!this.resizeEnabled) {
+      return;
+    }
 
     if (event.button !== 2) {
       return;
@@ -470,6 +564,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
         this.setPanelSize({
           __SET_PANEL_SIZE__: true,
+
+          enabled: this.resizeEnabled,
           captionBar: true,
           x: 0,
           y: 0,
@@ -488,27 +584,31 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
         location.reload();
       }
     }
-  }
+  };
 
   public listenMouseUp = () => {
     const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
-    lastChild?.addEventListener('mouseup', this.mouseUpCallback.bind(this), { capture: true });
-    this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mouseup', this.mouseUpCallback.bind(this), { capture: true });
+    lastChild?.addEventListener('mouseup', this.mouseUpCallback, { capture: true });
+    this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mouseup', this.mouseUpCallback, { capture: true });
   };
 
   private stopListenMouseUp(): void {
-    if (this.mouseUpCallback) {
-      const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
-      lastChild?.removeEventListener('mouseup', this.mouseUpCallback);
-      this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mouseup', this.mouseUpCallback);
+    const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
+    lastChild?.removeEventListener('mouseup', this.mouseUpCallback, { capture: true });
+    this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mouseup', this.mouseUpCallback, { capture: true });
+  }
+
+  private readonly mouseOutCallback = () => {
+    if (this.resizeEnabled) {
+      Coherent.trigger("CAN_DRAG", false);
     }
-  }
+  };
 
-  private mouseOutCallback() {
-    Coherent.trigger("CAN_DRAG", false);
-  }
+  private readonly mouseDownCallback = (event: MouseEvent) => {
+    if (!this.resizeEnabled || !this.resizeCallback || this.resizing) {
+      return;
+    }
 
-  private mouseDownCallback(event: MouseEvent) {
     const resizing = event.ctrlKey && event.shiftKey && !event.altKey && (event.button === 0);
     const moving = event.ctrlKey && !event.shiftKey && !event.altKey && (event.button === 0);
 
@@ -518,6 +618,11 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
 
       // Disable efb to avoid iframe capturing mouse events
       const efb = document.body.querySelector('.panel-ui')!.firstChild as HTMLElement;
+      this.hiddenResizeContent = {
+        element: efb,
+        display: efb.style.getPropertyValue('display'),
+        priority: efb.style.getPropertyPriority('display')
+      };
       efb.style.display = "none";
 
       this.resizing = {
@@ -530,24 +635,22 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
         type: resizing ? 'resize' : 'move'
       };
     }
-  }
+  };
 
   private listenMouseDown(): void {
     const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
 
-    this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mousedown', this.mouseDownCallback.bind(this), { capture: true });
-    lastChild?.addEventListener('mousedown', this.mouseDownCallback.bind(this), { capture: true });
-    lastChild?.addEventListener('mouseout', this.mouseOutCallback.bind(this));
+    this.elementRef.getOrDefault()?.contentWindow?.document.body.addEventListener('mousedown', this.mouseDownCallback, { capture: true });
+    lastChild?.addEventListener('mousedown', this.mouseDownCallback, { capture: true });
+    lastChild?.addEventListener('mouseout', this.mouseOutCallback);
   }
 
   private stopListenMouseDown(): void {
-    if (this.mouseDownCallback) {
-      const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
+    const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
 
-      this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mousedown', this.mouseDownCallback);
-      lastChild?.removeEventListener('mousedown', this.mouseDownCallback);
-      lastChild?.removeEventListener('mouseout', this.mouseOutCallback);
-    }
+    this.elementRef.getOrDefault()?.contentWindow?.document.body.removeEventListener('mousedown', this.mouseDownCallback, { capture: true });
+    lastChild?.removeEventListener('mousedown', this.mouseDownCallback, { capture: true });
+    lastChild?.removeEventListener('mouseout', this.mouseOutCallback);
   }
 
   public onAfterRender(): void {
@@ -565,13 +668,6 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     const lastChild: HTMLElement | null = document.body.querySelector('.panel-ui');
     console.assert(firstChild !== null);
     console.assert(lastChild !== null);
-
-    if (firstChild && !this.onHideObserver) {
-      this.onHideObserver = new MutationObserver(() => {
-        this.resizeCallback?.();
-      });
-      this.onHideObserver.observe(firstChild, { attributes: true, attributeFilter: ['class'] });
-    }
 
     if (messageHandler === undefined) {
       messageHandler = new MessageHandler(this.elementRef.instance);
@@ -607,6 +703,20 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__DEFAULT_DEVIATION_PRESET__", this.onDefaultDeviationPreset.bind(this))
       messageHandler.subscribe("__DEVIATION_CURVE__", this.onDeviationCurve.bind(this))
       messageHandler.subscribe("__DEVIATION_PRESETS__", this.onDeviationPresets.bind(this))
+
+      messageHandler.send({
+        __SET_PANEL_SIZE__: true,
+
+        enabled: this.resizeEnabled,
+        captionBar: this.captionBar,
+        x: this.xRatio,
+        y: this.yRatio,
+        width: this.widthRatio,
+        height: this.heightRatio,
+        borderScale: this.borderScale,
+        dpiScale: this.dpiScale,
+        menuDpiScale: this.menuDpiScale
+      });
     }
   }
 

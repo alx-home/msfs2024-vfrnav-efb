@@ -142,12 +142,9 @@ export class VfrNavApp extends App {
    * @param _props props used when app has been setted up.
    * @returns Promise<void>
    */
-  public async install(props: AppInstallProps): Promise<void> {
+  public async install(_props: AppInstallProps): Promise<void> {
     this.efbSettingsManager.addAppToFavorites(this);
     this.manager = new Manager(this.bus);
-
-    console.assert(props.bus);
-    return Promise.resolve();
   }
 
   /**

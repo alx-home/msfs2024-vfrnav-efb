@@ -104,6 +104,7 @@ export const CleanupRecordsPopup = ({ resolve }: {
 
 export const SettingsPage = () => {
    const setPopup = useSettings(settings => settings.setPopup);
+   const [enabled, setEnabled] = useState(true);
    const [advanced, setAdvanced] = useState(false);
    const [panelWidth, setPanelWidth] = useState(1);
    const [panelHeight, setPanelHeight] = useState(1);
@@ -113,7 +114,6 @@ export const SettingsPage = () => {
    const [menuDpi, setMenuDpi] = useState(1);
    const [borderScale, setBorderScale] = useState(1);
    const [showEFBCaption, setShowEFBCaption] = useState(true);
-   const [initialized, setInitialized] = useState(false);
    const [warned, setWarned] = useState(false);
 
    const warn = useCallback(async () => {
@@ -132,20 +132,19 @@ export const SettingsPage = () => {
 
    const sendEfbSize = useBatch(() => {
       if (__MSFS_EMBEDED__) {
-         if (initialized) {
-            messageHandler.send({
-               __SET_PANEL_SIZE__: true,
+         messageHandler.send({
+            __SET_PANEL_SIZE__: true,
 
-               x: panelOffsetX,
-               y: panelOffsetY,
-               width: panelWidth,
-               height: panelHeight,
-               borderScale: borderScale,
-               dpiScale: dpiScale,
-               menuDpiScale: menuDpi,
-               captionBar: showEFBCaption
-            });
-         }
+            enabled,
+            x: panelOffsetX,
+            y: panelOffsetY,
+            width: panelWidth,
+            height: panelHeight,
+            borderScale,
+            dpiScale,
+            menuDpiScale: menuDpi,
+            captionBar: showEFBCaption
+         });
       }
    });
 
@@ -190,6 +189,11 @@ export const SettingsPage = () => {
       sendEfbSize();
    });
 
+   const setEnabledCallback = useEvent(async (value: boolean) => {
+      setEnabled(value);
+      sendEfbSize();
+   });
+
    const cleanupPlaneRecords = useEvent(async () => {
       const promise = new Promise<void>(resolve => {
          setPopup(<CleanupRecordsPopup resolve={resolve} />);
@@ -201,6 +205,7 @@ export const SettingsPage = () => {
 
    useEffect(() => {
       const callback = (msg: SetPanelSize) => {
+         setEnabled(msg.enabled);
          setPanelOffsetX(msg.x);
          setPanelOffsetY(msg.y);
          setPanelWidth(msg.width);
@@ -208,12 +213,11 @@ export const SettingsPage = () => {
          setBorderScale(msg.borderScale);
          setDpiScale(msg.dpiScale);
          setMenuDpi(msg.menuDpiScale);
-         setInitialized(true);
       }
       messageHandler.subscribe("__SET_PANEL_SIZE__", callback);
 
       return () => messageHandler.unsubscribe("__SET_PANEL_SIZE__", callback);
-   }, [setInitialized, setPanelOffsetX, setPanelOffsetY, setPanelWidth, setPanelHeight, setBorderScale, setDpiScale, setMenuDpi]);
+   }, [setPanelOffsetX, setPanelOffsetY, setPanelWidth, setPanelHeight, setBorderScale, setDpiScale, setMenuDpi, setEnabled]);
 
    return <div className="flex grow justify-center m-2 p-4">
       <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col "
@@ -229,6 +233,9 @@ export const SettingsPage = () => {
             {
                __MSFS_EMBEDED__ &&
                <Group name="EFB">
+                  <CheckItem category="Panel" name="Enabled" value={enabled} onChange={setEnabledCallback} defaultValue={true} >
+                     Enable or disable the EFB panel resize tweaks.
+                  </CheckItem>
                   <CheckItem category="Panel" name="EFB Caption bar" value={showEFBCaption} onChange={setShowEFBCaptionCallback} defaultValue={true} >
                      Show the EFB caption bar.
                   </CheckItem>
