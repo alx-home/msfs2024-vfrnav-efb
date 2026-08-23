@@ -17,27 +17,9 @@
          "type": "cppvsdbg",
          "request": "launch",
          "program": "${workspaceFolder}/build/server/msfs2024-vfrnav_server.exe",
-         "args": ["--configure"],
-         "stopAtEntry": false,
-         "cwd": "${workspaceFolder}",
-         "environment": [
-            {
-               "name": "ASAN_OPTIONS",
-               "value": "halt_on_error=1:verbosity=1:check_initialization_order=1:detect_leaks=0:detect_stack_use_after_return=1:alloc_dealloc_mismatch=1:detect_invalid_pointer_pairs=1:strict_string_checks=1:print_summary=1"
-            },
-            {
-               "name": "ASAN_SYMBOLIZER_PATH",
-               "value": "C:/Program Files/LLVM/bin/llvm-symbolizer.exe"
-            }
+         "args": [
+            "--configure"
          ],
-         "console": "integratedTerminal"
-      },
-      {
-         "name": "(Windows) Launch promise_test",
-         "type": "cppvsdbg",
-         "request": "launch",
-         "program": "${workspaceFolder}/build/_deps/promise-build/test/promise_test.exe",
-         "args": [],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",
          "environment": [

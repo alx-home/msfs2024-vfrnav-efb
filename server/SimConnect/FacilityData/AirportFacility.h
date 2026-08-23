@@ -63,19 +63,20 @@ struct AirportData : ProcessorImpl<AirportData> {
 
       std::string GetDesignatorString(Designator designator) const {
          switch (designator) {
-            case Designator::NONE:
+            using enum smc::facility::AirportData::Runway::Designator;
+            case NONE:
                return "";
-            case Designator::LEFT:
+            case LEFT:
                return "L";
-            case Designator::RIGHT:
+            case RIGHT:
                return "R";
-            case Designator::CENTER:
+            case CENTER:
                return "C";
-            case Designator::WATER:
+            case WATER:
                return "W";
-            case Designator::A:
+            case A:
                return "A";
-            case Designator::B:
+            case B:
                return "B";
             default:
                return "?";

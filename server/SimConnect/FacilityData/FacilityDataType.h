@@ -26,11 +26,15 @@
 namespace smc::facility {
 
 template <class CLASS, class T>
-struct _m : std::tuple<std::string_view, T CLASS::*> {
+struct Member : std::tuple<std::string_view, T CLASS::*> {
    using std::tuple<std::string_view, T CLASS::*>::tuple;
 };
+
 template <class CLASS, class T>
-_m(std::string_view name, T CLASS::* member) -> _m<CLASS, T>;
+constexpr auto
+_m(std::string_view name, T CLASS::* member) {
+   return Member<CLASS, T>{name, member};
+}
 
 struct Processor;
 using ProcessorReturn = std::tuple<std::shared_ptr<Processor>, std::string>;
@@ -58,23 +62,23 @@ private:
 
 namespace std {
 template <class CLASS, class T>
-struct tuple_size<smc::facility::_m<CLASS, T>> : std::integral_constant<size_t, 2> {};
+struct tuple_size<smc::facility::Member<CLASS, T>> : std::integral_constant<size_t, 2> {};
 
 template <size_t INDEX, class CLASS, class T>
 constexpr auto&
-get(smc::facility::_m<CLASS, T>& member) noexcept {
+get(smc::facility::Member<CLASS, T>& member) noexcept {
    return std::get<INDEX>(static_cast<std::tuple<std::string_view, T CLASS::*> const&>(member));
 }
 
 template <size_t INDEX, class CLASS, class T>
 constexpr auto const&
-get(smc::facility::_m<CLASS, T> const& member) noexcept {
+get(smc::facility::Member<CLASS, T> const& member) noexcept {
    return std::get<INDEX>(static_cast<std::tuple<std::string_view, T CLASS::*> const&>(member));
 }
 
 template <size_t INDEX, class CLASS, class T>
-struct tuple_element<INDEX, smc::facility::_m<CLASS, T>> {
+struct tuple_element<INDEX, smc::facility::Member<CLASS, T>> {
    using type =
-     std::remove_cvref_t<decltype(get<INDEX>(std::declval<smc::facility::_m<CLASS, T>&>()))>;
+     std::remove_cvref_t<decltype(get<INDEX>(std::declval<smc::facility::Member<CLASS, T>&>()))>;
 };
 }  // namespace std

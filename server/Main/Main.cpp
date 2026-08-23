@@ -48,7 +48,6 @@
 #include <stop_token>
 #include <string_view>
 #include <thread>
-#include <atltypes.h>
 
 using namespace std::chrono_literals;
 
@@ -140,7 +139,7 @@ Main::OnTrayNotification(WPARAM wParam, LPARAM lParam) {
    }
 
    if (LOWORD(lParam) == WM_RBUTTONUP) {
-      CPoint pos;
+      POINT pos;
       GetCursorPos(&pos);
 
       taskbar_.SetPos(pos.x, pos.y - taskbar_.Height());
@@ -154,7 +153,7 @@ Main::OnTrayNotification(WPARAM wParam, LPARAM lParam) {
 
 LRESULT
 Main::OnMessageImpl(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam) {
-   CPoint cpos;
+   POINT cpos;
    GetCursorPos(&cpos);
    if (msg == MF_MOUSE_EVENT && (wParam == WM_LBUTTONUP || wParam == WM_RBUTTONUP)) {
       webview::Pos const pos{.x_ = cpos.x, .y_ = cpos.y};
