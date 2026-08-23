@@ -15,14 +15,15 @@
 
 import { useKeyUp } from "@alx-home/Events";
 import { Button, Input } from "@alx-home/Utils";
-import { SettingsContext } from "@Settings/SettingsProvider";
-import { useContext, useEffect, useState, useCallback } from 'react';
+import { useSettings } from "@Settings/SettingsStore";
+import { useEffect, useState, useCallback } from 'react';
 
 export const EditPresetPopup = ({ validate, current }: {
    validate: (_name: string) => void,
    current: string
 }) => {
-   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+   const setPopup = useSettings(settings => settings.setPopup);
+   const emptyPopup = useSettings(settings => settings.emptyPopup);
    const [name, setName] = useState('')
    const key = useKeyUp();
 

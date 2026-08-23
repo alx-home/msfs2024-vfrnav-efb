@@ -16,10 +16,10 @@
 import { Draggable, Scroll } from "@alx-home/Utils";
 
 import { GlobalSettings, LayerSettingSetter } from "@Settings/Settings";
-import { SettingsContext } from "@Settings/SettingsProvider";
+import { useSettings } from "@Settings/SettingsStore";
 import { LayerSetting } from "@shared/Settings";
 
-import { CSSProperties, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export interface Layer {
   src: string;
@@ -31,8 +31,7 @@ export interface Layer {
 
 const LayerComp = ({ src, alt, getSettings, reduced }:
   Readonly<Layer>) => {
-  const settings = useContext(SettingsContext)!;
-  const layerSettings = useMemo(() => getSettings(settings), [getSettings, settings]);
+  const layerSettings = useSettings(getSettings);
 
   const [transition, setTransition] = useState(false);
   const ref = useRef<HTMLButtonElement | null>(null);

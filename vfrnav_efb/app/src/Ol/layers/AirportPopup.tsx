@@ -13,8 +13,8 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { PropsWithChildren, useContext, useEffect, useMemo, useState, ReactElement, useCallback, useRef } from 'react';
-import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
+import { PropsWithChildren, useEffect, useMemo, useState, ReactElement, useCallback, useRef } from 'react';
+import { messageHandler, useSettings } from "@Settings/SettingsStore";
 
 import { Tabs, Button, Scroll } from '@alx-home/Utils';
 import { useKeyUp } from "@alx-home/Events";
@@ -187,7 +187,11 @@ const Fuels = ({ data }: {
 const Charts = ({ data }: {
    data: AirportFacility
 }) => {
-   const { getSIAPDF, addPdfRef, setPopup, emptyPopup, setPage } = useContext(SettingsContext)!;
+   const getSIAPDF = useSettings(settings => settings.getSIAPDF);
+   const addPdfRef = useSettings(settings => settings.addPdfRef);
+   const setPopup = useSettings(settings => settings.setPopup);
+   const emptyPopup = useSettings(settings => settings.emptyPopup);
+   const setPage = useSettings(settings => settings.setPage);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<boolean>(false);
    const [errorMsg, setErrorMsg] = useState<string | undefined>();
@@ -363,7 +367,8 @@ const TabElem = ({ tab, currentTab, children }: PropsWithChildren<{
 export const AirportPopup = ({ data }: {
    data: AirportFacility
 }) => {
-   const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+   const setPopup = useSettings(settings => settings.setPopup);
+   const emptyPopup = useSettings(settings => settings.emptyPopup);
    const key = useKeyUp();
 
    console.assert(data.airspaceType > 1 && data.airspaceType < 9 || data.airspaceType === 0)

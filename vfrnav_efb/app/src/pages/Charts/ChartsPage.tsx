@@ -17,11 +17,11 @@ import { Scroll, Button } from "@alx-home/Utils";
 import { Chart, registerables } from 'chart.js';
 import 'chartjs-plugin-dragdata';
 
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ChartsPopup } from "./Popup";
 import { ExportPdfs, PdfBlob } from "@shared/Pdfs";
-import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
+import { messageHandler, useSettings } from "@Settings/SettingsStore";
 import { Pdf } from "@Utils/Pdf";
 import { useEFBServer } from "@Utils/useServer";
 
@@ -38,7 +38,8 @@ export type Src = {
 };
 
 export const ChartsPage = () => {
-  const { setPopup, addPdfRef } = useContext(SettingsContext)!;
+  const setPopup = useSettings(settings => settings.setPopup);
+  const addPdfRef = useSettings(settings => settings.addPdfRef);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const efbConnected = useEFBServer();
 

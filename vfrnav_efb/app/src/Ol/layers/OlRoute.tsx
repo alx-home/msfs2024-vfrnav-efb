@@ -26,7 +26,7 @@ import { FeatureLike } from "ol/Feature";
 import Style from "ol/style/Style";
 import { Coordinate, rotate } from "ol/coordinate";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState, memo } from 'react';
-import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
+import { messageHandler, useSettings } from "@Settings/SettingsStore";
 import { MapContext } from "@pages/Map/MapContext";
 
 import greenMarker from '@efb-images/marker-icon-green.svg';
@@ -38,7 +38,7 @@ import { useEvent } from "react-use-event-hook";
 
 
 const useMap = () => {
-   const { defaultSpeed } = useContext(SettingsContext)!;
+   const defaultSpeed = useSettings(settings => settings.defaultSpeed);
    const { map, navData, setNavData, counterRef, updateNavProps } = useContext(MapContext)!;
    const [modify, setModify] = useState<Modify>();
    const [snap, setSnap] = useState<Snap>();
@@ -344,7 +344,7 @@ export const OlRouteLayer = memo(function OlRouteLayer({
    zIndex: number
 } & OlLayerProp) {
    const { setNavData, map, setCancel, navData, updateNavProps, setFuelCurve, updateFuelPreset, setFuelUnit, setDeviationCurve, updateDeviationPreset, importNavRef } = useContext(MapContext)!;
-   const settings = useContext(SettingsContext)!;
+   const mapSettings = useSettings(settings => settings.map);
 
    const { source, layer, initFeature, setFeatures, setActiveFeatures } = useMap();
    const { draw } = useDraw(source);
@@ -421,7 +421,7 @@ export const OlRouteLayer = memo(function OlRouteLayer({
                         angle -= 360;
                      }
 
-                     const offset = ((angle < 0 && angle < -90) || (angle > 0 && angle < 90)) ? -settings.map.markerSize * 0.25 : settings.map.markerSize * 0.25;
+                     const offset = ((angle < 0 && angle < -90) || (angle > 0 && angle < 90)) ? -mapSettings.markerSize * 0.25 : mapSettings.markerSize * 0.25;
 
                      if (angle < -90 || angle > 90) {
                         angle = angle - 180;
@@ -431,7 +431,7 @@ export const OlRouteLayer = memo(function OlRouteLayer({
                      const ch = Math.round(CH);
                      const cDelta = Math.round(MH - CH);
 
-                     const maxSize = settings.map.text.maxSize;
+                     const maxSize = mapSettings.text.maxSize;
 
                      const topLeft = toCanvas([0, 0])
                      const topRight = toCanvas([mapSize[0], 0])
@@ -504,35 +504,35 @@ export const OlRouteLayer = memo(function OlRouteLayer({
                         context.save();
 
                         context.lineJoin = 'round';
-                        context.strokeStyle = `rgba(${settings.map.text.borderColor.red.toFixed(0)}, ${settings.map.text.borderColor.green.toFixed(0)}, ${settings.map.text.borderColor.blue.toFixed(0)}, ${settings.map.text.borderColor.alpha})`;
-                        context.lineWidth = Math.floor(settings.map.text.borderSize);
+                        context.strokeStyle = `rgba(${mapSettings.text.borderColor.red.toFixed(0)}, ${mapSettings.text.borderColor.green.toFixed(0)}, ${mapSettings.text.borderColor.blue.toFixed(0)}, ${mapSettings.text.borderColor.alpha})`;
+                        context.lineWidth = Math.floor(mapSettings.text.borderSize);
                         context.font = "900 " + maxSize.toFixed(0) + "px Inter-bold, sans-serif";
                         const text_str = text.join(' ');
                         const textWidth = context.measureText(text_str).width;
                         let drawned = false;
 
                         if (text.length === 1) {
-                           const textSize = Math.min(maxSize, maxSize * (distance - settings.map.markerSize * 1.5) / textWidth);
+                           const textSize = Math.min(maxSize, maxSize * (distance - mapSettings.markerSize * 1.5) / textWidth);
                            context.font = "900 " + textSize.toFixed(0) + "px Inter-bold, sans-serif";
 
-                           if (textSize >= settings.map.text.minSize) {
+                           if (textSize >= mapSettings.text.minSize) {
                               drawned = true;
 
                               context.textAlign = "center";
                               context.translate(center[0], center[1]);
                               context.rotate(angle * Math.PI / 180);
                               context.translate(offset, (bottom
-                                 ? textSize + settings.map.text.borderSize * 0.25 + index * maxSize
-                                 : -settings.map.text.borderSize * 0.25 - 5 - index * maxSize));
+                                 ? textSize + mapSettings.text.borderSize * 0.25 + index * maxSize
+                                 : -mapSettings.text.borderSize * 0.25 - 5 - index * maxSize));
 
                               if (background) {
                                  context.strokeText(text_str, 0, 0);
                               } else {
-                                 context.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
+                                 context.fillStyle = `rgba(${mapSettings.text.color.red.toFixed(0)}, ${mapSettings.text.color.green.toFixed(0)}, ${mapSettings.text.color.blue.toFixed(0)}, ${mapSettings.text.color.alpha})`;
                                  context.fillText(text_str, 0, 0);
                               }
                            }
-                        } else if (textWidth < (distance - settings.map.markerSize * 1.5)) {
+                        } else if (textWidth < (distance - mapSettings.markerSize * 1.5)) {
                            drawned = drawText_([text.join("  ")], background, bottom, 0)
                         } else {
                            console.assert(index === 0);
@@ -616,7 +616,7 @@ export const OlRouteLayer = memo(function OlRouteLayer({
                   // Draw markers
                   //------------------------------
                   fullCoords.forEach((coord, index) => {
-                     const size = settings.map.markerSize;
+                     const size = mapSettings.markerSize;
 
                      context.save();
                      {
@@ -641,7 +641,7 @@ export const OlRouteLayer = memo(function OlRouteLayer({
       }
 
       return [];
-   }, [map, navData, settings, updateNavProps]);
+   }, [map, mapSettings, navData, updateNavProps]);
 
    const onExportNav = useCallback((data: {
       id: number,

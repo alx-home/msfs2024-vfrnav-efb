@@ -17,7 +17,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './app/App'
 
-import { messageHandler } from '@Settings/SettingsProvider';
+import { messageHandler } from '@Settings/SettingsStore';
 
 import ResizeObserver from 'resize-observer-polyfill';
 

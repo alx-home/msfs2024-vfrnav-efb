@@ -23,7 +23,7 @@ import { CheckBox, Input, Scroll, Select, SelectOption, Tabs, useDelayed } from 
 import { JSX } from "react/jsx-runtime";
 
 import UndoImg from '@alx-home/images/undo.svg?react';
-import { messageHandler } from "@Settings/SettingsProvider";
+import { messageHandler } from "@Settings/SettingsStore";
 import { Fuel } from "@shared/Fuel";
 import { useSimDate } from "@Utils/SimDate";
 import { useEvent } from "react-use-event-hook";
@@ -122,22 +122,22 @@ const useFuel = () => {
    const getFuel = useCallback(async () => {
       const promise = new Promise<number>((resolve, reject) => {
          promises.current.push({
-            resolve: resolve,
-            reject: reject
+            resolve,
+            reject
          })
       });
 
       messageHandler.send({ __GET_FUEL__: true });
-      return await delayFuel(promise, 1000)
+      return delayFuel(promise, 1000)
    }, [delayFuel])
 
    useEffect(() => {
       const onFuel = (fuel: Fuel) => {
          const value = fuel.tanks.reduce((result, tank) => result + tank.value, 0) * 3.785411784;
          setFuel(value);
-         promises.current.forEach(({ resolve }) => {
+         for (const { resolve } of promises.current) {
             resolve(value)
-         })
+         }
          promises.current = []
       }
 

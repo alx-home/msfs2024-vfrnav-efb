@@ -422,13 +422,13 @@ Main::Validate(
 
    auto const manifest_str = js::Stringify<2>(manifest, true);
    {
-      std::ofstream file{addonPath + "/manifest.json", std::ios::binary | std::ios::trunc};
-      if (!file.is_open()) {
+      std::ofstream manifestFile{addonPath + "/manifest.json", std::ios::binary | std::ios::trunc};
+      if (!manifestFile.is_open()) {
          co_return Fatal("Couldn't create file:", addonPath + "/manifest.json");
       }
 
-      file.write(manifest_str.data(), manifest_str.size());
-      if (file.tellp() != manifest_str.size()) {
+      manifestFile.write(manifest_str.data(), manifest_str.size());
+      if (manifestFile.tellp() != manifest_str.size()) {
          co_return Fatal("Couldn't create file:", addonPath + "/manifest.json");
       }
    }
@@ -439,14 +439,14 @@ Main::Validate(
       Layout     layout{addonPath};
       auto const layout_str = js::Stringify<2>(layout, true);
 
-      std::ofstream file{addonPath + "/layout.json", std::ios::binary | std::ios::trunc};
+      std::ofstream layoutFile{addonPath + "/layout.json", std::ios::binary | std::ios::trunc};
 
-      if (!file.is_open()) {
+      if (!layoutFile.is_open()) {
          co_return Fatal("Couldn't create file:", addonPath + "/layout.json");
       }
 
-      file.write(layout_str.data(), layout_str.size());
-      if (file.tellp() != layout_str.size()) {
+      layoutFile.write(layout_str.data(), layout_str.size());
+      if (layoutFile.tellp() != layout_str.size()) {
          co_return Fatal("Couldn't create file:", addonPath + "/layout.json");
       }
    }

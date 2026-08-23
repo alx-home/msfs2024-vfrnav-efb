@@ -16,9 +16,9 @@
 import { Button, EndSlot, Input, Tabs } from "@alx-home/Utils";
 import { useKeyUp } from "@alx-home/Events";
 
-import { SettingsContext } from "@Settings/SettingsProvider";
+import { useSettings } from "@Settings/SettingsStore";
 
-import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Src } from "./ChartsPage";
 
 import loadingImg from '@alx-home/images/loading.svg';
@@ -268,10 +268,11 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
 export const ChartsPopup = ({ setSrcs }: {
   setSrcs: Dispatch<SetStateAction<Map<string, Src>>>
 }) => {
-  const { getSIAPDF } = useContext(SettingsContext)!;
+  const getSIAPDF = useSettings(settings => settings.getSIAPDF);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+  const setPopup = useSettings(settings => settings.setPopup);
+  const emptyPopup = useSettings(settings => settings.emptyPopup);
   const [sourceType, setSourceType] = useState<Source>("Local")
   const [valid, setValid] = useState(false);
   const [result, setResult] = useState("");

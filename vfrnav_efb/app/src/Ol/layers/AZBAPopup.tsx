@@ -13,13 +13,13 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { PropsWithChildren, useCallback, useContext, useEffect, useMemo, memo } from 'react';
+import { PropsWithChildren, useCallback, useEffect, useMemo, memo } from 'react';
 
 import { Azba } from '@Settings/SIAAZBA';
 import { Button, Scroll } from '@alx-home/Utils';
 import { useKeyUp } from "@alx-home/Events";
 
-import { SettingsContext } from "@Settings/SettingsProvider";
+import { useSettings } from "@Settings/SettingsStore";
 
 
 
@@ -46,7 +46,8 @@ const SubCategory = ({ children, title }: PropsWithChildren<{
 export const AZBAPopup = memo(function AZBAPopup({ data }: {
   data: Azba
 }) {
-  const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+  const setPopup = useSettings(settings => settings.setPopup);
+  const emptyPopup = useSettings(settings => settings.emptyPopup);
   const key = useKeyUp();
 
   useEffect(() => {

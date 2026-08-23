@@ -15,7 +15,7 @@
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
 import { useCallback, useContext, useEffect, useMemo, useRef, memo, useState } from 'react';
-import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
+import { messageHandler, useSettings } from "@Settings/SettingsStore";
 import { Point } from "ol/geom";
 import { fromLonLat, toLonLat } from "ol/proj";
 import VectorSource from "ol/source/Vector";
@@ -47,7 +47,8 @@ export const AirportsLayer = memo(function AirportsLayer({
 }: OlLayerProp & {
   opacity?: number
 }) {
-  const { setPopup, airports } = useContext(SettingsContext)!;
+  const setPopup = useSettings(settings => settings.setPopup);
+  const airports = useSettings(settings => settings.airports);
   const { map, registerMouseEnd, unregisterMouseEnd } = useContext(MapContext)!;
   const [pos, setPos] = useState({ lat: 0, lon: 0 });
   const vectorSource = useMemo(() => new VectorSource<Feature<Point>>({}), []);
@@ -284,5 +285,3 @@ export const AirportsLayer = memo(function AirportsLayer({
     </div>
   </>
 });
-
-

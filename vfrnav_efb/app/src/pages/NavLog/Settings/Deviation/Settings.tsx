@@ -15,7 +15,7 @@
 
 import { useContext, useMemo, useState, useRef, useEffect } from 'react';
 import { Select, SelectOption } from "@alx-home/Utils";
-import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
+import { messageHandler, useSettings } from "@Settings/SettingsStore";
 import { EditPresetPopup } from "./PresetPopup";
 
 import EditImg from "@alx-home/images/edit.svg?react";
@@ -26,7 +26,7 @@ import { DefaultDeviationPreset, DeleteDeviationPreset, GetDeviationCurve, SetDe
 export const Settings = ({ active }: {
    active: boolean
 }) => {
-   const { setPopup } = useContext(SettingsContext)!;
+   const setPopup = useSettings(settings => settings.setPopup);
    const { savedDeviationCurves, setSavedDeviationCurves, deviationCurve, deviationPreset: preset, updateDeviationPreset: updatePreset } = useContext(MapContext)!;
 
    const hardPresets = useMemo(() => (['none']), [])
