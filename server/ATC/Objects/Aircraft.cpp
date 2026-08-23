@@ -674,7 +674,7 @@ Aircraft::LandAircraft(Waypoint const& target, double slope, double height) {
             auto const   slope = flare ? flare_slope : -glide_slope;
             Coords const axis{std::cos(slope), std::sin(slope)};
 
-            auto const lookhead_dist = 0.5 * info.true_airspeed_;
+            auto const lookhead_dist = 0.6 * info.true_airspeed_;
             auto const lookahead     = lookhead_dist * alignment * axis;
             auto const aiming        = (pos_to_axis + lookahead);
             return std::atan2(aiming[1], aiming[0]);
@@ -792,7 +792,7 @@ Aircraft::LandAircraft(Waypoint const& target, double slope, double height) {
                .speed_   = target_speed * 1.94384,  // m/s to knots
                .vspeed_  = flare_vspeed * 1.68781   // m/s to ft/s
              }),
-             main_.Wait(1s)
+             main_.Wait(100ms)
            ),
            WaitDone()
          );
