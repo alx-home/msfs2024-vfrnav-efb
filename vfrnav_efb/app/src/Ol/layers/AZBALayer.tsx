@@ -15,11 +15,11 @@
 
 import VectorLayer from "ol/layer/Vector";
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useEffect, useMemo, useRef, useState, memo } from 'react';
+import { useEffect, useMemo, useRef, useState, memo } from 'react';
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
-import { SettingsContext } from "@Settings/SettingsProvider";
+import { useSettings } from "@Settings/SettingsStore";
 import VectorSource from "ol/source/Vector";
 import { Feature } from "ol";
 import { Polygon } from "ol/geom";
@@ -39,7 +39,9 @@ export const AZBALayer = memo(function AZBALayer({
 }: OlLayerProp & {
   opacity?: number
 }) {
-  const { getSIAAZBA, setPopup, map } = useContext(SettingsContext)!;
+  const getSIAAZBA = useSettings(settings => settings.getSIAAZBA);
+  const setPopup = useSettings(settings => settings.setPopup);
+  const map = useSettings(settings => settings.map);
   const { azba } = map;
 
   const activeHighLayer = useMemo(() => new VectorLayer({
@@ -194,5 +196,3 @@ export const AZBALayer = memo(function AZBALayer({
 
   return <OlLayer key={"active high"} source={groupLayer} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />
 });
-
-

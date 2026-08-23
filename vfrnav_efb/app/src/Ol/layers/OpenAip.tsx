@@ -26,7 +26,7 @@ import { MultiLineString, Point } from "ol/geom";
 import { createXYZ } from "ol/tilegrid";
 import windTurbineImg from '@efb-images/wind_turbine.svg'
 import towerImg from '@efb-images/tower.svg'
-import { SettingsContext } from "@Settings/SettingsProvider";
+import { useSettings } from "@Settings/SettingsStore";
 
 const Norm = (coord: Coordinate) => Math.sqrt(Math.pow(coord[0], 2) + Math.pow(coord[0], 1))
 const inExtend = (coord: Coordinate, extend: number[]) => (coord[0] >= extend[0]) && (coord[0] <= extend[2])
@@ -48,7 +48,7 @@ export const OpenAip = ({
   const { map } = useContext(MapContext)!;
   const windTurbine = useRef<HTMLImageElement | null>(null);
   const tower = useRef<HTMLImageElement | null>(null);
-  const settings = useContext(SettingsContext)!;
+  const textSettings = useSettings(settings => settings.map.text);
 
   const source = useMemo(() => new VectorTileLayer({
     declutter: true,
@@ -210,8 +210,8 @@ export const OpenAip = ({
                       const angle = coords__[1] as number
                       const way = coords__[2] as number
 
-                      ctx.lineWidth = Math.floor(settings.map.text.borderSize);
-                      ctx.font = `900 ${settings.map.text.minSize * zRatio}px Inter-bold, sans-serif`;
+                      ctx.lineWidth = Math.floor(textSettings.borderSize);
+                      ctx.font = `900 ${textSettings.minSize * zRatio}px Inter-bold, sans-serif`;
 
                       ctx.textAlign = "center";
                       ctx.translate(coords[0], coords[1]);
@@ -223,7 +223,7 @@ export const OpenAip = ({
 
                       for (const currentText of text) {
 
-                        ctx.fillStyle = `rgba(${settings.map.text.color.red.toFixed(0)}, ${settings.map.text.color.green.toFixed(0)}, ${settings.map.text.color.blue.toFixed(0)}, ${settings.map.text.color.alpha})`;
+                        ctx.fillStyle = `rgba(${textSettings.color.red.toFixed(0)}, ${textSettings.color.green.toFixed(0)}, ${textSettings.color.blue.toFixed(0)}, ${textSettings.color.alpha})`;
 
                         ctx.fillText(currentText[trans > 0 ? 0 : 1], 0, 0);
                         ctx.translate(0, trans);
@@ -449,7 +449,7 @@ export const OpenAip = ({
         })
       }
     })
-  }), [map, settings.map.text.borderSize, settings.map.text.color.alpha, settings.map.text.color.blue, settings.map.text.color.green, settings.map.text.color.red, settings.map.text.minSize, url]);
+  }), [map, textSettings.borderSize, textSettings.color.alpha, textSettings.color.blue, textSettings.color.green, textSettings.color.red, textSettings.minSize, url]);
 
   return <>
     <div className="hidden">

@@ -20,7 +20,7 @@ import { ReactElement, useContext, useEffect, useMemo, useState, useRef, memo } 
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
 import { Settings } from "./Settings";
-import { messageHandler, SettingsContext } from "@Settings/SettingsProvider";
+import { messageHandler, useSettings } from "@Settings/SettingsStore";
 import { useEFBServer } from "@Utils/useServer";
 import { Navlog } from "./NavLog";
 import { useKeyUp } from "@alx-home/Events";
@@ -36,7 +36,8 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
   deviationCurve: [number, number][],
   fuelCurve: [number, FuelPoint[]][]
 }) => {
-  const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+  const setPopup = useSettings(settings => settings.setPopup);
+  const emptyPopup = useSettings(settings => settings.emptyPopup);
   const key = useKeyUp();
   const [exportDev, setExportDev] = useState(settingPage === "Deviation")
   const [exportDevName, setExportDevName] = useState("")
@@ -55,29 +56,35 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
 
   const validate = useEvent(() => {
     if (ok) {
-      const navs = exportNav.map((elem, index) => elem ? {
-        name: exportNavName[index].length ? exportNavName[index] : navData[index].name,
-        data: {
-          id: navData[index].id,
-          order: navData[index].order,
-          active: navData[index].active,
-          shortName: navData[index].shortName,
-          coords: navData[index].coords,
-          properties: navData[index].properties,
-          waypoints: navData[index].waypoints,
-          loadedFuel: navData[index].loadedFuel,
-          departureTime: navData[index].departureTime,
-          taxiTime: navData[index].taxiTime,
-          taxiConso: navData[index].taxiConso,
-          link: navData[index].link,
+      const navs = exportNav.map((elem, index) => {
+        if (elem) {
+          return {
+            name: exportNavName[index].length ? exportNavName[index] : navData[index].name,
+            data: {
+              id: navData[index].id,
+              order: navData[index].order,
+              active: navData[index].active,
+              shortName: navData[index].shortName,
+              coords: navData[index].coords,
+              properties: navData[index].properties,
+              waypoints: navData[index].waypoints,
+              loadedFuel: navData[index].loadedFuel,
+              departureTime: navData[index].departureTime,
+              taxiTime: navData[index].taxiTime,
+              taxiConso: navData[index].taxiConso,
+              link: navData[index].link,
+            }
+          }
+        } else {
+          return undefined
         }
-      } : undefined).filter(elem => elem !== undefined);
+      }).filter(elem => elem !== undefined);
 
 
       (async () => {
 
         const result = {
-          ...(navs.length ? { navs: navs } : {}),
+          ...(navs.length ? { navs } : {}),
           ...(exportDev ? {
             dev: {
               name: exportDevName,
@@ -142,7 +149,7 @@ const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
 
 
   useEffect(() => {
-    if (key == 'Escape') {
+    if (key === 'Escape') {
       cancel();
     }
   }, [cancel, key])
@@ -198,7 +205,8 @@ export const NavLogPage = memo(function NavLogPage() {
     setSavedDeviationCurves, setSavedFuelCurves, deviationPreset, fuelPreset,
     updateDeviationPreset, updateFuelPreset
   } = useContext(MapContext)!;
-  const { setPopup, emptyPopup } = useContext(SettingsContext)!;
+  const setPopup = useSettings(settings => settings.setPopup);
+  const emptyPopup = useSettings(settings => settings.emptyPopup);
 
   const [uploading, setUploading] = useState(false);
 

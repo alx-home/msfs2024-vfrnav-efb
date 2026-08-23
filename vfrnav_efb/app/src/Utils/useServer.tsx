@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { messageHandler } from "@Settings/SettingsProvider";
+import { messageHandler } from "@Settings/SettingsStore";
 import { EfbState, ServerState } from "@shared/Server";
 import { useEffect, useState } from "react"
 

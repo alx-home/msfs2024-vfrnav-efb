@@ -28,7 +28,7 @@ import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
 import { Coordinate } from "ol/coordinate";
 import { toContext } from "ol/render";
-import { messageHandler } from "@Settings/SettingsProvider";
+import { messageHandler } from "@Settings/SettingsStore";
 import { decodePlaneBlob, PlaneBlob, PlanePosContent, PlaneRecord } from "@shared/PlanPos";
 import LayerGroup from "ol/layer/Group";
 import { getLength } from "ol/sphere";

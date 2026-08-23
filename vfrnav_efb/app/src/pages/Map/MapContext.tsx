@@ -14,7 +14,7 @@
  */
 
 import { Collection, Map as olMap, MapBrowserEvent, getUid, MapEvent } from 'ol';
-import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useEffect, useMemo, useRef, useState, useContext } from 'react';
+import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
 import { NavData } from './MapMenu/Menus/Nav';
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
@@ -27,7 +27,7 @@ import { LineString, SimpleGeometry } from "ol/geom";
 import VectorSource from "ol/source/Vector";
 import { Cluster } from "ol/source";
 import { PlanePosContent, PlaneRecord, PlaneRecords } from '@shared/PlanPos';
-import { messageHandler, SettingsContext } from '@Settings/SettingsProvider';
+import { messageHandler, useSettings } from '@Settings/SettingsStore';
 import { Deviation, ExportNavRecord, FuelUnit, getFuelConsumption, h125Curve, FuelPoint, Properties, Alt } from '@shared/NavData';
 import { getLength } from 'ol/sphere';
 import { PresetPopup } from '@pages/NavLog/Settings/Fuel/PresetPopup';
@@ -278,7 +278,7 @@ const updateNavProps = (deviationCurve: Deviation[], props: Properties, prevCoor
 }
 
 const MapContextProvider = ({ children }: PropsWithChildren) => {
-  const { setPopup } = useContext(SettingsContext)!
+  const setPopup = useSettings(settings => settings.setPopup);
   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
   const dragging = useRef(false);
 

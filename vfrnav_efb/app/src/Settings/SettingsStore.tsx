@@ -13,7 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { createContext, Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { Dispatch, JSXElementConstructor, PropsWithChildren, ReactElement, SetStateAction, useCallback, useEffect, useLayoutEffect, useMemo, useState, useRef } from 'react';
+import { createStore, StoreApi } from 'zustand';
+import { useStore } from 'zustand/react';
 import { GlobalSettings, Settings } from "./Settings";
 import { useSIAZBA } from "./SIAAZBA";
 import { useSIAPDF } from "./SiaPDF";
@@ -24,7 +26,15 @@ import { MessageHandler } from "@shared/MessageHandler";
 import { Src } from '@pages/Charts/ChartsPage';
 
 export const messageHandler = new MessageHandler();
-export const SettingsContext = createContext<GlobalSettings | undefined>(undefined);
+let settingsStore: StoreApi<GlobalSettings> | undefined;
+
+export const useSettings = <T,>(selector: (_settings: GlobalSettings) => T): T => {
+  if (!settingsStore) {
+    throw new Error('Settings store has not been initialized');
+  }
+
+  return useStore(settingsStore, selector);
+};
 
 const useLayer = (layer: keyof SharedSettings, sharedSettings: SharedSettings, setSharedSettings: Dispatch<SetStateAction<SharedSettings>>) => {
   const setActive = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, [layer]: { ...(settings[layer] as object), active: value } })), [layer, setSharedSettings]);
@@ -32,15 +42,14 @@ const useLayer = (layer: keyof SharedSettings, sharedSettings: SharedSettings, s
   const setMaxZoom = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, [layer]: { ...(settings[layer] as object), maxZoom: value } })), [layer, setSharedSettings]);
   const setMinZoom = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, [layer]: { ...(settings[layer] as object), minZoom: value } })), [layer, setSharedSettings]);
 
-  const layerSetting = useMemo(() => ({
-    ...(sharedSettings[layer] as LayerSetting),
-    setActive: setActive,
-    setEnabled: setEnabled,
-    setMaxZoom: setMaxZoom,
-    setMinZoom: setMinZoom,
-  }), [layer, setActive, setEnabled, setMaxZoom, setMinZoom, sharedSettings]);
-
-  return layerSetting;
+  const layerSettings = sharedSettings[layer] as LayerSetting;
+  return useMemo(() => ({
+    ...layerSettings,
+    setActive,
+    setEnabled,
+    setMaxZoom,
+    setMinZoom,
+  }), [setActive, setEnabled, setMaxZoom, setMinZoom, layerSettings]);
 };
 
 const useAirportLayer = (sharedSettings: SharedSettings, setSharedSettings: Dispatch<SetStateAction<SharedSettings>>) => {
@@ -52,21 +61,20 @@ const useAirportLayer = (sharedSettings: SharedSettings, setSharedSettings: Disp
   const enablePrivate = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, airports: { ...settings['airports'], private: value } })), [setSharedSettings]);
   const enableHelipads = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, airports: { ...settings['airports'], helipads: value } })), [setSharedSettings]);
 
-  const layerSetting = useMemo(() => ({
-    ...(sharedSettings['airports'] as AirportLayerOptions),
+  const airports = sharedSettings.airports as AirportLayerOptions;
+  return useMemo(() => ({
+    ...airports,
     ...layer,
 
-    enableHardRunway: enableHardRunway,
-    enableSoftRunway: enableSoftRunway,
-    enableWaterRunway: enableWaterRunway,
-    enablePrivate: enablePrivate,
-    enableHelipads: enableHelipads,
-  }), [enableHardRunway, enableHelipads, enablePrivate, enableSoftRunway, enableWaterRunway, layer, sharedSettings]);
-
-  return layerSetting;
+    enableHardRunway,
+    enableSoftRunway,
+    enableWaterRunway,
+    enablePrivate,
+    enableHelipads,
+  }), [enableHardRunway, enableHelipads, enablePrivate, enableSoftRunway, enableWaterRunway, layer, airports]);
 };
 
-const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: PropsWithChildren<{
+const SettingsStoreInitializer = ({ children, setPopup, emptyPopup, setPage }: PropsWithChildren<{
   setPopup: Dispatch<SetStateAction<ReactElement<unknown, string | JSXElementConstructor<unknown>>>>,
   emptyPopup: ReactElement,
   setPage: Dispatch<SetStateAction<string>>
@@ -77,7 +85,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
   const getSIAAZBA = useSIAZBA(sharedSettings.SIAAZBAAddr, sharedSettings.SIAAZBADateAddr, sharedSettings.SIAAuth);
 
   const globalSettings = useMemo((): Settings => ({
-    emptyPopup: emptyPopup
+    emptyPopup
   }), [emptyPopup]);
 
   const setDefaultSpeed = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, defaultSpeed: value })), []);
@@ -154,6 +162,31 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
   const openstreetSetting = useLayer('openstreet', sharedSettings, setSharedSettings);
   const addPdf = useRef<((_name: string, _pdf: Src) => void) | undefined>(undefined);
 
+  const mapSetting = useMemo((): GlobalSettings['map'] => ({
+    ...sharedSettings.map,
+    text: {
+      ...sharedSettings.map.text,
+      setMaxSize: setTextMaxSize,
+      setMinSize: setTextMinSize,
+      setBorderSize: setTextBorderSize,
+      setColor: setTextColor,
+      setBorderColor: setTextBorderColor
+    },
+    azba: {
+      ...sharedSettings.map.azba,
+      setActiveHighColor: setAZBAActiveHighColor,
+      setActiveLowColor: setAZBAActiveLowColor,
+      setInactiveHighColor: setAZBAInactiveHighColor,
+      setInactiveLowColor: setAZBAInactiveLowColor,
+      setRange: setAZBARange
+    },
+    setMarkerSize
+  }), [
+    setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor,
+    setAZBARange, setMarkerSize, setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize,
+    setTextMinSize, sharedSettings.map
+  ]);
+
   const provider = useMemo((): GlobalSettings => ({
     ...globalSettings,
     ...sharedSettings,
@@ -174,57 +207,38 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
     googlemap: { ...googlemapSetting },
     openstreet: { ...openstreetSetting },
 
-    getSIAPDF: getSIAPDF,
-    getSIAAZBA: getSIAAZBA,
+    getSIAPDF,
+    getSIAAZBA,
 
-    setDefaultSpeed: setDefaultSpeed,
-    setAdjustHeading: setAdjustHeading,
-    setAdjustTime: setAdjustTime,
-    setSIAAuth: setSIAAuth,
-    setSIAAddr: setSIAAddr,
-    setSIAAZBAAddr: setSIAAZBAAddr,
-    setSIAAZBADateAddr: setSIAAZBADateAddr,
-    setPopup: setPopup,
+    setDefaultSpeed,
+    setAdjustHeading,
+    setAdjustTime,
+    setSIAAuth,
+    setSIAAddr,
+    setSIAAZBAAddr,
+    setSIAAZBADateAddr,
+    setPopup,
     addPdfRef: addPdf,
-    setPage: setPage,
+    setPage,
 
-    map: {
-      ...sharedSettings.map,
-
-      text: {
-        ...sharedSettings.map.text,
-
-        setMaxSize: setTextMaxSize,
-        setMinSize: setTextMinSize,
-        setBorderSize: setTextBorderSize,
-        setColor: setTextColor,
-        setBorderColor: setTextBorderColor
-      },
-
-      azba: {
-        ...sharedSettings.map.azba,
-
-        setActiveHighColor: setAZBAActiveHighColor,
-        setActiveLowColor: setAZBAActiveLowColor,
-        setInactiveHighColor: setAZBAInactiveHighColor,
-        setInactiveLowColor: setAZBAInactiveLowColor,
-        setRange: setAZBARange
-
-      },
-
-      setMarkerSize: setMarkerSize
-    }
+    map: mapSetting
   }), [
     airportsSetting, googlemapSetting, mapforfreeSetting, openstreetSetting, opentopoSetting, OACISetting,
     USIFRHighSetting, USIFRLowSetting, USSectionalSetting, azbaSetting, germanySetting, openflightmapsSettings,
     openaipmapsSettings, openflightmapsBaseSettings, planeSetting,
     getSIAAZBA, getSIAPDF, setPage,
-    setAZBAActiveHighColor, setAZBAActiveLowColor, setAZBAInactiveHighColor, setAZBAInactiveLowColor, setAZBARange,
-    setAdjustHeading, setAdjustTime, setMarkerSize, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setDefaultSpeed,
-    setTextBorderColor, setTextBorderSize, setTextColor, setTextMaxSize, setTextMinSize,
+    setAdjustHeading, setAdjustTime, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setDefaultSpeed,
     globalSettings,
+    mapSetting,
     sharedSettings
   ]);
+
+  settingsStore ??= createStore(() => provider);
+  const store = settingsStore;
+
+  useLayoutEffect(() => {
+    store.setState(provider, true);
+  }, [provider, store]);
 
   const [lastSent, setLastSent] = useState(sharedSettings);
 
@@ -288,13 +302,7 @@ const SettingsContextProvider = ({ children, setPopup, emptyPopup, setPage }: Pr
     }
   }, []);
 
-  return (
-    <SettingsContext.Provider
-      value={provider}
-    >
-      {children}
-    </SettingsContext.Provider>
-  );
+  return children;
 };
 
-export default SettingsContextProvider;
+export default SettingsStoreInitializer;

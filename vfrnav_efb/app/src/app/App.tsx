@@ -26,7 +26,7 @@ const MapPage = lazy(() => import('@pages/Map/MapPage').then(m => ({ default: m.
 const SettingsPage = lazy(() => import('@pages/Settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const NavLogPage = lazy(() => import('@pages/NavLog/NavLogPage').then(m => ({ default: m.NavLogPage })));
 
-import SettingsContextProvider from '@Settings/SettingsProvider';
+import SettingsStoreInitializer from '@Settings/SettingsStore';
 
 import mapImg from '@efb-images/map.svg';
 import navlogImg from '@efb-images/navlog.svg';
@@ -110,7 +110,7 @@ export const App = () => {
 
   return (
     <MouseContextProvider>
-      <SettingsContextProvider setPopup={setPopup} emptyPopup={empty} setPage={setPage}>
+      <SettingsStoreInitializer setPopup={setPopup} emptyPopup={empty} setPage={setPage}>
         <MapContextProvider>
           <div className={'fixed flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center text-sm'
             + (popup === empty ? ' hidden' : '')
@@ -134,7 +134,7 @@ export const App = () => {
             )}
           </div>
         </MapContextProvider>
-      </SettingsContextProvider>
+      </SettingsStoreInitializer>
     </MouseContextProvider>
   );
 };

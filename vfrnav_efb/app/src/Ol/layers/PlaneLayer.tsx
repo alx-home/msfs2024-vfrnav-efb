@@ -26,7 +26,7 @@ import VectorLayer from "ol/layer/Vector";
 import { Interactive, MapContext } from "@pages/Map/MapContext";
 import { Coordinate } from "ol/coordinate";
 
-import { messageHandler } from "@Settings/SettingsProvider";
+import { messageHandler } from "@Settings/SettingsStore";
 import { PlanePos } from '@shared/PlanPos';
 
 import PlaneImg from '@efb-images/plane.svg';
@@ -112,5 +112,4 @@ export const PlaneLayer = memo(function PlaneLayer({
     </div>
   </>
 });
-
 

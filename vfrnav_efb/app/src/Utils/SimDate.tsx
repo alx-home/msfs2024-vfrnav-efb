@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { messageHandler } from "@Settings/SettingsProvider";
+import { messageHandler } from "@Settings/SettingsStore";
 import { DateResponse } from "@shared/Date";
 import { useEvent } from "react-use-event-hook";
 

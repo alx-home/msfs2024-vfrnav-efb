@@ -12,7 +12,7 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
-import { messageHandler } from "@Settings/SettingsProvider";
+import { messageHandler } from "@Settings/SettingsStore";
 import { ATCIDResponse } from "@shared/ATCId";
 import { useEvent } from "react-use-event-hook";
 

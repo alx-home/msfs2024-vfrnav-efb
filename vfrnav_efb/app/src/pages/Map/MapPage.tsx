@@ -23,9 +23,10 @@ import { fromLonLat, get as getProjection } from 'ol/proj';
 import { Dispatch, KeyboardEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useState, memo } from 'react';
 
 import { OnLayerChange } from './MapMenu/Menus/Layers';
-import { GlobalSettings } from "@Settings/Settings";
+import { LayerSettings } from "@Settings/Settings";
 import { AZBALayer } from "@Ol/layers/AZBALayer";
-import { SettingsContext, messageHandler } from "@Settings/SettingsProvider";
+import { messageHandler, useSettings } from "@Settings/SettingsStore";
+import { useShallow } from "zustand/react/shallow";
 import { AirportsLayer } from "@Ol/layers/AirportsLayer";
 import { PlaneLayer } from "@Ol/layers/PlaneLayer";
 import { RecordsLayer } from "@Ol/layers/RecordsLayer";
@@ -149,7 +150,23 @@ const openFlightMapUrl = (() => {
 
 export const MapPage = memo(function MapPage() {
   const { map } = useContext(MapContext)!;
-  const settings = useContext(SettingsContext)!;
+  const settings = useSettings(useShallow((settings): LayerSettings => ({
+    plane: settings.plane,
+    airports: settings.airports,
+    azba: settings.azba,
+    OACI: settings.OACI,
+    germany: settings.germany,
+    openaipmaps: settings.openaipmaps,
+    openflightmaps: settings.openflightmaps,
+    openflightmapsBase: settings.openflightmapsBase,
+    USSectional: settings.USSectional,
+    mapforfree: settings.mapforfree,
+    googlemap: settings.googlemap,
+    opentopo: settings.opentopo,
+    USIFRLow: settings.USIFRLow,
+    USIFRHigh: settings.USIFRHigh,
+    openstreet: settings.openstreet
+  })));
   const [open, setOpen] = useState(true);
   const [menu, setMenu] = useState<Menu>(Menu.layers);
 
@@ -158,19 +175,19 @@ export const MapPage = memo(function MapPage() {
       olLayer: <PlaneLayer key="plane" />,
       src: planeImg,
       alt: 'plane layer',
-      getSettings: (_settings: GlobalSettings) => _settings.plane,
+      getSettings: (_settings: LayerSettings) => _settings.plane,
     },
     {
       olLayer: <AirportsLayer key="airports" />,
       src: airportsImg,
       alt: 'airports layer',
-      getSettings: (_settings: GlobalSettings) => _settings.airports,
+      getSettings: (_settings: LayerSettings) => _settings.airports,
     },
     {
       olLayer: <AZBALayer key="azba" />,
       src: azbaImg,
       alt: 'azba layer',
-      getSettings: (_settings: GlobalSettings) => _settings.azba,
+      getSettings: (_settings: LayerSettings) => _settings.azba,
     },
     {
       olLayer: <OlWMTSLayer key="wmts"
@@ -189,13 +206,13 @@ export const MapPage = memo(function MapPage() {
       />,
       src: oaciImg,
       alt: 'oaci layer',
-      getSettings: (_settings: GlobalSettings) => _settings.OACI,
+      getSettings: (_settings: LayerSettings) => _settings.OACI,
     },
     {
       olLayer: <OlOSMLayer key="dsf" url="https://secais.dfs.de/static-maps/icao500/tiles/{z}/{x}/{y}.png" crossOrigin={null} />,
       src: dsfImg,
       alt: 'dsf layer',
-      getSettings: (_settings: GlobalSettings) => _settings.germany
+      getSettings: (_settings: LayerSettings) => _settings.germany
     },
     // {
     //   olLayer: <OpenAip key="openaip" url="https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.pbf" crossOrigin={null} />,
@@ -207,55 +224,55 @@ export const MapPage = memo(function MapPage() {
       olLayer: <OlOSMLayer key="openflightmaps" url={openFlightMapUrl + '/aero/latest'} crossOrigin={null} />,
       src: openflightmapsImg,
       alt: 'openflightmaps layer',
-      getSettings: (_settings: GlobalSettings) => _settings.openflightmaps
+      getSettings: (_settings: LayerSettings) => _settings.openflightmaps
     },
     {
       olLayer: <OlOSMLayer key="openflightmapsBase" url={openFlightMapUrl.replace('png', 'jpg') + '/base/latest'} crossOrigin={null} clipAera={OPENFLightsBoundaries} />,
       src: openflightmapsBaseImg,
       alt: 'openflightmaps base layer',
-      getSettings: (_settings: GlobalSettings) => _settings.openflightmapsBase
+      getSettings: (_settings: LayerSettings) => _settings.openflightmapsBase
     },
     {
       olLayer: <OlOSMLayer key="sectional" url="https://maps.iflightplanner.com/Maps/Tiles/Sectional/Z{z}/{y}/{x}.png" crossOrigin={null} />,
       src: sectionalImg,
       alt: 'sectional layer',
-      getSettings: (_settings: GlobalSettings) => _settings.USSectional
+      getSettings: (_settings: LayerSettings) => _settings.USSectional
     },
     {
       olLayer: <OlOSMLayer key="map-for-free" url="https://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg" crossOrigin={null} />,
       src: map4freeImg,
       alt: 'map for free layer',
-      getSettings: (_settings: GlobalSettings) => _settings.mapforfree
+      getSettings: (_settings: LayerSettings) => _settings.mapforfree
     },
     {
       olLayer: <OlOSMLayer key="google" url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}" crossOrigin={null} />,
       src: bingImg,
       alt: 'google layer',
-      getSettings: (_settings: GlobalSettings) => _settings.googlemap
+      getSettings: (_settings: LayerSettings) => _settings.googlemap
     },
     {
       olLayer: <OlOSMLayer key="open-topo" url="https://tile.opentopomap.org/{z}/{x}/{y}.png" crossOrigin={null} />,
       src: opentopoImg,
       alt: 'open topo layer',
-      getSettings: (_settings: GlobalSettings) => _settings.opentopo
+      getSettings: (_settings: LayerSettings) => _settings.opentopo
     },
     {
       olLayer: <OlOSMLayer key="ifr low" url="https://maps.iflightplanner.com/Maps/Tiles/IFRLow/Z{z}/{y}/{x}.png" crossOrigin={null} />,
       src: ifrLowImg,
       alt: 'ifr low layer',
-      getSettings: (_settings: GlobalSettings) => _settings.USIFRLow,
+      getSettings: (_settings: LayerSettings) => _settings.USIFRLow,
     },
     {
       olLayer: <OlOSMLayer key="ifr high" url="https://maps.iflightplanner.com/Maps/Tiles/IFRHigh/Z{z}/{y}/{x}.png" crossOrigin={null} />,
       src: ifrHighImg,
       alt: 'ifr high layer',
-      getSettings: (_settings: GlobalSettings) => _settings.USIFRHigh,
+      getSettings: (_settings: LayerSettings) => _settings.USIFRHigh,
     },
     {
       olLayer: <OlOSMLayer key="osm" />,
       src: osmImg,
       alt: 'osm layer',
-      getSettings: (_settings: GlobalSettings) => _settings.openstreet,
+      getSettings: (_settings: LayerSettings) => _settings.openstreet,
     },
     // {
     //    olLayer: <OlBingLayer key="bing" />,

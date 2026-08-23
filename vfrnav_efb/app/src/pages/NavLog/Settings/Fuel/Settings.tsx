@@ -14,7 +14,7 @@
  */
 
 import { MapContext } from '@pages/Map/MapContext';
-import { messageHandler, SettingsContext } from '@Settings/SettingsProvider';
+import { messageHandler, useSettings } from '@Settings/SettingsStore';
 import { useContext, useMemo, useState, useEffect, useRef } from 'react';
 import { EditPresetPopup } from './PresetPopup';
 import { Select, SelectOption } from '@alx-home/Utils';
@@ -30,7 +30,7 @@ export const Settings = ({ active }:
       active: boolean
    }) => {
    const { fuelUnit, setFuelUnit, savedFuelCurves, setSavedFuelCurves, fuelCurve, updateFuelPreset: updatePreset, fuelPreset: preset } = useContext(MapContext)!;
-   const { setPopup } = useContext(SettingsContext)!;
+   const setPopup = useSettings(settings => settings.setPopup);
 
    const hardPresets = useMemo(() => (['simple']), [])
    const [defaultPreset, setDefaultPreset] = useState<string | undefined>(undefined)

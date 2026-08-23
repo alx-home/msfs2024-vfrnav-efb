@@ -25,6 +25,28 @@ export type LayerSettingSetter = {
   setMaxZoom: (_value: number) => void
 }
 
+export type LayerSettings = {
+  azba: LayerSettingSetter & SharedSettings['azba'],
+  airports: AirportLayerSettingSetter & LayerSettingSetter & SharedSettings['airports'],
+  plane: LayerSettingSetter & SharedSettings['plane'],
+  OACI: LayerSettingSetter & SharedSettings['OACI'],
+  germany: LayerSettingSetter & SharedSettings['germany'],
+  openaipmaps: LayerSettingSetter & SharedSettings['openaipmaps'],
+  openflightmaps: LayerSettingSetter & SharedSettings['openflightmaps'],
+  openflightmapsBase: LayerSettingSetter & SharedSettings['openflightmapsBase'],
+  USSectional: LayerSettingSetter & SharedSettings['USSectional'],
+  USIFRHigh: LayerSettingSetter & SharedSettings['USIFRHigh'],
+  USIFRLow: LayerSettingSetter & SharedSettings['USIFRLow'],
+  opentopo: LayerSettingSetter & SharedSettings['opentopo'],
+  mapforfree: LayerSettingSetter & SharedSettings['mapforfree'],
+  googlemap: LayerSettingSetter & SharedSettings['googlemap'],
+  openstreet: LayerSettingSetter & SharedSettings['openstreet']
+};
+
+export type LayerKey = {
+  [Key in keyof LayerSettings]: Key
+}[keyof LayerSettings];
+
 export type AirportLayerSettingSetter = {
   enableHardRunway: (_value: boolean) => void,
   enableSoftRunway: (_value: boolean) => void,
@@ -37,7 +59,7 @@ export type Settings = {
   emptyPopup: ReactElement,
 };
 
-export type GlobalSettings = Settings & SharedSettings & {
+export type GlobalSettings = Settings & LayerSettings & SharedSettings & {
   setDefaultSpeed: (_speed: number) => void,
   setSIAAddr: (_addr: string) => void,
   setSIAAZBAAddr: (_addr: string) => void,
@@ -53,21 +75,6 @@ export type GlobalSettings = Settings & SharedSettings & {
 
   addPdfRef: RefObject<((_name: string, _pdf: Src) => void) | undefined>,
 
-  azba: LayerSettingSetter & SharedSettings['azba'],
-  airports: AirportLayerSettingSetter & LayerSettingSetter & SharedSettings['airports'],
-  plane: LayerSettingSetter & SharedSettings['plane'],
-  OACI: LayerSettingSetter & SharedSettings['OACI'],
-  germany: LayerSettingSetter & SharedSettings['germany'],
-  openaipmaps: LayerSettingSetter & SharedSettings['openaipmaps'],
-  openflightmaps: LayerSettingSetter & SharedSettings['openflightmaps'],
-  openflightmapsBase: LayerSettingSetter & SharedSettings['openflightmapsBase'],
-  USSectional: LayerSettingSetter & SharedSettings['USSectional'],
-  USIFRHigh: LayerSettingSetter & SharedSettings['USIFRHigh'],
-  USIFRLow: LayerSettingSetter & SharedSettings['USIFRLow'],
-  opentopo: LayerSettingSetter & SharedSettings['opentopo'],
-  mapforfree: LayerSettingSetter & SharedSettings['mapforfree'],
-  googlemap: LayerSettingSetter & SharedSettings['googlemap'],
-  openstreet: LayerSettingSetter & SharedSettings['openstreet'],
 
   map: {
     text: {
