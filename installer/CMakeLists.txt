@@ -46,8 +46,10 @@ set(VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${REVISION})
 
 add_dependencies(installer upx)
 
+include(probe.cmake)
+
 # Ensure installer depends on WASM build output
-add_dependencies(installer vfrnav_comm_wasm)
+add_dependencies(installer vfrnav_comm_wasm probe_object)
 
 set_target_properties(installer PROPERTIES VERSION ${MAJOR_VERSION})
 set_target_properties(installer PROPERTIES SOVERSION ${MAJOR_VERSION}.${MINOR_VERSION})
@@ -70,6 +72,8 @@ if(WATCH_MODE)
     package(TARGET_NAME installer_resources
             Z_RESOURCES
         SERVER_BIN ${CMAKE_BINARY_DIR}/server/msfs2024-vfrnav_server.exe
+            APP_RESOURCES
+        PROBE_OBJECT probe_object
             RESOURCES
         WASM_STORAGE "${VFRNAV_COMM_WASM_STAGING_FILE}"
     )
@@ -80,6 +84,7 @@ else()
             APP_RESOURCES
         EMBEDED_RESOURCES installer_app
         EFB_RESOURCES vfrnav_efb_msfs
+        PROBE_OBJECT probe_object
             RESOURCES
         EFB_THUMBNAIL ${CMAKE_SOURCE_DIR}/PackageDefinitions/alexhome-msfs2024-vfrnav/ContentInfo/Thumbnail.jpg
         EFB_RELEASE_NOTE ${CMAKE_SOURCE_DIR}/vfrnav_efb/EFB/release_notes.json

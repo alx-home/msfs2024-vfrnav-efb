@@ -340,9 +340,19 @@ SimConnect::GetAirportFacility(std::string_view icao, std::string_view region) n
          throw Disconnected();
       }
 
-      return RequestFacilityData<GET_AIRPORT_FACILITY, facility::AirportData>(
+      if (
+        auto const it = airport_facility_cache_.find(icao + ":" + region);
+        it != airport_facility_cache_.end()
+      ) {
+         return it->second;
+      }
+
+      auto promise = RequestFacilityData<GET_AIRPORT_FACILITY, facility::AirportData>(
         std::move(icao), std::move(region)
       );
+
+      airport_facility_cache_.emplace(icao + ":" + region, promise);
+      return promise;
    });
 }
 
@@ -456,6 +466,44 @@ SimConnect::EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE objectType)
          ClearTrackedSendId(request_id);
          pending_enumerated_simobjects_.erase(request_id);
       });
+   });
+}
+
+WPromise<Liveries>
+SimConnect::GetTrafficTitles() const {
+   auto const titles = [this] {
+      std::shared_lock lock{mutex_};
+      return traffic_titles_;
+   }();
+
+   assert(titles);
+   return *titles;
+}
+
+WPromise<Airports>
+SimConnect::GetAirportList() const {
+   auto const airports = [this] {
+      std::shared_lock lock{mutex_};
+      return airport_list_;
+   }();
+
+   assert(airports);
+   return *airports;
+}
+
+WPromise<float>
+SimConnect::WatchSimRate(std::optional<float> current) const {
+   return Proxy([this, current] {
+      assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+      if (current && (*current != last_sim_rate_)) {
+         return Promise<float>::Resolve(last_sim_rate_);
+      }
+
+      auto [promise, resolve, reject] = Promise<float>::Create();
+      pending_sim_rate_.emplace_back(resolve, reject);
+
+      return std::move(promise);
    });
 }
 
