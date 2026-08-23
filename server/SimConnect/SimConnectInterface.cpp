@@ -234,7 +234,7 @@ SimConnect::GetGroundInfo(double lat, double lon) {
       // Create a temporary AI object on the ground at the specified location, then request
       // its ground altitude. This is a workaround to get the ground altitude at a specific
       // location,
-      auto const& ai_object = co_await AICreateSimulatedObject(
+      auto const ai_object = co_await AICreateSimulatedObject(
         "TerrainProbe",
         {
           .Latitude  = lat,
@@ -263,7 +263,7 @@ SimConnect::GetGroundInfo(double lat, double lon) {
       }};
 
       // Request ground altitude once the probe exists
-      auto const& ground_object =
+      auto const ground_object =
         co_await RequestDataOnSimObject<GROUND_INFO, GroundInfo>(ai_object.dwObjectID, handle);
       assert(std::this_thread::get_id() == MessageQueue::ThreadId());
 
