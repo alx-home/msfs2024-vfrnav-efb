@@ -15,7 +15,7 @@
 
 import { GenRecord, reduce, TypeRecord } from './Types';
 import { FacilitiesRecord, GetFacilitiesRecord, GetICAOSRecord, GetLatLonRecord, GetMetarRecord, IcaosRecord, LatLonRecord, MetarRecord, GetFacilityRecord, FacilityRecord } from './Facilities';
-import { SharedSettingsRecord, SetPanelSizeRecord, SetEfbModeRecord, CleanPlaneRecordsRecord } from './Settings';
+import { SharedSettingsRecord, SetPanelSizeRecord, SetEfbModeRecord, CleanPlaneRecordsRecord, GetPanelSizeRecord } from './Settings';
 import { EditRecordRecord, GetPlaneBlobRecord, PlaneBlobRecord, PlanePosRecord, PlaneRecordsRecord, RemoveRecordRecord } from './PlanPos';
 import { ByeByeRecord, HelloWorldRecord, SetIdRecord } from './HelloWorld';
 import { FileBlobRecord, FileExistRecord, FileExistResponseRecord, GetFileRecord, GetFileResponseRecord, OpenFileRecord, OpenFileResponseRecord } from './Files';
@@ -96,6 +96,7 @@ const Messages = {
    "__SET_EFB_MODE__": SetEfbModeRecord,
    "__SET_ID__": SetIdRecord,
    "__SET_PANEL_SIZE__": SetPanelSizeRecord,
+   "__GET_PANEL_SIZE__": GetPanelSizeRecord,
    "__SETTINGS__": SharedSettingsRecord,
 };
 export type MessageType = {

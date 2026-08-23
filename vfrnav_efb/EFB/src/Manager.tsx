@@ -74,9 +74,9 @@ export class Manager {
       }
 
       this.fuelPresets.clear();
-      (presets as FuelCurve[]).forEach(preset => {
+      for (const preset of (presets as FuelCurve[])) {
          this.fuelPresets.set(preset.name, preset)
-      });
+      }
    }
 
    private saveFuelPresets() {
@@ -118,9 +118,9 @@ export class Manager {
       }
 
       this.deviationPresets.clear();
-      (presets as DeviationCurve[]).forEach(preset => {
+      for (const preset of (presets as DeviationCurve[])) {
          this.deviationPresets.set(preset.name, preset)
-      });
+      }
    }
 
    private saveDeviationPresets() {
@@ -172,7 +172,7 @@ export class Manager {
          return;
       }
 
-      const serverPort = parseInt(SimVar.GetSimVarValue('L:VFRNAV_SET_PORT', 'number'));
+      const serverPort = Number.parseInt(SimVar.GetSimVarValue('L:VFRNAV_SET_PORT', 'number'), 10);
 
       if (serverPort) {
          try {
