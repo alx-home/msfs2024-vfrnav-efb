@@ -1,0 +1,16 @@
+{
+   "name": "vfrnav",
+   "version": "1.0.0",
+   "builtin-baseline": "99a97de2cb371449d4fb9dc970f2ac562d689ec2",
+   "dependencies": [
+      "openssl",
+      "libiconv",
+      "libjpeg-turbo",
+      "libpng",
+      "pkgconf",
+      "poppler",
+      "lcms",
+      "freetype",
+      "openjpeg"
+   ]
+}

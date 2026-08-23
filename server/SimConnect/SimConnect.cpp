@@ -135,6 +135,9 @@ SimConnect::Stop() {
       auto const _ = MessageQueue::Dispatch([this]() {
          connection_promise_.Done();
 
+         assert(airport_list_->Done());
+         assert(traffic_titles_->Done());
+
          if (event_) {
             SetEvent(event_);
          }
@@ -143,6 +146,8 @@ SimConnect::Stop() {
       thread_.join();
    } else {
       assert(connection_promise_.IsDone());
+      assert(airport_list_->Done());
+      assert(traffic_titles_->Done());
    }
 }
 
@@ -351,6 +356,75 @@ SimConnect::Run(std::stop_token const& stoken) {
    {
       auto const _ = MessageQueue::Dispatch([this]() { connection_promise_.Reset(); });
    }
+   WPromise sim_rate_promise{[this] -> Promise<void> {
+      ScopeExit _{[] { std::cout << "SimConnect[sim_rate]: Sim rate loop ended" << std::endl; }};
+      std::cout << "SimConnect: Watching sim rate..." << std::endl;
+
+      auto        last_update_time = steady_clock::now();
+      std::size_t last_time        = 0;
+      while (true) {
+         co_await Connected();
+         assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+         auto const handle = handle_.lock();
+         if (!handle) {
+            break;
+         }
+
+         try {
+            auto const now      = steady_clock::now();
+            auto       sim_rate = co_await RequestDataOnSimObject<GET_SIMRATE, SimRate>(
+              SIMCONNECT_OBJECT_ID_USER, handle
+            );
+            assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+            if (now - sim_rate.last_update_time_ > 10ms) {
+               std::cout
+                 << "SimConnect: Received sim rate data, but it's too old (last update time: "
+                 << duration_cast<milliseconds>(now - sim_rate.last_update_time_).count() << "ms)"
+                 << std::endl;
+               continue;
+            }
+
+            auto est_rate = std::max(
+              0.25f,
+              (last_time == 0)
+                ? last_sim_rate_
+                : static_cast<float>(sim_rate.dw_data_.time_ - last_time)
+                    / std::chrono::duration<float>(sim_rate.last_update_time_ - last_update_time)
+                        .count()
+            );
+            auto const est_rate_step = static_cast<float>(std::round(std::log2(est_rate)));
+            est_rate                 = std::clamp(std::exp2(est_rate_step), 0.25f, 16.0f);
+
+            last_time        = sim_rate.dw_data_.time_;
+            last_update_time = sim_rate.last_update_time_;
+
+            if (est_rate != last_sim_rate_) {
+               last_sim_rate_ = est_rate;
+
+               assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+               auto pending = std::move(pending_sim_rate_);
+               assert(pending_sim_rate_.empty());
+
+               for (auto const& [resolve, reject] : pending) {
+                  main_.MainPool::Dispatch(
+                         [resolve, est_rate]() { (*resolve)(est_rate); }
+                  ).Detach();
+               }
+            }
+
+            co_await Wait(3s);
+            continue;
+         } catch (std::exception const& e) {
+            std::cerr << "SimConnect: Failed to watch sim rate: " << e.what() << std::endl;
+         }
+
+         co_await Wait(5s);
+      }
+
+      co_return;
+   }};
 
    ScopeExit cleanup_pending{[this] {
       std::condition_variable  cv{};
@@ -393,6 +467,23 @@ SimConnect::Run(std::stop_token const& stoken) {
         },
         PENDING_MEMBERS
       );
+      clearPending([this] {
+         auto pending = std::move(pending_sim_rate_);
+         assert(pending_sim_rate_.empty());
+         for (auto& pending_entry : pending) {
+            std::get<1>(pending_entry)->Apply<Disconnected>();
+         }
+      });
+      {
+         std::unique_lock lock{mutex_};
+         traffic_titles_ =
+           std::make_shared<WPromise<Liveries>>(Promise<Liveries>::Reject<Disconnected>());
+      }
+      {
+         std::unique_lock lock{mutex_};
+         airport_list_ =
+           std::make_shared<WPromise<Airports>>(Promise<Airports>::Reject<Disconnected>());
+      }
 
       // Wait until all pending requests have been cleared.
       std::unique_lock lock{mutex};
@@ -682,6 +773,8 @@ SimConnect::Run(std::stop_token const& stoken) {
      server_port_, 0, static_cast<int64_t>(std::numeric_limits<uint32_t>::max())
    ));
    SetServerPort(server_port_to_set).Detach();
+   SetTrafficTitles();
+   SetAirportList();
 
    ScopeExit connection_done{[this] { connection_promise_.Done(); }};
 
@@ -714,6 +807,71 @@ SimConnect::Connected() const {
 WPromise<void>
 SimConnect::Done() const {
    return promise::Race(connection_promise_.WaitDoneWithReject(), main_.WaitTerminate());
+}
+
+void
+SimConnect::SetTrafficTitles() {
+   std::unique_lock lock{mutex_};
+   traffic_titles_ = std::make_shared<WPromise<Liveries>>(Proxy([this] -> Promise<Liveries> {
+      assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+      while (true) {
+         co_await Connected();
+
+         assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+         auto const handle = handle_.lock();
+         if (!handle) {
+            co_await Wait(5s);
+            continue;
+         }
+
+         try {
+            co_return co_await EnumerateSimObjectsAndLiveries(SIMCONNECT_SIMOBJECT_TYPE_AIRCRAFT);
+         } catch (std::exception const& e) {
+            std::cerr << "SimConnect: Failed to enumerate sim objects and liveries: " << e.what()
+                      << std::endl;
+         }
+         co_await Wait(5s);
+      }
+
+      throw Disconnected();
+   }));
+}
+
+void
+SimConnect::SetAirportList() {
+   std::unique_lock lock{mutex_};
+   airport_list_ = std::make_shared<WPromise<Airports>>(Proxy([this] -> Promise<Airports> {
+      assert(std::this_thread::get_id() == MessageQueue::ThreadId());
+
+      while (true) {
+         co_await Connected();
+
+         auto const handle = handle_.lock();
+         if (!handle) {
+            co_await Wait(5s);
+            continue;
+         }
+
+         auto const list = co_await RequestFacilitiesList<SIMCONNECT_RECV_AIRPORT_LIST>(
+           SIMCONNECT_FACILITY_LIST_TYPE_AIRPORT
+         );
+         Airports result;
+         result.reserve(list.size());
+
+         for (auto const& airport : list) {
+            result.emplace_back(
+              airport.Ident, airport.Region, airport.Latitude, airport.Longitude, airport.Altitude
+            );
+         }
+
+         co_return result;
+      }
+
+      assert(false && "Should have returned or thrown before reaching this point");
+      throw Disconnected();
+   }));
 }
 
 bool
