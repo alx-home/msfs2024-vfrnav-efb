@@ -94,6 +94,7 @@ export const SetEfbModeRecord = GenRecord<SetEfbMode>({
 export type SetPanelSize = {
   __SET_PANEL_SIZE__: true,
 
+  enabled: boolean,
   x: number,
   y: number,
   width: number,
@@ -107,6 +108,7 @@ export type SetPanelSize = {
 export const SetPanelSizeRecord = GenRecord<SetPanelSize>({
   __SET_PANEL_SIZE__: true,
 
+  enabled: true,
   x: 0,
   y: 0,
   width: 1,
