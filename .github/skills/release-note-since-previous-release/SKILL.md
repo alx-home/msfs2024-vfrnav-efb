@@ -1,10 +1,9 @@
 ---
 name: release-note-since-previous-release
 description: "Update vfrnav_efb/EFB/release_notes.json from git changes since the previous release entry. Use when preparing the next release note block."
-argument-hint: "Optional: target version and date (defaults to inferred next version and today)."
 disable-model-invocation: true
+argument-hint: "Optional: target version and date (defaults to inferred next version and today)."
 ---
-
 Related skill: `release-note`.
 
 Create and apply the next release note entry in `vfrnav_efb/EFB/release_notes.json` using repository changes since the previous release.
