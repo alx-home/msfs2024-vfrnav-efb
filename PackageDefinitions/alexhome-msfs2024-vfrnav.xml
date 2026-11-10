@@ -21,6 +21,14 @@
 			<AssetDir>PackageDefinitions\alexhome-msfs2024-vfrnav\ContentInfo\</AssetDir>
 			<OutputDir>ContentInfo\alexhome-msfs2024-vfrnav\</OutputDir>
 		</AssetGroup>
+		<AssetGroup Name="ProbeSimObject">
+			<Type Version="1">SimObject</Type>
+			<Flags>
+				<FSXCompatibility>false</FSXCompatibility>
+			</Flags>
+			<AssetDir>PackageSources\SimObjects\Misc\Probe\</AssetDir>
+			<OutputDir>SimObjects\Misc\Probe\</OutputDir>
+		</AssetGroup>
 		<AssetGroup Name="efbApp">
 			<Type Version="0">Copy</Type>
 			<Flags>

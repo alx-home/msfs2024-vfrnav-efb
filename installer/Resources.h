@@ -26,6 +26,8 @@ extern std::span<std::byte const> const EFB_THUMBNAIL;
 extern std::span<std::byte const> const EFB_RELEASE_NOTE;
 #endif
 
+extern std::unordered_map<std::string, std::span<std::byte const>> const PROBE_OBJECT;
+
 extern std::span<std::byte const> const SERVER_BIN;
 extern std::span<std::byte const> const WASM_STORAGE;
 
