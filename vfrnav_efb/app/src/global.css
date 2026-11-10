@@ -48,8 +48,8 @@
    --menu-margin: calc(.25em * var(--base-ratio));
    --button-height: calc(1.5em * var(--base-ratio));
    --button-width: calc(1.75em * var(--base-ratio));
-   
-   font-size: calc(var(--font-size) * var(--panel-width) / var(--base-width));
+
+   font-size: calc(var(--font-size, 100%) * var(--panel-width) / var(--base-width));
 }
 
 html,

@@ -104,6 +104,7 @@ export const CleanupRecordsPopup = ({ resolve }: {
 
 export const SettingsPage = () => {
    const setPopup = useSettings(settings => settings.setPopup);
+   const [enabled, setEnabled] = useState(false);
    const [advanced, setAdvanced] = useState(false);
    const [panelWidth, setPanelWidth] = useState(1);
    const [panelHeight, setPanelHeight] = useState(1);
@@ -118,7 +119,7 @@ export const SettingsPage = () => {
 
    const warn = useCallback(async () => {
       if (!warned) {
-         const promise = new Promise<void>((resolve) => {
+         const promise = new Promise<void>(resolve => {
             setPopup(<WarnPopup resolve={resolve} />);
          });
 
@@ -136,12 +137,13 @@ export const SettingsPage = () => {
             messageHandler.send({
                __SET_PANEL_SIZE__: true,
 
+               enabled,
                x: panelOffsetX,
                y: panelOffsetY,
                width: panelWidth,
                height: panelHeight,
-               borderScale: borderScale,
-               dpiScale: dpiScale,
+               borderScale,
+               dpiScale,
                menuDpiScale: menuDpi,
                captionBar: showEFBCaption
             });
@@ -190,6 +192,11 @@ export const SettingsPage = () => {
       sendEfbSize();
    });
 
+   const setEnabledCallback = useEvent(async (value: boolean) => {
+      setEnabled(value);
+      sendEfbSize();
+   });
+
    const cleanupPlaneRecords = useEvent(async () => {
       const promise = new Promise<void>(resolve => {
          setPopup(<CleanupRecordsPopup resolve={resolve} />);
@@ -201,6 +208,8 @@ export const SettingsPage = () => {
 
    useEffect(() => {
       const callback = (msg: SetPanelSize) => {
+         setEnabled(msg.enabled);
+         setShowEFBCaption(msg.captionBar);
          setPanelOffsetX(msg.x);
          setPanelOffsetY(msg.y);
          setPanelWidth(msg.width);
@@ -211,9 +220,12 @@ export const SettingsPage = () => {
          setInitialized(true);
       }
       messageHandler.subscribe("__SET_PANEL_SIZE__", callback);
+      messageHandler.send({
+         __GET_PANEL_SIZE__: true
+      });
 
       return () => messageHandler.unsubscribe("__SET_PANEL_SIZE__", callback);
-   }, [setInitialized, setPanelOffsetX, setPanelOffsetY, setPanelWidth, setPanelHeight, setBorderScale, setDpiScale, setMenuDpi]);
+   }, [setInitialized, setPanelOffsetX, setPanelOffsetY, setPanelWidth, setPanelHeight, setBorderScale, setDpiScale, setMenuDpi, setEnabled]);
 
    return <div className="flex grow justify-center m-2 p-4">
       <div className={"transition transition-std p-4 max-w-[1280px] h-full  m-auto flex text-left flex-col "
@@ -229,62 +241,68 @@ export const SettingsPage = () => {
             {
                __MSFS_EMBEDED__ &&
                <Group name="EFB">
-                  <CheckItem category="Panel" name="EFB Caption bar" value={showEFBCaption} onChange={setShowEFBCaptionCallback} defaultValue={true} >
-                     Show the EFB caption bar.
+                  <CheckItem category="Panel" name="Enabled" value={enabled} onChange={setEnabledCallback} defaultValue={true} >
+                     Enable or disable the EFB panel resize tweaks.
                   </CheckItem>
-                  <SliderItem category="Panel" name="x Offset"
-                     range={{ min: 0., max: 1. }}
-                     defaultValue={0}
-                     value={panelOffsetX}
-                     onChange={setPanelOffsetXCallback}>
-                     Set the EFB panel X offset as a percentage of the available area.
-                  </SliderItem>
-                  <SliderItem category="Panel" name="y Offset"
-                     range={{ min: 0., max: 1. }}
-                     defaultValue={0}
-                     value={panelOffsetY}
-                     onChange={setPanelOffsetYCallback}>
-                     Set the EFB panel Y offset as a percentage of the available area.
-                  </SliderItem>
-                  <SliderItem category="Panel" name="Width"
-                     range={{ min: 0.05, max: 1 }}
-                     defaultValue={1}
-                     oneShot={true}
-                     value={panelWidth}
-                     onChange={setPanelWidthCallback}>
-                     Set the EFB panel width as a percentage of the default size.
-                  </SliderItem>
-                  <SliderItem category="Panel" name="Height"
-                     range={{ min: 0.05, max: 1 }}
-                     defaultValue={1}
-                     value={panelHeight}
-                     onChange={setPanelHeightCallback}>
-                     Set the EFB panel height as a percentage of the default size.
-                  </SliderItem>
-                  <SliderItem category="Panel" name="DPI Scale"
-                     range={{ min: 0.1, max: 2 }}
-                     defaultValue={1}
-                     oneShot={true}
-                     value={dpiScale}
-                     onChange={setDpiScaleCallback}>
-                     Adjust the DPI scale for the VfrNav app.
-                  </SliderItem>
-                  <SliderItem category="Panel" name="Menu DPI Scale"
-                     range={{ min: 0.1, max: 1 }}
-                     defaultValue={1}
-                     oneShot={true}
-                     value={menuDpi}
-                     onChange={setMenuDpiCallback}>
-                     Adjust the DPI scale for the left menu panel.
-                  </SliderItem>
-                  <SliderItem category="Panel" name="EFB Border"
-                     range={{ min: 0.1, max: 1 }}
-                     defaultValue={1}
-                     oneShot={true}
-                     value={borderScale}
-                     onChange={setBorderScaleCallback}>
-                     Adjust the Border size of the EFB.
-                  </SliderItem>
+                  {enabled && <>
+                     <CheckItem category="Panel" name="EFB Caption bar" value={showEFBCaption} onChange={setShowEFBCaptionCallback} defaultValue={true} >
+                        Show the EFB caption bar.
+                     </CheckItem>
+                     <SliderItem category="Panel" name="x Offset"
+                        range={{ min: 0, max: 1 }}
+                        defaultValue={0}
+                        value={panelOffsetX}
+                        onChange={setPanelOffsetXCallback}>
+                        Set the EFB panel X offset as a percentage of the available area.
+                     </SliderItem>
+                     <SliderItem category="Panel" name="y Offset"
+                        range={{ min: 0, max: 1 }}
+                        defaultValue={0}
+                        value={panelOffsetY}
+                        onChange={setPanelOffsetYCallback}>
+                        Set the EFB panel Y offset as a percentage of the available area.
+                     </SliderItem>
+                     <SliderItem category="Panel" name="Width"
+                        range={{ min: 0.05, max: 1 }}
+                        defaultValue={1}
+                        oneShot={true}
+                        value={panelWidth}
+                        onChange={setPanelWidthCallback}>
+                        Set the EFB panel width as a percentage of the default size.
+                     </SliderItem>
+                     <SliderItem category="Panel" name="Height"
+                        range={{ min: 0.05, max: 1 }}
+                        defaultValue={1}
+                        value={panelHeight}
+                        onChange={setPanelHeightCallback}>
+                        Set the EFB panel height as a percentage of the default size.
+                     </SliderItem>
+                     <SliderItem category="Panel" name="DPI Scale"
+                        range={{ min: 0.1, max: 2 }}
+                        defaultValue={1}
+                        oneShot={true}
+                        value={dpiScale}
+                        onChange={setDpiScaleCallback}>
+                        Adjust the DPI scale for the VfrNav app.
+                     </SliderItem>
+                     <SliderItem category="Panel" name="Menu DPI Scale"
+                        range={{ min: 0.1, max: 1 }}
+                        defaultValue={1}
+                        oneShot={true}
+                        value={menuDpi}
+                        onChange={setMenuDpiCallback}>
+                        Adjust the DPI scale for the left menu panel.
+                     </SliderItem>
+                     <SliderItem category="Panel" name="EFB Border"
+                        range={{ min: 0.1, max: 1 }}
+                        defaultValue={1}
+                        oneShot={true}
+                        value={borderScale}
+                        onChange={setBorderScaleCallback}>
+                        Adjust the Border size of the EFB.
+                     </SliderItem>
+                  </>
+                  }
                </Group>
             }
             <Group name="Map">
