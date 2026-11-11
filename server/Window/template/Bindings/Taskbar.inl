@@ -16,6 +16,35 @@
 
 #include "main.h"
 
+#include <shellapi.h>
+#include <cstdint>
+#include <stdexcept>
+
+template <WIN WINDOW>
+Promise<>
+Window<WINDOW>::OpenDonationLink(std::string url) {
+   if (
+     url != "https://www.paypal.com/donate/?hosted_button_id=UFLZE3KQB78Z4"
+     && url != "https://buymeacoffee.com/alex.home"
+     && url != "https://liberapay.com/alex-home/donate"
+   ) {
+      throw std::runtime_error("Invalid donation link.");
+   }
+
+   auto result{reinterpret_cast<std::intptr_t>(
+     ShellExecuteA(nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL)
+   )};
+
+   if (result <= 32) {
+      throw std::runtime_error(
+        "Cannot open the donation link in your default browser (Windows error "
+        + std::to_string(result) + ")."
+      );
+   }
+
+   co_return;
+}
+
 template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::HideTaskbar() {

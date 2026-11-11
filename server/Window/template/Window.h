@@ -94,6 +94,7 @@ private:
    Promise<> HideToolTip();
 
    Promise<> OpenWebEFB();
+   Promise<> OpenDonationLink(std::string url);
    Promise<> OpenEFB();
 
    Promise<> HideTaskbar();

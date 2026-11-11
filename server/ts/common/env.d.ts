@@ -42,6 +42,7 @@ declare global {
 
       openEFB: () => void;
       openWebEFB: () => void;
+      openDonationLink: (_url: string) => Promise<void>;
 
       hideTaskbarToolTip: () => void;
       showTaskbarToolTip: () => void;

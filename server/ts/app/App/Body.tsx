@@ -18,8 +18,10 @@ import { Settings } from "./Settings"
 import { useState } from "react";
 import settingsImg from '@alx-home/images/settings.svg';
 import tabletImg from '@vfrnav/images/COCKPIT_TABLET_OUTLINE.svg';
+import donationImg from '@vfrnav/images/donation.svg';
+import { Donation } from "./Donation";
 
-export type Tabs = 'settings' | '3dtablet';
+export type Tabs = 'settings' | '3dtablet' | 'donation';
 
 export const Body = () => {
    const [tab, setTab] = useState<Tabs>('settings');
@@ -28,13 +30,15 @@ export const Body = () => {
       <div className='flex flex-col shrink-0 w-16 h-full gap-2 p-2 bg-menu border-r border-slate-700/50 shadow-lg'>
          {([
             { id: 'settings', label: 'Settings', icon: settingsImg },
-            { id: '3dtablet', label: '3D tablet', icon: tabletImg }
+            { id: '3dtablet', label: '3D tablet', icon: tabletImg },
+            { id: 'donation', label: 'Donation', icon: donationImg }
          ] as const).map(({ id, label, icon }) =>
             <button key={id} type='button' title={label} aria-label={label}
                aria-pressed={tab === id}
                className={`group flex shrink-0 items-center justify-center w-full h-12 border-l-2 rounded-sm shadow-md transition-colors
                   hover:bg-item-hocus focus-visible:outline focus-visible:outline-2 focus-visible:outline-msfs
-                  ${tab === id ? 'bg-active-item border-white' : 'bg-item border-msfs'}`}
+                  ${tab === id ? 'bg-active-item border-white' : 'bg-item border-msfs'}
+                  ${id === 'donation' ? 'mt-4' : ''}`}
                onClick={() => setTab(id)}>
                <img src={icon} alt='' className={id === 'settings'
                   ? 'w-6 h-6 invert group-hover:invert-0'
@@ -48,6 +52,9 @@ export const Body = () => {
          </div>
          <div className={'flex w-full h-full' + (tab === '3dtablet' ? '' : ' hidden')}>
             <EfbAircraft />
+         </div>
+         <div className={'flex w-full h-full' + (tab === 'donation' ? '' : ' hidden')}>
+            <Donation />
          </div>
       </div>
    </div>

@@ -51,6 +51,7 @@ Window<WINDOW>::InstallBindings() {
 
    Bind("openEFB", &Window::OpenEFB);
    Bind("openWebEFB", &Window::OpenWebEFB);
+   Bind("openDonationLink", &Window::OpenDonationLink);
 
    Bind("showSettings", &Window::ShowSettings);
 
