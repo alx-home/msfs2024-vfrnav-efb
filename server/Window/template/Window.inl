@@ -116,30 +116,32 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
 
           {
              ScopeExit notify_scope{[this] constexpr {
-                std::lock_guard lock{mutex_};
+                std::scoped_lock lock{mutex_};
                 cv_.notify_all();
              }};
 
              SetThreadDescription(GetCurrentThread(), Params<WINDOW>::NAME);
 
-             webview_ = std::make_unique<webview::webview>(
+             webview_ = std::make_unique<webview::webview>(webview::webview::Args{
+               .debug =
 #ifndef NDEBUG
-               true,
+                 true,
 #else
-               false,
+                 false,
 #endif
-               nullptr,
-               []() constexpr {
-                  auto const options{webview::detail::Win32EdgeEngine::MakeOptions()};
-                  webview::detail::Win32EdgeEngine::SetSchemesOption({"app", "coui"}, options);
-                  return options;
-               }(),
-               USER_DATA_DIR,
-               0,
-               Params<WINDOW>::MODAL ? WS_EX_DLGMODALFRAME : WS_EX_TOOLWINDOW,
-               std::move(on_terminate),
-               Params<WINDOW>::HIDDEN
-             );
+               .options =
+                 []() constexpr {
+                    auto const options{webview::detail::Win32EdgeEngine::MakeOptions()};
+                    webview::detail::Win32EdgeEngine::SetSchemesOption({"app", "coui"}, options);
+                    return options;
+                 }(),
+               .user_data_dir     = USER_DATA_DIR,
+               .style             = 0,
+               .exStyle           = Params<WINDOW>::MODAL ? WS_EX_DLGMODALFRAME : WS_EX_TOOLWINDOW,
+               .on_terminate      = std::move(on_terminate),
+               .invisible         = Params<WINDOW>::HIDDEN,
+               .persistent_window = WINDOW == WIN::MAIN,
+             });
 
              webview_->Hide();
              if constexpr (Params<WINDOW>::HIDDEN) {

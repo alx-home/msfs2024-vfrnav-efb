@@ -15,6 +15,7 @@
 
 #include "main.h"
 #include "Resources.h"
+#include "webview/detail/backends/win32_edge.h"
 #include "windows/Process.h"
 
 #include <json/json.h>
@@ -82,22 +83,23 @@ std::string const Main::TEMP_DIR =
   (std::filesystem::temp_directory_path() / "MSFS2024 VFRNav' Installer").string();
 
 Main::Main()
-   : webview_{
+   : webview_{{
+       .debug =
 #ifndef NDEBUG
-       true,
+         true,
 #else
-       false,
+         false,
 #endif
-       nullptr,
-       []() {
-          auto const options{webview::detail::Win32EdgeEngine::MakeOptions()};
-          webview::detail::Win32EdgeEngine::SetSchemesOption({"app", "coui"}, options);
-          return options;
-       }(),
-       TEMP_DIR,
-       0,
-       WS_EX_DLGMODALFRAME
-     } {
+       .options =
+         []() {
+            auto const options{webview::detail::Win32EdgeEngine::MakeOptions()};
+            webview::detail::Win32EdgeEngine::SetSchemesOption({"app", "coui"}, options);
+            return options;
+         }(),
+       .user_data_dir = TEMP_DIR,
+       .style         = 0,
+       .exStyle       = WS_EX_DLGMODALFRAME,
+     }} {
 
    webview_.SetTitleBarColor(0, 0xb4, 0xff, 255);
 

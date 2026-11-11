@@ -25,7 +25,6 @@
 #include <memory>
 #include <promise/promise.h>
 #include <promise/Pool.h>
-#include <optional>
 #include <unordered_map>
 #include <webview/webview.h>
 #include <windows/Env.h>
