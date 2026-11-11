@@ -1,5 +1,37 @@
 find_program(NASM_EXECUTABLE nasm REQUIRED)
 
+# Single shared definition of TIMESTAMP: generated once at configure time so
+# every resources library linked into any binary sees the exact same value.
+function(_package_timestamp)
+    if(TARGET packager_timestamp)
+        return()
+    endif()
+
+    string(TIMESTAMP PACKAGE_UNIX_TIMESTAMP "%s" UTC)
+    # std::chrono::file_clock ticks: 100ns intervals since 1601-01-01 (FILETIME epoch).
+    math(EXPR PACKAGE_FILETIME_TICKS "(${PACKAGE_UNIX_TIMESTAMP} + 11644473600) * 10000000")
+
+    set(TIMESTAMP_CPP ${CMAKE_BINARY_DIR}/packager_timestamp/Timestamp.cpp)
+    file(WRITE ${TIMESTAMP_CPP}
+"#include <chrono>
+#include <cstdint>
+#include <ratio>
+
+extern const std::chrono::file_clock::time_point TIMESTAMP;
+const std::chrono::file_clock::time_point        TIMESTAMP{
+  std::chrono::duration<int64_t, std::ratio<1, 10'000'000>>{${PACKAGE_FILETIME_TICKS}}
+};
+")
+
+    add_library(packager_timestamp STATIC ${TIMESTAMP_CPP})
+    set_target_properties(packager_timestamp PROPERTIES
+        LINKER_LANGUAGE CXX
+        CXX_STANDARD 26
+        CMAKE_CXX_STANDARD_REQUIRED ON
+        CMAKE_CXX_EXTENSIONS ON
+    )
+endfunction(_package_timestamp)
+
 function(package)
     set(options)
     set(oneValueArgs TARGET_NAME)
@@ -95,6 +127,8 @@ function(package)
     )
 
     add_library(${arg_TARGET_NAME} ${ASM_CPP} ${ASM_OBJ})
+    _package_timestamp()
+    target_link_libraries(${arg_TARGET_NAME} PUBLIC packager_timestamp)
     set_target_properties(${arg_TARGET_NAME} PROPERTIES
         LINKER_LANGUAGE CXX
         CXX_STANDARD 26

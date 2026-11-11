@@ -140,12 +140,10 @@ main() {
 #include <chrono>
 #include <unordered_map>
 
+// TIMESTAMP is defined once in the shared "packager_timestamp" library so that
+// every resources library linked into a binary sees the exact same value.
 extern const std::chrono::file_clock::time_point TIMESTAMP;
-const std::chrono::file_clock::time_point        TIMESTAMP{
-  std::chrono::duration<int64_t, std::ratio<1, 10'000'000>>{)_"
-                 << std::chrono::file_clock::now().time_since_epoch().count() << R"(}
-};
-)" << std::endl;
+)_" << std::endl;
 
       std::size_t resource_index = 0;
 

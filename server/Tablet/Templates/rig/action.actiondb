@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ActionDefinition><Contexts><Context ID="INPUT_EVENTS"/></Contexts><Actions Source="@RIG_ROOT@"><Action Name="VFRNAV_EFB_VISIBILITY_TOGGLE"><Context>INPUT_EVENTS</Context><Type>DIGITAL</Type><TT_Name>TT:VFRNAV.EFB.ACTION_NAME</TT_Name><TT_Function>TT:VFRNAV.EFB.ACTION_FUNCTION</TT_Function><TT_Category_Main>TT:VFRNAV.EFB.CATEGORY_MAIN</TT_Category_Main><TT_Category_Sub>TT:VFRNAV.EFB.CATEGORY_SUB</TT_Category_Sub><TT_Tag/></Action></Actions></ActionDefinition>

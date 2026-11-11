@@ -21,9 +21,11 @@
 #ifndef WATCH_MODE
 extern std::unordered_map<std::string, std::span<std::byte const>> const EMBEDED_RESOURCES;
 extern std::unordered_map<std::string, std::span<std::byte const>> const EFB_RESOURCES;
+extern std::unordered_map<std::string, std::span<std::byte const>> const TABLET_RESOURCES;
 
 extern std::span<std::byte const> const EFB_THUMBNAIL;
 extern std::span<std::byte const> const EFB_RELEASE_NOTE;
+extern std::span<std::byte const> const EFB_PANEL_SPB;
 #endif
 
 extern std::span<std::byte const> const SERVER_BIN;

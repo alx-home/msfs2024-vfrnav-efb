@@ -23,6 +23,29 @@ const Tailwind: Config = {
       "./taskbar/**/*.{js,ts,jsx,tsx,mdx}",
       "./taskbar_tooltip/**/*.{js,ts,jsx,tsx,mdx}",
       "../../submodules/ts-utils/src/**/*.{js,ts,jsx,tsx,mdx}"
-   ]
+   ],
+   theme: {
+      ...BaseTailwind.theme,
+      extend: {
+         ...BaseTailwind.theme?.extend,
+         animation: {
+            breathe: 'breathe 2s ease-in-out infinite',
+         },
+         keyframes: {
+            breathe: {
+               '0%, 100%': {
+                  opacity: '0.6',
+                  transform: 'scale(1)',
+                  filter: 'brightness(1)',
+               },
+               '50%': {
+                  opacity: '1',
+                  transform: 'scale(1.1)',
+                  filter: 'brightness(1.3)',
+               },
+            },
+         },
+      },
+   },
 };
 export default Tailwind;

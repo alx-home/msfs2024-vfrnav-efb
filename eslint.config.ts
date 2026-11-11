@@ -114,5 +114,20 @@ export default [...fixupConfigRules(compat.extends(
         }],
         "react/react-in-jsx-scope": "off",
     },
+}, {
+    files: ['efb_tablet_panel/Panel.test.ts'],
+    languageOptions: {
+        parserOptions: {
+            tsconfigRootDir: __dirname,
+            projectService: {
+                allowDefaultProject: ['efb_tablet_panel/Panel.test.ts'],
+            },
+        },
+    },
+}, {
+    files: ['vfrnav_efb/comm_wasm/Joystick.test.mjs'],
+    languageOptions: {
+        globals: { WebAssembly: 'readonly' },
+        parserOptions: { projectService: false },
+    },
 }];
-

@@ -29,6 +29,7 @@ import { CheckItem } from "./CheckItem";
 import { Items } from "./Items";
 import { ZoomItem } from "./ZoomItem";
 import { Legend } from "./Legend";
+import { TabletBindingsSettings } from "./TabletBindingsSettings";
 import { Item } from "./Item";
 import { AirportOptionSetting } from "./AirportOptionSetting";
 import { AzbaColorSetting } from "./AzbaColorSetting";
@@ -241,6 +242,7 @@ export const SettingsPage = () => {
             {
                __MSFS_EMBEDED__ &&
                <Group name="EFB">
+                  <TabletBindingsSettings />
                   <CheckItem category="Panel" name="Enabled" value={enabled} onChange={setEnabledCallback} defaultValue={true} >
                      Enable or disable the EFB panel resize tweaks.
                   </CheckItem>

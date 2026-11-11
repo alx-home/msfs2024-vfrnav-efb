@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 116" font-family="'Segoe UI', Arial, sans-serif" font-weight="400">
+  <rect width="540" height="116" fill="#465363" />
+  <text x="12" y="27" fill="#fff" font-size="18">Settings / General</text>
+  <text x="12" y="51" fill="#e1e4e8" font-size="15">Advanced Options</text>
+  <rect x="2" y="64" width="536" height="48" fill="#3c4653" />
+  <path d="M2 112h536" stroke="#66717e" />
+  <text x="12" y="94" fill="#e1e4e8" font-size="18">Developer Mode</text>
+  <rect x="469" y="74" width="60" height="30" fill="#1b2634" />
+  <rect x="500" y="76" width="27" height="26" fill="#3d7dc5" stroke="#7894b4" />
+  <path d="m504 88 6 6 13-14" fill="none" stroke="#d4e5f6" stroke-width="1.5" />
+</svg>

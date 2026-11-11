@@ -20,25 +20,30 @@
 
 #include <deque>
 #include <fstream>
+#include <memory>
 #include <iostream>
 #include <string>
 #include <optional>
 #include <string_view>
 
-constexpr char const* STORE_FLIGHTS_EVENT = "VFRNAV_STORE_FLIGHTS";
-constexpr char const* GET_FLIGHTS_EVENT   = "VFRNAV_GET_FLIGHTS";
+constexpr char const* STORE_FLIGHTS_EVENT{"VFRNAV_STORE_FLIGHTS"};
+constexpr char const* GET_FLIGHTS_EVENT{"VFRNAV_GET_FLIGHTS"};
 
-constexpr char const* GET_LAST_SAVED_BLOB_ID_EVENT   = "VFRNAV_GET_LAST_SAVED_BLOB_ID";
-constexpr char const* STORE_LAST_SAVED_BLOB_ID_EVENT = "VFRNAV_STORE_LAST_SAVED_BLOB_ID";
-constexpr char const* GET_CURRENT_BLOB_ID_EVENT      = "VFRNAV_GET_CURRENT_BLOB_ID";
-constexpr char const* STORE_CURRENT_BLOB_ID_EVENT    = "VFRNAV_STORE_CURRENT_BLOB_ID";
+constexpr char const* GET_LAST_SAVED_BLOB_ID_EVENT{"VFRNAV_GET_LAST_SAVED_BLOB_ID"};
+constexpr char const* STORE_LAST_SAVED_BLOB_ID_EVENT{"VFRNAV_STORE_LAST_SAVED_BLOB_ID"};
+constexpr char const* GET_CURRENT_BLOB_ID_EVENT{"VFRNAV_GET_CURRENT_BLOB_ID"};
+constexpr char const* STORE_CURRENT_BLOB_ID_EVENT{"VFRNAV_STORE_CURRENT_BLOB_ID"};
+/** @brief CommBus requests for the persisted cockpit-tablet input bindings. */
+constexpr char const* GET_TABLET_SHORTCUT_EVENT{"VFRNAV_GET_TABLET_SHORTCUT"};
+constexpr char const* SET_TABLET_SHORTCUT_EVENT{"VFRNAV_SET_TABLET_SHORTCUT"};
+constexpr char const* TABLET_JOYSTICK_EVENT{"VFRNAV_TABLET_JOYSTICK"};
 
-constexpr char const* STORE_BLOB_EVENT  = "VFRNAV_STORE_BLOB";
-constexpr char const* DELETE_BLOB_EVENT = "VFRNAV_DELETE_BLOB";
-constexpr char const* GET_BLOB_EVENT    = "VFRNAV_GET_BLOB";
-constexpr char const* RESPONSE_EVENT    = "VFRNAV_WASM_RESPONSE";
-constexpr char const* WASM_INIT         = "VFRNAV_WASM_INIT";
-constexpr char const* OUTPUT_FOLDER     = "/work";
+constexpr char const* STORE_BLOB_EVENT{"VFRNAV_STORE_BLOB"};
+constexpr char const* DELETE_BLOB_EVENT{"VFRNAV_DELETE_BLOB"};
+constexpr char const* GET_BLOB_EVENT{"VFRNAV_GET_BLOB"};
+constexpr char const* RESPONSE_EVENT{"VFRNAV_WASM_RESPONSE"};
+constexpr char const* WASM_INIT{"VFRNAV_WASM_INIT"};
+constexpr char const* OUTPUT_FOLDER{"/work"};
 
 void OnEvent(char const* buffer, unsigned int size, void* ctx);
 void OnWasmInit(char const* buffer, unsigned int size, void* ctx);
@@ -68,8 +73,25 @@ public:
    Context& StoreLastSavedBlobIdContext();
    Context& GetCurrentBlobIdContext();
    Context& StoreCurrentBlobIdContext();
+   /** @brief Return the CommBus callback context for querying the shortcut.
+    *
+    * @return Shortcut query callback context. */
+   Context& GetTabletShortcutContext();
+   /** @brief Return the CommBus callback context for changing the shortcut.
+    *
+    * @return Shortcut update callback context. */
+   Context& SetTabletShortcutContext();
+   /** @brief Return the CommBus callback context for joystick binding operations.
+    *
+    * @return Joystick binding callback context. */
+   Context& TabletJoystickContext();
 
    Context& WasmInitContext();
+
+   /** @brief Initialize simulator input and pose synchronization. */
+   void InitializeSimulator();
+   /** @brief Flush simulator state and close its connection. */
+   void ShutdownSimulator();
 
    std::optional<Payload> ParsePayload(std::string_view payload);
    std::string            BuildPayload(std::string_view key, std::string_view data);
@@ -109,12 +131,14 @@ private:
    template <
      std::optional<std::string> (WasmHandler::*MEMBER_POINTER)(std::string_view, std::string_view)>
    Context& MakeContext() {
-      if (auto it = std::find_if(
-            contexts_.begin(),
-            contexts_.end(),
-            [](Context const& ctx) { return ctx.second == MEMBER_POINTER; }
-          );
-          it != contexts_.end()) {
+      if (
+        auto it = std::find_if(
+          contexts_.begin(),
+          contexts_.end(),
+          [](Context const& ctx) { return ctx.second == MEMBER_POINTER; }
+        );
+        it != contexts_.end()
+      ) {
          return *it;
       }
 
@@ -146,4 +170,16 @@ private:
    OnStoreCurrentBlobIdEvent(std::string_view request_id, std::string_view buffer);
    std::optional<std::string>
    OnStoreLastSavedBlobIdEvent(std::string_view request_id, std::string_view buffer);
+   std::optional<std::string>
+   OnGetTabletShortcutEvent(std::string_view request_id, std::string_view buffer);
+   std::optional<std::string>
+   OnSetTabletShortcutEvent(std::string_view request_id, std::string_view buffer);
+   std::optional<std::string>
+   OnTabletJoystickEvent(std::string_view request_id, std::string_view buffer);
+
+   void SendResponse(std::string_view request_id, std::string_view data);
+
+   struct Simulator;
+   std::unique_ptr<Simulator> simulator_{};
+   std::string                shortcut_{"Ctrl+T"};
 };

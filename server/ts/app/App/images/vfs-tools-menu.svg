@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 150" font-family="Consolas, 'Courier New', monospace" font-size="14" font-weight="400" fill="#fff">
+  <rect width="540" height="150" fill="#101010" />
+  <rect width="540" height="24" fill="#242424" />
+  <text x="9" y="17">Editors</text>
+  <rect x="78" width="77" height="24" fill="#264668" />
+  <text x="86" y="17">Tools</text>
+  <text x="164" y="17">Options</text>
+  <rect x="85" y="25" width="257" height="124" fill="#141414" stroke="#464646" />
+  <text x="94" y="46" fill="#a5a5a5">Aircraft Capture Tool</text>
+  <text x="94" y="68" fill="#a5a5a5">...</text>
+  <text x="94" y="90">SimObject Statistics</text>
+  <rect x="89" y="99" width="249" height="23" fill="#3d7dc5" />
+  <text x="94" y="115">Virtual File System</text>
+  <text x="94" y="141" fill="#a5a5a5">Toolbar</text>
+</svg>

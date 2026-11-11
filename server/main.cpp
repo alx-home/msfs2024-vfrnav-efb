@@ -16,6 +16,7 @@
 #include "main.h"
 
 #include "Resources.h"
+#include "Tablet/Fleet.h"
 #include "Utils/LaunchMode.h"
 #include "utils/Scoped.h"
 #include "windows/Process.h"
@@ -216,6 +217,41 @@ main() {
          MessageBox(
            nullptr,
            ("Couldn't clean " + destination).c_str(),
+           "MSFS2024 VFRNav' Server uninstaller",
+           MB_OK | MB_ICONWARNING
+         );
+      }
+
+      // Remove every patched aircraft package before deleting the companion files.
+      try {
+         promise::Pool<40> pool{"VFRNav' Uninstaller"};
+
+         auto result{tablet::Fleet::Manage(pool, tablet::Fleet::FindPaths(), "standard", "remove")};
+         result.WaitDone();
+
+         if (result.Rejected()) {
+            std::rethrow_exception(result.Exception());
+         }
+
+         std::string failures{};
+         for (auto const& entry : result.Value().entries_) {
+            if (entry.state_ != "removed") {
+               failures += entry.source_ + ": " + entry.message_ + "\n";
+            }
+         }
+
+         if (failures.size()) {
+            MessageBox(
+              nullptr,
+              ("Some patched aircraft packages were left in place:\n\n" + failures).c_str(),
+              "MSFS2024 VFRNav' Server uninstaller",
+              MB_OK | MB_ICONWARNING
+            );
+         }
+      } catch (std::exception const& error) {
+         MessageBox(
+           nullptr,
+           ("Couldn't remove patched aircraft packages: " + std::string{error.what()}).c_str(),
            "MSFS2024 VFRNav' Server uninstaller",
            MB_OK | MB_ICONWARNING
          );

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UpdateFrequencyPresetList>
+  <UpdateFrequencyPreset>
+    <Name>VFRNAV_Tablet_EveryFrame</Name>
+    <SizeOnScreenForMaxUpdateFrequency>0</SizeOnScreenForMaxUpdateFrequency>
+    <SizeOnScreenForMinUpdateFrequency>0</SizeOnScreenForMinUpdateFrequency>
+    <SizeOnScreenToStopUpdate>0</SizeOnScreenToStopUpdate>
+  </UpdateFrequencyPreset>
+</UpdateFrequencyPresetList>

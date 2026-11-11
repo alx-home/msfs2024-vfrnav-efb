@@ -1,0 +1,2 @@
+# SDK source hashes depend on the exact bytes of embedded templates.
+Templates/** -text

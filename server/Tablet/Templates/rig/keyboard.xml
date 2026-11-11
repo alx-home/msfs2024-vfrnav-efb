@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DefaulftInput Primary="1" PlatformAvailability="ALL"><Version Num="19"/><Device DeviceName="Cockpit Tablet Keyboard" GUID="884b96c3-56ef-11d1-bc8c-00a0c91405dd" ProductID="884B" CompositeID="0" HWVer="1.0.0.0"><Context ContextName="INPUT_EVENTS"><Action ActionName="VFRNAV_EFB_VISIBILITY_TOGGLE" Flag="2" ValueEvent="0"><Primary><KEY Information="LControlKey">162</KEY><KEY Information="T">84</KEY></Primary></Action></Context></Device></DefaulftInput>

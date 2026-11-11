@@ -1,0 +1,9 @@
+<Component ID="INTERACT_VFRNAV_HANDLE_2_@AXIS@" Node="VFRNAV_HANDLE_2_@AXIS@" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+<MouseRect><PrioritizeVCockpits>False</PrioritizeVCockpits><Cursor>Grab</Cursor>
+<Lock>True</Lock><LockFlagsTemporary>LeftSingle</LockFlagsTemporary>
+<MouseFlags>LeftSingle+LeftDrag+LeftRelease+Lock+Unlock+RightSingle</MouseFlags>
+<CallbackCode><IMCodeInstances>
+<IMDefault>@CALLBACK@</IMDefault>
+<IMDrag>@CALLBACK@</IMDrag>
+</IMCodeInstances><DragMode>Default</DragMode><DragScalar>1</DragScalar><DragFlagsLockable>LeftDrag</DragFlagsLockable>
+</CallbackCode></MouseRect></Component>

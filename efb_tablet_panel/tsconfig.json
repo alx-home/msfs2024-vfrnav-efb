@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "ESNext",
+    "moduleDetection": "legacy",
+    "lib": ["ES2017", "DOM"],
+    "strict": true,
+    "noEmitOnError": true,
+    "outDir": "../build/efb_tablet_panel/html_ui/InGamePanels/EfbTablet",
+    "skipLibCheck": true,
+    "types": []
+  },
+  "files": ["Panel.ts"]
+}

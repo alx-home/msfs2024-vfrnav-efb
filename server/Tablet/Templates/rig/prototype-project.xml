@@ -1,0 +1,1 @@
+<Project Version="2" Name="EfbRigPrototype" FolderName="Packages"><OutputDirectory>.</OutputDirectory><TemporaryOutputDirectory>_PackageInt</TemporaryOutputDirectory><Packages><Package>@PACKAGE_NAME@.xml</Package></Packages></Project>

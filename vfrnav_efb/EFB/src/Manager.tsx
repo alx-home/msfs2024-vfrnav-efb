@@ -331,6 +331,43 @@ export class Manager {
       return result
    }
 
+   /**
+    * @brief Read the cockpit tablet shortcut from the simulator WASM module.
+    *
+    * @returns The active shortcut.
+    *
+    * @throws If the WASM request fails or returns an empty response.
+    */
+   public async getTabletShortcut(): Promise<string> {
+      return this.recordManager.getTabletShortcut();
+   }
+
+   /**
+    * @brief Execute a joystick binding operation.
+    *
+    * @param action Operation to perform: read, capture, cancel capture, or clear the binding.
+    *
+    * @returns The binding label, or an empty string if no binding exists.
+    *
+    * @throws If the WASM request fails or returns no response.
+    */
+   public async tabletJoystick(action: "get" | "capture" | "cancel" | "clear"): Promise<string> {
+      return this.recordManager.tabletJoystick(action);
+   }
+
+   /**
+    * @brief Apply a cockpit tablet shortcut.
+    *
+    * @param shortcut Shortcut to apply.
+    *
+    * @returns The accepted shortcut.
+    *
+    * @throws If the WASM request fails or returns an empty response.
+    */
+   public async setTabletShortcut(shortcut: string): Promise<string> {
+      return this.recordManager.setTabletShortcut(shortcut);
+   }
+
    public broadCastMessage(message: MessageType) {
       this.messageHandler?.(message);
       this.serverMessageHandler?.(1, message);

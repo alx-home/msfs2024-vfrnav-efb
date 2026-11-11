@@ -1,0 +1,31 @@
+{
+    "sdk":  "MSFS 2024 1.9.24",
+    "provenance":  "SDK-compiled standalone runtime with temporary pointer capture, tablet-local rotation, per-frame component presets, per-instance pose initialization and bidirectional stock visibility sync",
+    "sources":  {
+                    "SimAttachments/Alexhome/EFB_Tablet/attachment.cfg":  "e344f5c4edc73b6698b0deab478c78276058f1622da522130c8e2189102f2b16",
+                    "SimAttachments/Alexhome/EFB_Tablet/config/attached_objects.cfg":  "d4ddfe17bce199b14151bcbe6b7c8791d00e1af56de83d574336e4e9c04f6ee7",
+                    "SimAttachments/Alexhome/EFB_Tablet/input/action.actiondb":  "be6eef1f46eddc30f612205fd399458a5b6041be40a25d1686cb3595eb441059",
+                    "SimAttachments/Alexhome/EFB_Tablet/model/model.xml":  "cf5d8087dbb2c193f645be79e657b12ed369879994b138ba4f41e800efe0fdc7",
+                    "SimAttachments/Alexhome/EFB_Tablet/model/rig.bin":  "209d8c65388778cc6bc9273693cd9f289cd8eee55783d80f04be8db419ae4b15",
+                    "SimAttachments/Alexhome/EFB_Tablet/model/rig.gltf":  "46ba91175ea46051e21c0eb81c599a6e35c3d5e4af5fd5a35b9fb3c5d08df07a",
+                    "rig-localization/VFRNAV_EFB.loc":  "8f8fea14af57a0d33eb05c84564c4d66deeb43fb96dd6e4982dc9382d102d866",
+                    "edit-model/attachment.cfg":  "e344f5c4edc73b6698b0deab478c78276058f1622da522130c8e2189102f2b16",
+                    "edit-model/model/model.xml":  "5b8958ffad26a9a589345a03b29ece290c828f4aa8776c1654baff5ecbf3debb",
+                    "edit-model/texture/texture.cfg":  "67a5bd29a4d7f7c0793989d1716d366eea44c1645c60e54f370bba2253626028",
+                    "UpdateFrequencyPresets/VFRNAV_Tablet.xml":  "067157ae49479e5d732b618f9e82a1bd6b242b7739a4a0f11b37cd04c8fad6fc"
+                },
+    "compiled":  {
+                     "en-US.locPak":  "77def8444dc5697499a6ad18c4369dce9a009438971e02df78ea5b0b25d1cfae",
+                     "SimAttachments/Alexhome/EFB_Tablet/attachment.cfg":  "e344f5c4edc73b6698b0deab478c78276058f1622da522130c8e2189102f2b16",
+                     "SimAttachments/Alexhome/EFB_Tablet/config/attached_objects.cfg":  "d4ddfe17bce199b14151bcbe6b7c8791d00e1af56de83d574336e4e9c04f6ee7",
+                     "SimAttachments/Alexhome/EFB_Tablet/input/action.actiondb":  "be6eef1f46eddc30f612205fd399458a5b6041be40a25d1686cb3595eb441059",
+                     "SimAttachments/Alexhome/EFB_Tablet/model/model.actiondb":  "cbc31a5f924723a2a16fd16525e526bba6bb1d14f26681d3ed3e6c5b7561032d",
+                     "SimAttachments/Alexhome/EFB_Tablet/model/model.behavior.xml":  "d4aa50f9e14d4a613d81b7fe809edcae0ab1b3a41031e084ab760fbb862c9877",
+                     "SimAttachments/Alexhome/EFB_Tablet/model/model.xml":  "345e615859b5f67b8d1c924ef9feb98053046003649c193836e8980493cc9f19",
+                     "SimAttachments/Alexhome/EFB_Tablet/model/rig.bin":  "d216ef71124db2216294116d1178c94fbf8d94bd8eb78b79907bb022dd0fd6bc",
+                     "SimAttachments/Alexhome/EFB_Tablet/model/rig.gltf":  "9d1b90754f3d40483ee0b0b58e8e1893bcafd0e1985a1a5f23cb06ea3e6d9a2b",
+                     "SimAttachments/Alexhome/EFB_Tablet/edit/attachment.cfg":  "e344f5c4edc73b6698b0deab478c78276058f1622da522130c8e2189102f2b16",
+                     "SimAttachments/Alexhome/EFB_Tablet/edit/model/model.xml":  "5b8958ffad26a9a589345a03b29ece290c828f4aa8776c1654baff5ecbf3debb",
+                     "SimAttachments/Alexhome/EFB_Tablet/edit/texture/texture.cfg":  "67a5bd29a4d7f7c0793989d1716d366eea44c1645c60e54f370bba2253626028"
+                 }
+}

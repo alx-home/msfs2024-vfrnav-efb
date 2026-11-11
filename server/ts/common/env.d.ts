@@ -54,6 +54,8 @@ declare global {
 
       autostartServer: (_value?: boolean) => Promise<boolean>;
       serverPort: (_value?: number) => Promise<number>;
+      manageEfbAircraft: (_mode: 'standard' | 'deep', _action: 'scan' | 'apply' | 'remove' | 'installed', _selectionJson: string) => Promise<string>;
+      watchVfsProjection: (_previous: string) => Promise<string>;
 
       switchServer: () => Promise<void>;
       watchServerState: () => Promise<ServerState>;

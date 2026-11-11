@@ -80,11 +80,16 @@ else()
             APP_RESOURCES
         EMBEDED_RESOURCES installer_app
         EFB_RESOURCES vfrnav_efb_msfs
+        TABLET_RESOURCES efb_tablet_panel
             RESOURCES
         EFB_THUMBNAIL ${CMAKE_SOURCE_DIR}/PackageDefinitions/alexhome-msfs2024-vfrnav/ContentInfo/Thumbnail.jpg
         EFB_RELEASE_NOTE ${CMAKE_SOURCE_DIR}/vfrnav_efb/EFB/release_notes.json
+        EFB_PANEL_SPB "${TABLET_PANEL_SPB}"
         WASM_STORAGE "${VFRNAV_COMM_WASM_STAGING_FILE}"
     )
+
+    # The panel tree is staged by an always-run custom target; order packaging after it.
+    add_dependencies(installer_resources efb_tablet_panel efb_tablet_panel_spb)
 endif()
 
 # add_subdirectory(Wrapper/)

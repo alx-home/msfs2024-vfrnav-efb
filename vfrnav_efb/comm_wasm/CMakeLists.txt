@@ -24,6 +24,9 @@ endif()
 
 set(COMM_WASM_SRC
    "${CMAKE_CURRENT_SOURCE_DIR}/src/CommWasm.cpp"
+   "${CMAKE_CURRENT_SOURCE_DIR}/src/Simulator.cpp"
+   "${CMAKE_CURRENT_SOURCE_DIR}/src/SimulatorJoystick.cpp"
+   "${CMAKE_CURRENT_SOURCE_DIR}/src/SimulatorPose.cpp"
    "${CMAKE_CURRENT_SOURCE_DIR}/src/Blob.cpp"
    "${CMAKE_CURRENT_SOURCE_DIR}/src/Records.cpp"
 )
@@ -147,9 +150,7 @@ add_custom_command(
 
    # Input files
    -o "${VFRNAV_COMM_WASM_OUTPUT}"
-      ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/vfrnav_comm_wasm_obj.dir/src/CommWasm.cpp.obj
-      ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/vfrnav_comm_wasm_obj.dir/src/Blob.cpp.obj
-      ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/vfrnav_comm_wasm_obj.dir/src/Records.cpp.obj
+   $<TARGET_OBJECTS:vfrnav_comm_wasm_obj>
    "${MSFS_WASM_SIMUTILS}"
    "${MSFS_WASM_VERSIONS}"
    "${MSFS_WASM_SYSROOT}/lib/wasm32-wasi/libc++.a"
@@ -166,6 +167,7 @@ add_custom_command(
       "${MSFS_WASM_SYSROOT}/lib/wasm32-wasi/libc.a"
       "${MSFS_WASM_SYSROOT}/lib/wasm32-wasi/libclang_rt.builtins-wasm32.a"
    COMMENT "Linking vfrnav_comm_wasm.wasm"
+   COMMAND_EXPAND_LISTS
    VERBATIM
 )
 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AssetPackage Version="1.0.0">
+  <ItemSettings>
+    <ContentType>MISC</ContentType>
+    <Title>EFB Tablet Panel</Title>
+    <Manufacturer />
+    <Creator>alex-home</Creator>
+  </ItemSettings>
+  <AssetGroups>
+    <AssetGroup Name="tabletToolbarDefinition">
+      <Type Version="0">SPB</Type>
+      <AssetDir>input\</AssetDir>
+      <OutputDir>InGamePanels\</OutputDir>
+    </AssetGroup>
+  </AssetGroups>
+</AssetPackage>

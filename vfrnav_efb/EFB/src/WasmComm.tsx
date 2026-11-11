@@ -13,31 +13,42 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-const CommbusLoaded = new Promise<void>((resolve) => {
-   Include.addScript("/JS/Services/CommBus.js", () => {
-      resolve();
-   });
-});
+const WASM_TIMEOUT_MS = 10000;
+const TABLET_EVENTS = new Set([
+   "VFRNAV_GET_TABLET_SHORTCUT",
+   "VFRNAV_TABLET_JOYSTICK",
+   "VFRNAV_SET_TABLET_SHORTCUT"
+]);
 
+// Same transport as the SDK's CommBus.js, without loading its global class.
+class WasmCommBusListener extends ViewListener.ViewListener {
+   callWasm(eventName: string, data: string): Promise<unknown> {
+      return this.call("COMM_BUS_WASM_CALLBACK", eventName, data);
+   }
+}
+
+/** @brief Exchange correlated requests and responses with the simulator WASM module. */
 export class WasmComm {
-   private readonly commBusListener = CommbusLoaded.then(() => {
-      return new Promise<CommBusListener>((resolve) => {
-         const listener = RegisterCommBusListener(() => {
+   private commBusListener: Promise<CommBusListener> | undefined;
 
+   /** @brief Initialize the CommBus listener once; failed initialization may be retried. */
+   private getListener() {
+      this.commBusListener ??= Promise.resolve().then(() => {
+         return new Promise<CommBusListener>((resolve, reject) => {
             const callback = (data: string) => {
                listener.off("VFRNAV_WASM_INIT", callback);
 
                if (data.startsWith("error:")) {
-                  console.error(`WASM initialization failed with error: ${data.substring(6)}`);
+                  reject(new Error(`WASM initialization failed with error: ${data.substring(6)}`));
                   return;
                } else if (!data.startsWith("data:")) {
-                  console.error(`Received unexpected initialization data from WASM: ${data}`);
+                  reject(new Error(`Received unexpected initialization data from WASM: ${data}`));
                   return;
                }
 
                const id = +data.substring(5);
-               if (isNaN(id)) {
-                  console.error(`Received malformed initialization data from WASM: ${data}`);
+               if (!Number.isSafeInteger(id) || id < 0) {
+                  reject(new Error(`Received malformed initialization data from WASM: ${data}`));
                   return;
                }
 
@@ -68,32 +79,97 @@ export class WasmComm {
 
                resolve(listener);
             };
-            listener.on("VFRNAV_WASM_INIT", callback);
-            listener.callWasm("VFRNAV_WASM_INIT", `${this.nextRequestId}:init`);
+            const listener = RegisterViewListenerT("JS_LISTENER_COMM_BUS", () => {
+               try {
+                  listener.on("VFRNAV_WASM_INIT", callback);
+                  listener.callWasm("VFRNAV_WASM_INIT", `${this.nextRequestId}:init`);
+               } catch (error) {
+                  listener.off("VFRNAV_WASM_INIT", callback);
+                  reject(error);
+               }
+            }, WasmCommBusListener);
          });
+      }).catch((error: unknown) => {
+         this.commBusListener = undefined;
+         throw error;
       });
-   });
+      return this.commBusListener;
+   }
    private readonly pendingResponses = new Map<number, { resolve: (_response: string) => void, reject: (_error: string) => void }>();
    private nextRequestId = 0;
 
+   /**
+    * @brief Send a request to WASM and await its correlated response.
+    *
+    * @param eventName CommBus event identifying the requested operation.
+    * @param data Payload to send with the request.
+    *
+    * @returns The response payload.
+    *
+    * @throws If initialization, dispatch, or the request fails or times out.
+    */
    async callWasm(eventName: string, data: string): Promise<string | undefined> {
-      const listener = await this.commBusListener;
-      const requestId = ++this.nextRequestId;
-      const responsePromise = new Promise<string>((resolve, reject) => {
-         this.pendingResponses.set(requestId, { resolve, reject });
-      });
+      const hasTimeout = TABLET_EVENTS.has(eventName);
+      let timedOut = false;
+      let requestId: number | undefined;
+      const request = async () => {
+         const listener = await this.getListener();
+         if (timedOut) {
+            throw new Error(`Timed out waiting for WASM response to ${eventName}`);
+         }
 
-      listener.callWasm(eventName, `${requestId}:${data}`);
-      return responsePromise;
+         const id = ++this.nextRequestId;
+         requestId = id;
+
+         return new Promise<string>((resolve, reject) => {
+            this.pendingResponses.set(id, {
+               resolve,
+               reject: error => reject(new Error(error))
+            });
+
+            try {
+               listener.callWasm(eventName, `${id}:${data}`);
+            } catch (error) {
+               this.pendingResponses.delete(id);
+               reject(error);
+            }
+         });
+      };
+
+      if (!hasTimeout) {
+         return request();
+      }
+
+      return new Promise<string>((resolve, reject) => {
+         const timeout = setTimeout(() => {
+            timedOut = true;
+            if (requestId !== undefined) {
+               this.pendingResponses.delete(requestId);
+            }
+
+            reject(new Error(`Timed out waiting for WASM response to ${eventName}`));
+         }, WASM_TIMEOUT_MS);
+
+         request().then(
+            response => {
+               clearTimeout(timeout);
+               resolve(response);
+            },
+            error => {
+               clearTimeout(timeout);
+               reject(error);
+            }
+         );
+      });
    }
 
    async on(eventName: string, handler: (_data: string) => void) {
-      const listener = await this.commBusListener;
+      const listener = await this.getListener();
       listener.on(eventName, handler);
    }
 
    async off(eventName: string, handler: (_data: string) => void) {
-      const listener = await this.commBusListener;
+      const listener = await this.getListener();
       listener.off(eventName, handler);
    }
 };

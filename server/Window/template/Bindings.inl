@@ -57,6 +57,8 @@ Window<WINDOW>::InstallBindings() {
    Bind("autostartServer", &Window::AutostartServer);
    Bind("serverPort", &Window::ServerPort);
    Bind("startupOption", &Window::StartupOption);
+   Bind("manageEfbAircraft", &Window::ManageEfbAircraft);
+   Bind("watchVfsProjection", &Window::WatchVfsProjection);
 
    Bind("watchServerState", &Window::WatchServerState);
    Bind("getServerState", &Window::GetServerState);

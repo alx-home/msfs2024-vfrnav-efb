@@ -176,6 +176,58 @@ export class RecordManager {
       this.planePosBlob.length = 0;
    }
 
+   /**
+    * @brief Retrieve the persisted tablet shortcut from WASM.
+    *
+    * @returns The active shortcut.
+    *
+    * @throws If WASM returns an empty response or the request fails.
+    */
+   public async getTabletShortcut(): Promise<string> {
+      const shortcut = await this.wasm_comm.callWasm("VFRNAV_GET_TABLET_SHORTCUT", "");
+      if (!shortcut) {
+         throw new Error("The WASM module returned an empty tablet shortcut");
+      }
+
+      return shortcut;
+   }
+
+   /**
+    * @brief Run a joystick binding operation.
+    *
+    * @param action Operation to perform: read, capture, cancel capture, or clear the binding.
+    *
+    * @returns The current binding label, or an empty string if no binding exists.
+    *
+    * @throws If WASM returns no response or the request fails.
+    */
+   public async tabletJoystick(action: "get" | "capture" | "cancel" | "clear"): Promise<string> {
+      const binding = await this.wasm_comm.callWasm("VFRNAV_TABLET_JOYSTICK", action);
+      if (binding === undefined) {
+         throw new Error("The WASM module returned no tablet joystick response");
+      }
+
+      return binding;
+   }
+
+   /**
+    * @brief Apply a shortcut through WASM.
+    *
+    * @param shortcut Shortcut to apply.
+    *
+    * @returns The accepted shortcut returned by WASM.
+    *
+    * @throws If WASM returns an empty acknowledgement or the request fails.
+    */
+   public async setTabletShortcut(shortcut: string): Promise<string> {
+      const result = await this.wasm_comm.callWasm("VFRNAV_SET_TABLET_SHORTCUT", shortcut);
+      if (!result) {
+         throw new Error("The WASM module returned an empty tablet shortcut response");
+      }
+
+      return result;
+   }
+
    public async fetchPosition() {
       const info: PlanePos = {
          __PLANE_POS__: true,
