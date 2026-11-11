@@ -50,6 +50,8 @@ const updateFavicon = () => {
 }
 
 (async () => {
+  document.documentElement.style.setProperty('--default-font-size', __MSFS_EMBEDED__ ? '100%' : '70%');
+
   if (__MSFS_EMBEDED__) {
     await import('abortcontroller-polyfill/dist/polyfill-patch-fetch.js');
     await import('@polyfills/pointer-events.js');
