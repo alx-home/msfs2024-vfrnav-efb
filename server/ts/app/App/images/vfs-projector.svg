@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 140" font-family="Consolas, 'Courier New', monospace" font-size="14" font-weight="400" fill="#fff">
+  <rect width="540" height="140" fill="#101010" />
+  <rect width="540" height="24" fill="#203b59" />
+  <path d="m7 7 6 11 6-11Z" fill="#fff" />
+  <text x="29" y="17">VFS Projector</text>
+  <text x="4" y="45">Projects the VFS into Windows File Explorer</text>
+  <rect x="4" y="54" width="53" height="24" fill="#264668" />
+  <text x="8" y="71">Start</text>
+  <path d="M68 66h24m-6-6 6 6-6 6" fill="none" stroke="#a5a5a5" stroke-width="1.5" />
+  <rect x="104" y="54" width="53" height="24" fill="#264668" />
+  <text x="108" y="71">Stop</text>
+  <text x="167" y="71" fill="#3cff00">Projection started</text>
+  <rect x="4" y="86" width="133" height="24" fill="#264668" />
+  <text x="8" y="103">Open in explorer</text>
+</svg>

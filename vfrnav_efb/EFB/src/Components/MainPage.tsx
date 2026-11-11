@@ -22,7 +22,7 @@ import { Manager } from "../Manager";
 import { FileExist, GetFile, OpenFile } from "@shared/Files";
 import { DefaultFuelPreset, FuelPresets, SetFuelCurve } from "@shared/Fuel";
 import { DefaultDeviationPreset, DeviationPresets, SetDeviationCurve } from "@shared/Deviation";
-import { GetPanelSize, SetPanelSize } from "@shared/Settings";
+import { GetPanelSize, SetPanelSize, TabletShortcutMessage, TabletJoystickMessage } from "@shared/Settings";
 import { PdfProcessed } from "@shared/Pdfs";
 
 interface MainPageProps extends RequiredProps<UiViewProps, "appViewService"> {
@@ -108,9 +108,81 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
     });
   }
 
+  /**
+   * @brief Bridge keyboard binding requests and report the active shortcut after a failure.
+   *
+   * @param message Shortcut request received from settings.
+   *
+   * @returns A promise that resolves after the response is sent.
+   */
+  private readonly onTabletShortcutMessage = async (message: TabletShortcutMessage) => {
+    if (message.action === "get") {
+      try {
+        const shortcut = await this.props.manager.getTabletShortcut();
+        messageHandler?.send({
+          shortcut, __TABLET_SHORTCUT__: true, action: "response", error: ""
+        });
+      } catch (error) {
+        messageHandler?.send({
+          __TABLET_SHORTCUT__: true, action: "response", shortcut: "Ctrl+T",
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    } else if (message.action === "set") {
+      try {
+        const shortcut = await this.props.manager.setTabletShortcut(message.shortcut);
+        messageHandler?.send({
+          shortcut, __TABLET_SHORTCUT__: true, action: "response", error: ""
+        });
+      } catch (error) {
+        let shortcut = message.shortcut;
+        try {
+          shortcut = await this.props.manager.getTabletShortcut();
+        } catch (readError) {
+          console.info("Unable to read the current tablet shortcut", readError);
+        }
+        messageHandler?.send({
+          shortcut, __TABLET_SHORTCUT__: true, action: "response",
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
+  };
+
   onGetDate() {
     this.props.manager.onGetDate(0);
   }
+
+  /**
+   * @brief Forward joystick requests to WASM and return the correlated result to settings.
+   *
+   * @param message Joystick request received from settings.
+   *
+   * @returns A promise that resolves after the response is sent or the message is ignored.
+   */
+  private readonly onTabletJoystickMessage = async (message: TabletJoystickMessage) => {
+    if (message.action === "response") {
+      return;
+    }
+
+    let binding = message.binding;
+    let error = "";
+    try {
+      binding = await this.props.manager.tabletJoystick(message.action);
+    } catch (reason) {
+      error = reason instanceof Error ? reason.message : String(reason);
+
+      try {
+        binding = await this.props.manager.tabletJoystick("get");
+      } catch (readError) {
+        console.error("Unable to read the current tablet joystick binding", readError);
+      }
+    }
+
+    messageHandler?.send({
+      __TABLET_JOYSTICK__: true, action: "response", requestId: message.requestId, binding, error
+    });
+  };
 
   onGetATCId() {
     this.props.manager.onGetATCId(0);
@@ -286,6 +358,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.unsubscribe("__GET_RECORDS__", this.onGetPlaneRecords)
       messageHandler.unsubscribe("__GET_SERVER_STATE__", this.onGetServerState)
       messageHandler.unsubscribe("__GET_SETTINGS__", this.onGetSettings)
+      messageHandler.unsubscribe("__TABLET_SHORTCUT__", this.onTabletShortcutMessage)
+      messageHandler.unsubscribe("__TABLET_JOYSTICK__", this.onTabletJoystickMessage)
       messageHandler.unsubscribe("__OPEN_FILE__", this.onOpenFile)
       messageHandler.unsubscribe("__PDF_PROCESSED__", this.onPdfProcessed)
       messageHandler.unsubscribe("__REMOVE_RECORD__", this.onRemoveRecord)
@@ -743,6 +817,8 @@ export class MainPage extends GamepadUiView<HTMLDivElement, MainPageProps> {
       messageHandler.subscribe("__GET_RECORDS__", this.onGetPlaneRecords.bind(this))
       messageHandler.subscribe("__GET_SERVER_STATE__", this.onGetServerState.bind(this))
       messageHandler.subscribe("__GET_SETTINGS__", this.onGetSettings.bind(this))
+      messageHandler.subscribe("__TABLET_SHORTCUT__", this.onTabletShortcutMessage)
+      messageHandler.subscribe("__TABLET_JOYSTICK__", this.onTabletJoystickMessage)
       messageHandler.subscribe("__OPEN_FILE__", this.onOpenFile.bind(this))
       messageHandler.subscribe("__PDF_PROCESSED__", this.onPdfProcessed.bind(this))
       messageHandler.subscribe("__REMOVE_RECORD__", this.onRemoveRecord.bind(this))

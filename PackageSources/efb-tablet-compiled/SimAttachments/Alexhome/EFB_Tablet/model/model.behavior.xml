@@ -1,0 +1,573 @@
+<ModelBehaviors Compiled="True" Version="2" Revision="1">
+	<Components Count="29">
+		<Component ID="VFRNAV_VISIBILITY_INPUT" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<InputEvents Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_PARENT_VISIBILITY" Node="VFRNAV_X" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_ANIM_X" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<Animations Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_ANIM_Y" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<Animations Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_ANIM_Z" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<Animations Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_ANIM_HEADING" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<Animations Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_ANIM_PITCH" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<Animations Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_ANIM_BANK" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<Animations Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_ANIM_SCALE" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<Animations Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_FRAME_PROXY_0" Node="VFRNAV_FRAME_PROXY_0" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_FRAME_PROXY_1" Node="VFRNAV_FRAME_PROXY_1" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_FRAME_PROXY_2" Node="VFRNAV_FRAME_PROXY_2" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_FRAME_PROXY_3" Node="VFRNAV_FRAME_PROXY_3" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_ANIM_EDIT_TABLET" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<Animations Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_ANIM_NATIVE_TABLET" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<Animations Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VISIBLE_EDIT_INPUT_SHIELD" Node="VFRNAV_EDIT_INPUT_SHIELD" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_EDIT_INPUT_SURFACE" Node="VFRNAV_EDIT_INPUT_SURFACE" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VISIBLE_1" Node="VFRNAV_MODE_1" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_HANDLE_1_0" Node="VFRNAV_HANDLE_1_0" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_HANDLE_1_1" Node="VFRNAV_HANDLE_1_1" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_HANDLE_1_2" Node="VFRNAV_HANDLE_1_2" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VISIBLE_2" Node="VFRNAV_MODE_2" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_HANDLE_2_0" Node="VFRNAV_HANDLE_2_0" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_HANDLE_2_1" Node="VFRNAV_HANDLE_2_1" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_HANDLE_2_2" Node="VFRNAV_HANDLE_2_2" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VISIBLE_3" Node="VFRNAV_MODE_3" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="INTERACT_VFRNAV_HANDLE_3_0" Node="VFRNAV_HANDLE_3_0" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_INITIALIZE" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<UpdateCodes Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+		<Component ID="VFRNAV_VISIBILITY_SYNC" UpdateFrequencyPreset="VFRNAV_Tablet_EveryFrame">
+			<UpdateCodes Count="1"/>
+			<PartIDs Count="0"/>
+		</Component>
+	</Components>
+	<Mouserects Count="12">
+		<MouseRect OwnerID="9" HighlightNodeId="VFRNAV_FRAME_PROXY_0">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="16694843588732899287"/>
+					<IMDrag StringID="16694843588732899287"/>
+				</IMCodeInstances>
+				<DragData/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Hand</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Hand</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle</IMDefault>
+				<IMDrag>RightSingle</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="10" HighlightNodeId="VFRNAV_FRAME_PROXY_1">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="16694843588732899287"/>
+					<IMDrag StringID="16694843588732899287"/>
+				</IMCodeInstances>
+				<DragData/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Hand</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Hand</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle</IMDefault>
+				<IMDrag>RightSingle</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="11" HighlightNodeId="VFRNAV_FRAME_PROXY_2">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="16694843588732899287"/>
+					<IMDrag StringID="16694843588732899287"/>
+				</IMCodeInstances>
+				<DragData/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Hand</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Hand</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle</IMDefault>
+				<IMDrag>RightSingle</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="12" HighlightNodeId="VFRNAV_FRAME_PROXY_3">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="16694843588732899287"/>
+					<IMDrag StringID="16694843588732899287"/>
+				</IMCodeInstances>
+				<DragData/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Hand</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Hand</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle</IMDefault>
+				<IMDrag>RightSingle</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="16" HighlightNodeId="VFRNAV_EDIT_INPUT_SURFACE">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="16694843588732899287"/>
+					<IMDrag StringID="16694843588732899287"/>
+				</IMCodeInstances>
+				<DragData/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Hand</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Hand</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>WheelUp+RightSingle+RightDrag+LeftSingle+RightRelease+LeftDrag+LeftRelease+WheelDown</IMDefault>
+				<IMDrag>WheelUp+RightSingle+RightDrag+LeftSingle+RightRelease+LeftDrag+LeftRelease+WheelDown</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="18" HighlightNodeId="VFRNAV_HANDLE_1_0" LockFlagsTemporary="LeftSingle">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="16869688809463535794"/>
+					<IMDrag StringID="16869688809463535794"/>
+				</IMCodeInstances>
+				<DragData DragFlagsLockable="LeftDrag"/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Grab</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Grab</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDefault>
+				<IMDrag>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="19" HighlightNodeId="VFRNAV_HANDLE_1_1" LockFlagsTemporary="LeftSingle">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="5214491690989709076"/>
+					<IMDrag StringID="5214491690989709076"/>
+				</IMCodeInstances>
+				<DragData DragFlagsLockable="LeftDrag"/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Grab</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Grab</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDefault>
+				<IMDrag>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="20" HighlightNodeId="VFRNAV_HANDLE_1_2" LockFlagsTemporary="LeftSingle">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="4008723006144217201"/>
+					<IMDrag StringID="4008723006144217201"/>
+				</IMCodeInstances>
+				<DragData DragFlagsLockable="LeftDrag"/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Grab</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Grab</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDefault>
+				<IMDrag>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="22" HighlightNodeId="VFRNAV_HANDLE_2_0" LockFlagsTemporary="LeftSingle">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="12333346622809636963"/>
+					<IMDrag StringID="12333346622809636963"/>
+				</IMCodeInstances>
+				<DragData DragFlagsLockable="LeftDrag"/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Grab</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Grab</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDefault>
+				<IMDrag>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="23" HighlightNodeId="VFRNAV_HANDLE_2_1" LockFlagsTemporary="LeftSingle">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="4886231850600640468"/>
+					<IMDrag StringID="4886231850600640468"/>
+				</IMCodeInstances>
+				<DragData DragFlagsLockable="LeftDrag"/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Grab</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Grab</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDefault>
+				<IMDrag>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="24" HighlightNodeId="VFRNAV_HANDLE_2_2" LockFlagsTemporary="LeftSingle">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="4330757006978412054"/>
+					<IMDrag StringID="4330757006978412054"/>
+				</IMCodeInstances>
+				<DragData DragFlagsLockable="LeftDrag"/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Grab</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Grab</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDefault>
+				<IMDrag>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+		<MouseRect OwnerID="26" HighlightNodeId="VFRNAV_HANDLE_3_0" LockFlagsTemporary="LeftSingle">
+			<Callback Type="CallbackCode">
+				<IMCodeInstances>
+					<IMDefault StringID="15303863268905985304"/>
+					<IMDrag StringID="15303863268905985304"/>
+				</IMCodeInstances>
+				<DragData DragFlagsLockable="LeftDrag"/>
+			</Callback>
+			<IMCursorsInstances>
+				<IMDefault>
+					<Cursor>Grab</Cursor>
+				</IMDefault>
+				<IMDrag>
+					<Cursor>Grab</Cursor>
+				</IMDrag>
+			</IMCursorsInstances>
+			<IMMouseFlagsInstances>
+				<IMDefault>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDefault>
+				<IMDrag>RightSingle+Unlock+Lock+LeftSingle+LeftDrag+LeftRelease</IMDrag>
+			</IMMouseFlagsInstances>
+			<IMTooltipsInstances>
+				<IMDefault>
+					<Animated/>
+				</IMDefault>
+				<IMDrag/>
+			</IMTooltipsInstances>
+		</MouseRect>
+	</Mouserects>
+	<Animations Count="9">
+		<Animation OwnerID="2" Name="VFRNAV_ANIM_X" Guid="{BB30CC00-0900-C7DD-00BF-6AA300AE87C2}" Length="100.000000" Autoplay="True" Type="Sim">
+			<Parameter>
+				<Code StringID="10395323820396026433"/>
+			</Parameter>
+		</Animation>
+		<Animation OwnerID="3" Name="VFRNAV_ANIM_Y" Guid="{414CCF00-6C60-1021-0002-5FD400A8086C}" Length="100.000000" Autoplay="True" Type="Sim">
+			<Parameter>
+				<Code StringID="6602116183512412656"/>
+			</Parameter>
+		</Animation>
+		<Animation OwnerID="4" Name="VFRNAV_ANIM_Z" Guid="{799BF880-1A80-6055-608C-6E1D0028E8B2}" Length="100.000000" Autoplay="True" Type="Sim">
+			<Parameter>
+				<Code StringID="4974954332621732784"/>
+			</Parameter>
+		</Animation>
+		<Animation OwnerID="5" Name="VFRNAV_ANIM_HEADING" Guid="{D0786000-B580-7E4B-0072-3DAF00CC8AED}" Length="100.000000" Autoplay="True" Type="Sim">
+			<Parameter>
+				<Code StringID="6968531600827336924"/>
+			</Parameter>
+		</Animation>
+		<Animation OwnerID="6" Name="VFRNAV_ANIM_PITCH" Guid="{73CC1580-1280-1539-0037-922C002F9A50}" Length="100.000000" Autoplay="True" Type="Sim">
+			<Parameter>
+				<Code StringID="3000529765159379813"/>
+			</Parameter>
+		</Animation>
+		<Animation OwnerID="7" Name="VFRNAV_ANIM_BANK" Guid="{209951C0-3700-4218-80C1-E34A00A19368}" Length="100.000000" Autoplay="True" Type="Sim">
+			<Parameter>
+				<Code StringID="11963103973720171166"/>
+			</Parameter>
+		</Animation>
+		<Animation OwnerID="8" Name="VFRNAV_ANIM_SCALE" Guid="{70CA4D80-DD00-6B50-0097-1D3F20FD7807}" Length="100.000000" Autoplay="True" Type="Sim">
+			<Parameter>
+				<Code StringID="306597945613297404"/>
+			</Parameter>
+		</Animation>
+		<Animation OwnerID="13" Name="VFRNAV_ANIM_EDIT_TABLET" Guid="{44E32400-8160-1CF3-0083-5EBA00A63476}" Length="100.000000" Autoplay="True" Type="Sim">
+			<Parameter>
+				<Code StringID="2633391367351646640"/>
+			</Parameter>
+		</Animation>
+		<Animation OwnerID="14" Name="VFRNAV_ANIM_NATIVE_TABLET" Guid="{19C3BB20-7F00-EE06-0041-15B0006E63CC}" Length="100.000000" Autoplay="True" Type="Sim">
+			<Parameter>
+				<Code StringID="2633391367351646640"/>
+			</Parameter>
+		</Animation>
+	</Animations>
+	<VisibilityCodes Count="5">
+		<Visibility OwnerID="1">
+			<Parameter>
+				<Code StringID="1659252745483226609"/>
+			</Parameter>
+		</Visibility>
+		<Visibility OwnerID="15">
+			<Parameter>
+				<Code StringID="560288993120556382"/>
+			</Parameter>
+		</Visibility>
+		<Visibility OwnerID="17">
+			<Parameter>
+				<Code StringID="10430493792465090368"/>
+			</Parameter>
+		</Visibility>
+		<Visibility OwnerID="21">
+			<Parameter>
+				<Code StringID="18200376743507327086"/>
+			</Parameter>
+		</Visibility>
+		<Visibility OwnerID="25">
+			<Parameter>
+				<Code StringID="1803963019209568005"/>
+			</Parameter>
+		</Visibility>
+	</VisibilityCodes>
+	<UpdateCodes Count="2">
+		<Update OwnerID="27" StringID="1126095271956673763" Frequency="30.000000"/>
+		<Update OwnerID="28" StringID="1569959444032140000" Frequency="60.000000"/>
+	</UpdateCodes>
+	<InputEvents>
+		<Instances Count="1">
+			<InputEvent OwnerID="0" ID="VFRNAV_EFB_VISIBILITY_TOGGLE">
+				<Value>
+					<Code StringID="12049901802225087090"/>
+					<Units>Boolean</Units>
+					<WatchVars>
+						<GlobalVar ID="VFRNAV_EFB_HIDDEN"/>
+					</WatchVars>
+				</Value>
+				<Inc>
+					<Code/>
+					<Parameters>
+						<Param StringID="10992749366997106479" Type="Float"/>
+					</Parameters>
+				</Inc>
+				<Dec>
+					<Code/>
+					<Parameters>
+						<Param StringID="10992749366997106479" Type="Float"/>
+					</Parameters>
+				</Dec>
+				<Set>
+					<Code StringID="6262589111876530940"/>
+					<Parameters>
+						<Param StringID="10992749366997106479" Type="Float"/>
+					</Parameters>
+				</Set>
+			</InputEvent>
+		</Instances>
+		<Bindings>
+			<Aliases Count="1">
+				<Binding ID="VFRNAV_EFB_VISIBILITY_TOGGLE" Type="Set" InputEventID="0">
+					<Param>-1</Param>
+				</Binding>
+			</Aliases>
+		</Bindings>
+	</InputEvents>
+	<Strings Count="26">
+		<1803963019209568005>(L:VFRNAV_EFB_MODE, Number) 3 ==</1803963019209568005>
+		<5214491690989709076>(L:VFRNAV_EFB_HIDDEN, Number) ! (M:Event) &apos;RightSingle&apos; scmi 0 == and if{ (L:VFRNAV_EFB_MODE, Number) 1 + 4 % (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;RightSingle&apos; scmi 0 != if{ (L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 1 == and if{ (L:VFRNAV_EFB_SHIFT, Number) abs 1.7976931348623157e308 &lt;= (L:VFRNAV_EFB_SHIFT, Number) 0 != and (&gt;O:VFRNAV_CURRENT_SHIFT) (M:Event) &apos;LeftSingle&apos; scmi 0 == (M:Event) &apos;Lock&apos; scmi 0 == or if{ (L:VFRNAV_EFB_Y, Number) (&gt;O:VFRNAV_DRAG_START) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeY) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) (L:VFRNAV_EFB_X, Number) (&gt;O:VFRNAV_START_X) (L:VFRNAV_EFB_Y, Number) (&gt;O:VFRNAV_START_Y) (L:VFRNAV_EFB_Z, Number) (&gt;O:VFRNAV_START_Z) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) } (M:Event) &apos;LeftDrag&apos; scmi 0 == if{ (O:VFRNAV_DRAG_ACTIVE) ! (O:VFRNAV_DRAG_CANCEL) (L:VFRNAV_EFB_DRAG_CANCEL, Number) != or (O:VFRNAV_DRAG_SHIFT) (O:VFRNAV_CURRENT_SHIFT) != or if{ (L:VFRNAV_EFB_Y, Number) (&gt;O:VFRNAV_DRAG_START) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeY) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) (L:VFRNAV_EFB_X, Number) (&gt;O:VFRNAV_START_X) (L:VFRNAV_EFB_Y, Number) (&gt;O:VFRNAV_START_Y) (L:VFRNAV_EFB_Z, Number) (&gt;O:VFRNAV_START_Z) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) } (M:RelativeY) abs 1 &lt;= (O:VFRNAV_MOUSE_START) abs 1 &lt;= and (O:VFRNAV_DRAG_START) abs 20 &lt;= and (O:VFRNAV_START_X) abs 20 &lt;= and (O:VFRNAV_START_Y) abs 20 &lt;= and (O:VFRNAV_START_Z) abs 20 &lt;= and (O:VFRNAV_START_BANK) abs 180 &lt;= and (O:VFRNAV_START_PITCH) abs 180 &lt;= and (O:VFRNAV_START_HEADING) abs 180 &lt;= and if{ (M:RelativeY) (O:VFRNAV_MOUSE_START) - (O:VFRNAV_DRAG_SHIFT) 3 * 1 + * 0.4 * sp0 0 sp1 l0 sp2 0 sp3 l1 (O:VFRNAV_START_BANK) dgrd cos * l2 (O:VFRNAV_START_BANK) dgrd sin * - sp4 l1 (O:VFRNAV_START_BANK) dgrd sin * l2 (O:VFRNAV_START_BANK) dgrd cos * + sp2 l4 sp1 l2 (O:VFRNAV_START_PITCH) dgrd cos * l3 (O:VFRNAV_START_PITCH) dgrd sin * - sp4 l2 (O:VFRNAV_START_PITCH) dgrd sin * l3 (O:VFRNAV_START_PITCH) dgrd cos * + sp3 l4 sp2 l1 (O:VFRNAV_START_HEADING) dgrd cos * l3 (O:VFRNAV_START_HEADING) dgrd sin * + sp4 l3 (O:VFRNAV_START_HEADING) dgrd cos * l1 (O:VFRNAV_START_HEADING) dgrd sin * - sp3 l4 sp1 (O:VFRNAV_START_X) l1 - -20 max 20 min sp1 (O:VFRNAV_START_Y) l2 + -20 max 20 min sp2 (O:VFRNAV_START_Z) l3 + -20 max 20 min sp3 l1 (L:VFRNAV_EFB_X, Number) != l2 (L:VFRNAV_EFB_Y, Number) != or l3 (L:VFRNAV_EFB_Z, Number) != or if{ l1 (&gt;L:VFRNAV_EFB_X, Number) l2 (&gt;L:VFRNAV_EFB_Y, Number) l3 (&gt;L:VFRNAV_EFB_Z, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) } } } } (M:Event) &apos;LeftRelease&apos; scmi 0 == (M:Event) &apos;Unlock&apos; scmi 0 == or if{ 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } }</5214491690989709076>
+		<4330757006978412054>(L:VFRNAV_EFB_HIDDEN, Number) ! (M:Event) &apos;RightSingle&apos; scmi 0 == and if{ (L:VFRNAV_EFB_MODE, Number) 1 + 4 % (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;RightSingle&apos; scmi 0 != if{ (L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 2 == and if{ (L:VFRNAV_EFB_SHIFT, Number) abs 1.7976931348623157e308 &lt;= (L:VFRNAV_EFB_SHIFT, Number) 0 != and (&gt;O:VFRNAV_CURRENT_SHIFT) (M:Event) &apos;LeftSingle&apos; scmi 0 == (M:Event) &apos;Lock&apos; scmi 0 == or if{ (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeX) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;LeftDrag&apos; scmi 0 == if{ (O:VFRNAV_DRAG_ACTIVE) ! (O:VFRNAV_DRAG_CANCEL) (L:VFRNAV_EFB_DRAG_CANCEL, Number) != or (O:VFRNAV_DRAG_SHIFT) (O:VFRNAV_CURRENT_SHIFT) != or if{ (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeX) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:RelativeX) abs 1 &lt;= (O:VFRNAV_MOUSE_START) abs 1 &lt;= and (O:VFRNAV_START_HEADING) abs 180 &lt;= and (O:VFRNAV_START_PITCH) abs 180 &lt;= and (O:VFRNAV_START_BANK) abs 180 &lt;= and if{ (M:RelativeX) (O:VFRNAV_MOUSE_START) - (O:VFRNAV_DRAG_SHIFT) 3 * 1 + * 180 * dgrd sp8 (O:VFRNAV_START_HEADING) dgrd sin sp0 (O:VFRNAV_START_HEADING) dgrd cos sp1 (O:VFRNAV_START_PITCH) dgrd sin sp2 (O:VFRNAV_START_PITCH) dgrd cos sp3 (O:VFRNAV_START_BANK) dgrd sin sp4 (O:VFRNAV_START_BANK) dgrd cos sp5 l8 sin sp6 l8 cos sp7 l1 l5 * l0 l2 * l4 * + sp10 l0 l2 * l5 * l1 l4 * - sp11 l0 l3 * sp12 l3 l4 * sp13 l3 l5 * sp14 0 l2 - sp15 l1 l2 * l4 * l0 l5 * - sp16 l0 l4 * l1 l2 * l5 * + sp17 l1 l3 * sp18 l10 l7 * l12 l6 * - sp20 l11 sp21 l10 l6 * l12 l7 * + sp22 l13 l7 * l15 l6 * - sp23 l14 sp24 l13 l6 * l15 l7 * + sp25 l16 l7 * l18 l6 * - sp26 l17 sp27 l16 l6 * l18 l7 * + sp28 l23 l23 * l24 l24 * + sqrt sp9 0 l25 - l9 atg2 rddg sp30 l9 1e-12 &gt; if{ l22 l28 atg2 rddg sp31 l23 l24 atg2 rddg sp32 } els{ 0 l26 - l20 atg2 rddg sp31 0 sp32 } l8 0 == if{ (O:VFRNAV_START_PITCH) sp30 (O:VFRNAV_START_HEADING) sp31 (O:VFRNAV_START_BANK) sp32 } l30 (L:VFRNAV_EFB_PITCH, Number) != l31 (L:VFRNAV_EFB_HEADING, Number) != or l32 (L:VFRNAV_EFB_BANK, Number) != or if{ l30 (&gt;L:VFRNAV_EFB_PITCH, Number) l31 (&gt;L:VFRNAV_EFB_HEADING, Number) l32 (&gt;L:VFRNAV_EFB_BANK, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) } } } } (M:Event) &apos;LeftRelease&apos; scmi 0 == (M:Event) &apos;Unlock&apos; scmi 0 == or if{ 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } }</4330757006978412054>
+		<15303863268905985304>(L:VFRNAV_EFB_HIDDEN, Number) ! (M:Event) &apos;RightSingle&apos; scmi 0 == and if{ (L:VFRNAV_EFB_MODE, Number) 1 + 4 % (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;RightSingle&apos; scmi 0 != if{ (L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 3 == and if{ (L:VFRNAV_EFB_SHIFT, Number) abs 1.7976931348623157e308 &lt;= (L:VFRNAV_EFB_SHIFT, Number) 0 != and (&gt;O:VFRNAV_CURRENT_SHIFT) (M:Event) &apos;LeftSingle&apos; scmi 0 == (M:Event) &apos;Lock&apos; scmi 0 == or if{ (L:VFRNAV_EFB_WIDTH, Number) (&gt;O:VFRNAV_DRAG_START) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeX) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;LeftDrag&apos; scmi 0 == if{ (O:VFRNAV_DRAG_ACTIVE) ! (O:VFRNAV_DRAG_CANCEL) (L:VFRNAV_EFB_DRAG_CANCEL, Number) != or (O:VFRNAV_DRAG_SHIFT) (O:VFRNAV_CURRENT_SHIFT) != or if{ (L:VFRNAV_EFB_WIDTH, Number) (&gt;O:VFRNAV_DRAG_START) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeX) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:RelativeX) abs 1 &lt;= (O:VFRNAV_MOUSE_START) abs 1 &lt;= and (O:VFRNAV_DRAG_START) abs 3 &lt;= and if{ (O:VFRNAV_DRAG_START) (M:RelativeX) (O:VFRNAV_MOUSE_START) - (O:VFRNAV_DRAG_SHIFT) 3 * 1 + * 2 * + 0.25 max 3 min s0 (L:VFRNAV_EFB_WIDTH, Number) != if{ l0 (&gt;L:VFRNAV_EFB_WIDTH, Number) l0 (&gt;L:VFRNAV_EFB_HEIGHT, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) } } } } (M:Event) &apos;LeftRelease&apos; scmi 0 == (M:Event) &apos;Unlock&apos; scmi 0 == or if{ 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } }</15303863268905985304>
+		<10992749366997106479>p0</10992749366997106479>
+		<10430493792465090368>(L:VFRNAV_EFB_MODE, Number) 1 ==</10430493792465090368>
+		<10395323820396026433>(L:VFRNAV_EFB_X, Number) -20 max 20 min 20 + 2.5 *</10395323820396026433>
+		<560288993120556382>(L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 0 &gt; and</560288993120556382>
+		<12333346622809636963>(L:VFRNAV_EFB_HIDDEN, Number) ! (M:Event) &apos;RightSingle&apos; scmi 0 == and if{ (L:VFRNAV_EFB_MODE, Number) 1 + 4 % (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;RightSingle&apos; scmi 0 != if{ (L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 2 == and if{ (L:VFRNAV_EFB_SHIFT, Number) abs 1.7976931348623157e308 &lt;= (L:VFRNAV_EFB_SHIFT, Number) 0 != and (&gt;O:VFRNAV_CURRENT_SHIFT) (M:Event) &apos;LeftSingle&apos; scmi 0 == (M:Event) &apos;Lock&apos; scmi 0 == or if{ (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeY) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;LeftDrag&apos; scmi 0 == if{ (O:VFRNAV_DRAG_ACTIVE) ! (O:VFRNAV_DRAG_CANCEL) (L:VFRNAV_EFB_DRAG_CANCEL, Number) != or (O:VFRNAV_DRAG_SHIFT) (O:VFRNAV_CURRENT_SHIFT) != or if{ (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeY) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:RelativeY) abs 1 &lt;= (O:VFRNAV_MOUSE_START) abs 1 &lt;= and (O:VFRNAV_START_HEADING) abs 180 &lt;= and (O:VFRNAV_START_PITCH) abs 180 &lt;= and (O:VFRNAV_START_BANK) abs 180 &lt;= and if{ (M:RelativeY) (O:VFRNAV_MOUSE_START) - (O:VFRNAV_DRAG_SHIFT) 3 * 1 + * 180 * dgrd sp8 (O:VFRNAV_START_HEADING) dgrd sin sp0 (O:VFRNAV_START_HEADING) dgrd cos sp1 (O:VFRNAV_START_PITCH) dgrd sin sp2 (O:VFRNAV_START_PITCH) dgrd cos sp3 (O:VFRNAV_START_BANK) dgrd sin sp4 (O:VFRNAV_START_BANK) dgrd cos sp5 l8 sin sp6 l8 cos sp7 l1 l5 * l0 l2 * l4 * + sp10 l0 l2 * l5 * l1 l4 * - sp11 l0 l3 * sp12 l3 l4 * sp13 l3 l5 * sp14 0 l2 - sp15 l1 l2 * l4 * l0 l5 * - sp16 l0 l4 * l1 l2 * l5 * + sp17 l1 l3 * sp18 l10 sp20 l11 l7 * l12 l6 * + sp21 l12 l7 * l11 l6 * - sp22 l13 sp23 l14 l7 * l15 l6 * + sp24 l15 l7 * l14 l6 * - sp25 l16 sp26 l17 l7 * l18 l6 * + sp27 l18 l7 * l17 l6 * - sp28 l23 l23 * l24 l24 * + sqrt sp9 0 l25 - l9 atg2 rddg sp30 l9 1e-12 &gt; if{ l22 l28 atg2 rddg sp31 l23 l24 atg2 rddg sp32 } els{ 0 l26 - l20 atg2 rddg sp31 0 sp32 } l8 0 == if{ (O:VFRNAV_START_PITCH) sp30 (O:VFRNAV_START_HEADING) sp31 (O:VFRNAV_START_BANK) sp32 } l30 (L:VFRNAV_EFB_PITCH, Number) != l31 (L:VFRNAV_EFB_HEADING, Number) != or l32 (L:VFRNAV_EFB_BANK, Number) != or if{ l30 (&gt;L:VFRNAV_EFB_PITCH, Number) l31 (&gt;L:VFRNAV_EFB_HEADING, Number) l32 (&gt;L:VFRNAV_EFB_BANK, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) } } } } (M:Event) &apos;LeftRelease&apos; scmi 0 == (M:Event) &apos;Unlock&apos; scmi 0 == or if{ 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } }</12333346622809636963>
+		<3000529765159379813>(L:VFRNAV_EFB_PITCH, Number) -180 max 180 min 180 + 100 * 360 /</3000529765159379813>
+		<18200376743507327086>(L:VFRNAV_EFB_MODE, Number) 2 ==</18200376743507327086>
+		<4008723006144217201>(L:VFRNAV_EFB_HIDDEN, Number) ! (M:Event) &apos;RightSingle&apos; scmi 0 == and if{ (L:VFRNAV_EFB_MODE, Number) 1 + 4 % (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;RightSingle&apos; scmi 0 != if{ (L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 1 == and if{ (L:VFRNAV_EFB_SHIFT, Number) abs 1.7976931348623157e308 &lt;= (L:VFRNAV_EFB_SHIFT, Number) 0 != and (&gt;O:VFRNAV_CURRENT_SHIFT) (M:Event) &apos;LeftSingle&apos; scmi 0 == (M:Event) &apos;Lock&apos; scmi 0 == or if{ (L:VFRNAV_EFB_Z, Number) (&gt;O:VFRNAV_DRAG_START) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeY) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) (L:VFRNAV_EFB_X, Number) (&gt;O:VFRNAV_START_X) (L:VFRNAV_EFB_Y, Number) (&gt;O:VFRNAV_START_Y) (L:VFRNAV_EFB_Z, Number) (&gt;O:VFRNAV_START_Z) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) } (M:Event) &apos;LeftDrag&apos; scmi 0 == if{ (O:VFRNAV_DRAG_ACTIVE) ! (O:VFRNAV_DRAG_CANCEL) (L:VFRNAV_EFB_DRAG_CANCEL, Number) != or (O:VFRNAV_DRAG_SHIFT) (O:VFRNAV_CURRENT_SHIFT) != or if{ (L:VFRNAV_EFB_Z, Number) (&gt;O:VFRNAV_DRAG_START) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeY) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) (L:VFRNAV_EFB_X, Number) (&gt;O:VFRNAV_START_X) (L:VFRNAV_EFB_Y, Number) (&gt;O:VFRNAV_START_Y) (L:VFRNAV_EFB_Z, Number) (&gt;O:VFRNAV_START_Z) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) } (M:RelativeY) abs 1 &lt;= (O:VFRNAV_MOUSE_START) abs 1 &lt;= and (O:VFRNAV_DRAG_START) abs 20 &lt;= and (O:VFRNAV_START_X) abs 20 &lt;= and (O:VFRNAV_START_Y) abs 20 &lt;= and (O:VFRNAV_START_Z) abs 20 &lt;= and (O:VFRNAV_START_BANK) abs 180 &lt;= and (O:VFRNAV_START_PITCH) abs 180 &lt;= and (O:VFRNAV_START_HEADING) abs 180 &lt;= and if{ (M:RelativeY) (O:VFRNAV_MOUSE_START) - (O:VFRNAV_DRAG_SHIFT) 3 * 1 + * 0.4 * sp0 0 sp1 0 sp2 l0 sp3 l1 (O:VFRNAV_START_BANK) dgrd cos * l2 (O:VFRNAV_START_BANK) dgrd sin * - sp4 l1 (O:VFRNAV_START_BANK) dgrd sin * l2 (O:VFRNAV_START_BANK) dgrd cos * + sp2 l4 sp1 l2 (O:VFRNAV_START_PITCH) dgrd cos * l3 (O:VFRNAV_START_PITCH) dgrd sin * - sp4 l2 (O:VFRNAV_START_PITCH) dgrd sin * l3 (O:VFRNAV_START_PITCH) dgrd cos * + sp3 l4 sp2 l1 (O:VFRNAV_START_HEADING) dgrd cos * l3 (O:VFRNAV_START_HEADING) dgrd sin * + sp4 l3 (O:VFRNAV_START_HEADING) dgrd cos * l1 (O:VFRNAV_START_HEADING) dgrd sin * - sp3 l4 sp1 (O:VFRNAV_START_X) l1 - -20 max 20 min sp1 (O:VFRNAV_START_Y) l2 + -20 max 20 min sp2 (O:VFRNAV_START_Z) l3 + -20 max 20 min sp3 l1 (L:VFRNAV_EFB_X, Number) != l2 (L:VFRNAV_EFB_Y, Number) != or l3 (L:VFRNAV_EFB_Z, Number) != or if{ l1 (&gt;L:VFRNAV_EFB_X, Number) l2 (&gt;L:VFRNAV_EFB_Y, Number) l3 (&gt;L:VFRNAV_EFB_Z, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) } } } } (M:Event) &apos;LeftRelease&apos; scmi 0 == (M:Event) &apos;Unlock&apos; scmi 0 == or if{ 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } }</4008723006144217201>
+		<12049901802225087090>(L:VFRNAV_EFB_HIDDEN, Number)</12049901802225087090>
+		<11963103973720171166>(L:VFRNAV_EFB_BANK, Number) -180 max 180 min 180 + 100 * 360 /</11963103973720171166>
+		<4974954332621732784>(L:VFRNAV_EFB_Z, Number) -20 max 20 min 20 + 2.5 *</4974954332621732784>
+		<2633391367351646640>(L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 0 &gt; and 100 *</2633391367351646640>
+		<16869688809463535794>(L:VFRNAV_EFB_HIDDEN, Number) ! (M:Event) &apos;RightSingle&apos; scmi 0 == and if{ (L:VFRNAV_EFB_MODE, Number) 1 + 4 % (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;RightSingle&apos; scmi 0 != if{ (L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 1 == and if{ (L:VFRNAV_EFB_SHIFT, Number) abs 1.7976931348623157e308 &lt;= (L:VFRNAV_EFB_SHIFT, Number) 0 != and (&gt;O:VFRNAV_CURRENT_SHIFT) (M:Event) &apos;LeftSingle&apos; scmi 0 == (M:Event) &apos;Lock&apos; scmi 0 == or if{ (L:VFRNAV_EFB_X, Number) (&gt;O:VFRNAV_DRAG_START) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeX) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) (L:VFRNAV_EFB_X, Number) (&gt;O:VFRNAV_START_X) (L:VFRNAV_EFB_Y, Number) (&gt;O:VFRNAV_START_Y) (L:VFRNAV_EFB_Z, Number) (&gt;O:VFRNAV_START_Z) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) } (M:Event) &apos;LeftDrag&apos; scmi 0 == if{ (O:VFRNAV_DRAG_ACTIVE) ! (O:VFRNAV_DRAG_CANCEL) (L:VFRNAV_EFB_DRAG_CANCEL, Number) != or (O:VFRNAV_DRAG_SHIFT) (O:VFRNAV_CURRENT_SHIFT) != or if{ (L:VFRNAV_EFB_X, Number) (&gt;O:VFRNAV_DRAG_START) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeX) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) (L:VFRNAV_EFB_X, Number) (&gt;O:VFRNAV_START_X) (L:VFRNAV_EFB_Y, Number) (&gt;O:VFRNAV_START_Y) (L:VFRNAV_EFB_Z, Number) (&gt;O:VFRNAV_START_Z) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) } (M:RelativeX) abs 1 &lt;= (O:VFRNAV_MOUSE_START) abs 1 &lt;= and (O:VFRNAV_DRAG_START) abs 20 &lt;= and (O:VFRNAV_START_X) abs 20 &lt;= and (O:VFRNAV_START_Y) abs 20 &lt;= and (O:VFRNAV_START_Z) abs 20 &lt;= and (O:VFRNAV_START_BANK) abs 180 &lt;= and (O:VFRNAV_START_PITCH) abs 180 &lt;= and (O:VFRNAV_START_HEADING) abs 180 &lt;= and if{ (M:RelativeX) (O:VFRNAV_MOUSE_START) - (O:VFRNAV_DRAG_SHIFT) 3 * 1 + * 0.4 * -1 * sp0 l0 sp1 0 sp2 0 sp3 l1 (O:VFRNAV_START_BANK) dgrd cos * l2 (O:VFRNAV_START_BANK) dgrd sin * - sp4 l1 (O:VFRNAV_START_BANK) dgrd sin * l2 (O:VFRNAV_START_BANK) dgrd cos * + sp2 l4 sp1 l2 (O:VFRNAV_START_PITCH) dgrd cos * l3 (O:VFRNAV_START_PITCH) dgrd sin * - sp4 l2 (O:VFRNAV_START_PITCH) dgrd sin * l3 (O:VFRNAV_START_PITCH) dgrd cos * + sp3 l4 sp2 l1 (O:VFRNAV_START_HEADING) dgrd cos * l3 (O:VFRNAV_START_HEADING) dgrd sin * + sp4 l3 (O:VFRNAV_START_HEADING) dgrd cos * l1 (O:VFRNAV_START_HEADING) dgrd sin * - sp3 l4 sp1 (O:VFRNAV_START_X) l1 - -20 max 20 min sp1 (O:VFRNAV_START_Y) l2 + -20 max 20 min sp2 (O:VFRNAV_START_Z) l3 + -20 max 20 min sp3 l1 (L:VFRNAV_EFB_X, Number) != l2 (L:VFRNAV_EFB_Y, Number) != or l3 (L:VFRNAV_EFB_Z, Number) != or if{ l1 (&gt;L:VFRNAV_EFB_X, Number) l2 (&gt;L:VFRNAV_EFB_Y, Number) l3 (&gt;L:VFRNAV_EFB_Z, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) } } } } (M:Event) &apos;LeftRelease&apos; scmi 0 == (M:Event) &apos;Unlock&apos; scmi 0 == or if{ 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } }</16869688809463535794>
+		<4886231850600640468>(L:VFRNAV_EFB_HIDDEN, Number) ! (M:Event) &apos;RightSingle&apos; scmi 0 == and if{ (L:VFRNAV_EFB_MODE, Number) 1 + 4 % (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;RightSingle&apos; scmi 0 != if{ (L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 2 == and if{ (L:VFRNAV_EFB_SHIFT, Number) abs 1.7976931348623157e308 &lt;= (L:VFRNAV_EFB_SHIFT, Number) 0 != and (&gt;O:VFRNAV_CURRENT_SHIFT) (M:Event) &apos;LeftSingle&apos; scmi 0 == (M:Event) &apos;Lock&apos; scmi 0 == or if{ (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeX) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:Event) &apos;LeftDrag&apos; scmi 0 == if{ (O:VFRNAV_DRAG_ACTIVE) ! (O:VFRNAV_DRAG_CANCEL) (L:VFRNAV_EFB_DRAG_CANCEL, Number) != or (O:VFRNAV_DRAG_SHIFT) (O:VFRNAV_CURRENT_SHIFT) != or if{ (L:VFRNAV_EFB_PITCH, Number) (&gt;O:VFRNAV_START_PITCH) (L:VFRNAV_EFB_BANK, Number) (&gt;O:VFRNAV_START_BANK) (L:VFRNAV_EFB_HEADING, Number) (&gt;O:VFRNAV_START_HEADING) (L:VFRNAV_EFB_DRAG_CANCEL, Number) (&gt;O:VFRNAV_DRAG_CANCEL) (M:RelativeX) (&gt;O:VFRNAV_MOUSE_START) (O:VFRNAV_CURRENT_SHIFT) (&gt;O:VFRNAV_DRAG_SHIFT) 1 (&gt;O:VFRNAV_DRAG_ACTIVE) } (M:RelativeX) abs 1 &lt;= (O:VFRNAV_MOUSE_START) abs 1 &lt;= and (O:VFRNAV_START_HEADING) abs 180 &lt;= and (O:VFRNAV_START_PITCH) abs 180 &lt;= and (O:VFRNAV_START_BANK) abs 180 &lt;= and if{ (M:RelativeX) (O:VFRNAV_MOUSE_START) - (O:VFRNAV_DRAG_SHIFT) 3 * 1 + * -180 * dgrd sp8 (O:VFRNAV_START_HEADING) dgrd sin sp0 (O:VFRNAV_START_HEADING) dgrd cos sp1 (O:VFRNAV_START_PITCH) dgrd sin sp2 (O:VFRNAV_START_PITCH) dgrd cos sp3 (O:VFRNAV_START_BANK) dgrd sin sp4 (O:VFRNAV_START_BANK) dgrd cos sp5 l8 sin sp6 l8 cos sp7 l1 l5 * l0 l2 * l4 * + sp10 l0 l2 * l5 * l1 l4 * - sp11 l0 l3 * sp12 l3 l4 * sp13 l3 l5 * sp14 0 l2 - sp15 l1 l2 * l4 * l0 l5 * - sp16 l0 l4 * l1 l2 * l5 * + sp17 l1 l3 * sp18 l10 l7 * l11 l6 * + sp20 l11 l7 * l10 l6 * - sp21 l12 sp22 l13 l7 * l14 l6 * + sp23 l14 l7 * l13 l6 * - sp24 l15 sp25 l16 l7 * l17 l6 * + sp26 l17 l7 * l16 l6 * - sp27 l18 sp28 l23 l23 * l24 l24 * + sqrt sp9 0 l25 - l9 atg2 rddg sp30 l9 1e-12 &gt; if{ l22 l28 atg2 rddg sp31 l23 l24 atg2 rddg sp32 } els{ 0 l26 - l20 atg2 rddg sp31 0 sp32 } l8 0 == if{ (O:VFRNAV_START_PITCH) sp30 (O:VFRNAV_START_HEADING) sp31 (O:VFRNAV_START_BANK) sp32 } l30 (L:VFRNAV_EFB_PITCH, Number) != l31 (L:VFRNAV_EFB_HEADING, Number) != or l32 (L:VFRNAV_EFB_BANK, Number) != or if{ l30 (&gt;L:VFRNAV_EFB_PITCH, Number) l31 (&gt;L:VFRNAV_EFB_HEADING, Number) l32 (&gt;L:VFRNAV_EFB_BANK, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) } } } } (M:Event) &apos;LeftRelease&apos; scmi 0 == (M:Event) &apos;Unlock&apos; scmi 0 == or if{ 0 (&gt;O:VFRNAV_DRAG_ACTIVE) } }</4886231850600640468>
+		<16694843588732899287>(L:VFRNAV_EFB_HIDDEN, Number) ! (M:Event) &apos;RightSingle&apos; scmi 0 == and if{ (L:VFRNAV_EFB_MODE, Number) 1 + 4 % (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) 0 (&gt;O:VFRNAV_DRAG_ACTIVE) }</16694843588732899287>
+		<6968531600827336924>(L:VFRNAV_EFB_HEADING, Number) -180 max 180 min 180 + 100 * 360 /</6968531600827336924>
+		<1569959444032140000>(O:VFRNAV_STOCK_HIDE_READY) (L:VFRNAV_EFB_TOGGLE_REQUEST, Number) 0 == and if{ (L:1:XMLVAR_3D_EFB_Hidden) ! ! (O:VFRNAV_STOCK_HIDE_LAST) != if{ (L:1:XMLVAR_3D_EFB_Hidden) ! ! (L:VFRNAV_EFB_HIDDEN, Number) ! ! != if{ 1 (&gt;L:VFRNAV_EFB_TOGGLE_REQUEST, Number) } } } (L:VFRNAV_EFB_TOGGLE_REQUEST, Number) 0 != if{ (L:VFRNAV_EFB_HIDDEN, Number) ! (&gt;L:VFRNAV_EFB_HIDDEN, Number) 0 (&gt;L:VFRNAV_EFB_TOGGLE_REQUEST, Number) (L:VFRNAV_EFB_HIDDEN, Number) if{ 0 (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) } } (L:VFRNAV_EFB_HIDDEN, Number) ! ! (L:1:XMLVAR_3D_EFB_Hidden) ! ! != if{ (L:VFRNAV_EFB_HIDDEN, Number) ! ! (&gt;L:1:XMLVAR_3D_EFB_Hidden) } (L:1:XMLVAR_3D_EFB_Hidden) ! ! (&gt;O:VFRNAV_STOCK_HIDE_LAST) 1 (&gt;O:VFRNAV_STOCK_HIDE_READY)</1569959444032140000>
+		<1126095271956673763>(O:VFRNAV_INSTANCE_READY) ! if{ (L:VFRNAV_EFB_INSTANCE, Number) 1 + (&gt;L:VFRNAV_EFB_INSTANCE, Number) 0 (&gt;L:VFRNAV_EFB_READY, Number) 1 (&gt;O:VFRNAV_INSTANCE_READY) } (L:VFRNAV_EFB_READY, Number) 0 == if{ 0 (&gt;L:VFRNAV_EFB_X, Number) 0.35 (&gt;L:VFRNAV_EFB_Y, Number) 1.2 (&gt;L:VFRNAV_EFB_Z, Number) 0 (&gt;L:VFRNAV_EFB_PITCH, Number) 0 (&gt;L:VFRNAV_EFB_BANK, Number) 0 (&gt;L:VFRNAV_EFB_HEADING, Number) 1 (&gt;L:VFRNAV_EFB_WIDTH, Number) 1 (&gt;L:VFRNAV_EFB_HEIGHT, Number) 0 (&gt;L:VFRNAV_EFB_MODE, Number) 0 (&gt;L:VFRNAV_EFB_REVISION, Number) 0 (&gt;L:VFRNAV_EFB_INPUT_CALLS, Number) 0 (&gt;L:VFRNAV_EFB_INPUT_VALUE, Number) 1 (&gt;L:VFRNAV_EFB_READY, Number) } (L:VFRNAV_EFB_X, Number) -20 &gt;= (L:VFRNAV_EFB_X, Number) 20 &lt;= and ! if{ 0 (&gt;L:VFRNAV_EFB_X, Number) (L:VFRNAV_EFB_POSE_RECOVERIES, Number) 1 + (&gt;L:VFRNAV_EFB_POSE_RECOVERIES, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) } (L:VFRNAV_EFB_Y, Number) -20 &gt;= (L:VFRNAV_EFB_Y, Number) 20 &lt;= and ! if{ 0.35 (&gt;L:VFRNAV_EFB_Y, Number) (L:VFRNAV_EFB_POSE_RECOVERIES, Number) 1 + (&gt;L:VFRNAV_EFB_POSE_RECOVERIES, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) } (L:VFRNAV_EFB_Z, Number) -20 &gt;= (L:VFRNAV_EFB_Z, Number) 20 &lt;= and ! if{ 1.2 (&gt;L:VFRNAV_EFB_Z, Number) (L:VFRNAV_EFB_POSE_RECOVERIES, Number) 1 + (&gt;L:VFRNAV_EFB_POSE_RECOVERIES, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) } (L:VFRNAV_EFB_PITCH, Number) -180 &gt;= (L:VFRNAV_EFB_PITCH, Number) 180 &lt;= and ! if{ 0 (&gt;L:VFRNAV_EFB_PITCH, Number) (L:VFRNAV_EFB_POSE_RECOVERIES, Number) 1 + (&gt;L:VFRNAV_EFB_POSE_RECOVERIES, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) } (L:VFRNAV_EFB_BANK, Number) -180 &gt;= (L:VFRNAV_EFB_BANK, Number) 180 &lt;= and ! if{ 0 (&gt;L:VFRNAV_EFB_BANK, Number) (L:VFRNAV_EFB_POSE_RECOVERIES, Number) 1 + (&gt;L:VFRNAV_EFB_POSE_RECOVERIES, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) } (L:VFRNAV_EFB_HEADING, Number) -180 &gt;= (L:VFRNAV_EFB_HEADING, Number) 180 &lt;= and ! if{ 0 (&gt;L:VFRNAV_EFB_HEADING, Number) (L:VFRNAV_EFB_POSE_RECOVERIES, Number) 1 + (&gt;L:VFRNAV_EFB_POSE_RECOVERIES, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) } (L:VFRNAV_EFB_WIDTH, Number) 0.25 &gt;= (L:VFRNAV_EFB_WIDTH, Number) 3 &lt;= and ! if{ 1 (&gt;L:VFRNAV_EFB_WIDTH, Number) (L:VFRNAV_EFB_POSE_RECOVERIES, Number) 1 + (&gt;L:VFRNAV_EFB_POSE_RECOVERIES, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) } (L:VFRNAV_EFB_HEIGHT, Number) 0.25 &gt;= (L:VFRNAV_EFB_HEIGHT, Number) 3 &lt;= and ! if{ 1 (&gt;L:VFRNAV_EFB_HEIGHT, Number) (L:VFRNAV_EFB_POSE_RECOVERIES, Number) 1 + (&gt;L:VFRNAV_EFB_POSE_RECOVERIES, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) } (L:VFRNAV_EFB_RESET_POSE_REQUEST, Number) 0 != if{ 0 (&gt;L:VFRNAV_EFB_RESET_POSE_REQUEST, Number) 0 (&gt;L:VFRNAV_EFB_X, Number) 0.35 (&gt;L:VFRNAV_EFB_Y, Number) 1.2 (&gt;L:VFRNAV_EFB_Z, Number) 0 (&gt;L:VFRNAV_EFB_PITCH, Number) 0 (&gt;L:VFRNAV_EFB_BANK, Number) 0 (&gt;L:VFRNAV_EFB_HEADING, Number) 1 (&gt;L:VFRNAV_EFB_WIDTH, Number) 1 (&gt;L:VFRNAV_EFB_HEIGHT, Number) 0 (&gt;L:VFRNAV_EFB_MODE, Number) (L:VFRNAV_EFB_POSE_RECOVERIES, Number) 1 + (&gt;L:VFRNAV_EFB_POSE_RECOVERIES, Number) (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number) (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number) }</1126095271956673763>
+		<6602116183512412656>(L:VFRNAV_EFB_Y, Number) -20 max 20 min 20 + 2.5 *</6602116183512412656>
+		<1659252745483226609>(L:VFRNAV_EFB_HIDDEN, Number) !</1659252745483226609>
+		<306597945613297404>(L:VFRNAV_EFB_WIDTH, Number) 0.25 max 3 min 0.25 - 100 * 2.75 /</306597945613297404>
+		<6262589111876530940>(L:VFRNAV_EFB_INPUT_CALLS, Number) 1 + (&gt;L:VFRNAV_EFB_INPUT_CALLS, Number) p0 (&gt;L:VFRNAV_EFB_INPUT_VALUE, Number) p0 -1 == if{ 1 (&gt;L:VFRNAV_EFB_TOGGLE_REQUEST, Number) } els{ p0 0 != (O:VFRNAV_TOGGLE_HELD) ! and if{ 1 (&gt;L:VFRNAV_EFB_TOGGLE_REQUEST, Number) } p0 0 != (&gt;O:VFRNAV_TOGGLE_HELD) }</6262589111876530940>
+	</Strings>
+</ModelBehaviors>

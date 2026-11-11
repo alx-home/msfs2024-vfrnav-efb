@@ -37,7 +37,7 @@ const Trailer = () => {
   const openEFB = useCallback(() => { window.openEFB(); }, [])
   const openWebEFB = useCallback(() => { window.openWebEFB(); }, [])
 
-  return <div className='flex flex-row shrink bg-slate-800 p-2 shadow-md justify-end'>
+  return <div className='flex flex-row shrink bg-slate-800 p-2 shadow-lg border-t border-slate-700/50 justify-end'>
     <Button className='px-4' active={!serverLock} disabled={serverLock} onClick={switchServer}
     >
       {serverStateStr}

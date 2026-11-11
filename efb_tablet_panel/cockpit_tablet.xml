@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SimBase.Document Type="InGamePanels" version="1,0">
+  <Filename>cockpit_tablet.spb</Filename>
+  <InGamePanels.InGamePanelDefinition
+    id="PANEL_COCKPIT_TABLET"
+    Name="Cockpit Tablet"
+    url="HTML_UI/InGamePanels/EfbTablet/Panel.html"
+    icon="COCKPIT_TABLET_OUTLINE"
+    resizeDirections="Both"
+    minWidth="20" minHeight="15"
+    defaultWidth="25" defaultHeight="20"
+    defaultTop="8" defaultRight="2"
+    buttonVisible="true">
+  </InGamePanels.InGamePanelDefinition>
+</SimBase.Document>

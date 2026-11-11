@@ -127,6 +127,42 @@ export const GetPanelSizeRecord = GenRecord<GetPanelSize>({
   __GET_PANEL_SIZE__: true,
 }, {});
 
+/** @brief Request or return the simulator's shared cockpit-tablet keyboard shortcut. */
+export type TabletShortcutMessage = {
+  __TABLET_SHORTCUT__: true,
+
+  action: "get" | "set" | "response",
+  shortcut: string,
+  error: string
+};
+
+export const TabletShortcutMessageRecord = GenRecord<TabletShortcutMessage>({
+  __TABLET_SHORTCUT__: true,
+
+  action: "get",
+  shortcut: "",
+  error: ""
+}, {});
+
+/** @brief Request joystick binding operations and correlate responses by request ID. */
+export type TabletJoystickMessage = {
+  __TABLET_JOYSTICK__: true,
+
+  action: "get" | "capture" | "cancel" | "clear" | "response",
+  requestId: number,
+  binding: string,
+  error: string
+};
+
+export const TabletJoystickMessageRecord = GenRecord<TabletJoystickMessage>({
+  __TABLET_JOYSTICK__: true,
+
+  action: "get",
+  requestId: 0,
+  binding: "",
+  error: ""
+}, {});
+
 export type CleanPlaneRecords = {
   __CLEAN_PLANE_RECORDS__: true
 };

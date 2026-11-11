@@ -19,6 +19,79 @@
 #include "Window/template/Window.h"
 
 #include "main.h"
+#include "Tablet/Fleet.h"
+#include <boost/json.hpp>
+
+/** @brief Long-poll VFS availability from the companion settings window.
+ *
+ * @tparam WINDOW Window type providing the binding.
+ *
+ * @param resolve Callback receiving the serialized updated state.
+ * @param previous JSON-encoded state last observed by the caller.
+ *
+ * @return Promise for the serialized updated state. */
+template <WIN WINDOW>
+Promise<std::string, true>
+Window<WINDOW>::WatchVfsProjection(
+  promise::Resolve<std::string> const& resolve,
+  promise::Reject const&,
+  std::string previous
+) {
+   if constexpr (WINDOW != WIN::MAIN) {
+      assert(false);
+      throw std::runtime_error("VFS monitoring is available only in the companion settings.");
+   }
+
+   if (vfs_watcher_stopping_) {
+      throw std::runtime_error("VFS monitoring is stopping.");
+   }
+
+   if (!vfs_watcher_) {
+      vfs_watcher_ = std::make_unique<tablet::VfsWatcher>(tablet::Fleet::FindPaths().projection_);
+   }
+
+   tablet::VfsStatus last;
+   if (!previous.empty()) {
+      auto value = boost::json::parse(previous).as_object();
+      last       = {
+        .available_ = value.at("available").as_bool(),
+        .message_   = std::string{value.at("message").as_string()}
+      };
+   }
+
+   vfs_watcher_->Watch(
+     last, [callback = resolve.shared_from_this()](tablet::VfsStatus const& status) {
+        (*callback)(boost::json::serialize(
+          boost::json::object{{"available", status.available_}, {"message", status.message_}}
+        ));
+     }
+   );
+
+   co_return;
+}
+
+/** @brief Dispatch a fleet operation using the requested mode, action, and JSON selection.
+ *
+ * @tparam WINDOW Window type providing the binding.
+ *
+ * @param mode Discovery mode.
+ * @param action Fleet operation to perform.
+ * @param selectionJson JSON array of selected aircraft IDs.
+ *
+ * @return Promise for the serialized report. */
+template <WIN WINDOW>
+Promise<std::string>
+Window<WINDOW>::ManageEfbAircraft(std::string mode, std::string action, std::string selectionJson) {
+   if constexpr (WINDOW != WIN::MAIN) {
+      assert(false);
+      throw std::runtime_error("Aircraft management is available only in the companion settings.");
+   }
+
+   // Each aircraft's processing is dispatched on the pool workers by the fleet manager.
+   co_return co_await tablet::Fleet::Manage(
+     static_cast<MainPool const&>(main_), mode, action, selectionJson
+   );
+}
 
 template <WIN WINDOW>
 Promise<>

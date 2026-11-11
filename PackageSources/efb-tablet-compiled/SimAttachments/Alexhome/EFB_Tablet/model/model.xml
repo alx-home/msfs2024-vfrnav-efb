@@ -1,0 +1,8 @@
+<ModelInfo>
+	<LODS>
+		<LOD minSize="0" ModelFile="rig.gltf"/>
+	</LODS>
+	<Behaviors Compiled="True" Version="2" Revision="1">
+		<IncludeBase RelativeFile="model.behavior.xml"/>
+	</Behaviors>
+</ModelInfo>

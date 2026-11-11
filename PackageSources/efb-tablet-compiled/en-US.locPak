@@ -1,0 +1,12 @@
+{
+  "LocalisationPackage": {
+    "Language": "en-US",
+    "Strings": {
+      "VFRNAV.EFB.ACTION_FUNCTION": "Show or hide cockpit tablet",
+      "VFRNAV.EFB.ACTION_NAME": "Toggle cockpit tablet",
+      "VFRNAV.EFB.CATEGORY_MAIN": "Cockpit Tablet",
+      "VFRNAV.EFB.CATEGORY_SUB": "Visibility",
+      "VFRNAV.EFB.PRESET_NAME": "Tablet visibility"
+    }
+  }
+}

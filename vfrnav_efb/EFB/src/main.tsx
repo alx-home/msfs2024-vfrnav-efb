@@ -19,6 +19,8 @@
 
 import { Efb } from "@alx-home/efb-api";
 import { VfrNavApp } from "./App";
+import { startTabletToolbarSync } from "./TabletToolbarSync";
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 Efb.use(VfrNavApp);
+startTabletToolbarSync();

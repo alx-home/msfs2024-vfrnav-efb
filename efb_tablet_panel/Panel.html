@@ -1,0 +1,67 @@
+<!--
+ * SPDX-License-Identifier: (GNU General Public License v3.0 only)
+ * Copyright © 2026 Alexandre GARCIN
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Cockpit Tablet</title>
+  <link rel="stylesheet" href="/SCSS/common.css" />
+  <script src="/JS/coherent.js"></script>
+  <script src="/JS/common.js"></script>
+  <script src="/JS/Types.js"></script>
+  <script src="/JS/simvar.js"></script>
+  <script src="/JS/Services/ToolBarPanels.js"></script>
+  <link rel="import" href="/templates/ingameUi/ingameUi.html" />
+  <link rel="import" href="/templates/ingameUiHeader/ingameUiHeader.html" />
+  <style>
+    html,
+    body,
+    efb-tablet-panel {
+      display: block;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    ingame-ui {
+      width: 100%;
+      height: 100%;
+    }
+
+    efb-tablet-panel:not(.failed) ingame-ui {
+      visibility: hidden;
+      pointer-events: none;
+    }
+  </style>
+  <script defer src="Panel.js"></script>
+</head>
+
+<body>
+  <efb-tablet-panel>
+    <ingame-ui panel-id="PANEL_COCKPIT_TABLET" title="Cockpit Tablet" class="ingameUiFrame panelInvisible"
+      content-fit="true" min-width="250" min-height="120">
+      <main style="padding: 16px">
+        <button type="button">Show / hide cockpit tablet</button>
+        <output role="status" style="display: block; margin-top: 12px">
+          Ctrl+T by default. Change it in VFRNav EFB settings.
+        </output>
+      </main>
+    </ingame-ui>
+  </efb-tablet-panel>
+</body>
+
+</html>

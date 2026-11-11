@@ -1,0 +1,1 @@
+<Project Version="2" Name="EfbTabletRig" FolderName="Packages"><OutputDirectory>.</OutputDirectory><TemporaryOutputDirectory>_PackageInt</TemporaryOutputDirectory><Packages><Package>alexhome-efb-tablet-runtime.xml</Package></Packages></Project>

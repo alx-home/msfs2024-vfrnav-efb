@@ -365,6 +365,52 @@ Main::Validate(
       }
    }
 
+   // Install EFB tablet toolbar panel
+
+   for (auto const& [name, data] : TABLET_RESOURCES) {
+      auto const last_slash = name.find_last_of("/");
+      auto const file_name  = name.substr(last_slash == std::string::npos ? 0 : last_slash + 1);
+      auto const directory =
+        addonPath + "/html_ui/"
+        + name.substr(0, last_slash == std::string::npos ? 0 : last_slash);
+      std::error_code ec{};
+      std::filesystem::create_directories(directory, ec);
+      if (ec) {
+         co_return Fatal("Couldn't create directory:", ec.message(), directory);
+      }
+
+      std::ofstream file{directory + "/" + file_name, std::ios::binary | std::ios::trunc};
+      if (!file.is_open()) {
+         co_return Fatal("Couldn't create file:", directory + "/" + file_name);
+      }
+
+      file.write(reinterpret_cast<char const*>(data.data()), data.size());
+      if (file.tellp() != data.size()) {
+         co_return Fatal("Couldn't create file:", directory + "/" + file_name);
+      }
+   }
+
+   // Install the SDK-compiled in-game panel definition
+
+   {
+      std::error_code ec{};
+      std::filesystem::create_directories(addonPath + "/InGamePanels", ec);
+      if (ec) {
+         co_return Fatal("Couldn't create directory:", ec.message(), addonPath + "/InGamePanels");
+      }
+
+      auto const    panel = addonPath + "/InGamePanels/cockpit_tablet.spb";
+      std::ofstream file{panel, std::ios::binary | std::ios::trunc};
+      if (!file.is_open()) {
+         co_return Fatal("Couldn't create file:", panel);
+      }
+
+      file.write(reinterpret_cast<char const*>(EFB_PANEL_SPB.data()), EFB_PANEL_SPB.size());
+      if (file.tellp() != EFB_PANEL_SPB.size()) {
+         co_return Fatal("Couldn't create file:", panel);
+      }
+   }
+
    // Install thumbnail
 
    auto const    thumbnail = addonPath + "/ContentInfo/alexhome-msfs2024-vfrnav/Thumbnail.jpg";

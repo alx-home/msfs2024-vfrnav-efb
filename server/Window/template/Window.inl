@@ -111,6 +111,21 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
           ScopeExit _{[this, &stoken]() constexpr {
              std::unique_lock lock{mutex_};
              std::condition_variable_any().wait(lock, stoken, [] { return false; });
+             auto cleanup_needed{!cleanup_complete_};
+             lock.unlock();
+             if (cleanup_needed) {
+                vfs_watcher_stopping_ = true;
+                vfs_watcher_.reset();
+                if constexpr (WIN::EFB == WINDOW) {
+                   main_.UnsetMessageHandler(std::bit_cast<std::size_t>(this));
+                }
+             }
+
+             lock.lock();
+             if (cleanup_needed) {
+                cleanup_complete_ = true;
+             }
+
              webview_ = nullptr;
           }};
 
@@ -190,6 +205,11 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
           };
 
           webview_->Run();
+          {
+             std::scoped_lock lock{mutex_};
+             event_loop_exited_ = true;
+          }
+          cv_.notify_all();
        },
        std::move(on_terminate)
      } {
@@ -228,12 +248,29 @@ Window<WINDOW>::Dispatch(std::function<void()> func) const {
 
 template <WIN WINDOW>
 Window<WINDOW>::~Window() {
-   if constexpr (WIN::EFB == WINDOW) {
-      Dispatch([this]() constexpr { main_.UnsetMessageHandler(std::bit_cast<std::size_t>(this)); });
+   Dispatch([this]() constexpr {
+      vfs_watcher_stopping_ = true;
+      vfs_watcher_.reset();
+
+      if constexpr (WIN::EFB == WINDOW) {
+         main_.UnsetMessageHandler(std::bit_cast<std::size_t>(this));
+      }
+
+      PostQuitMessage(0);
+      {
+         std::scoped_lock lock{mutex_};
+         cleanup_complete_ = true;
+      }
+      cv_.notify_all();
+   });
+
+   {
+      std::unique_lock lock{mutex_};
+      cv_.wait(lock, [this] { return event_loop_exited_ || cleanup_complete_; });
    }
 
-   Dispatch([]() constexpr { PostQuitMessage(0); });
    thread_.request_stop();
+   thread_.join();
 }
 
 template <WIN WINDOW>

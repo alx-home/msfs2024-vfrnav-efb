@@ -1,0 +1,14 @@
+<ActionDefinition>
+	<Actions Source="SimAttachments\Alexhome\EFB_Tablet">
+		<Action Name="VFRNAV_EFB_VISIBILITY_TOGGLE">
+			<Context>INPUT_EVENTS</Context>
+			<Type>DIGITAL</Type>
+			<TT_Name>TT:VFRNAV.EFB.PRESET_NAME</TT_Name>
+			<TT_Description>TT:VFRNAV.EFB.ACTION_NAME</TT_Description>
+			<TT_Function/>
+			<TT_Category_Main/>
+			<TT_Category_Sub/>
+			<TT_Tag/>
+		</Action>
+	</Actions>
+</ActionDefinition>

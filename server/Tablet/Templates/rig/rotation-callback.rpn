@@ -1,0 +1,33 @@
+(L:VFRNAV_EFB_HIDDEN, Number) ! (M:Event) 'RightSingle' scmi 0 == and if{
+  (L:VFRNAV_EFB_MODE, Number) 1 + 4 % (&gt;L:VFRNAV_EFB_MODE, Number)
+  (L:VFRNAV_EFB_DRAG_CANCEL, Number) 1 + (&gt;L:VFRNAV_EFB_DRAG_CANCEL, Number)
+  0 (&gt;O:VFRNAV_DRAG_ACTIVE)
+}
+(M:Event) 'RightSingle' scmi 0 != if{
+  (L:VFRNAV_EFB_HIDDEN, Number) ! (L:VFRNAV_EFB_MODE, Number) 2 == and if{
+    (L:VFRNAV_EFB_SHIFT, Number) abs 1.7976931348623157e308 &lt;= (L:VFRNAV_EFB_SHIFT, Number) 0 != and (&gt;O:VFRNAV_CURRENT_SHIFT)
+    (M:Event) 'LeftSingle' scmi 0 == (M:Event) 'Lock' scmi 0 == or if{
+      @CAPTURE@
+    }
+    (M:Event) 'LeftDrag' scmi 0 == if{
+      (O:VFRNAV_DRAG_ACTIVE) ! (O:VFRNAV_DRAG_CANCEL) (L:VFRNAV_EFB_DRAG_CANCEL, Number) != or
+      (O:VFRNAV_DRAG_SHIFT) (O:VFRNAV_CURRENT_SHIFT) != or if{
+        @CAPTURE@
+      }
+      (M:Relative@MOUSE@) abs 1 &lt;= (O:VFRNAV_MOUSE_START) abs 1 &lt;= and
+      (O:VFRNAV_START_HEADING) abs 180 &lt;= and
+      (O:VFRNAV_START_PITCH) abs 180 &lt;= and
+      (O:VFRNAV_START_BANK) abs 180 &lt;= and if{
+        @ROTATION@
+        l30 (L:VFRNAV_EFB_PITCH, Number) != l31 (L:VFRNAV_EFB_HEADING, Number) != or
+        l32 (L:VFRNAV_EFB_BANK, Number) != or if{
+          l30 (&gt;L:VFRNAV_EFB_PITCH, Number)
+          l31 (&gt;L:VFRNAV_EFB_HEADING, Number)
+          l32 (&gt;L:VFRNAV_EFB_BANK, Number)
+          (L:VFRNAV_EFB_REVISION, Number) 1 + (&gt;L:VFRNAV_EFB_REVISION, Number)
+        }
+      }
+    }
+  }
+  (M:Event) 'LeftRelease' scmi 0 == (M:Event) 'Unlock' scmi 0 == or if{ 0 (&gt;O:VFRNAV_DRAG_ACTIVE) }
+}

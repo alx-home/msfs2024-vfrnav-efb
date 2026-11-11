@@ -14,15 +14,32 @@
  */
 
 #include "CommWasm.h"
+#include "Simulator.h"
 
 #include <algorithm>
+#include <MSFS/MSFS_Vars.h>
+#include <MSFS/MSFS_WindowsTypes.h>
+#include <SimConnect.h>
 
 WasmHandler::WasmHandler() {
-   for (std::size_t id = last_saved_blob_id_ + 1; id < current_blob_id_; ++id) {
+   {
+      std::ifstream input{WasmHandler::Simulator::TABLET_SHORTCUT_FILE};
+      std::string   saved{};
+      if (input >> saved) {
+         if (auto parsed{WasmHandler::Simulator::ParseShortcut(saved)}; parsed) {
+            shortcut_ = std::move(parsed->label_);
+         } else {
+            std::cerr << "WASM: Invalid saved tablet shortcut; using Ctrl+T" << std::endl;
+         }
+      }
+   }
+
+   simulator_ = std::make_unique<Simulator>(*this);
+   for (std::size_t id{last_saved_blob_id_ + 1}; id < current_blob_id_; ++id) {
       std::cout << "Deleting leftover blob file with id " << id << std::endl;
       auto const result = DeleteBlobEntry("blob-" + std::to_string(id));
 
-      if (result.substr(0, 6) == "error:") {
+      if (result.starts_with("error:")) {
          std::cerr << "Warning: Failed to delete leftover blob file with id " << id << ": "
                    << result.substr(6) << std::endl;
       }
@@ -42,13 +59,71 @@ WasmHandler::WasmHandler() {
    fsCommBusRegister(STORE_LAST_SAVED_BLOB_ID_EVENT, OnEvent, &this->StoreLastSavedBlobIdContext());
    fsCommBusRegister(GET_CURRENT_BLOB_ID_EVENT, OnEvent, &this->GetCurrentBlobIdContext());
    fsCommBusRegister(STORE_CURRENT_BLOB_ID_EVENT, OnEvent, &this->StoreCurrentBlobIdContext());
+   fsCommBusRegister(GET_TABLET_SHORTCUT_EVENT, OnEvent, &this->GetTabletShortcutContext());
+   fsCommBusRegister(SET_TABLET_SHORTCUT_EVENT, OnEvent, &this->SetTabletShortcutContext());
+   fsCommBusRegister(TABLET_JOYSTICK_EVENT, OnEvent, &this->TabletJoystickContext());
 }
 
-WasmHandler::~WasmHandler() { fsCommBusUnregisterAll(); }
+WasmHandler::~WasmHandler() {
+   ShutdownSimulator();
+   fsCommBusUnregisterAll();
+}
+
+void
+WasmHandler::InitializeSimulator() {
+   simulator_->Initialize();
+}
+
+void
+WasmHandler::ShutdownSimulator() {
+   if (simulator_) {
+      simulator_->Shutdown();
+   }
+}
+
+Context&
+WasmHandler::GetTabletShortcutContext() {
+   return MakeContext<&WasmHandler::OnGetTabletShortcutEvent>();
+}
+
+Context&
+WasmHandler::SetTabletShortcutContext() {
+   return MakeContext<&WasmHandler::OnSetTabletShortcutEvent>();
+}
+
+Context&
+WasmHandler::TabletJoystickContext() {
+   return MakeContext<&WasmHandler::OnTabletJoystickEvent>();
+}
+
+std::optional<std::string>
+WasmHandler::OnTabletJoystickEvent(std::string_view request_id, std::string_view buffer) {
+   return simulator_->JoystickRequest(request_id, buffer);
+}
 
 Context&
 WasmHandler::WasmInitContext() {
    return MakeContext<&WasmHandler::OnWasmInitEvent>();
+}
+
+std::optional<std::string>
+WasmHandler::OnGetTabletShortcutEvent(std::string_view, std::string_view) {
+   return "data:" + shortcut_;
+}
+
+std::optional<std::string>
+WasmHandler::OnSetTabletShortcutEvent(std::string_view request_id, std::string_view buffer) {
+   auto parsed = WasmHandler::Simulator::ParseShortcut(buffer);
+   if (!parsed) {
+      return "error:Use Ctrl, Shift, or Alt plus one letter or digit (for example Ctrl+T)";
+   }
+   return simulator_->SetShortcut(request_id, parsed->label_);
+}
+
+void
+WasmHandler::SendResponse(std::string_view request_id, std::string_view data) {
+   auto const payload = BuildPayload(request_id, data);
+   fsCommBusCall(RESPONSE_EVENT, payload.data(), payload.size(), FsCommBusBroadcast_JS);
 }
 
 std::optional<std::string>
@@ -126,10 +201,8 @@ static std::unique_ptr<WasmHandler> handler{};
 extern "C" MSFS_CALLBACK void
 module_init(void) {
    handler = std::make_unique<WasmHandler>();
+   handler->InitializeSimulator();
 }
-
-extern "C" MSFS_CALLBACK void
-module_update(void) {}
 
 extern "C" MSFS_CALLBACK void
 module_deinit(void) {

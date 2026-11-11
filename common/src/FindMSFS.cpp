@@ -20,15 +20,25 @@
 
 std::string
 FindMSFS() {
-   if (std::string const steam = ReplaceEnv(R"(%AppData%\Microsoft Flight Simulator 2024)");
-       std::filesystem::exists(steam)) {
-      return steam;
+   auto const appdata{GetAppData()};
+   auto const local_appdata{GetLocalAppData()};
+
+   if (
+     std::filesystem::path const steam{
+       std::filesystem::path{appdata} / "Microsoft Flight Simulator 2024"
+     };
+     !appdata.empty() && std::filesystem::is_directory(steam)
+   ) {
+      return steam.string();
    }
 
-   if (std::string const msStore =
-         ReplaceEnv(R"(%LocalAppData%\Packages\Microsoft.Limitless_8wekyb3d8bbwe)");
-       std::filesystem::exists(msStore)) {
-      return msStore;
+   if (
+     std::filesystem::path const msStore{
+       std::filesystem::path{local_appdata} / "Packages" / "Microsoft.Limitless_8wekyb3d8bbwe"
+     };
+     !local_appdata.empty() && std::filesystem::is_directory(msStore)
+   ) {
+      return msStore.string();
    }
 
    return "";

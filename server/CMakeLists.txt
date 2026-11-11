@@ -1,4 +1,5 @@
 add_subdirectory(ts)
+add_subdirectory(Tablet)
 
 set(COMPILE_OPTIONS
     "-DWIN32_LEAN_AND_MEAN"
@@ -43,6 +44,10 @@ win32_executable(TARGET_NAME server
         "${COMPILE_OPTIONS}"
 )
 
+add_subdirectory(Tablet/CompiledRig)
+target_sources(server PRIVATE "${TABLET_RIG_RC}")
+add_dependencies(server tablet_compiled_rig)
+
 target_link_libraries(server
     PRIVATE
         alx-home::webview
@@ -52,10 +57,15 @@ target_link_libraries(server
         vfrnav::window
         msfs_sdk
         Dwmapi
+        Bcrypt
+        Boost::json
         Boost::asio
         Boost::uuid
         boost_beast
         boost_url
+        tablet_fleet
+        tablet_rig
+        tablet_vfs
 )
 
 if(NOT WATCH_MODE)

@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Resources.h"
+#include "Tablet/VfsWatcher.h"
 
 #include "window/FileDialog.h"
 
@@ -99,6 +100,27 @@ private:
    Promise<> ShowTaskbar();
 
    Promise<> ShowSettings();
+   /** @brief Run a fleet operation and return its serialized report to the settings UI.
+    *
+    * @param mode Discovery mode.
+    * @param action Fleet operation to perform.
+    * @param selectionJson JSON array of selected aircraft IDs.
+    *
+    * @return Promise for the serialized report. */
+   Promise<std::string>
+   ManageEfbAircraft(std::string mode, std::string action, std::string selectionJson);
+   /** @brief Complete when VFS availability differs from the caller's previous state.
+    *
+    * @param resolve Callback receiving the serialized updated state.
+    * @param reject Rejection callback supplied by the promise binding; unused by this handler.
+    * @param previous JSON-encoded state last observed by the caller.
+    *
+    * @return Promise for the serialized updated state. */
+   Promise<std::string, true> WatchVfsProjection(
+     promise::Resolve<std::string> const& resolve,
+     promise::Reject const&               reject,
+     std::string                          previous
+   );
 
    Promise<> VDispatchMessage(ws::Message message);
 
@@ -127,10 +149,14 @@ private:
 
    std::mutex              mutex_;
    std::condition_variable cv_;
+   bool                    event_loop_exited_{};
+   bool                    cleanup_complete_{};
 
    // Must be before thread to be destroyed by the thread
-   std::unique_ptr<webview::webview> webview_{};
-   std::jthread                      thread_;
+   std::unique_ptr<webview::webview>   webview_{};
+   std::jthread                        thread_;
+   bool                                vfs_watcher_stopping_{};
+   std::unique_ptr<tablet::VfsWatcher> vfs_watcher_{};
 
    template <class RETURN, class... ARGS>
    void Bind(std::string_view name, RETURN (Window::*member_ptr)(ARGS...));
