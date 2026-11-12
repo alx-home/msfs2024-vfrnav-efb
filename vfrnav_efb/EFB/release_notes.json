@@ -705,6 +705,50 @@
             "     - Removed stutters when interacting with the map or opening the EFB. (#308)",
             "       Suppression des saccades lors de l'interaction avec la carte ou à l'ouverture de l'EFB. (#308)"
          ]
+      },
+      {
+         "version": "1.5.0",
+         "date": "NOV 12, 2026",
+         "notes": [
+            "### ALL ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Enabled the Asobo EFB on any aircraft, with configurable position, rotation, and scale. (#323)",
+            "       Activation de l'EFB Asobo sur tous les avions, avec une position, une rotation et une échelle configurables. (#323)",
+            "",
+            "### Installer/Server (new) ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - Added a donation page.",
+            "       Ajout d'une page de dons.",
+            "     - Removed the confirmation button from the application-stopping popup.",
+            "       Suppression du bouton de confirmation dans la fenêtre d'arrêt de l'application.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Fixed the Settings window becoming unavailable after it was closed.",
+            "       Correction d'un problème rendant la fenêtre des paramètres inaccessible après sa fermeture.",
+            "     - Fixed installer abort handling and SimConnect dispatch failure handling, and prevented a SimConnect use-after-free error.",
+            "       Correction de la gestion des interruptions de l'installateur et des échecs de traitement SimConnect, ainsi que d'une erreur d'utilisation après libération des ressources.",
+            "     - Fixed a server crash when closing WebSocket connections.",
+            "       Correction d'un plantage du serveur lors de la fermeture des connexions WebSocket.",
+            "",
+            "### EFB ###",
+            "***🔧 Improvements / Améliorations:***",
+            "     - The map can now move/rotate to follow the aircraft's heading. (#325)",
+            "       La carte peut désormais se déplacer/pivoter pour suivre le cap de l'avion. (#325)",
+            "     - Add the possibility to disable the 2D EFB resizing tweak. (#320)",
+            "       Ajout de la possibilité de désactiver l'ajustement de redimensionnement 2D de l'EFB. (#320)",
+            "     - Performance improvements.",
+            "       Améliorations des performances.",
+            "     - Improve scrollbar behavior.",
+            "       Amélioration du comportement de la barre de défilement.",
+            "",
+            "***🐞 Fixes / Corrections:***",
+            "     - Updated the SIA integration for its v3 API. (#324)",
+            "       Mise à jour de l'intégration SIA pour son API v3. (#324)",
+            "     - Corrected font sizing in desktop mode.",
+            "       Correction de la taille de police en mode bureau.",
+            "     - Fixed EFB panel not movable when 2D EFB resizing tweak is enabled. (#320)",
+            "       Correction du déplacement du panneau EFB lorsque l'ajustement de redimensionnement de l'EFB 2D est activé. (#320)"
+         ]
       }
    ]
 }
