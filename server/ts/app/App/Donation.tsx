@@ -1,7 +1,7 @@
 import { useState, type MouseEvent } from "react";
 import donationImg from '@vfrnav/images/donation.svg';
 import paypalImg from '@vfrnav/images/paypal-donate.svg';
-import buymeaCoffeeImg from '@vfrnav/images/buymeacoffee.svg';
+import buymeaCoffeeImg from '@vfrnav/images/buymeacoffee.svg?inline';
 import liberpayImg from '@vfrnav/images/liberpay.svg';
 
 export const Donation = () => {
