@@ -123,7 +123,7 @@ export const PlaneLayer = memo(function PlaneLayer({
     vectorSource.addFeature(feature)
 
     updateFollowMode(coords, pos.heading);
-  }, [elemStyle, map, pos, vectorSource])
+  }, [elemStyle, map, pos, vectorSource, updateFollowMode])
 
 
   if (!cheatMode && (followMode.position || followMode.heading)) {

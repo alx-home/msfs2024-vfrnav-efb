@@ -68,7 +68,7 @@ export const OlMap = memo(function OlMap({ children, id, className }: PropsWithC
 
       view.on('change:rotation', disableFollow);
     }
-  }, [mapContext.map, mapElement, center, zoom]);
+  }, [mapContext.map, mapElement, center, zoom, disableFollow]);
 
   useEffect(() => {
     if (mapContext.map && mapElement.current) {

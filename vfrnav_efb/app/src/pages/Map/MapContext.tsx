@@ -435,7 +435,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     })
 
     return map;
-  }, []);
+  }, [disableFollow]);
   const [records, setRecords] = useState<PlaneRecord[]>([]);
   const [activeRecords, setActiveRecords] = useState(new Map<number, boolean>());
   const [addNav, setAddNav] = useState<() => void>();
