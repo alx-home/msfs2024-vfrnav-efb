@@ -94,6 +94,7 @@ struct GetEFBState {
 #include "Settings.h"
 #include "Date.h"
 #include "ATCId.h"
+#include "Panel.h"
 
 namespace ws {
 
@@ -153,7 +154,9 @@ using Message = std::variant<
   msg::RemoveRecord,
   msg::ServerState,
   msg::SetId,
-  msg::Settings>;
+  msg::Settings,
+  msg::SetPanelSize,
+  msg::GetPanelSize>;
 
 struct Proxy {
    std::size_t id_{};
