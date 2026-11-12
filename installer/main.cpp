@@ -61,13 +61,8 @@ main() {
 #endif  // DEBUG
 
       ScopeExit cleanup_on_exit{[&]() {
-         win32::NewProcess(
-           R"(C:\Windows\System32\cmd.exe)",
-           std::format("/c ping localhost -n 3 > nul & rmdir /s /q \"{}\" & pause", Main::TEMP_DIR),
-           {},
-           false,
-           true
-         );
+         std::this_thread::sleep_for(std::chrono::seconds(3));
+         std::filesystem::remove_all(Main::TEMP_DIR);
       }};
 
       Main main{};
