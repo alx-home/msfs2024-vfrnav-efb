@@ -27,6 +27,7 @@ import { Fuel } from "@shared/Fuel";
 import { useSimDate } from "@Utils/SimDate";
 import { useEvent } from "react-use-event-hook";
 import { useMapSubSettings } from "@pages/Map/MapSettings";
+import { Properties } from "@shared/NavData";
 
 const modes = ['Enroute', 'Vor', 'Weather', 'Remarks', 'Full'] as const;
 type Modes = typeof modes[number];
@@ -148,79 +149,42 @@ const useFuel = () => {
    return { fuel, getFuel }
 }
 
-export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navData }: {
-   currentTab: string,
-   tab: string,
+const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypoints, actives,
+   properties, edit, mode, collapseWaypoints, id, delayedRef, setReset, fromUnit, toUnit, setDelayed,
+   reset
+}: {
+   departureTime: number,
+   taxiTime: number,
+   loadedFuel: number,
+   taxiConso: number,
    coords: Coordinate[],
+   waypoints: string[],
+   actives: boolean[],
+   properties: Properties[],
    edit: boolean,
-   navData: NavData
-}) {
-   const { editNavProperties, activeNav, updateWaypoints, fuelUnit, setLoadedFuel,
-      setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useMapSubSettings(settings => ({
-         editNavProperties: settings.editNavProperties,
-         activeNav: settings.activeNav,
-         updateWaypoints: settings.updateWaypoints,
-         fuelUnit: settings.fuelUnit,
-         setLoadedFuel: settings.setLoadedFuel,
-         setDepartureTime: settings.setDepartureTime,
-         setTaxiTime: settings.setTaxiTime,
-         setTaxiConso: settings.setTaxiConso,
-         setLink: settings.setLink,
-         navData: settings.navData
-      }));
-   const { properties, waypoints, departureTime, link, taxiTime, taxiConso, loadedFuel, id } = navData;
+   mode: Modes,
+   collapseWaypoints: boolean,
+   id: number,
+   delayedRef: React.MutableRefObject<(() => void)[]>,
+   setReset: React.Dispatch<React.SetStateAction<number>>,
+   fromUnit: (_value: number) => number,
+   toUnit: (_value: number) => number,
+   setDelayed: React.Dispatch<React.SetStateAction<boolean>>,
+   reset: number
+}) => {
+   const [editNavProperties, updateWaypoints, navDatas, activeNav] = useMapSubSettings(settings => ([
+      settings.editNavProperties,
+      settings.updateWaypoints,
+      settings.navData,
+      settings.activeNav
+   ]));
    const getSimDate = useSimDate();
-   const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);
-   const toUnit = useCallback((value: number) =>
-      fuelUnit === 'gal' ? value * 3.785411784 : value
-      , [fuelUnit])
-   const fromUnit = useCallback((value: number) =>
-      fuelUnit === 'gal' ? value / 3.785411784 : value
-      , [fuelUnit])
-
-   const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gal' : 'l', [fuelUnit])
-   const departureTimeStr = useMemo(() => {
-      const time = departureTime;
-      const hours = Math.floor(time / 60);
-      const minutes = Math.round(time - 60 * hours);
-
-      return (hours % 24) + 'h' + (minutes < 10 ? '0' + minutes : minutes)
-   }, [departureTime])
-   const taxiTimeStr = useMemo(() => {
-      const hours = Math.floor(taxiTime / 60);
-      const minutes = Math.round(taxiTime - 60 * hours);
-
-      return (hours % 24) + 'h' + (minutes < 10 ? '0' + minutes : minutes)
-   }, [taxiTime])
-
-   const loadedFuelStr = useMemo(() => toUnit(loadedFuel).toString(), [loadedFuel, toUnit])
-   const taxiFuelStr = useMemo(() => toUnit(taxiConso).toString(), [taxiConso, toUnit])
    const { getFuel } = useFuel();
 
-   const [mode, setMode] = useState<Modes>('Enroute');
-   const [reset, setReset] = useState(0);
-   const [collapseWaypoints, setCollapseWaypoints] = useState(true);
-   const delayedRef = useRef<(() => void)[]>([])
-   const [delayed, setDelayed] = useState(false)
-
-   const linkOptions = useMemo(() => {
-      const links = new Set<number>()
-
-      const addLinks = (id: number) => {
-         navDatas.forEach(elem => {
-            if (+elem.link === id) {
-               links.add(elem.id);
-               addLinks(elem.id)
-            }
-         })
-      }
-
-      addLinks(navData.id);
-
-      return navDatas
-         .filter(elem => (elem.id !== navData.id) && !links.has(elem.id))
-         .map(elem => <SelectOption key={elem.id} id={elem.id.toString()}>{elem.name}</SelectOption>)
-   }, [navData, navDatas])
+   let time = (departureTime - new Date().getTimezoneOffset() + taxiTime) * 60;
+   let estFuel = (loadedFuel - taxiConso);
+   let estFuel2 = estFuel;
+   let deltaEta = 0;
 
    const setActive = useEvent((index: number) => {
       const value = !actives[index];
@@ -278,6 +242,439 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
       editNavProperties(id, newProperties);
    });
 
+   const [lastWaypoints, setLastWaypoints] = useState<string[]>([]);
+
+
+   return coords.map((_value, row) => {
+      const name = waypoints[row];
+      const result: JSX.Element[] = [];
+
+      if (row >= lastWaypoints.length) {
+         setLastWaypoints(prev => {
+            const newLastWaypoints = [...prev];
+            newLastWaypoints[row] = name;
+            return newLastWaypoints;
+         });
+      }
+
+      result.push(<GridElem key={"Waypoint"} active={true} edit={edit} currentMode={mode}>
+         {
+            edit ?
+               <Input active={true} className="w-36" reload={lastWaypoints[row] !== name} value={name} onChange={(value) => {
+                  waypoints[row] = value
+                  setLastWaypoints(prev => {
+                     const newLastWaypoints = [...prev];
+                     newLastWaypoints[row] = value;
+                     return newLastWaypoints;
+                  });
+                  updateWaypoints(id, waypoints);
+               }} />
+               : <div className={"m-auto text-center transition-all " + ((collapseWaypoints) ? "w-0" : "w-36")}>{name}</div>
+         }
+      </GridElem>);
+
+      if (row > 0) {
+         const active = actives[row - 1];
+         const navProps = properties[row - 1];
+         const { altitude, dist, vor, wind, remark, CH, MH, GS, ias, tas, magVar, oat, conso, curFuel, ata } = navProps;
+         const { ident: vorIndent, freq: vorFreq, obs: vorObs } = vor;
+         const { direction: windDir, speed: windVel } = wind;
+
+         // WHY ??
+         // eslint-disable-next-line react-hooks/immutability
+         estFuel -= conso;
+         if (curFuel) {
+            estFuel2 = curFuel
+         } else {
+            estFuel2 -= conso;
+         }
+         const deltaFuel = Math.round(estFuel2 - estFuel);
+
+         const ataStr = (() => {
+            if (ata == -1) {
+               return ''
+            }
+            const hours = Math.floor(ata / 60);
+            const minutes = Math.round(ata - 60 * hours);
+
+            return hours + 'h' + (minutes < 10 ? '0' + minutes : minutes)
+         })()
+
+         const dur = (() => {
+            const { days, hours, minutes, seconds } = navProps.dur;
+
+            return (days ? days + 'd' : '')
+               + ((days || hours) ? (hours < 10 ? '0' : '') + hours + 'h' : '')
+               + ((days || hours || minutes) ? (minutes < 10 ? '0' : '') + minutes + ':' : '')
+               + ((seconds < 10 ? '0' : '') + seconds)
+         })()
+
+         time += navProps.dur.full;
+
+         const eta = (() => {
+            const time_ = time + new Date().getTimezoneOffset() * 60;
+            let h = Math.floor(time_ / 3600);
+            const m = Math.floor((time_ / 60 - h * 60))
+            h %= 24;
+
+            return (h < 10 ? '0' : '') + h + "h" + ((h || m) ? (m < 10 ? '0' : '') + m : '')
+         })()
+
+         if (ata !== -1) {
+            deltaEta = Math.round(time - ata * 60);
+
+            //Past Midnight
+            if (deltaEta > 43200) {
+               deltaEta = deltaEta - 86400
+            } else if (deltaEta < -43200) {
+               deltaEta = deltaEta + 86400
+            }
+         }
+
+         const eta2 = (() => {
+            if (deltaEta === 0) {
+               return ''
+            }
+
+            const time2 = time - deltaEta + new Date().getTimezoneOffset() * 60;
+            let h = Math.floor(time2 / 3600);
+            const m = Math.floor((time2 / 60 - h * 60))
+            h %= 24;
+
+            return (h < 10 ? '0' : '') + h + "h" + ((h || m) ? (m < 10 ? '0' : '') + m : '')
+         })()
+
+         result.push(
+            <GridElem key={"Altitude"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
+               <div className="flex flex-row grow h-full">
+                  <div className="flex grow [&_.invalid]:text-red-500">
+                     {
+                        edit ?
+                           <Input active={true} className="w-16" value={altitude.toFixed(0)} validate={async (value) => {
+                              return /^\d+$/.test(value);
+                           }} onChange={(value) => {
+                              navProps.altitude = +value;
+                              editNavProperties(id, properties);
+                           }} inputMode="decimal" />
+                           : <div className="w-16 m-auto text-center">{altitude}</div>
+                     }
+                  </div>
+               </div>
+            </GridElem>
+         )
+
+         if (!edit) {
+            result.push(
+               <GridElem key={"Dist"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
+                  <div className="w-10 m-auto text-center">{Math.round(dist).toString()}</div>
+               </GridElem>
+            )
+         }
+
+         result.push(
+            <GridElem key={"VOR"} active={active} edit={edit} mode="Vor" currentMode={mode}>
+               <div className="flex flex-row grow">
+                  {
+                     edit ?
+                        <div className="flex flex-row [&_.invalid]:text-red-500">
+                           <Input active={true} className="w-14" value={vorIndent} onChange={(value) => {
+                              navProps.vor.ident = value;
+                              editNavProperties(id, properties);
+                           }} />
+                           <Input active={true} className="w-14" value={vorFreq.toString()} onChange={(value) => {
+                              navProps.vor.freq = +value;
+                              editNavProperties(id, properties);
+                           }} validate={async (value) => {
+                              return /^\d*(\.\d*)?$/.test(value);
+                           }} inputMode='decimal' />
+                        </div>
+                        :
+                        <div className="flex flex-col grow">
+                           <div className="w-full m-auto text-center">{vorIndent}</div>
+                           <div className="w-full m-auto text-center">{vorFreq}</div>
+                        </div>
+                  }
+               </div>
+            </GridElem>,
+            <GridElem key={"OBS"} active={active} edit={edit} mode="Vor" currentMode={mode}>
+               <div className="[&_.invalid]:text-red-500">
+                  {
+                     edit ?
+                        <Input active={true} className="w-11" value={vorObs.toFixed(0)} onChange={(value) => {
+                           navProps.vor.obs = +value;
+                           editNavProperties(id, properties);
+                        }} validate={async (value) => {
+                           return /^[-+]?\d*$/.test(value);
+                        }} inputMode='decimal' />
+                        : <div className="w-11 m-auto text-center">{vorObs}</div>
+                  }
+               </div>
+            </GridElem>
+         )
+
+         if (edit) {
+            result.push(
+               <GridElem key={"Wind"} active={active} edit={edit} mode="Weather" currentMode={mode}>
+                  <div className="flex flex-row [&_.invalid]:text-red-500">
+                     <Input active={true} className="w-12" value={windDir.toString()} onChange={(value) => {
+                        navProps.wind.direction = +value;
+                        editNavProperties(id, properties);
+                     }} validate={async (value) => {
+                        return /^[-+]?\d*$/.test(value);
+                     }} inputMode='decimal' />
+                     <Input active={true} className="w-12" value={windVel.toString()} onChange={(value) => {
+                        navProps.wind.speed = +value;
+                        editNavProperties(id, properties);
+                     }} validate={async (value) => {
+                        return /^[-+]?\d*$/.test(value);
+                     }} inputMode='decimal' />
+                  </div>
+               </GridElem>,
+               <GridElem key={"OAT"} active={active} edit={edit} mode="Weather" currentMode={mode}>
+                  <div className="[&_.invalid]:text-red-500">
+                     <Input active={true} className="w-10" onChange={(value) => {
+                        navProps.oat = +value;
+                        editNavProperties(id, properties);
+                     }} value={oat.toString()} validate={async (value) => {
+                        return /^[-+]?\d*(\.\d*)?$/.test(value);
+                     }} inputMode='decimal' />
+                  </div>
+               </GridElem>,
+               <GridElem key={"VAR"} active={active} edit={edit} mode="Weather" currentMode={mode}>
+                  <div className="flex flex-row [&_.invalid]:text-red-500">
+                     <Input active={true} className="w-12" value={magVar.toString()} onChange={(value) => {
+                        navProps.magVar = +value;
+                        editNavProperties(id, properties);
+                     }} validate={async (value) => {
+                        return /^[-+]?\d*(\.\d*)?$/.test(value);
+                     }} inputMode='decimal' />
+                  </div>
+               </GridElem>,
+               <GridElem key={"IAS"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
+                  <div className="[&_.invalid]:text-red-500">
+                     <Input active={true} className="w-12" onChange={(value) => {
+                        navProps.ias = +value;
+                        editNavProperties(id, properties);
+                     }} value={ias.toString()} validate={async (value) => {
+                        return /^[+]?\d*$/.test(value) && (+value > 0);
+                     }} inputMode='decimal' />
+                  </div>
+               </GridElem>,
+               <GridElem key={"ATA"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
+                  <div className="[&_.invalid]:text-red-500">
+
+                     <Reset className="flex-row justify-end" onReset={() => {
+                        navProps.ata = -1;
+                        setReset(value => value + 1)
+                     }}>
+                        <Input active={true} className="w-16" onChange={(value) => {
+                           if (value.length) {
+                              const data = value.split('h');
+                              navProps.ata = +data[0] * 60 + +data[1]
+                           } else {
+                              navProps.ata = -1
+                           }
+
+                           editNavProperties(id, properties);
+                        }} reload={reset > 0} value={ataStr}
+                           validate={async (value) => {
+                              if (!value.length) {
+                                 return true
+                              }
+
+                              if (/^\d+h\d*$/.test(value)) {
+                                 const data = value.split('h');
+                                 return (+data[0] < 24) && (+data[1] < 60);
+                              }
+
+                              return false;
+                           }} />
+                     </Reset>
+                  </div>
+               </GridElem>
+            )
+
+         } else if (mode === 'Weather') {
+            result.push(
+               <GridElem key={"Wind"} active={active} edit={edit} mode="Weather" currentMode={mode}>
+                  <div className="flex flex-row grow h-full">
+                     <div className="flex flex-row grow justify-center m-auto">{windDir} / {windVel}</div>
+                  </div>
+               </GridElem>,
+               <GridElem key={"VAR"} active={active} edit={edit} mode="Weather" currentMode={mode}>
+                  <div className="flex flex-row">{magVar}</div>
+               </GridElem>,
+               <GridElem key={"OAT"} active={active} edit={edit} mode="Weather" currentMode={mode}>
+                  <div className="flex flex-row">{oat + '\u00b0'}</div>
+               </GridElem>
+            )
+         } else {
+            result.push(
+               <GridElem key={"CH"} active={active} edit={edit} mode="Full" currentMode={mode}>
+                  <div className="w-10 m-auto text-center">{Math.round(CH).toString() + "\u00b0 "}</div>
+               </GridElem>,
+               <GridElem key={"MH"} active={active} edit={edit} mode="Vor" currentMode={mode}>
+                  <div className="w-10 m-auto text-center">{Math.round(MH).toString() + "\u00b0 "}</div>
+               </GridElem>,
+               <GridElem key={"IAS"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
+                  <div className="w-10 m-auto text-center">{Math.round(ias)}</div>
+               </GridElem>,
+               <GridElem key={"TAS"} active={active} edit={edit} mode="Full" currentMode={mode}>
+                  <div className="w-10 m-auto text-center">{Math.round(tas)}</div>
+               </GridElem>,
+               <GridElem key={"GS"} active={active} edit={edit} mode="Full" currentMode={mode}>
+                  <div className="w-10 m-auto text-center">{Math.round(GS).toString()}</div>
+               </GridElem>,
+               <GridElem key={"ETE"} active={active} edit={edit} mode="Full" currentMode={mode}>
+                  <div className="m-auto text-center">{dur}</div>
+               </GridElem>,
+               <GridElem key={"ETA"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
+                  <div className="flex flex-col shrink m-auto justify-center">
+                     <div className="flex grow justify-center">{eta}</div>
+                     {
+                        deltaEta === 0 ? <></>
+                           :
+                           <div className="flex flex-col grow">
+                              <div className={"text-center justify-center" + (deltaEta < 0 ? ' text-red-600' : ' text-green-600')}>
+                                 {eta2}
+                              </div>
+                           </div>
+                     }
+                  </div>
+               </GridElem>
+            )
+         }
+
+         result.push(<GridElem key={"Fuel"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
+            {
+               edit ?
+                  <div className="[&_.invalid]:text-red-500">
+                     <Reset className="flex-row justify-end" onReset={() => {
+                        navProps.curFuel = 0;
+                        editNavProperties(id, properties);
+                        setReset(value => value + 1)
+                     }}>
+                        <Input active={true} className="w-12" onChange={(value) => {
+                           navProps.curFuel = fromUnit(+value);
+                           editNavProperties(id, properties);
+                        }} value={toUnit(curFuel).toString()} reload={reset > 0} validate={async (value) => {
+                           return /^[+]?\d*$/.test(value);
+                        }} inputMode='decimal' />
+                     </Reset>
+                  </div>
+                  : <div className="flex flex-col shrink m-auto justify-center">
+                     <div className="flex grow justify-center">{Math.round(toUnit(estFuel)) + ''}</div>
+                     {
+                        deltaFuel === 0 ? <></>
+                           :
+                           <div className="flex flex-col grow">
+                              <div className={"text-center justify-center" + (deltaFuel > 0 ? ' text-green-600' : ' text-red-600')}>
+                                 {Math.round(toUnit(estFuel2))}
+                              </div>
+                           </div>
+                     }
+                  </div>
+            }
+         </GridElem>)
+
+         result.push(<GridElem key={"Remarks"} active={active} edit={edit} mode="Remarks" currentMode={mode}>
+            <div className="flex flex-row grow h-full">
+               {
+                  edit ?
+                     <Input active={true} className="w-32" value={remark} onChange={(value) => {
+                        navProps.remark = value;
+                        editNavProperties(id, properties);
+                     }} />
+                     : <div className="min-w-32 m-auto text-center">{remark}</div>
+               }
+            </div>
+         </GridElem>)
+
+         if (!edit) {
+            result.push(<GridElem key={"checkbox"} active={active} edit={edit} currentMode={mode}>
+               <CheckBox value={!active} onChange={() => setActive(row - 1)} />
+            </GridElem>)
+         }
+      }
+
+      return result
+         .filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full')
+         .map((elem, index, all) => <elem.type key={elem.key} {...elem.props} row={row + 1} col={index} size={all.length} />);
+   })
+}
+
+export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navData }: {
+   currentTab: string,
+   tab: string,
+   coords: Coordinate[],
+   edit: boolean,
+   navData: NavData
+}) {
+   const [fuelUnit, setLoadedFuel,
+      setDepartureTime, setTaxiTime, setTaxiConso, setLinks, navDatas] = useMapSubSettings(settings => ([
+         settings.fuelUnit,
+         settings.setLoadedFuel,
+         settings.setDepartureTime,
+         settings.setTaxiTime,
+         settings.setTaxiConso,
+         settings.setLink,
+         settings.navData
+      ]));
+   const { properties, waypoints, departureTime, link, taxiTime, taxiConso, loadedFuel, id } = navData;
+   const getSimDate = useSimDate();
+   const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);
+   const toUnit = useCallback((value: number) =>
+      fuelUnit === 'gal' ? value * 3.785411784 : value
+      , [fuelUnit])
+   const fromUnit = useCallback((value: number) =>
+      fuelUnit === 'gal' ? value / 3.785411784 : value
+      , [fuelUnit])
+
+   const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gal' : 'l', [fuelUnit])
+   const departureTimeStr = useMemo(() => {
+      const time = departureTime;
+      const hours = Math.floor(time / 60);
+      const minutes = Math.round(time - 60 * hours);
+
+      return (hours % 24) + 'h' + (minutes < 10 ? '0' + minutes : minutes)
+   }, [departureTime])
+   const taxiTimeStr = useMemo(() => {
+      const hours = Math.floor(taxiTime / 60);
+      const minutes = Math.round(taxiTime - 60 * hours);
+
+      return (hours % 24) + 'h' + (minutes < 10 ? '0' + minutes : minutes)
+   }, [taxiTime])
+
+   const loadedFuelStr = useMemo(() => toUnit(loadedFuel).toString(), [loadedFuel, toUnit])
+   const taxiFuelStr = useMemo(() => toUnit(taxiConso).toString(), [taxiConso, toUnit])
+   const { getFuel } = useFuel();
+
+   const [mode, setMode] = useState<Modes>('Enroute');
+   const [reset, setReset] = useState(0);
+   const [collapseWaypoints, setCollapseWaypoints] = useState(true);
+   const delayedRef = useRef<(() => void)[]>([])
+   const [delayed, setDelayed] = useState(false)
+
+   const linkOptions = useMemo(() => {
+      const links = new Set<number>()
+
+      const addLinks = (id: number) => {
+         navDatas.forEach(elem => {
+            if (+elem.link === id) {
+               links.add(elem.id);
+               addLinks(elem.id)
+            }
+         })
+      }
+
+      addLinks(navData.id);
+
+      return navDatas
+         .filter(elem => (elem.id !== navData.id) && !links.has(elem.id))
+         .map(elem => <SelectOption key={elem.id} id={elem.id.toString()}>{elem.name}</SelectOption>)
+   }, [navData, navDatas])
+
+
    const header = useMemo(() => {
       return [
          <GridElem key="Waypoint" active={true} edit={edit} currentMode={mode}>{(collapseWaypoints) ? "" : "Waypoint"}</GridElem>,
@@ -313,357 +710,11 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
       ].filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full').map((elem, index, all) => <elem.type key={elem.key} {...elem.props} col={index} size={all.length} />)
    }, [collapseWaypoints, edit, fuelUnit, mode]);
 
-   const legs = useMemo(() => {
-      let time = (departureTime - new Date().getTimezoneOffset() + taxiTime) * 60;
-      let estFuel = (loadedFuel - taxiConso);
-      let estFuel2 = estFuel;
-      let deltaEta = 0;
-
-      return coords.map((_value, row) => {
-         const name = waypoints[row];
-         const result: JSX.Element[] = [];
-
-         result.push(<GridElem key={"Waypoint"} active={true} edit={edit} currentMode={mode}>
-            {
-               edit ?
-                  <Input active={true} className="w-36" value={name} onChange={(value) => {
-                     waypoints[row] = value
-                     updateWaypoints(id, waypoints);
-                  }} />
-                  : <div className={"m-auto text-center transition-all " + ((collapseWaypoints) ? "w-0" : "w-36")}>{name}</div>
-            }
-         </GridElem>);
-
-         if (row > 0) {
-            const active = actives[row - 1];
-            const navProps = properties[row - 1];
-            const { altitude, dist, vor, wind, remark, CH, MH, GS, ias, tas, magVar, oat, conso, curFuel, ata } = navProps;
-            const { ident: vorIndent, freq: vorFreq, obs: vorObs } = vor;
-            const { direction: windDir, speed: windVel } = wind;
-
-            // WHY ??
-            // eslint-disable-next-line react-hooks/immutability
-            estFuel -= conso;
-            if (curFuel) {
-               estFuel2 = curFuel
-            } else {
-               estFuel2 -= conso;
-            }
-            const deltaFuel = Math.round(estFuel2 - estFuel);
-
-            const ataStr = (() => {
-               if (ata == -1) {
-                  return ''
-               }
-               const hours = Math.floor(ata / 60);
-               const minutes = Math.round(ata - 60 * hours);
-
-               return hours + 'h' + (minutes < 10 ? '0' + minutes : minutes)
-            })()
-
-            const dur = (() => {
-               const { days, hours, minutes, seconds } = navProps.dur;
-
-               return (days ? days + 'd' : '')
-                  + ((days || hours) ? (hours < 10 ? '0' : '') + hours + 'h' : '')
-                  + ((days || hours || minutes) ? (minutes < 10 ? '0' : '') + minutes + ':' : '')
-                  + ((seconds < 10 ? '0' : '') + seconds)
-            })()
-
-            time += navProps.dur.full;
-
-            const eta = (() => {
-               const time_ = time + new Date().getTimezoneOffset() * 60;
-               let h = Math.floor(time_ / 3600);
-               const m = Math.floor((time_ / 60 - h * 60))
-               h %= 24;
-
-               return (h < 10 ? '0' : '') + h + "h" + ((h || m) ? (m < 10 ? '0' : '') + m : '')
-            })()
-
-            if (ata !== -1) {
-               deltaEta = Math.round(time - ata * 60);
-
-               //Past Midnight
-               if (deltaEta > 43200) {
-                  deltaEta = deltaEta - 86400
-               } else if (deltaEta < -43200) {
-                  deltaEta = deltaEta + 86400
-               }
-            }
-
-            const eta2 = (() => {
-               if (deltaEta === 0) {
-                  return ''
-               }
-
-               const time2 = time - deltaEta + new Date().getTimezoneOffset() * 60;
-               let h = Math.floor(time2 / 3600);
-               const m = Math.floor((time2 / 60 - h * 60))
-               h %= 24;
-
-               return (h < 10 ? '0' : '') + h + "h" + ((h || m) ? (m < 10 ? '0' : '') + m : '')
-            })()
-
-            result.push(<GridElem key={"Altitude"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
-               <div className="flex flex-row grow h-full">
-                  <div className="flex grow [&_.invalid]:text-red-500">
-                     {
-                        edit ?
-                           <Input active={true} className="w-16" value={altitude.toFixed(0)} validate={async (value) => {
-                              return /^\d+$/.test(value);
-                           }} onChange={(value) => {
-                              navProps.altitude = +value;
-                              editNavProperties(id, properties);
-                           }} inputMode="decimal" />
-                           : <div className="w-16 m-auto text-center">{altitude}</div>
-                     }
-                  </div>
-               </div>
-            </GridElem>)
-
-            if (!edit) {
-               result.push(<GridElem key={"Dist"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
-                  <div className="w-10 m-auto text-center">{Math.round(dist).toString()}</div>
-               </GridElem>)
-            }
-
-            result.push(<GridElem key={"VOR"} active={active} edit={edit} mode="Vor" currentMode={mode}>
-               <div className="flex flex-row grow">
-                  {
-                     edit ?
-                        <div className="flex flex-row [&_.invalid]:text-red-500">
-                           <Input active={true} className="w-14" value={vorIndent} onChange={(value) => {
-                              navProps.vor.ident = value;
-                              editNavProperties(id, properties);
-                           }} />
-                           <Input active={true} className="w-14" value={vorFreq.toString()} onChange={(value) => {
-                              navProps.vor.freq = +value;
-                              editNavProperties(id, properties);
-                           }} validate={async (value) => {
-                              return /^\d*(\.\d*)?$/.test(value);
-                           }} inputMode='decimal' />
-                        </div>
-                        :
-                        <div className="flex flex-col grow">
-                           <div className="w-full m-auto text-center">{vorIndent}</div>
-                           <div className="w-full m-auto text-center">{vorFreq}</div>
-                        </div>
-                  }
-               </div>
-            </GridElem>)
-
-            result.push(<GridElem key={"OBS"} active={active} edit={edit} mode="Vor" currentMode={mode}>
-               <div className="[&_.invalid]:text-red-500">
-                  {
-                     edit ?
-                        <Input active={true} className="w-11" value={vorObs.toFixed(0)} onChange={(value) => {
-                           navProps.vor.obs = +value;
-                           editNavProperties(id, properties);
-                        }} validate={async (value) => {
-                           return /^[-+]?\d*$/.test(value);
-                        }} inputMode='decimal' />
-                        : <div className="w-11 m-auto text-center">{vorObs}</div>
-                  }
-               </div>
-            </GridElem>)
-
-            if (edit) {
-               result.push(<GridElem key={"Wind"} active={active} edit={edit} mode="Weather" currentMode={mode}>
-                  <div className="flex flex-row [&_.invalid]:text-red-500">
-                     <Input active={true} className="w-12" value={windDir.toString()} onChange={(value) => {
-                        navProps.wind.direction = +value;
-                        editNavProperties(id, properties);
-                     }} validate={async (value) => {
-                        return /^[-+]?\d*$/.test(value);
-                     }} inputMode='decimal' />
-                     <Input active={true} className="w-12" value={windVel.toString()} onChange={(value) => {
-                        navProps.wind.speed = +value;
-                        editNavProperties(id, properties);
-                     }} validate={async (value) => {
-                        return /^[-+]?\d*$/.test(value);
-                     }} inputMode='decimal' />
-                  </div>
-               </GridElem>)
-
-               result.push(<GridElem key={"OAT"} active={active} edit={edit} mode="Weather" currentMode={mode}>
-                  <div className="[&_.invalid]:text-red-500">
-                     <Input active={true} className="w-10" onChange={(value) => {
-                        navProps.oat = +value;
-                        editNavProperties(id, properties);
-                     }} value={oat.toString()} validate={async (value) => {
-                        return /^[-+]?\d*(\.\d*)?$/.test(value);
-                     }} inputMode='decimal' />
-                  </div>
-               </GridElem>)
-
-               result.push(<GridElem key={"VAR"} active={active} edit={edit} mode="Weather" currentMode={mode}>
-                  <div className="flex flex-row [&_.invalid]:text-red-500">
-                     <Input active={true} className="w-12" value={magVar.toString()} onChange={(value) => {
-                        navProps.magVar = +value;
-                        editNavProperties(id, properties);
-                     }} validate={async (value) => {
-                        return /^[-+]?\d*(\.\d*)?$/.test(value);
-                     }} inputMode='decimal' />
-                  </div>
-               </GridElem>)
-
-               result.push(<GridElem key={"IAS"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
-                  <div className="[&_.invalid]:text-red-500">
-                     <Input active={true} className="w-12" onChange={(value) => {
-                        navProps.ias = +value;
-                        editNavProperties(id, properties);
-                     }} value={ias.toString()} validate={async (value) => {
-                        return /^[+]?\d*$/.test(value) && (+value > 0);
-                     }} inputMode='decimal' />
-                  </div>
-               </GridElem>)
-
-               result.push(<GridElem key={"ATA"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
-                  <div className="[&_.invalid]:text-red-500">
-
-                     <Reset className="flex-row justify-end" onReset={() => {
-                        navProps.ata = -1;
-                        setReset(value => value + 1)
-                     }}>
-                        <Input active={true} className="w-16" onChange={(value) => {
-                           if (value.length) {
-                              const data = value.split('h');
-                              navProps.ata = +data[0] * 60 + +data[1]
-                           } else {
-                              navProps.ata = -1
-                           }
-
-                           editNavProperties(id, properties);
-                        }} reload={reset > 0} value={ataStr}
-                           validate={async (value) => {
-                              if (!value.length) {
-                                 return true
-                              }
-
-                              if (/^\d+h\d*$/.test(value)) {
-                                 const data = value.split('h');
-                                 return (+data[0] < 24) && (+data[1] < 60);
-                              }
-
-                              return false;
-                           }} />
-                     </Reset>
-                  </div>
-               </GridElem>)
-
-            } else if (mode === 'Weather') {
-               result.push(<GridElem key={"Wind"} active={active} edit={edit} mode="Weather" currentMode={mode}>
-                  <div className="flex flex-row grow h-full">
-                     <div className="flex flex-row grow justify-center m-auto">{windDir} / {windVel}</div>
-                  </div>
-               </GridElem>)
-
-               result.push(<GridElem key={"VAR"} active={active} edit={edit} mode="Weather" currentMode={mode}>
-                  <div className="flex flex-row">{magVar}</div>
-               </GridElem>)
-
-               result.push(<GridElem key={"OAT"} active={active} edit={edit} mode="Weather" currentMode={mode}>
-                  <div className="flex flex-row">{oat + '\u00b0'}</div>
-               </GridElem>)
-            } else {
-               result.push(<GridElem key={"CH"} active={active} edit={edit} mode="Full" currentMode={mode}>
-                  <div className="w-10 m-auto text-center">{Math.round(CH).toString() + "\u00b0 "}</div>
-               </GridElem>)
-
-               result.push(<GridElem key={"MH"} active={active} edit={edit} mode="Vor" currentMode={mode}>
-                  <div className="w-10 m-auto text-center">{Math.round(MH).toString() + "\u00b0 "}</div>
-               </GridElem>)
-
-               result.push(<GridElem key={"IAS"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
-                  <div className="w-10 m-auto text-center">{Math.round(ias)}</div>
-               </GridElem>)
-
-               result.push(<GridElem key={"TAS"} active={active} edit={edit} mode="Full" currentMode={mode}>
-                  <div className="w-10 m-auto text-center">{Math.round(tas)}</div>
-               </GridElem>)
-
-               result.push(<GridElem key={"GS"} active={active} edit={edit} mode="Full" currentMode={mode}>
-                  <div className="w-10 m-auto text-center">{Math.round(GS).toString()}</div>
-               </GridElem>)
-
-               result.push(<GridElem key={"ETE"} active={active} edit={edit} mode="Full" currentMode={mode}>
-                  <div className="m-auto text-center">{dur}</div>
-               </GridElem>)
-
-               result.push(<GridElem key={"ETA"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
-                  <div className="flex flex-col shrink m-auto justify-center">
-                     <div className="flex grow justify-center">{eta}</div>
-                     {
-                        deltaEta === 0 ? <></>
-                           :
-                           <div className="flex flex-col grow">
-                              <div className={"text-center justify-center" + (deltaEta < 0 ? ' text-red-600' : ' text-green-600')}>
-                                 {eta2}
-                              </div>
-                           </div>
-                     }
-                  </div>
-               </GridElem>)
-            }
-
-            result.push(<GridElem key={"Fuel"} active={active} edit={edit} mode="Enroute" currentMode={mode}>
-               {
-                  edit ?
-                     <div className="[&_.invalid]:text-red-500">
-                        <Reset className="flex-row justify-end" onReset={() => {
-                           navProps.curFuel = 0;
-                           editNavProperties(id, properties);
-                           setReset(value => value + 1)
-                        }}>
-                           <Input active={true} className="w-12" onChange={(value) => {
-                              navProps.curFuel = fromUnit(+value);
-                              editNavProperties(id, properties);
-                           }} value={toUnit(curFuel).toString()} reload={reset > 0} validate={async (value) => {
-                              return /^[+]?\d*$/.test(value);
-                           }} inputMode='decimal' />
-                        </Reset>
-                     </div>
-                     : <div className="flex flex-col shrink m-auto justify-center">
-                        <div className="flex grow justify-center">{Math.round(toUnit(estFuel)) + ''}</div>
-                        {
-                           deltaFuel === 0 ? <></>
-                              :
-                              <div className="flex flex-col grow">
-                                 <div className={"text-center justify-center" + (deltaFuel > 0 ? ' text-green-600' : ' text-red-600')}>
-                                    {Math.round(toUnit(estFuel2))}
-                                 </div>
-                              </div>
-                        }
-                     </div>
-               }
-            </GridElem>)
-
-            result.push(<GridElem key={"Remarks"} active={active} edit={edit} mode="Remarks" currentMode={mode}>
-               <div className="flex flex-row grow h-full">
-                  {
-                     edit ?
-                        <Input active={true} className="w-32" value={remark} onChange={(value) => {
-                           navProps.remark = value;
-                           editNavProperties(id, properties);
-                        }} />
-                        : <div className="min-w-32 m-auto text-center">{remark}</div>
-                  }
-               </div>
-            </GridElem>)
-
-            if (!edit) {
-               result.push(<GridElem key={"checkbox"} active={active} edit={edit} currentMode={mode}>
-                  <CheckBox value={!active} onChange={() => setActive(row - 1)} />
-               </GridElem>)
-            }
-         }
-
-         return result
-            .filter(elem => !elem.props.mode || mode === elem.props.mode || mode === 'Full')
-            .map((elem, index, all) => <elem.type key={elem.key} {...elem.props} row={row + 1} col={index} size={all.length} />);
-      })
-   }, [actives, collapseWaypoints, coords, departureTime, edit, editNavProperties, fromUnit, id, loadedFuel, mode, properties, reset, setActive, taxiConso, taxiTime, toUnit, updateWaypoints, waypoints]);
+   const legs = useLegs({
+      departureTime, taxiTime, loadedFuel, taxiConso,
+      coords, waypoints, actives, properties, edit, mode, collapseWaypoints, id,
+      delayedRef, setReset, fromUnit, toUnit, setDelayed, reset
+   });
 
    const tabs = useMemo(() => Array.from(modes), []);
    useEffect(() => {
