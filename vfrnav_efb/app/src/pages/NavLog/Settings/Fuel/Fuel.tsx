@@ -14,19 +14,23 @@
  */
 
 import { Slider } from "@alx-home/Utils";
-import { MapContext } from "@pages/Map/MapContext";
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SettingsTabs } from "../../Settings";
 import { Datasets, Graph } from "../Graph/Graph";
 import { useDataset } from "./Dataset";
 import { Settings } from "./Settings";
-
+import { useMapSubSettings } from "@pages/Map/MapSettings";
 
 export const Fuel = ({ curentPage, active: parentActive }: {
    curentPage: SettingsTabs,
    active: boolean
 }) => {
-   const { fuelUnit, updateFuelPreset: updatePreset, fuelSettingsOat: oat, setFuelSettingsOat: setOat } = useContext(MapContext)!;
+   const { fuelUnit, updateFuelPreset: updatePreset, fuelSettingsOat: oat, setFuelSettingsOat: setOat } = useMapSubSettings(settings => ({
+      fuelUnit: settings.fuelUnit,
+      updateFuelPreset: settings.updateFuelPreset,
+      fuelSettingsOat: settings.fuelSettingsOat,
+      setFuelSettingsOat: settings.setFuelSettingsOat
+   }));
    const fuelUnitStr = useMemo(() => fuelUnit === 'gal' ? 'gph' : 'l/h', [fuelUnit])
    const xUnit = useCallback((val: number) => val < 10000 ? 'ft' : '', [])
    const toUnit = useCallback((value: number) =>

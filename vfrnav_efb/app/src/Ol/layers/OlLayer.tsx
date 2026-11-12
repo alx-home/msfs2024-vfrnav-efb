@@ -13,11 +13,11 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Feature, Map } from "ol";
+import { Feature } from "ol";
 import TileLayer from "ol/layer/Tile";
 import { TileImage } from "ol/source";
-import { useContext, useEffect, useId, useMemo, memo } from 'react';
-import { MapContext } from "@pages/Map/MapContext";
+import { useEffect, useId, useMemo, memo } from 'react';
+import { useMapSettings } from "@pages/Map/MapSettings";
 import VectorLayer from "ol/layer/Vector";
 import { Coordinate } from "ol/coordinate";
 import { Polygon } from "ol/geom";
@@ -39,7 +39,9 @@ export class OlLayerProp {
 
 export type Source = TileLayer | Layer | LayerGroup;
 
-const useLayer = (source: Source | TileImage, map?: Map, clipAera?: Coordinate[]) => {
+const useLayer = (source: Source | TileImage, clipAera?: Coordinate[]) => {
+  const map = useMapSettings(settings => settings.map);
+
   const id = useId();
   const layer = useMemo<Source>(() => source instanceof TileImage ? new TileLayer({
     className: id,
@@ -58,7 +60,7 @@ const useLayer = (source: Source | TileImage, map?: Map, clipAera?: Coordinate[]
     });
 
     result.getSource()!.on('addfeature', function () {
-      layer.setExtent(result.getSource()!.getExtent());
+      layer.setExtent(result.getSource()!.getExtent() ?? undefined);
     });
 
     const style = new Style({
@@ -111,8 +113,7 @@ export const OlLayer = memo(function OlLayer({ opacity, source, order, active, m
     source: Source | TileImage,
     clipAera?: Coordinate[]
   }) {
-  const mapContext = useContext(MapContext)!;
-  const layer = useLayer(source, mapContext.map, clipAera);
+  const layer = useLayer(source, clipAera);
 
   useEffect(() => {
     layer?.setVisible(active ?? false);

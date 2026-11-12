@@ -13,13 +13,15 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeEvent, Children, CSSProperties, Dispatch, FocusEvent, isValidElement, KeyboardEvent, MouseEventHandler, PropsWithChildren, SetStateAction, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ChangeEvent, Children, CSSProperties, Dispatch, FocusEvent, isValidElement,
+  KeyboardEvent, MouseEventHandler, PropsWithChildren, SetStateAction, useEffect,
+  useMemo, useRef, useState
+} from 'react';
 
 import VectorLayer from 'ol/layer/Vector';
 
 import { Draggable, Scroll, Button } from '@alx-home/Utils';
-
-import { MapContext } from '@pages/Map/MapContext';
 
 import newFileImg from '@alx-home/images/new-file.svg';
 import importImg from '@alx-home/images/import.svg';
@@ -31,6 +33,7 @@ import { messageHandler } from '@Settings/SettingsStore';
 import { Properties } from '@shared/NavData';
 import { Coordinate } from 'ol/coordinate';
 import { useEvent } from 'react-use-event-hook';
+import { useMapSettings, useMapSubSettings } from '@pages/Map/MapSettings';
 
 export interface NavData {
   id: number,
@@ -86,7 +89,7 @@ const Input = ({ editMode, setEditMode, name, id }: {
   name: string,
   id: number
 }) => {
-  const { editNav } = useContext(MapContext)!;
+  const editNav = useMapSettings(settings => settings.editNav);
   const textArea = useRef<HTMLInputElement | null>(null);
   const [value, setValue] = useState(name);
   const [focused, setFocused] = useState(false);
@@ -140,7 +143,10 @@ const NavItem = ({ name, shortName, active, id, reduced, setDraggable }: {
   reduced: boolean,
   setDraggable?: Dispatch<SetStateAction<boolean>>
 }) => {
-  const { setNavData, removeNav } = useContext(MapContext)!;
+  const [setNavData, removeNav] = useMapSubSettings(settings => [
+    settings.setNavData,
+    settings.removeNav
+  ]);
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
@@ -228,7 +234,17 @@ export const Nav = ({ closeMenu, className, style, reduced }: {
 }) => {
   const efbConnected = useEFBServer();
 
-  const { addNav, navData, deviationCurve, deviationPreset, fuelUnit, fuelCurve, fuelPreset, reorderNav } = useContext(MapContext)!;
+  const { addNav, navData, deviationCurve, deviationPreset, fuelUnit,
+    fuelCurve, fuelPreset, reorderNav } = useMapSubSettings(settings => ({
+      addNav: settings.addNav,
+      navData: settings.navData,
+      deviationCurve: settings.deviationCurve,
+      deviationPreset: settings.deviationPreset,
+      fuelUnit: settings.fuelUnit,
+      fuelCurve: settings.fuelCurve,
+      fuelPreset: settings.fuelPreset,
+      reorderNav: settings.reorderNav
+    }));
   const key = useMemo(() => navData.reduce((prev, elem) => { return prev + ";" + elem.name; }, ""), [navData]);
   const [draggable, setDraggable] = useState(true);
   const [uploading, setUploading] = useState(false);

@@ -13,10 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { MapContext } from "@pages/Map/MapContext";
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 import { Coordinate } from "ol/coordinate";
-import { PropsWithChildren, useCallback, useContext, useMemo, useState, useEffect, useRef, memo } from 'react';
+import { PropsWithChildren, useCallback, useMemo, useState, useEffect, useRef, memo } from 'react';
 
 import Arrow from '@alx-home/images/arrow.svg?react';
 import { CheckBox, Input, Scroll, Select, SelectOption, Tabs, useDelayed } from "@alx-home/Utils";
@@ -27,6 +26,7 @@ import { messageHandler } from "@Settings/SettingsStore";
 import { Fuel } from "@shared/Fuel";
 import { useSimDate } from "@Utils/SimDate";
 import { useEvent } from "react-use-event-hook";
+import { useMapSubSettings } from "@pages/Map/MapSettings";
 
 const modes = ['Enroute', 'Vor', 'Weather', 'Remarks', 'Full'] as const;
 type Modes = typeof modes[number];
@@ -155,7 +155,19 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
    edit: boolean,
    navData: NavData
 }) {
-   const { editNavProperties, activeNav, updateWaypoints, fuelUnit, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useContext(MapContext)!;
+   const { editNavProperties, activeNav, updateWaypoints, fuelUnit, setLoadedFuel,
+      setDepartureTime, setTaxiTime, setTaxiConso, setLink: setLinks, navData: navDatas } = useMapSubSettings(settings => ({
+         editNavProperties: settings.editNavProperties,
+         activeNav: settings.activeNav,
+         updateWaypoints: settings.updateWaypoints,
+         fuelUnit: settings.fuelUnit,
+         setLoadedFuel: settings.setLoadedFuel,
+         setDepartureTime: settings.setDepartureTime,
+         setTaxiTime: settings.setTaxiTime,
+         setTaxiConso: settings.setTaxiConso,
+         setLink: settings.setLink,
+         navData: settings.navData
+      }));
    const { properties, waypoints, departureTime, link, taxiTime, taxiConso, loadedFuel, id } = navData;
    const getSimDate = useSimDate();
    const actives = useMemo(() => properties.map(value => edit ? true : value.active), [edit, properties]);

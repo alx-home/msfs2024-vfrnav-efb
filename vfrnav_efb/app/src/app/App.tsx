@@ -34,7 +34,7 @@ import navlogImg from '@efb-images/navlog.svg';
 import settingsImg from '@alx-home/images/settings.svg';
 import filesImg from '@alx-home/images/files.svg';
 import creditsImg from '@alx-home/images/credits.svg';
-import MapContextProvider from '@pages/Map/MapContext';
+import MapSettingsInitializer from '@pages/Map/MapSettings';
 
 // Loading placeholder shown while page chunks are being loaded
 const PageLoadingPlaceholder = () => <div className='flex items-center justify-center w-full h-full text-gray-400'>Loading...</div>;
@@ -111,7 +111,7 @@ export const App = () => {
   return (
     <MouseContextProvider>
       <SettingsStoreInitializer setPopup={setPopup} emptyPopup={empty} setPage={setPage}>
-        <MapContextProvider>
+        <MapSettingsInitializer>
           <div className={'fixed flex flex-col w-full h-full bg-opacity-80 bg-slate-600 z-50 justify-center text-sm'
             + (popup === empty ? ' hidden' : '')
           }>
@@ -133,7 +133,7 @@ export const App = () => {
               </div>
             )}
           </div>
-        </MapContextProvider>
+        </MapSettingsInitializer>
       </SettingsStoreInitializer>
     </MouseContextProvider>
   );

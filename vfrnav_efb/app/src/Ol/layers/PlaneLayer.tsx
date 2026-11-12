@@ -14,7 +14,8 @@
  */
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useEffect, useMemo, useRef, useState, memo } from 'react';
+import { useEffect, useMemo, useRef, useState, memo } from 'react';
+import { useMapSubSettings } from "@pages/Map/MapSettings";
 import { Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import VectorSource from "ol/source/Vector";
@@ -23,7 +24,7 @@ import { Feature } from "ol";
 import Style from "ol/style/Style";
 import VectorLayer from "ol/layer/Vector";
 
-import { Interactive, MapContext } from "@pages/Map/MapContext";
+import { Interactive } from "@pages/Map/MapSettings";
 import { Coordinate } from "ol/coordinate";
 
 import { messageHandler, useSettings } from "@Settings/SettingsStore";
@@ -42,7 +43,11 @@ export const PlaneLayer = memo(function PlaneLayer({
 }: OlLayerProp & {
   opacity?: number
 }) {
-  const { map, followMode, setFollowMode } = useContext(MapContext)!;
+  const { map, followMode, setFollowMode } = useMapSubSettings(settings => ({
+    map: settings.map,
+    followMode: settings.followMode,
+    setFollowMode: settings.setFollowMode
+  }));
   const cheatMode = useSettings(settings => settings.plane.enabled);
   const vectorSource = useMemo(() => new VectorSource<Feature<Point>>({}), []);
   const [pos, setPos] = useState<PlanePos>({

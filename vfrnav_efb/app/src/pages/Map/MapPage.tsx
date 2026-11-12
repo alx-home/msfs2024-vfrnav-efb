@@ -20,7 +20,7 @@ import { OlWMTSLayer } from "@Ol/layers/OlWMTSLayer";
 import { OlMap } from "@Ol/OlMap";
 import { getTopLeft, getWidth } from 'ol/extent';
 import { fromLonLat, get as getProjection } from 'ol/proj';
-import { Dispatch, KeyboardEvent, SetStateAction, useCallback, useContext, useEffect, useMemo, useState, memo } from 'react';
+import { Dispatch, KeyboardEvent, SetStateAction, useCallback, useEffect, useMemo, useState, memo } from 'react';
 
 import { OnLayerChange } from './MapMenu/Menus/Layers';
 import { LayerSettings } from "@Settings/Settings";
@@ -32,7 +32,6 @@ import { PlaneLayer } from "@Ol/layers/PlaneLayer";
 import { RecordsLayer } from "@Ol/layers/RecordsLayer";
 // import { OpenAip } from "@Ol/layers/OpenAip";
 import { ToolBar } from "./Toolbar";
-import { MapContext } from "./MapContext";
 
 import flightPlanImg from '@efb-images/flight-plan.svg';
 import recordImg from '@efb-images/record.svg';
@@ -55,6 +54,7 @@ import osmImg from '@efb-images/osm.jpg';
 import { Input } from "@alx-home/Utils";
 import { Icaos, LatLon } from "@shared/Facilities";
 import { RecordViewpoint } from "./RecordViewPoint";
+import { useMapSettings, useMapSubSettings } from "./MapSettings";
 
 const projection = getProjection('EPSG:3857')!;
 const projectionExtent = projection.getExtent();
@@ -101,7 +101,7 @@ const Overlay = memo(function Overlay({ menu, setMenu, setOpen }: {
 });
 
 const SpinAnimation = memo(function SpinAnimation() {
-  const { triggerFlash, flash, flashKey } = useContext(MapContext)!;
+  const { triggerFlash, flash, flashKey } = useMapSubSettings(settings => ({ triggerFlash: settings.triggerFlash, flash: settings.flash, flashKey: settings.flashKey }));
 
   return <div className="absolute top-0 left-0 right-0 bottom-0 flex justify-center" >
     <span key={flashKey}
@@ -149,7 +149,7 @@ const openFlightMapUrl = (() => {
 })()
 
 export const MapPage = memo(function MapPage() {
-  const { map } = useContext(MapContext)!;
+  const map = useMapSettings(settings => settings.map);
   const settings = useSettings(useShallow((settings): LayerSettings => ({
     plane: settings.plane,
     airports: settings.airports,

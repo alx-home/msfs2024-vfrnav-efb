@@ -25,7 +25,7 @@ import { Feature } from "ol";
 import { Polygon } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import LayerGroup from "ol/layer/Group";
-import { Interactive } from "@pages/Map/MapContext";
+import { Interactive } from "@pages/Map/MapSettings";
 import { AZBAPopup } from "./AZBAPopup";
 import { Color } from "ol/color";
 

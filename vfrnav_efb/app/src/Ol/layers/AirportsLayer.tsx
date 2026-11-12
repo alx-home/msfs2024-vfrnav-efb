@@ -14,7 +14,7 @@
  */
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useCallback, useContext, useEffect, useMemo, useRef, memo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, memo, useState } from 'react';
 import { messageHandler, useSettings } from "@Settings/SettingsStore";
 import { Point } from "ol/geom";
 import { fromLonLat, toLonLat } from "ol/proj";
@@ -26,7 +26,7 @@ import VectorLayer from "ol/layer/Vector";
 
 
 import { AirportFacility, Facilities, Facility } from "@shared/Facilities";
-import { Interactive, MapContext } from "@pages/Map/MapContext";
+import { Interactive, useMapSubSettings } from "@pages/Map/MapSettings";
 import { AirportPopup } from "./AirportPopup";
 import { Coordinate } from "ol/coordinate";
 
@@ -49,7 +49,11 @@ export const AirportsLayer = memo(function AirportsLayer({
 }) {
   const setPopup = useSettings(settings => settings.setPopup);
   const airports = useSettings(settings => settings.airports);
-  const { map, registerMouseEnd, unregisterMouseEnd } = useContext(MapContext)!;
+  const { map, registerMouseEnd, unregisterMouseEnd } = useMapSubSettings(settings => ({
+    map: settings.map,
+    registerMouseEnd: settings.registerMouseEnd,
+    unregisterMouseEnd: settings.unregisterMouseEnd
+  }));
   const [pos, setPos] = useState({ lat: 0, lon: 0 });
   const vectorSource = useMemo(() => new VectorSource<Feature<Point>>({}), []);
 

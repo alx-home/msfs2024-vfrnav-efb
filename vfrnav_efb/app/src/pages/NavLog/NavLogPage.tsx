@@ -14,8 +14,7 @@
  */
 
 import { Button, CheckBox, Input, Tabs } from "@alx-home/Utils";
-import { MapContext } from "@pages/Map/MapContext";
-import { ReactElement, useContext, useEffect, useMemo, useState, useRef, memo } from 'react';
+import { ReactElement, useEffect, useMemo, useState, useRef, memo } from 'react';
 
 import { NavData } from "@pages/Map/MapMenu/Menus/Nav";
 
@@ -29,6 +28,7 @@ import { Coordinate } from "ol/coordinate";
 import { useATCId } from "@Utils/ATCId";
 import { useSimDate } from "@Utils/SimDate";
 import { useEvent } from 'react-use-event-hook';
+import { useMapSubSettings } from "@pages/Map/MapSettings";
 
 const ExportPopup = ({ navData, settingPage, deviationCurve, fuelCurve }: {
   navData: NavData[],
@@ -204,7 +204,19 @@ export const NavLogPage = memo(function NavLogPage() {
     navData, deviationCurve, fuelUnit, fuelCurve, importNav,
     setSavedDeviationCurves, setSavedFuelCurves, deviationPreset, fuelPreset,
     updateDeviationPreset, updateFuelPreset
-  } = useContext(MapContext)!;
+  } = useMapSubSettings(settings => ({
+    navData: settings.navData,
+    deviationCurve: settings.deviationCurve,
+    fuelUnit: settings.fuelUnit,
+    fuelCurve: settings.fuelCurve,
+    importNav: settings.importNav,
+    setSavedDeviationCurves: settings.setSavedDeviationCurves,
+    setSavedFuelCurves: settings.setSavedFuelCurves,
+    deviationPreset: settings.deviationPreset,
+    fuelPreset: settings.fuelPreset,
+    updateDeviationPreset: settings.updateDeviationPreset,
+    updateFuelPreset: settings.updateFuelPreset
+  }));
   const setPopup = useSettings(settings => settings.setPopup);
   const emptyPopup = useSettings(settings => settings.emptyPopup);
 

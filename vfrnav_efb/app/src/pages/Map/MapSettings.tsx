@@ -14,7 +14,7 @@
  */
 
 import { Collection, Map as olMap, MapBrowserEvent, getUid, MapEvent } from 'ol';
-import { createContext, Dispatch, PropsWithChildren, RefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
+import { Dispatch, PropsWithChildren, RefObject, SetStateAction, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react';
 import { NavData } from './MapMenu/Menus/Nav';
 import BaseLayer from "ol/layer/Base";
 import { defaults } from "ol/interaction/defaults";
@@ -32,6 +32,8 @@ import { Deviation, ExportNavRecord, FuelUnit, getFuelConsumption, h125Curve, Fu
 import { getLength } from 'ol/sphere';
 import { PresetPopup } from '@pages/NavLog/Settings/Fuel/PresetPopup';
 import { useEvent } from 'react-use-event-hook';
+import { createStore, StoreApi, useStore } from 'zustand';
+import { useShallow } from 'zustand/shallow';
 
 export type Interactive = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,7 +54,7 @@ export interface FollowMode {
   pending: boolean
 };
 
-export const MapContext = createContext<{
+export interface MapSettings {
   map: olMap,
   navData: NavData[],
   records: PlaneRecord[],
@@ -172,7 +174,18 @@ export const MapContext = createContext<{
     link: string;
   }[]) => void
 
-} | undefined>(undefined);
+};
+
+let mapSettingsStore: StoreApi<MapSettings> | undefined;
+export const useMapSettings = <T,>(selector: (_settings: MapSettings) => T): T => {
+  if (!mapSettingsStore) {
+    throw new Error('Settings store has not been initialized');
+  }
+
+  return useStore(mapSettingsStore, selector);
+};
+
+export const useMapSubSettings = <T,>(selector: (_settings: MapSettings) => T): T => useMapSettings(useShallow(selector));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getFeaturesAtPixel = (map: olMap, layer: Layer, coords: Coordinate, event: MapBrowserEvent<any>): FeatureLike[] => {
@@ -286,14 +299,13 @@ const updateNavProps = (deviationCurve: Deviation[], props: Properties, prevCoor
   return fuelCurve ? updateFuel(fuelCurve, result) : result
 }
 
-const MapContextProvider = ({ children }: PropsWithChildren) => {
+const MapSettingsInitializer = ({ children }: PropsWithChildren) => {
   const setPopup = useSettings(settings => settings.setPopup);
   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
   const dragging = useRef(false);
   const [followMode, setFollowMode] = useState<FollowMode>({ position: false, heading: false, pending: false });
 
   const disableFollow = useEvent(() => {
-    console.log("Disabling follow mode");
     setFollowMode({
       position: false,
       heading: false,
@@ -555,7 +567,6 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const updateNavPropsCB = useEvent((props: Properties, prevCoords: Coordinate, coords: Coordinate) =>
     updateNavProps(deviationCurve, props, prevCoords, coords, fuelCurve)
   )
-
 
   useEffect(() => {
     if (nextDeviationPreset) {
@@ -1007,7 +1018,101 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
     importNavRef,
     importNav
-  }), [map, addNavCB, cancelCB, registerMouseEnd, unregisterMouseEnd, navData, records, flash, flashKey, triggerFlash, removeNav, activeNav, editNav, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink, editNavProperties, updateWaypoints, reorderNav, removeRecord, activeRecord, editRecord, currentRecord, resetProfileOffset, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav, followMode, setFollowMode]);
+  }), [map,
+    addNavCB,
+    setAddNav,
+    cancelCB,
+    registerMouseEnd,
+    unregisterMouseEnd,
+    setCancel,
+    navData,
+    setNavData,
+    records,
+    counterRef,
+    flash,
+    setFlash,
+    flashKey,
+    triggerFlash,
+    removeNav,
+    activeNav,
+    editNav,
+    setLoadedFuel,
+    setDepartureTime,
+    setTaxiTime,
+    setTaxiConso,
+    setLink,
+    editNavProperties,
+    updateWaypoints,
+    reorderNav,
+    removeRecord,
+    activeRecord,
+    editRecord,
+    currentRecord,
+    setCurrentRecord,
+    resetProfileOffset,
+    setProfileOffset,
+    profileOffset,
+    setProfileScale,
+    profileScale,
+    recordsCenter,
+    setRecordsCenter,
+    setProfileRange,
+    profileRange,
+    setProfileRule1,
+    profileRule1,
+    setProfileRule2,
+    profileRule2,
+    followMode,
+    setFollowMode,
+
+    setProfileSlope1,
+    profileSlope1,
+    setProfileSlope2,
+    profileSlope2,
+
+    setProfileSlopeOffset1,
+    profileSlopeOffset1,
+    setProfileSlopeOffset2,
+    profileSlopeOffset2,
+
+    setTouchdown,
+    touchdown,
+    setGround,
+    ground,
+
+    updateNavPropsCB,
+
+    fuelUnit,
+    setFuelUnit,
+
+    setSavedFuelCurves,
+    savedFuelCurves,
+    updateFuelPreset,
+    fuelPreset,
+    fuelSettingsOat,
+    setFuelSettingsOat,
+
+    fuelCurve,
+    setFuelCurve,
+
+    setSavedDeviationCurves,
+    savedDeviationCurves,
+
+    deviationCurve,
+    setDeviationCurve,
+    updateDeviationPreset,
+    deviationPreset,
+
+    importNavRef,
+    importNav
+  ]);
+
+  mapSettingsStore ??= createStore(() => provider);
+  const store = mapSettingsStore;
+
+  useLayoutEffect(() => {
+    store.setState(provider, true);
+  }, [provider, store]);
 
   useEffect(() => {
     if (profileOffset === 0 && currentRecord.length) {
@@ -1015,13 +1120,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     }
   }, [currentRecord, profileOffset, resetProfileOffset])
 
-  return (
-    <MapContext.Provider
-      value={provider}
-    >
-      {children}
-    </MapContext.Provider>
-  );
+  return children;
 };
 
-export default MapContextProvider;
+export default MapSettingsInitializer;

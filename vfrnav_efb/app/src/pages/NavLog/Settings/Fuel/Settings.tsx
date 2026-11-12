@@ -13,9 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { MapContext } from '@pages/Map/MapContext';
 import { messageHandler, useSettings } from '@Settings/SettingsStore';
-import { useContext, useMemo, useState, useEffect, useRef } from 'react';
+import { useMapSubSettings } from '@pages/Map/MapSettings';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { EditPresetPopup } from './PresetPopup';
 import { Select, SelectOption } from '@alx-home/Utils';
 import { FuelUnit } from '@shared/NavData';
@@ -29,7 +29,16 @@ export const Settings = ({ active }:
    {
       active: boolean
    }) => {
-   const { fuelUnit, setFuelUnit, savedFuelCurves, setSavedFuelCurves, fuelCurve, updateFuelPreset: updatePreset, fuelPreset: preset } = useContext(MapContext)!;
+   const { fuelUnit, setFuelUnit, savedFuelCurves, setSavedFuelCurves, fuelCurve,
+      updateFuelPreset: updatePreset, fuelPreset: preset } = useMapSubSettings(settings => ({
+         fuelUnit: settings.fuelUnit,
+         setFuelUnit: settings.setFuelUnit,
+         savedFuelCurves: settings.savedFuelCurves,
+         setSavedFuelCurves: settings.setSavedFuelCurves,
+         fuelCurve: settings.fuelCurve,
+         updateFuelPreset: settings.updateFuelPreset,
+         fuelPreset: settings.fuelPreset
+      }));
    const setPopup = useSettings(settings => settings.setPopup);
 
    const hardPresets = useMemo(() => (['simple']), [])

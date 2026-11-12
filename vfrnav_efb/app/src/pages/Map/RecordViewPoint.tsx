@@ -15,32 +15,35 @@
 
 import StreetView from '@efb-images/street-view.svg?react';
 import { Menu } from './MapMenu/MapMenu';
-import { useContext, useState, memo } from 'react';
-import { MapContext } from './MapContext';
+import { useState, memo } from 'react';
+import { useMapSubSettings } from './MapSettings';
 
 export const RecordViewpoint = memo(function RecordViewpoint({ menu }: {
    menu: Menu
 }) {
-   const { recordsCenter, setRecordsCenter } = useContext(MapContext)!;
+   const { recordsCenter, setRecordsCenter } = useMapSubSettings(settings => ({
+      recordsCenter: settings.recordsCenter,
+      setRecordsCenter: settings.setRecordsCenter
+   }));
    const [dragOffset, setDragOffset] = useState<{ x: number, y: number } | undefined>()
 
    return <div className={"absolute w-full h-full" + (menu === Menu.records ? '' : ' hidden')}
-      onDragEnter={(e) => {
+      onDragEnter={e => {
          e.preventDefault();
       }}
-      onDragOver={(e) => {
+      onDragOver={e => {
          e.preventDefault();
       }}>
       <button className="absolute" style={{
-         top: (recordsCenter.y * 100) + "%",
-         left: (recordsCenter.x * 100) + "%"
+         top: `${recordsCenter.y * 100}%`,
+         left: `${recordsCenter.x * 100}%`
       }}
          draggable={true}
-         onDragStart={(event) => {
+         onDragStart={event => {
             const bounding = event.currentTarget.getBoundingClientRect();
             setDragOffset({ x: bounding.x - event.clientX, y: bounding.y - event.clientY })
          }}
-         onDrag={(event) => {
+         onDrag={event => {
             if (event.clientX !== 0 && event.clientY !== 0) {
                const bounding = event.currentTarget.getBoundingClientRect();
                const parentBounding = event.currentTarget.parentElement!.getBoundingClientRect();

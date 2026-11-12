@@ -14,14 +14,17 @@
  */
 
 import { getDatasets } from "@shared/NavData";
-import { useMemo, useContext, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { Datasets } from "../Graph/Graph";
-import { MapContext } from "@pages/Map/MapContext";
+import { useMapSubSettings } from "@pages/Map/MapSettings";
 
 export const useDataset = ({ oat }: {
    oat: number
 }): [Datasets, (_newDatasets: Datasets, _weak: boolean) => void, number[]] => {
-   const { setFuelCurve, fuelCurve } = useContext(MapContext)!;
+   const { setFuelCurve, fuelCurve } = useMapSubSettings(settings => ({
+      setFuelCurve: settings.setFuelCurve,
+      fuelCurve: settings.fuelCurve
+   }));
 
    const speeds = useMemo(() => fuelCurve.map(curve => curve[0]), [fuelCurve])
    const datasets = useMemo((): Datasets => getDatasets({ fuelCurve, oat }), [fuelCurve, oat])

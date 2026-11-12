@@ -13,17 +13,21 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { MapContext } from "@pages/Map/MapContext";
-import { useContext, useMemo, useCallback, SetStateAction } from 'react';
+import { useMemo, useCallback, SetStateAction } from 'react';
 import { SettingsTabs } from "../../Settings";
 import { Datasets, Graph } from "../Graph/Graph";
 import { Settings } from "./Settings";
+import { useMapSubSettings } from "@pages/Map/MapSettings";
 
 export const Deviation = ({ curentPage, active: parentActive }: {
    curentPage: SettingsTabs,
    active: boolean
 }) => {
-   const { deviationCurve, updateDeviationPreset: updatePreset, setDeviationCurve } = useContext(MapContext)!;
+   const { deviationCurve, updateDeviationPreset: updatePreset, setDeviationCurve } = useMapSubSettings(settings => ({
+      deviationCurve: settings.deviationCurve,
+      updateDeviationPreset: settings.updateDeviationPreset,
+      setDeviationCurve: settings.setDeviationCurve
+   }));
    const bounds = useMemo(() => ([[0, 360], [-10, 10]] as [[number, number], [number, number]]), [])
    const step = useMemo(() => ([5, 1] as [number, number]), [])
    const active = useMemo(() => (curentPage === 'Deviation') && parentActive, [curentPage, parentActive])

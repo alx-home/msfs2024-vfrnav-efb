@@ -13,21 +13,28 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { useContext, useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMapSubSettings } from '@pages/Map/MapSettings';
 import { Select, SelectOption } from "@alx-home/Utils";
 import { messageHandler, useSettings } from "@Settings/SettingsStore";
 import { EditPresetPopup } from "./PresetPopup";
 
 import EditImg from "@alx-home/images/edit.svg?react";
 import DeleteImg from "@alx-home/images/delete.svg?react";
-import { MapContext } from '@pages/Map/MapContext';
 import { DefaultDeviationPreset, DeleteDeviationPreset, GetDeviationCurve, SetDeviationCurve } from '@shared/Deviation';
 
 export const Settings = ({ active }: {
    active: boolean
 }) => {
    const setPopup = useSettings(settings => settings.setPopup);
-   const { savedDeviationCurves, setSavedDeviationCurves, deviationCurve, deviationPreset: preset, updateDeviationPreset: updatePreset } = useContext(MapContext)!;
+   const { savedDeviationCurves, setSavedDeviationCurves, deviationCurve,
+      deviationPreset: preset, updateDeviationPreset: updatePreset } = useMapSubSettings(settings => ({
+         savedDeviationCurves: settings.savedDeviationCurves,
+         setSavedDeviationCurves: settings.setSavedDeviationCurves,
+         deviationCurve: settings.deviationCurve,
+         deviationPreset: settings.deviationPreset,
+         updateDeviationPreset: settings.updateDeviationPreset
+      }));
 
    const hardPresets = useMemo(() => (['none']), [])
    const [defaultPreset, setDefaultPreset] = useState<string | undefined>(undefined)

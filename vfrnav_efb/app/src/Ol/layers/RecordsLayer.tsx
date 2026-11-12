@@ -14,7 +14,7 @@
  */
 
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useEffect, useMemo, useState, useRef, memo } from 'react';
+import { useEffect, useMemo, useState, useRef, memo } from 'react';
 import { Circle, Geometry, LineString, Point, Polygon, SimpleGeometry } from "ol/geom";
 import { fromLonLat } from "ol/proj";
 import VectorSource from "ol/source/Vector";
@@ -22,7 +22,7 @@ import { Feature } from 'ol';
 
 import VectorLayer from "ol/layer/Vector";
 
-import { Interactive, MapContext } from "@pages/Map/MapContext";
+import { Interactive, useMapSubSettings } from "@pages/Map/MapSettings";
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
@@ -106,7 +106,24 @@ export const RecordsLayer = memo(function RecordsLayer({
     profileScale, profileRange, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, profileOffset, profileRule1, profileRule2,
     recordsCenter, records: records_, currentRecord, setCurrentRecord,
     withTouchdown, withGround,
-  } = useContext(MapContext)!;
+  } = useMapSubSettings(settings => ({
+    map: settings.map,
+    profileScale: settings.profileScale,
+    profileRange: settings.profileRange,
+    profileSlope1: settings.profileSlope1,
+    profileSlope2: settings.profileSlope2,
+    profileSlopeOffset1: settings.profileSlopeOffset1,
+    profileSlopeOffset2: settings.profileSlopeOffset2,
+    profileOffset: settings.profileOffset,
+    profileRule1: settings.profileRule1,
+    profileRule2: settings.profileRule2,
+    recordsCenter: settings.recordsCenter,
+    records: settings.records,
+    currentRecord: settings.currentRecord,
+    setCurrentRecord: settings.setCurrentRecord,
+    withTouchdown: settings.withTouchdown,
+    withGround: settings.withGround
+  }));
   const records = useMemo(() => records_.filter(record => record.active), [records_]);
   const [mapSize, setMapSize] = useState<number[] | undefined>(undefined);
   const [zoom, setZoom] = useState(1);

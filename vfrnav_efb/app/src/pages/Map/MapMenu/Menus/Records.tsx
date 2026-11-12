@@ -13,14 +13,16 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeEvent, CSSProperties, Dispatch, FocusEvent, KeyboardEvent, MouseEventHandler, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState, PropsWithChildren } from 'react';
+import {
+  ChangeEvent, CSSProperties, Dispatch, FocusEvent, KeyboardEvent, MouseEventHandler,
+  SetStateAction, useCallback, useEffect, useMemo, useRef, useState, PropsWithChildren
+} from 'react';
+import { useMapSettings, useMapSubSettings } from '@pages/Map/MapSettings';
 
 import { Feature } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
 
 import { Slider, Button, CheckBox, Scroll, DualSlider } from '@alx-home/Utils';
-
-import { MapContext } from '@pages/Map/MapContext';
 
 import editImg from "@alx-home/images/edit.svg";
 import deleteImg from "@alx-home/images/delete.svg";
@@ -64,7 +66,7 @@ const Input = ({ editMode, setEditMode, name, id }: {
   name: string,
   id: number
 }) => {
-  const { editRecord } = useContext(MapContext)!;
+  const editRecord = useMapSettings(settings => settings.editRecord);
   const textArea = useRef<HTMLInputElement | null>(null);
   const [value, setValue] = useState(name);
   const [focused, setFocused] = useState(false);
@@ -117,7 +119,10 @@ const RecordItem = ({ name, shortName, active, id, reduced }: {
   shortName: string,
   reduced: boolean
 }) => {
-  const { activeRecord, removeRecord } = useContext(MapContext)!;
+  const { activeRecord, removeRecord } = useMapSubSettings(settings => ({
+    activeRecord: settings.activeRecord,
+    removeRecord: settings.removeRecord
+  }));
   const [editMode, setEditMode] = useState(false);
 
   const onClick = useCallback(() => activeRecord(id, !active), [active, activeRecord, id]);
@@ -146,7 +151,7 @@ export const Records = ({ className, style, reduced }: {
   style: CSSProperties,
   reduced: boolean
 }) => {
-  const { records } = useContext(MapContext)!;
+  const records = useMapSettings(settings => settings.records);
   const childs = useMemo(() => records.map((record) => {
     return <div key={record.id} className='flex min-h-max'>
       <RecordItem reduced={reduced} key={record.id} active={record.active} name={record.name} shortName={record.id.toFixed(0)} id={record.id} />
@@ -220,7 +225,31 @@ export const RecordsToolbar = () => {
     profileRule1, profileRule2, setProfileRule1, setProfileRule2,
     profileSlope1, profileSlope2, setProfileSlope1, setProfileSlope2,
     profileSlopeOffset1, profileSlopeOffset2, setProfileSlopeOffset1, setProfileSlopeOffset2,
-    enableTouchdown, withTouchdown, enableGround, withGround, resetProfileOffset } = useContext(MapContext)!;
+    enableTouchdown, withTouchdown, enableGround, withGround, resetProfileOffset } = useMapSubSettings(settings => ({
+      profileOffset: settings.profileOffset,
+      setProfileOffset: settings.setProfileOffset,
+      profileScale: settings.profileScale,
+      setProfileScale: settings.setProfileScale,
+      profileRange: settings.profileRange,
+      setProfileRange: settings.setProfileRange,
+      profileRule1: settings.profileRule1,
+      profileRule2: settings.profileRule2,
+      setProfileRule1: settings.setProfileRule1,
+      setProfileRule2: settings.setProfileRule2,
+      profileSlope1: settings.profileSlope1,
+      profileSlope2: settings.profileSlope2,
+      setProfileSlope1: settings.setProfileSlope1,
+      setProfileSlope2: settings.setProfileSlope2,
+      profileSlopeOffset1: settings.profileSlopeOffset1,
+      profileSlopeOffset2: settings.profileSlopeOffset2,
+      setProfileSlopeOffset1: settings.setProfileSlopeOffset1,
+      setProfileSlopeOffset2: settings.setProfileSlopeOffset2,
+      enableTouchdown: settings.enableTouchdown,
+      withTouchdown: settings.withTouchdown,
+      enableGround: settings.enableGround,
+      withGround: settings.withGround,
+      resetProfileOffset: settings.resetProfileOffset
+    }));
 
   const setProfileRanges = useCallback((min: number, max: number) => {
     setProfileRange({ min: min, max: max })

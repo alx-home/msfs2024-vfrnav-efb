@@ -15,18 +15,18 @@
 
 import { MVT } from "ol/format";
 import { OlLayer, OlLayerProp } from "./OlLayer";
-import { useContext, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import VectorTileLayer from "ol/layer/VectorTile";
 import VectorTileSource from 'ol/source/VectorTile';
 import { Feature, VectorTile } from "ol";
 import Style from "ol/style/Style";
 import { Coordinate } from "ol/coordinate";
-import { MapContext } from "@pages/Map/MapContext";
 import { MultiLineString, Point } from "ol/geom";
 import { createXYZ } from "ol/tilegrid";
 import windTurbineImg from '@efb-images/wind_turbine.svg'
 import towerImg from '@efb-images/tower.svg'
 import { useSettings } from "@Settings/SettingsStore";
+import { useMapSettings } from "@pages/Map/MapSettings";
 
 const Norm = (coord: Coordinate) => Math.sqrt(Math.pow(coord[0], 2) + Math.pow(coord[0], 1))
 const inExtend = (coord: Coordinate, extend: number[]) => (coord[0] >= extend[0]) && (coord[0] <= extend[2])
@@ -45,7 +45,7 @@ export const OpenAip = ({
   crossOrigin?: string | null,
   opacity?: number
 }) => {
-  const { map } = useContext(MapContext)!;
+  const map = useMapSettings(settings => settings.map);
   const windTurbine = useRef<HTMLImageElement | null>(null);
   const tower = useRef<HTMLImageElement | null>(null);
   const textSettings = useSettings(settings => settings.map.text);
