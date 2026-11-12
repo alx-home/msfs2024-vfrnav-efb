@@ -26,7 +26,7 @@ import VectorLayer from "ol/layer/Vector";
 import { Interactive, MapContext } from "@pages/Map/MapContext";
 import { Coordinate } from "ol/coordinate";
 
-import { messageHandler } from "@Settings/SettingsStore";
+import { messageHandler, useSettings } from "@Settings/SettingsStore";
 import { PlanePos } from '@shared/PlanPos';
 
 import PlaneImg from '@efb-images/plane.svg';
@@ -42,7 +42,8 @@ export const PlaneLayer = memo(function PlaneLayer({
 }: OlLayerProp & {
   opacity?: number
 }) {
-  const { map } = useContext(MapContext)!;
+  const { map, followMode, setFollowMode } = useContext(MapContext)!;
+  const cheatMode = useSettings(settings => settings.plane.enabled);
   const vectorSource = useMemo(() => new VectorSource<Feature<Point>>({}), []);
   const [pos, setPos] = useState<PlanePos>({
     __PLANE_POS__: true,
@@ -83,6 +84,24 @@ export const PlaneLayer = memo(function PlaneLayer({
   const onGetPlanePosition = useEvent((planePos: PlanePos) => {
     setPos(planePos);
   });
+
+
+  const updateFollowMode = useEvent((coords: Coordinate, heading: number) => {
+    if (map && cheatMode) {
+      setFollowMode(mode => ({ ...mode, pending: true }));
+
+      const view = map.getView();
+
+      if (followMode.position) {
+        view.setCenter(coords);
+      }
+
+      if (followMode.heading) {
+        view.setRotation(-heading * Math.PI / 180);
+      }
+    }
+  });
+
   useEffect(() => {
     if (active) {
       messageHandler.subscribe("__PLANE_POS__", onGetPlanePosition)
@@ -102,8 +121,14 @@ export const PlaneLayer = memo(function PlaneLayer({
     feature.setStyle(elemStyle(pos.heading));
 
     vectorSource.addFeature(feature)
+
+    updateFollowMode(coords, pos.heading);
   }, [elemStyle, map, pos, vectorSource])
 
+
+  if (!cheatMode && (followMode.position || followMode.heading)) {
+    setFollowMode({ heading: false, position: false, pending: false });
+  }
 
   return <>
     <OlLayer key={"airports"} source={vectorLayer} opacity={opacity} order={order} active={active} minZoom={minZoom} maxZoom={maxZoom} clipAera={clipAera} />

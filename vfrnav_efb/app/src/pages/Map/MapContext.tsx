@@ -46,6 +46,12 @@ export type Interactive = {
   onDrag?: (_pixel: MapBrowserEvent<any> | MapEvent, _features: FeatureLike[]) => boolean
 }
 
+export interface FollowMode {
+  position: boolean,
+  heading: boolean,
+  pending: boolean
+};
+
 export const MapContext = createContext<{
   map: olMap,
   navData: NavData[],
@@ -73,6 +79,9 @@ export const MapContext = createContext<{
   setProfileSlopeOffset2: (_value: number) => void,
   profileSlopeOffset2: number,
   resetProfileOffset: () => void,
+
+  followMode: FollowMode,
+  setFollowMode: Dispatch<SetStateAction<FollowMode>>,
 
   currentRecord: PlanePosContent[][],
   setCurrentRecord: Dispatch<SetStateAction<PlanePosContent[][]>>,
@@ -281,7 +290,16 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
   const setPopup = useSettings(settings => settings.setPopup);
   const mouseEndCallbacks = useRef<((_coords: Coordinate) => void)[]>([])
   const dragging = useRef(false);
+  const [followMode, setFollowMode] = useState<FollowMode>({ position: false, heading: false, pending: false });
 
+  const disableFollow = useEvent(() => {
+    console.log("Disabling follow mode");
+    setFollowMode({
+      position: false,
+      heading: false,
+      pending: false
+    });
+  });
   const map = useMemo<olMap>(() => {
     const layers = new Collection<BaseLayer>();
     const focused: {
@@ -324,12 +342,15 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
       })
     }
 
+    map.on('pointerdrag', disableFollow);
+
     map.on('movestart', () => {
       dragging.current = true;
     })
 
     map.on('moveend', (event) => {
       dragging.current = true;
+
       handleDrag(event)
       dragging.current = false;
 
@@ -897,6 +918,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     setAddNavRequest(true);
   });
 
+
   const provider = useMemo(() => ({
     map,
     addNav: addNavCB,
@@ -942,6 +964,8 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
     profileRule1,
     setProfileRule2,
     profileRule2,
+    followMode,
+    setFollowMode,
 
     setProfileSlope1,
     profileSlope1,
@@ -983,7 +1007,7 @@ const MapContextProvider = ({ children }: PropsWithChildren) => {
 
     importNavRef,
     importNav
-  }), [map, addNavCB, cancelCB, registerMouseEnd, unregisterMouseEnd, navData, records, flash, flashKey, triggerFlash, removeNav, activeNav, editNav, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink, editNavProperties, updateWaypoints, reorderNav, removeRecord, activeRecord, editRecord, currentRecord, resetProfileOffset, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav]);
+  }), [map, addNavCB, cancelCB, registerMouseEnd, unregisterMouseEnd, navData, records, flash, flashKey, triggerFlash, removeNav, activeNav, editNav, setLoadedFuel, setDepartureTime, setTaxiTime, setTaxiConso, setLink, editNavProperties, updateWaypoints, reorderNav, removeRecord, activeRecord, editRecord, currentRecord, resetProfileOffset, profileOffset, profileScale, recordsCenter, profileRange, profileRule1, profileRule2, profileSlope1, profileSlope2, profileSlopeOffset1, profileSlopeOffset2, touchdown, ground, updateNavPropsCB, fuelUnit, savedFuelCurves, updateFuelPreset, fuelPreset, fuelSettingsOat, fuelCurve, savedDeviationCurves, deviationCurve, updateDeviationPreset, deviationPreset, importNav, followMode, setFollowMode]);
 
   useEffect(() => {
     if (profileOffset === 0 && currentRecord.length) {
