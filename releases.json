@@ -5,7 +5,7 @@
       "scans": [
          {
             "type": "installer",
-            "filename": "vfrnav_installer.exe",
+            "filename": "msfs2024-vfrnav_installer.exe",
             "score": "2 / 70",
             "sha256": "e1571842c1970dd26c32751caafcdb843a3f2a5b492ce4240ee1bb8bf8a74f29",
             "vt": "https://virustotal.com/gui/file/e1571842c1970dd26c32751caafcdb843a3f2a5b492ce4240ee1bb8bf8a74f29"
@@ -13,7 +13,7 @@
          {
             "type": "installer_uncompressed",
             "score": "1 / 70",
-            "filename": "vfrnav_installer_uncompressed.exe",
+            "filename": "msfs2024-vfrnav_installer_uncompressed.exe",
             "sha256": "2c0abcb8ae8fb1011dceb7779aaf3a5e72cc58a05b162d039e961860844c8439",
             "vt": "https://virustotal.com/gui/file/2c0abcb8ae8fb1011dceb7779aaf3a5e72cc58a05b162d039e961860844c8439"
          },
@@ -30,6 +30,33 @@
             "filename": "alexhome-msfs2024-vfrnav.zip",
             "sha256": "4323a549643b8dfffe7fff6cfc8dab8df679519d6320b2151843bc69d7371627",
             "vt": "https://virustotal.com/gui/file/4323a549643b8dfffe7fff6cfc8dab8df679519d6320b2151843bc69d7371627"
+         }
+      ]
+   },
+   {
+      "version": "v1.4.0",
+      "date": "2026-11-13",
+      "scans": [
+         {
+            "type": "installer",
+            "filename": "msfs2024-vfrnav_installer.exe",
+            "score": "12 / 71",
+            "sha256": "7b18bbb4ff34bf8bdfd2b5e09ba42a390d4ebaa1ec0c289cbd6a26e6e69aa7f3",
+            "vt": "https://virustotal.com/gui/file/7b18bbb4ff34bf8bdfd2b5e09ba42a390d4ebaa1ec0c289cbd6a26e6e69aa7f3"
+         },
+         {
+            "type": "server",
+            "score": "2 / 71",
+            "filename": "msfs2024-vfrnav_server.exe",
+            "sha256": "2d7a8be78ba9791f02daf4b9b5373a6601332e0e4449c0f2b5f4809fe5bd0c5f",
+            "vt": "https://virustotal.com/gui/file/2d7a8be78ba9791f02daf4b9b5373a6601332e0e4449c0f2b5f4809fe5bd0c5f"
+         },
+         {
+            "type": "community",
+            "score": "0 / 65",
+            "filename": "alexhome-msfs2024-vfrnav.zip",
+            "sha256": "84a1d669ecf6b5ac380c4304495981f30b71800c1d52f4508e50eee478955dc0",
+            "vt": "https://virustotal.com/gui/file/84a1d669ecf6b5ac380c4304495981f30b71800c1d52f4508e50eee478955dc0"
          }
       ]
    }
