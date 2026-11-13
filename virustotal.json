@@ -1,4 +1,129 @@
 {
-  "checkedAt": null,
-  "files": {}
+  "checkedAt": "2026-11-13T22:47:03.385Z",
+  "files": {
+    "e1571842c1970dd26c32751caafcdb843a3f2a5b492ce4240ee1bb8bf8a74f29": {
+      "analyzedAt": "2026-11-13T13:43:40.000Z",
+      "score": "2 / 70",
+      "vendors": [
+        {
+          "name": "Bkav",
+          "category": "malicious",
+          "label": "W32.Malware.7B744DE9"
+        },
+        {
+          "name": "McAfeeD",
+          "category": "malicious",
+          "label": "ti!E1571842C197"
+        }
+      ]
+    },
+    "2c0abcb8ae8fb1011dceb7779aaf3a5e72cc58a05b162d039e961860844c8439": {
+      "analyzedAt": "2026-11-13T13:43:47.000Z",
+      "score": "1 / 70",
+      "vendors": [
+        {
+          "name": "Bkav",
+          "category": "malicious",
+          "label": "W32.Malware.8163F942"
+        }
+      ]
+    },
+    "14c16659bf65c1cda1fe699ce6778a5019fbe82b0da437e4c967f50fa065d7e8": {
+      "analyzedAt": "2026-11-13T13:43:57.000Z",
+      "score": "0 / 64",
+      "vendors": []
+    },
+    "4323a549643b8dfffe7fff6cfc8dab8df679519d6320b2151843bc69d7371627": {
+      "analyzedAt": "2026-11-13T13:44:21.000Z",
+      "score": "0 / 65",
+      "vendors": []
+    },
+    "7b18bbb4ff34bf8bdfd2b5e09ba42a390d4ebaa1ec0c289cbd6a26e6e69aa7f3": {
+      "analyzedAt": "2026-11-13T14:07:46.000Z",
+      "score": "12 / 71",
+      "vendors": [
+        {
+          "name": "Antiy-AVL",
+          "category": "malicious",
+          "label": "Trojan/Win32.Inject"
+        },
+        {
+          "name": "Bkav",
+          "category": "malicious",
+          "label": "W32.Malware.344CEF1"
+        },
+        {
+          "name": "Cylance",
+          "category": "malicious",
+          "label": "Unsafe"
+        },
+        {
+          "name": "DeepInstinct",
+          "category": "malicious",
+          "label": "MALICIOUS"
+        },
+        {
+          "name": "Fortinet",
+          "category": "malicious",
+          "label": "W32/PossibleThreat"
+        },
+        {
+          "name": "Kaspersky",
+          "category": "malicious",
+          "label": "Trojan.Win32.Inject.aqyzy"
+        },
+        {
+          "name": "Kingsoft",
+          "category": "malicious",
+          "label": "Win32.Trojan.Inject.aqyzy"
+        },
+        {
+          "name": "MaxSecure",
+          "category": "malicious",
+          "label": "Trojan.Malware.697412972.susgen"
+        },
+        {
+          "name": "McAfeeD",
+          "category": "malicious",
+          "label": "ti!7B18BBB4FF34"
+        },
+        {
+          "name": "Rising",
+          "category": "malicious",
+          "label": "Trojan.Inject!8.103 (CLOUD)"
+        },
+        {
+          "name": "TrellixENS",
+          "category": "malicious",
+          "label": "Artemis!9D7C01791C81"
+        },
+        {
+          "name": "TrendMicro-HouseCall",
+          "category": "malicious",
+          "label": "Trojan.Win32.Gen.TL0101D626Z9"
+        }
+      ]
+    },
+    "2d7a8be78ba9791f02daf4b9b5373a6601332e0e4449c0f2b5f4809fe5bd0c5f": {
+      "analyzedAt": "2026-11-13T14:42:20.000Z",
+      "score": "2 / 71",
+      "vendors": [
+        {
+          "name": "APEX",
+          "category": "malicious",
+          "label": "Malicious"
+        },
+        {
+          "name": "Trapmine",
+          "category": "malicious",
+          "label": "suspicious.low.ml.score"
+        }
+      ]
+    },
+    "84a1d669ecf6b5ac380c4304495981f30b71800c1d52f4508e50eee478955dc0": {
+      "analyzedAt": "2026-11-13T14:39:15.000Z",
+      "score": "0 / 65",
+      "vendors": []
+    }
+  }
 }
