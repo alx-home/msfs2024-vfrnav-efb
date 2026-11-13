@@ -20,6 +20,7 @@ const { languages } = await server.ssrLoadModule("/src/content/types.ts");
 const { screenshotWalkthrough } = await server.ssrLoadModule("/src/content/screenshots.ts");
 const { efbModes } = await server.ssrLoadModule("/src/content/efbModes.ts");
 const { KeyboardText } = await server.ssrLoadModule("/src/components/KeyboardShortcut.tsx");
+const { default: NextSectionButton } = await server.ssrLoadModule("/src/components/NextSectionButton.tsx");
 const { parseReleases, filterReleases, scoreTone } = await server.ssrLoadModule("/src/reports.ts");
 
 test("searches localized headings and bodies in every language", () => {
@@ -107,6 +108,19 @@ test("formats PDF zoom controls without turning ordinary operators into keys", (
   const html = renderToStaticMarkup(createElement(KeyboardText, { children: text }));
   assert.deepEqual([...html.matchAll(/<kbd[^>]*>(.*?)<\/kbd>/g)].map((match) => match[1]), ["+", "-", "+", "-"]);
   assert.equal(html.replace(/<[^>]*>/g, "").replace(/\s/g, ""), text.replace(/\s/g, ""));
+});
+
+test("renders visible destination-specific section controls without waiting for scrolling", () => {
+  for (const language of languages) {
+    const labels = ["gallery", "workflow", "features"].map((targetId) => {
+      const html = renderToStaticMarkup(createElement(NextSectionButton, { language, targetId }));
+      assert.ok(html.includes(`aria-controls="${targetId}"`));
+      assert.match(html, /<svg/);
+      return html.replace(/<[^>]*>/g, "");
+    });
+    assert.equal(new Set(labels).size, 3, language);
+    assert.ok(labels.every((label) => label.trim().length > 0), language);
+  }
 });
 
 test("preserves original report data and detection-score thresholds", async () => {

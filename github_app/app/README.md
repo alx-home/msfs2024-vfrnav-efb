@@ -91,8 +91,11 @@ controls remain available.
 The hero benefit card cycles through the six localized feature descriptions
 every 6.5 seconds, with a stable height and manual controls. Both slideshows use
 the shared `useAutoplay` hook for visibility, focus and reduced-motion behavior.
-A small floating button advances through the overview sections without changing
-tabs or hiding the destination under the sticky navigation.
+Next-section buttons stay sticky near the bottom of the viewport within the
+introduction, gallery and quick-start sections. Each has a fixed destination and
+an inviting localized label describing it, and scrolls there without changing
+tabs or hiding the heading under the navigation. Button backgrounds remain opaque
+on hover to keep their labels readable over gallery images.
 
 `public/releases.json` is the canonical antivirus report data, migrated unchanged.
 The Antivirus tab fetches it at runtime, validates the report structure, and

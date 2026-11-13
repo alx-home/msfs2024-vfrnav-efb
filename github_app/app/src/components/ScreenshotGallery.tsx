@@ -4,6 +4,7 @@ import { galleryText } from "../content/gallery";
 import SectionHeading from "./SectionHeading";
 import SupportIcon from "./SupportIcon";
 import { useAutoplay } from "../useAutoplay";
+import NextSectionButton from "./NextSectionButton";
 
 const images = Object.entries(import.meta.glob<string>("../assets/gallery/*.{jpg,webp}", {
   eager: true, query: "?url", import: "default"
@@ -70,6 +71,7 @@ export default function ScreenshotGallery({ language }: { language: Language }) 
           </div>
         </figcaption>
       </figure>
+      <NextSectionButton language={language} targetId="workflow" />
     </section>
   );
 }

@@ -32,22 +32,25 @@ function OverviewPage({ language, onSelectTopic }: {
 
   return (
     <>
-      <section id="overview-intro" data-overview-section className="grid grid-cols-[minmax(0,1.05fr)_minmax(280px,.95fr)] items-center gap-[clamp(2rem,6vw,5rem)] py-[clamp(3.5rem,8vw,6.5rem)] max-[900px]:grid-cols-1 max-[600px]:gap-6 max-[600px]:py-8 [&>*]:min-w-0">
-        <div>
-          <p className="mb-4 text-[.78rem] font-[750] tracking-[.14em] text-accent uppercase">{text.hero[0]}</p>
-          <h1 className="mb-[1.15rem] max-w-[720px] text-[clamp(2.6rem,6vw,4.7rem)] leading-[1.04] font-bold tracking-[-.055em] max-[600px]:text-[clamp(2rem,8vw,3rem)]">{text.hero[1]}</h1>
-          <p className="mb-4 max-w-[610px] text-[clamp(1.05rem,2vw,1.2rem)] text-muted">{text.hero[2]}</p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-[.8rem] max-[600px]:flex-col max-[600px]:items-stretch">
-            <a className="inline-flex min-h-[46px] items-center justify-center gap-[.55rem] rounded-[9px] border border-accent bg-accent px-[1.05rem] py-[.7rem] text-center font-bold text-[#06201d] no-underline transition-[transform,background] duration-[180ms] hover:-translate-y-0.5 hover:bg-[#8be6d8]" href={downloadUrl}>{text.hero[3]}</a>
-            <a className="inline-flex min-h-[46px] items-center justify-center gap-[.55rem] rounded-[9px] border border-line px-[1.05rem] py-[.7rem] text-center font-bold text-ink no-underline transition-[transform,background] duration-[180ms] hover:-translate-y-0.5" href="#using" onClick={(event) => {
-              if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-              event.preventDefault();
-              onSelectTopic("using");
-            }}>{text.hero[4]}</a>
+      <section id="overview-intro" data-overview-section className="py-[clamp(3.5rem,8vw,6.5rem)] max-[600px]:py-8">
+        <div className="grid grid-cols-[minmax(0,1.05fr)_minmax(280px,.95fr)] items-center gap-[clamp(2rem,6vw,5rem)] max-[900px]:grid-cols-1 max-[600px]:gap-6 [&>*]:min-w-0">
+          <div>
+            <p className="mb-4 text-[.78rem] font-[750] tracking-[.14em] text-accent uppercase">{text.hero[0]}</p>
+            <h1 className="mb-[1.15rem] max-w-[720px] text-[clamp(2.6rem,6vw,4.7rem)] leading-[1.04] font-bold tracking-[-.055em] max-[600px]:text-[clamp(2rem,8vw,3rem)]">{text.hero[1]}</h1>
+            <p className="mb-4 max-w-[610px] text-[clamp(1.05rem,2vw,1.2rem)] text-muted">{text.hero[2]}</p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-[.8rem] max-[600px]:flex-col max-[600px]:items-stretch">
+              <a className="inline-flex min-h-[46px] items-center justify-center gap-[.55rem] rounded-[9px] border border-accent bg-accent px-[1.05rem] py-[.7rem] text-center font-bold text-[#06201d] no-underline transition-[transform,background] duration-[180ms] hover:-translate-y-0.5 hover:bg-[#8be6d8]" href={downloadUrl}>{text.hero[3]}</a>
+              <a className="inline-flex min-h-[46px] items-center justify-center gap-[.55rem] rounded-[9px] border border-line px-[1.05rem] py-[.7rem] text-center font-bold text-ink no-underline transition-[transform,background] duration-[180ms] hover:-translate-y-0.5" href="#using" onClick={(event) => {
+                if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+                event.preventDefault();
+                onSelectTopic("using");
+              }}>{text.hero[4]}</a>
+            </div>
+            <p className="mt-4 text-[.88rem] text-muted">{text.hero[5]}</p>
           </div>
-          <p className="mt-4 text-[.88rem] text-muted">{text.hero[5]}</p>
+          <BenefitCard language={language} titles={featureGuideLabels} descriptions={featureItems} />
         </div>
-        <BenefitCard language={language} titles={featureGuideLabels} descriptions={featureItems} />
+        <NextSectionButton language={language} targetId="gallery" />
       </section>
 
       <ScreenshotGallery language={language} />
@@ -66,6 +69,7 @@ function OverviewPage({ language, onSelectTopic }: {
             </li>
           ))}
         </ol>
+        <NextSectionButton language={language} targetId="features" />
       </section>
 
       <section id="features" data-overview-section className="scroll-mt-24 border-t border-line py-[clamp(3.4rem,7vw,5rem)] max-[900px]:scroll-mt-4 max-[600px]:py-10">
@@ -90,7 +94,6 @@ function OverviewPage({ language, onSelectTopic }: {
           })}
         </div>
       </section>
-      <NextSectionButton language={language} />
     </>
   );
 }
