@@ -56,6 +56,7 @@ export default [...fixupConfigRules(compat.extends(
         '**/node_modules/*',
         './packages/*',
         '**/polyfills/pointer-events.js',
+        '**/polyfills/images.js',
         '**/polyfills/drag-events/index.js',// @todo ?
     ],
     languageOptions: {

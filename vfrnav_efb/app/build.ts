@@ -167,7 +167,7 @@ const GetConfig = (): UserConfig => ({
     },
     rollup_options: {
       output: {
-          manualChunks: (_id: string) => {
+        manualChunks: (_id: string) => {
           // Let Vite handle chunk splitting automatically based on dynamic imports
           // The lazy() components will naturally create separate chunks
           return undefined;

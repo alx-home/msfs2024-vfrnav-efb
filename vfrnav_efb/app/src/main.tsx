@@ -55,6 +55,7 @@ const updateFavicon = () => {
   if (__MSFS_EMBEDED__) {
     await import('abortcontroller-polyfill/dist/polyfill-patch-fetch.js');
     await import('@polyfills/pointer-events.js');
+    await import('@polyfills/images.js');
     await import('geometry-polyfill');
     await import("@polyfills/canvas/canvas.js");
     globalThis.Intl = ((await import('intl')) as {
