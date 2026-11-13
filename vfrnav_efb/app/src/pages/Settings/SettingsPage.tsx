@@ -37,7 +37,6 @@ import { BorderSizeSetting } from "./BorderSizeSetting";
 import { LayerActivationSetting } from "./LayerActivationSetting";
 import { MarkerSizeSetting } from "./MarkerSizeSetting";
 import { NavigationSettings } from "./NavigationSettings";
-import { SIASettings } from "./SIASettings";
 import { TextColorSetting } from "./TextColorSetting";
 import { TextSizeSetting } from "./TextSizeSetting";
 
@@ -106,7 +105,7 @@ export const CleanupRecordsPopup = ({ resolve }: {
 export const SettingsPage = () => {
    const setPopup = useSettings(settings => settings.setPopup);
    const [enabled, setEnabled] = useState(false);
-   const [advanced, setAdvanced] = useState(false);
+   // const [advanced, setAdvanced] = useState(false);
    const [panelWidth, setPanelWidth] = useState(1);
    const [panelHeight, setPanelHeight] = useState(1);
    const [panelOffsetX, setPanelOffsetX] = useState(0);
@@ -424,7 +423,6 @@ export const SettingsPage = () => {
                <TextColorSetting border />
                <MarkerSizeSetting />
             </Group>
-            <SIASettings advanced={advanced} />
             {__MSFS_EMBEDED__ && <Group name="Data">
                <Item name={"Cleanup"} category={"Record"} onReset={cleanupPlaneRecords} >
                   <div>
@@ -437,11 +435,11 @@ export const SettingsPage = () => {
                   </div>
                </Item>
             </Group>}
-            <Group name="Expert">
+            {/* <Group name="Expert">
                <CheckItem category="Settings" name="Advanced" value={advanced} onChange={setAdvanced} defaultValue={false} >
                   Display advanced settings.
                </CheckItem>
-            </Group>
+            </Group> */}
          </List>
       </div>
    </div>;

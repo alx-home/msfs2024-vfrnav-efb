@@ -441,7 +441,14 @@ export class Manager {
    GetSettings() {
       const storedSettings = GetStoredData("settings");
       if (storedSettings) {
-         return fill(JSON.parse(storedSettings as string) as SharedSettings, SharedSettingsRecord.defaultValues);
+         const settings = fill(JSON.parse(storedSettings as string) as SharedSettings, SharedSettingsRecord.defaultValues);
+
+         // Patch SIA AZBA addresses with default values (legacy support)
+         settings.SIAAZBAAddr = SharedSettingsRecord.defaultValues.SIAAZBAAddr;
+         settings.SIAAZBADateAddr = SharedSettingsRecord.defaultValues.SIAAZBADateAddr;
+         settings.SIAAuth = SharedSettingsRecord.defaultValues.SIAAuth;
+
+         return settings;
       }
 
       return SharedSettingsRecord.defaultValues;

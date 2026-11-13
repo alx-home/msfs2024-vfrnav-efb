@@ -61,10 +61,6 @@ export type Settings = {
 
 export type GlobalSettings = Settings & LayerSettings & SharedSettings & {
   setDefaultSpeed: (_speed: number) => void,
-  setSIAAddr: (_addr: string) => void,
-  setSIAAZBAAddr: (_addr: string) => void,
-  setSIAAZBADateAddr: (_addr: string) => void,
-  setSIAAuth: (_token: string) => void,
   setAdjustHeading: (_enable: boolean) => void,
   setAdjustTime: (_enable: boolean) => void,
 

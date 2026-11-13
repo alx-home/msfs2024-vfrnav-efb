@@ -91,10 +91,6 @@ const SettingsStoreInitializer = ({ children, setPopup, emptyPopup, setPage }: P
   const setDefaultSpeed = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, defaultSpeed: value })), []);
   const setAdjustHeading = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, adjustHeading: value })), []);
   const setAdjustTime = useCallback((value: boolean) => setSharedSettings(settings => ({ ...settings, adjustTime: value })), []);
-  const setSIAAuth = useCallback((value: string) => setSharedSettings(settings => ({ ...settings, SIAAuth: value })), []);
-  const setSIAAddr = useCallback((value: string) => setSharedSettings(settings => ({ ...settings, SIAAddr: value })), []);
-  const setSIAAZBAAddr = useCallback((value: string) => setSharedSettings(settings => ({ ...settings, SIAAZBAAddr: value })), []);
-  const setSIAAZBADateAddr = useCallback((value: string) => setSharedSettings(settings => ({ ...settings, SIAAZBADateAddr: value })), []);
   const setMarkerSize = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, map: { ...settings.map, markerSize: value } })), []);
 
   const setTextMaxSize = useCallback((value: number) => setSharedSettings(settings => ({ ...settings, map: { ...settings.map, text: { ...settings.map.text, maxSize: value } } })), []);
@@ -213,10 +209,6 @@ const SettingsStoreInitializer = ({ children, setPopup, emptyPopup, setPage }: P
     setDefaultSpeed,
     setAdjustHeading,
     setAdjustTime,
-    setSIAAuth,
-    setSIAAddr,
-    setSIAAZBAAddr,
-    setSIAAZBADateAddr,
     setPopup,
     addPdfRef: addPdf,
     setPage,
@@ -227,7 +219,7 @@ const SettingsStoreInitializer = ({ children, setPopup, emptyPopup, setPage }: P
     USIFRHighSetting, USIFRLowSetting, USSectionalSetting, azbaSetting, germanySetting, openflightmapsSettings,
     openaipmapsSettings, openflightmapsBaseSettings, planeSetting,
     getSIAAZBA, getSIAPDF, setPage,
-    setAdjustHeading, setAdjustTime, setPopup, setSIAAZBAAddr, setSIAAZBADateAddr, setSIAAddr, setSIAAuth, setDefaultSpeed,
+    setAdjustHeading, setAdjustTime, setPopup, setDefaultSpeed,
     globalSettings,
     mapSetting,
     sharedSettings
