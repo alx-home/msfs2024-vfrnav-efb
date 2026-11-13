@@ -74,6 +74,7 @@ test("indexes installer details, 3D controls, and donation notes", () => {
     ["rotation rings", "efb-modes"],
     ["width and height change together", "efb-modes"],
     ["SHA-256", "antivirus"],
+    ["UPX self-extracting", "antivirus"],
     ["platform fees", "support"]
   ]) {
     assert.ok(searchHelp(documents, query).some((result) => result.id === id), query);

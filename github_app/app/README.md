@@ -150,6 +150,12 @@ Before the first check, or for a newly added hash, it shows a pending state,
 never a fabricated zero. Timestamps distinguish cached results from live data.
 Network or invalid-data errors are visible and retryable; results are not
 presented as a safety guarantee. All new interface text supports all 14 locales.
+The Antivirus notice explains that UPX compression and the installer's
+self-extraction can trigger heuristic or machine-learning-based false positives.
+This explanation is included in localized help search.
+It distinguishes installer alerts from the Community package's detection-free
+published reports and the server executable's generally low or zero detections, directing readers
+to the separate component/version reports rather than hardcoding scan counts.
 
 ### Automatic VirusTotal updates
 

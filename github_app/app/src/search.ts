@@ -46,7 +46,7 @@ export function createSearchDocuments(language: Language): SearchDocument[] {
       body: [release.date, ...release.groups.flatMap((group) => group.categories.flatMap((category) => category.items))].join(" ")
     })),
     { id: "antivirus", title: antivirusText[language].title, section: labels.antivirus,
-      body: [antivirusText[language].subtitle, antivirusText[language].note, antivirusText[language].hash].join(" ") },
+      body: [antivirusText[language].subtitle, antivirusText[language].packing, antivirusText[language].installed, antivirusText[language].hash].join(" ") },
     { id: "support", title: text.support[0], section: labels.support,
       body: [text.support[1], ...text.support[2], donations[0], donations[1], ...donations[2],
         ...donationNotes.badges, ...donationNotes.notes].join(" ") }

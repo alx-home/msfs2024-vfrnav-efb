@@ -28,9 +28,13 @@ export default function AntivirusPage({ language, locationHash }: { language: La
   return (
     <section id="antivirus" className="scroll-mt-24 py-[clamp(3.4rem,7vw,5rem)] max-[600px]:py-10">
       <SectionHeading title={text.title} description={text.subtitle} />
-      <p className="mb-8 flex items-start gap-4 rounded-2xl border border-sky/25 bg-sky/5 p-5 text-sm leading-7 text-muted">
-        <span className="mt-1 shrink-0 text-sky"><SupportIcon name="shield" /></span>{text.note}
-      </p>
+      <div className="mb-8 flex items-start gap-4 rounded-2xl border border-sky/25 bg-sky/5 p-5 text-sm leading-7 text-muted">
+        <span className="mt-1 shrink-0 text-sky"><SupportIcon name="shield" /></span>
+        <div className="min-w-0 space-y-3">
+          <p>{text.packing}</p>
+          <p>{text.installed}</p>
+        </div>
+      </div>
       <p className="mb-4 text-sm leading-7 text-muted">{updateText.explanation}</p>
       {results.state.status === "loading" && <p role="status" className="mb-6 text-muted">{text.loading}</p>}
       {results.state.status === "error" && <div role="alert" className="mb-6 rounded-xl border border-red-400/30 p-4">
