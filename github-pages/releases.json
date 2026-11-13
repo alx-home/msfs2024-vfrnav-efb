@@ -1,0 +1,36 @@
+[
+   {
+      "version": "v1.5.0",
+      "date": "2026-11-13",
+      "scans": [
+         {
+            "type": "installer",
+            "filename": "vfrnav_installer.exe",
+            "score": "2 / 70",
+            "sha256": "e1571842c1970dd26c32751caafcdb843a3f2a5b492ce4240ee1bb8bf8a74f29",
+            "url": "https://virustotal.com"
+         },
+         {
+            "type": "installer_uncompressed",
+            "filename": "vfrnav_installer_uncompressed.exe",
+            "score": "1 / 70",
+            "sha256": "2c0abcb8ae8fb1011dceb7779aaf3a5e72cc58a05b162d039e961860844c8439",
+            "url": "https://virustotal.com"
+         },
+         {
+            "type": "server",
+            "filename": "msfs2024-vfrnav_server.exe",
+            "score": "0 / 64",
+            "sha256": "14c16659bf65c1cda1fe699ce6778a5019fbe82b0da437e4c967f50fa065d7e8",
+            "url": "https://virustotal.com"
+         },
+         {
+            "type": "community",
+            "filename": "alexhome-msfs2024-vfrnav.zip",
+            "score": "0 / 65",
+            "sha256": "4323a549643b8dfffe7fff6cfc8dab8df679519d6320b2151843bc69d7371627",
+            "url": "https://virustotal.com"
+         }
+      ]
+   }
+]
