@@ -6,6 +6,7 @@ const paths = {
   code: "m8 6-6 6 6 6m8-12 6 6-6 6M14 3l-4 18",
   feedback: "M4 3h16v14H9l-5 4V3m4 5h8m-8 4h5",
   launch: "M4 3h16v18H4zM4 7h16M8 5h.01M12 5h.01m-4 6h3v3H8zm5 0h3v3h-3zm-5 5h3v3H8zm5 0h3v3h-3z",
+  layers: "m12 3 10 5-10 5L2 8zM2 12l10 5 10-5M2 16l10 5 10-5",
   route: "M4 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4m0 0V8a4 4 0 0 1 8 0v8a4 4 0 0 0 8 0V6m-4 4 4-4 4 4",
   review: "M3 11a9 9 0 1 1 2 7M3 4v7h7m2-4v5l3 2",
   search: "M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14m5 12 6 6",

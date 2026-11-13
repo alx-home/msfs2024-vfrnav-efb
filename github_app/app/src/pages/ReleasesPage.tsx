@@ -11,7 +11,7 @@ import SectionHeading from "../components/SectionHeading";
 import SupportIcon from "../components/SupportIcon";
 import { KeyboardText } from "../components/KeyboardShortcut";
 
-const componentIcons = { all: "launch", server: "download", efb: "tablet" } as const;
+const componentIcons = { all: "layers", server: "download", efb: "tablet" } as const;
 
 export default function ReleasesPage({ language, locationHash, onSelectTopic }: {
   language: Language;
