@@ -272,8 +272,10 @@ const useMap = () => {
       pending.current = true;
 
       // Remove features that are no longer in the new data
-      for (const [, feature] of features.entries().filter(([id,]) => !navData.some(data => data.id === id))) {
-         source.removeFeature(feature);
+      for (const [id, feature] of features.entries()) {
+         if (!navData.some(data => data.id === id)) {
+            source.removeFeature(feature);
+         }
       }
 
       // Add new features to the source
