@@ -171,7 +171,8 @@ Before enabling it:
 1. Add a repository **Actions secret** named `VIRUSTOTAL_API_KEY`. Never add the
    key to source, public JSON, browser code or a `VITE_` environment variable.
    Ensure your VirusTotal API plan permits this use.
-2. Set **Settings > Pages > Build and deployment > Source** to **GitHub Actions**.
+2. Set **Settings > Pages > Build and deployment > Source** to
+   **Deploy from a branch**, select **github-pages** and **/ (root)**, then save.
    Install a dedicated GitHub App on this repository with **Contents: Read and
    write**. Add Actions secrets `VT_APP_ID` (App ID) and `VT_APP_PRIVATE_KEY`
    (the complete generated PEM private key). Grant that App **Always allow**
@@ -188,7 +189,12 @@ Before enabling it:
    `github-pages` branch to deploy to the `github-pages` environment.
 3. Publish the site changes, including the copied `.github` files, to
    `github-pages`, then run **Actions > Update VirusTotal reports > Run workflow**
-   on that branch. Check its update and deployment jobs.
+   on that branch. Check its update job and GitHub's automatic Pages deployment.
+
+GitHub Pages publishes the branch automatically after pushes, both your site
+updates and commits made by the updater App. No custom deployment workflow is
+needed. The VirusTotal workflow only updates the JSON file: it does not build
+or deploy the site. An antivirus API failure cannot block your site updates.
 
 GitHub runs cron schedules and discovers manually dispatchable workflows only
 when the workflow also exists on the repository's default branch. The canonical
@@ -202,8 +208,9 @@ No npm install or build is needed for scheduled updates. The updater deduplicate
 hashes, spaces requests by 16 seconds (four requests/minute), and fails explicitly
 on missing secrets, API/HTTP errors, missing files or inconsistent results.
 Only a completely successful fetch replaces the snapshot. The workflow commits
-`virustotal.json` to `github-pages` and deploys a Pages artifact explicitly:
-commits made with `GITHUB_TOKEN` alone do not trigger a branch-based Pages build.
+`virustotal.json` to `github-pages` using the App token, triggering the normal
+branch-based Pages publication. The App token is important: commits made with
+the normal `GITHUB_TOKEN` would not trigger a Pages build.
 If a check fails, the previous published snapshot and its timestamps remain.
 The API's daily quota still applies; avoid overlapping manual runs or sharing
 the key with other high-volume tasks.
