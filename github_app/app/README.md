@@ -107,6 +107,15 @@ All messages support the 14 site languages. The native non-modal popover closes
 with Escape, an outside click or its close button; its content scrolls within the
 viewport. Edit `src/content/notifications.ts`
 to update the localized messages.
+The bell badge counts only unread announcements and disappears at zero.
+Opening the popover marks all current announcements as read in the
+`vfrnav-read-news` browser cookie (one year, scoped to the site's directory,
+SameSite=Lax and Secure on HTTPS). Read state is shared across languages.
+Announcement IDs are derived from a deterministic hash of each item's localized
+content and destination link, independently of the selected language or build.
+Unchanged news stays read across site releases; new or edited news becomes unread.
+If cookies are blocked, state lasts only
+for the current page and a warning is logged.
 
 The Releases tab has independently authored website copy for all 46 historical
 versions in all 14 supported languages. `src/content/releases/manifest.ts`

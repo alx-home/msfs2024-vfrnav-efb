@@ -1,6 +1,8 @@
+import { useState } from "react";
 import type { Language } from "../content";
 import { notificationText } from "../content/notifications";
 import { resourceUrls } from "../content/support";
+import { notificationCookie, notificationIds, readNotificationIds } from "../notificationRead";
 import SupportIcon from "./SupportIcon";
 
 export default function Notifications({ language, onSelectTopic }: {
@@ -8,14 +10,26 @@ export default function Notifications({ language, onSelectTopic }: {
   onSelectTopic: (topic: string) => void;
 }) {
   const text = notificationText[language];
+  const [readIds, setReadIds] = useState(() => typeof document === "undefined" ? [] : readNotificationIds(document.cookie));
+  const currentIds = Object.values(notificationIds);
+  const unreadCount = currentIds.filter((id) => !readIds.includes(id)).length;
   return (
     <>
-      <button type="button" popoverTarget="important-messages" aria-label={`${text.title} (2)`}
+      <button type="button" popoverTarget="important-messages" aria-label={`${text.title} (${unreadCount})`}
         className="relative grid size-12 shrink-0 cursor-pointer place-items-center rounded-xl border border-line bg-surface text-accent transition-colors hover:border-accent hover:bg-raised">
         <SupportIcon name="bell" />
-        <span aria-hidden="true" className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full border-2 border-page bg-accent text-[11px] leading-none font-bold text-[#06201d]">2</span>
+        {unreadCount > 0 && <span aria-hidden="true" className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full border-2 border-page bg-accent text-[11px] leading-none font-bold text-[#06201d]">{unreadCount}</span>}
       </button>
       <div id="important-messages" popover="auto" role="dialog" aria-labelledby="notification-title"
+        onToggle={(event) => {
+          if (event.newState !== "open") return;
+          setReadIds(currentIds);
+          document.cookie = notificationCookie(currentIds, window.location.pathname, window.location.protocol === "https:");
+          const savedIds = readNotificationIds(document.cookie);
+          if (currentIds.some((id) => !savedIds.includes(id))) {
+            console.warn("Read notification IDs could not be saved. Browser cookies may be disabled.");
+          }
+        }}
         className="fixed inset-auto top-[calc(var(--navigation-height,10rem)_+_.5rem)] right-[max(.75rem,calc((100%_-_1120px)/2))] m-0 max-h-[calc(100dvh_-_var(--navigation-height,10rem)_-_1.5rem)] w-[min(30rem,calc(100%_-_1.5rem))] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-5 text-ink shadow-2xl">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 id="notification-title" className="text-lg font-semibold">{text.title}</h2>

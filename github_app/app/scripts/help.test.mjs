@@ -32,6 +32,35 @@ const { default: donationIcon } = await server.ssrLoadModule("/src/assets/donati
 const { parseReleases, parseVirusTotalSnapshot, filterReleases, findVersionReport, scoreTone } = await server.ssrLoadModule("/src/reports.ts");
 const { default: VirusTotalAnalysis } = await server.ssrLoadModule("/src/components/VirusTotalAnalysis.tsx");
 const { antivirusUpdates } = await server.ssrLoadModule("/src/content/antivirusUpdates.ts");
+const { readNotificationIds, notificationCookie, notificationIds, notificationHash } = await server.ssrLoadModule("/src/notificationRead.ts");
+
+test("identifies news by content rather than site releases or the selected language", () => {
+  const content = JSON.stringify({ title: "News", body: "New feature", link: "#release-1.5.0" });
+  const saved = readNotificationIds(notificationCookie([notificationHash(content)], "/", true).split(";")[0]);
+  assert.ok(saved.includes(notificationHash(content)));
+  for (const change of [
+    { title: "Updated news", body: "New feature", link: "#release-1.5.0" },
+    { title: "News", body: "Updated feature", link: "#release-1.5.0" },
+    { title: "News", body: "New feature", link: "#release-1.6.0" }
+  ]) {
+    assert.ok(!saved.includes(notificationHash(JSON.stringify(change))));
+  }
+  assert.notEqual(notificationIds.survey, notificationIds.version);
+});
+
+test("persists read news IDs in a site-scoped cookie while leaving future announcements unread", () => {
+  const ids = Object.values(notificationIds);
+  assert.deepEqual(readNotificationIds("other=value"), []);
+  const cookie = notificationCookie(ids, "/msfs2024-vfrnav-efb/index.html", true);
+  assert.match(cookie, /Path=\/msfs2024-vfrnav-efb\/; Max-Age=31536000; SameSite=Lax; Secure$/);
+  const saved = readNotificationIds(`other=value; ${cookie.split(";")[0]}`);
+  assert.deepEqual(saved, ids);
+  assert.equal([...ids, "release-1.6.0"].filter((id) => !saved.includes(id)).length, 1);
+  assert.equal(ids.filter((id) => !readNotificationIds(`vfrnav-read-news=${ids[0]}`).includes(id)).length, 1);
+  assert.deepEqual(readNotificationIds("vfrnav-read-news=%broken,<invalid>"), []);
+  assert.match(notificationCookie(ids, "/", false), /Path=\/;/);
+  assert.ok(!notificationCookie(ids, "/", false).includes("; Secure"));
+});
 const { formatReportVersion } = await server.ssrLoadModule("/src/content/antivirus.ts");
 
 test("localizes report version statuses without changing version identifiers or unknown notes", () => {
