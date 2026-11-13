@@ -1,4 +1,26 @@
-import type { LocaleMap } from "./types";
+import type { Language, LocaleMap } from "./types";
+
+const versionStatuses = {
+  en: { latest: "latest", "under testing": "under testing" },
+  fr: { latest: "dernière version", "under testing": "en cours de test" },
+  de: { latest: "neueste Version", "under testing": "im Test" },
+  es: { latest: "última versión", "under testing": "en pruebas" },
+  it: { latest: "ultima versione", "under testing": "in fase di test" },
+  ja: { latest: "最新版", "under testing": "テスト中" },
+  nl: { latest: "nieuwste versie", "under testing": "wordt getest" },
+  pl: { latest: "najnowsza wersja", "under testing": "w trakcie testów" },
+  pt: { latest: "versão mais recente", "under testing": "em testes" },
+  "pt-BR": { latest: "versão mais recente", "under testing": "em testes" },
+  ru: { latest: "последняя версия", "under testing": "на тестировании" },
+  sv: { latest: "senaste versionen", "under testing": "under test" },
+  tr: { latest: "en son sürüm", "under testing": "test aşamasında" },
+  "zh-CN": { latest: "最新版", "under testing": "测试中" }
+} satisfies LocaleMap<Record<"latest" | "under testing", string>>;
+
+export function formatReportVersion(version: string, language: Language): string {
+  return version.replace(/\((latest|under testing)\)$/, (_, status: string) =>
+    `(${status === "latest" ? versionStatuses[language].latest : versionStatuses[language]["under testing"]})`);
+}
 
 type ReportText = {
   title: string; subtitle: string; component: string; result: string; hash: string; view: string;

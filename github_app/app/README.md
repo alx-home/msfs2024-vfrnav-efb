@@ -140,6 +140,8 @@ versions without reports do not show an Antivirus link.
 filenames, hashes and report links, without manually maintained detection counts.
 The Antivirus tab fetches it and `virustotal.json` at runtime, validates both, and
 preserves release/component/filename filtering, full SHA-256 hashes and report links.
+Version status suffixes (`latest`, `under testing`) are localized in report
+headings and the version selector, without changing manifest values or deep links.
 The generated snapshot contains the last successful check time, each file's
 VirusTotal analysis time, and malicious/suspicious vendors with their verbatim
 detection labels and categories. Counts are flagged verdicts divided by completed

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Language } from "../content";
-import { antivirusText } from "../content/antivirus";
+import { antivirusText, formatReportVersion } from "../content/antivirus";
 import { antivirusUpdates } from "../content/antivirusUpdates";
 import { filterReleases, findVersionReport } from "../reports";
 import { useAntivirusReports, useVirusTotalResults } from "../useAntivirusReports";
@@ -66,7 +66,7 @@ export default function AntivirusPage({ language, locationHash }: { language: La
             <select id="report-release" value={selectedVersion} onChange={(event) => setVersion(event.currentTarget.value)}
               className="min-h-12 w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink">
               <option value="">{text.releases}</option>
-              {state.releases.map((release) => <option key={release.version} value={release.version}>{release.version}</option>)}
+              {state.releases.map((release) => <option key={release.version} value={release.version}>{formatReportVersion(release.version, language)}</option>)}
             </select>
           </label>
         </div>
@@ -74,7 +74,7 @@ export default function AntivirusPage({ language, locationHash }: { language: La
         <div className="space-y-8">
           {releases.map((release) => <article key={release.version} className="overflow-hidden rounded-2xl border border-line bg-surface">
             <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-accent/5 px-6 py-5">
-              <h3 className="text-xl font-bold text-accent">{release.version}</h3>
+              <h3 className="text-xl font-bold text-accent">{formatReportVersion(release.version, language)}</h3>
               <span className="text-sm text-muted">{release.date}</span>
             </header>
             <ul className="divide-y divide-line">

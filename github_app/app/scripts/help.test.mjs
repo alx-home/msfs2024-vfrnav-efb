@@ -32,6 +32,23 @@ const { default: donationIcon } = await server.ssrLoadModule("/src/assets/donati
 const { parseReleases, parseVirusTotalSnapshot, filterReleases, findVersionReport, scoreTone } = await server.ssrLoadModule("/src/reports.ts");
 const { default: VirusTotalAnalysis } = await server.ssrLoadModule("/src/components/VirusTotalAnalysis.tsx");
 const { antivirusUpdates } = await server.ssrLoadModule("/src/content/antivirusUpdates.ts");
+const { formatReportVersion } = await server.ssrLoadModule("/src/content/antivirus.ts");
+
+test("localizes report version statuses without changing version identifiers or unknown notes", () => {
+  assert.equal(formatReportVersion("v1.4.0 (latest)", "fr"), "v1.4.0 (dernière version)");
+  assert.equal(formatReportVersion("v1.5.0 (under testing)", "fr"), "v1.5.0 (en cours de test)");
+  for (const language of languages) {
+    for (const status of ["latest", "under testing"]) {
+      const version = `v1.5.0 (${status})`;
+      const label = formatReportVersion(version, language);
+      assert.ok(label.startsWith("v1.5.0 ("), language);
+      if (language === "en") assert.equal(label, version);
+      else assert.notEqual(label, version, language);
+    }
+    assert.equal(formatReportVersion("alpha-1.5.0", language), "alpha-1.5.0");
+    assert.equal(formatReportVersion("v1.5.0 (preview)", language), "v1.5.0 (preview)");
+  }
+});
 
 test("searches localized headings and bodies in every language", () => {
   for (const language of languages) {
