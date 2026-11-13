@@ -14,11 +14,9 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: virustotal-update
   cancel-in-progress: false
 
 jobs:
@@ -77,17 +75,3 @@ jobs:
             const commit = result.createCommitOnBranch.commit;
             if (!commit.signature?.isValid) throw new Error('GitHub did not return a verified commit signature.');
             core.info(`Saved VirusTotal results in verified commit ${commit.oid}.`);
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-  deploy:
-    needs: update
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy refreshed site
-        id: deployment
-        uses: actions/deploy-pages@v4
