@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <title>MSFS2024 VFRNav - VirusTotal Reports</title>
+
+   <style>
+      :root {
+         --bg: #0f172a;
+         --card: #1e293b;
+         --card-header: #162032;
+         --text: #f8fafc;
+         --muted: #94a3b8;
+         --accent: #38bdf8;
+         --border: #334155;
+
+         --green: #22c55e;
+         --yellow: #eab308;
+         --red: #ef4444;
+      }
+
+      body {
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         background: var(--bg);
+         color: var(--text);
+         margin: 0;
+         padding: 2rem 1rem;
+      }
+
+      .container {
+         max-width: 1100px;
+         margin: auto;
+      }
+
+      header {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         flex-wrap: wrap;
+         gap: 1rem;
+
+         border-bottom: 1px solid var(--border);
+         padding-bottom: 1.5rem;
+         margin-bottom: 2rem;
+      }
+
+      h1 {
+         margin: 0;
+         font-size: 1.8rem;
+      }
+
+      .subtitle {
+         color: var(--muted);
+         margin-top: .3rem;
+      }
+
+      .toolbar {
+         display: flex;
+         gap: .75rem;
+         flex-wrap: wrap;
+      }
+
+      input,
+      select {
+         background: var(--card);
+         color: var(--text);
+         border: 1px solid var(--border);
+         border-radius: 8px;
+         padding: .65rem 1rem;
+         min-width: 180px;
+      }
+
+      .release-card {
+         background: var(--card);
+         border: 1px solid var(--border);
+         border-radius: 12px;
+         overflow: hidden;
+         margin-bottom: 2rem;
+      }
+
+      .release-header {
+         background: var(--card-header);
+         border-bottom: 1px solid var(--border);
+
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+
+         padding: 1rem 1.25rem;
+      }
+
+      .release-version {
+         color: var(--accent);
+         font-weight: 700;
+         font-size: 1.1rem;
+      }
+
+      .release-date {
+         color: var(--muted);
+      }
+
+      table {
+         width: 100%;
+         border-collapse: collapse;
+      }
+
+      th,
+      td {
+         padding: .9rem 1.25rem;
+         text-align: left;
+         border-bottom: 1px solid var(--border);
+      }
+
+      th {
+         color: var(--muted);
+         font-size: .8rem;
+         text-transform: uppercase;
+         background: rgba(255, 255, 255, .02);
+      }
+
+      tr:last-child td {
+         border-bottom: none;
+      }
+
+      .file-title {
+         display: block;
+         font-weight: 600;
+      }
+
+      .file-name {
+         display: block;
+         color: var(--muted);
+         font-size: .82rem;
+         margin-top: .2rem;
+      }
+
+      .badge {
+         padding: .28rem .65rem;
+         border-radius: 999px;
+         font-size: .85rem;
+         font-weight: 700;
+         white-space: nowrap;
+      }
+
+      .score-green {
+         background: rgba(34, 197, 94, .18);
+         color: var(--green);
+      }
+
+      .score-yellow {
+         background: rgba(234, 179, 8, .18);
+         color: var(--yellow);
+      }
+
+      .score-red {
+         background: rgba(239, 68, 68, .18);
+         color: var(--red);
+      }
+
+      .hash {
+         color: var(--muted);
+         font-family: monospace;
+         font-size: .85rem;
+      }
+
+      .btn {
+         display: inline-block;
+         background: var(--accent);
+         color: #00111f;
+         text-decoration: none;
+         padding: .45rem .85rem;
+         border-radius: 8px;
+         font-weight: 700;
+      }
+
+      .btn:hover {
+         opacity: .9;
+      }
+
+      .no-result {
+         color: var(--muted);
+         text-align: center;
+         padding: 2rem;
+      }
+
+      #lang {
+         min-width: 220px;
+      }
+
+      @media(max-width:850px) {
+
+         th:nth-child(3),
+         td:nth-child(3) {
+            display: none;
+         }
+
+         th,
+         td {
+            padding: .75rem;
+         }
+
+      }
+   </style>
+</head>
+
+<body>
+
+   <div class="container">
+
+      <header>
+
+         <div>
+            <h1 id="ui-title">VirusTotal Security Verification</h1>
+            <div id="ui-subtitle" class="subtitle">
+               Official VirusTotal reports for MSFS2024 VFRNav.
+            </div>
+         </div>
+
+         <div class="toolbar">
+
+            <input type="search" id="search" placeholder="Search version, component">
+
+            <select id="releaseSelector">
+               <option value="">Latest Release</option>
+            </select>
+
+            <select id="lang">
+               <option value="en">🇬🇧 English</option>
+               <option value="fr">🇫🇷 Français</option>
+               <option value="de">🇩🇪 Deutsch</option>
+               <option value="es">🇪🇸 Español</option>
+               <option value="it">🇮🇹 Italiano</option>
+               <option value="ja">🇯🇵 日本語</option>
+               <option value="nl">🇳🇱 Nederlands</option>
+               <option value="pl">🇵🇱 Polski</option>
+               <option value="pt">🇵🇹 Português</option>
+               <option value="pt-BR">🇧🇷 Português (Brasil)</option>
+               <option value="ru">🇷🇺 Русский</option>
+               <option value="sv">🇸🇪 Svenska</option>
+               <option value="tr">🇹🇷 Türkçe</option>
+               <option value="zh-CN">🇨🇳 简体中文</option>
+            </select>
+
+         </div>
+
+      </header>
+
+      <div id="releases"></div>
+
+   </div>
+
+   <script>
+
+      const translations = {
+         en: {
+            title: "VirusTotal Security Verification",
+            subtitle: "Official VirusTotal reports for MSFS2024 VFRNav.",
+            component: "Component",
+            result: "Result",
+            hash: "SHA-256",
+            report: "Report",
+            view: "View Scan"
+         },
+
+         fr: {
+            title: "Vérification VirusTotal",
+            subtitle: "Rapports VirusTotal officiels pour MSFS2024 VFRNav.",
+            component: "Composant",
+            result: "Résultat",
+            hash: "SHA-256",
+            report: "Rapport",
+            view: "Voir l'analyse"
+         },
+
+         de: {
+            title: "VirusTotal Sicherheitsprüfung",
+            subtitle: "Offizielle VirusTotal-Berichte für MSFS2024 VFRNav.",
+            component: "Komponente",
+            result: "Ergebnis",
+            hash: "SHA-256",
+            report: "Bericht",
+            view: "Scan anzeigen"
+         },
+
+         es: {
+            title: "Verificación de Seguridad VirusTotal",
+            subtitle: "Informes oficiales de VirusTotal para MSFS2024 VFRNav.",
+            component: "Componente",
+            result: "Resultado",
+            hash: "SHA-256",
+            report: "Informe",
+            view: "Ver análisis"
+         },
+
+         it: {
+            title: "Verifica di Sicurezza VirusTotal",
+            subtitle: "Rapporti ufficiali VirusTotal per MSFS2024 VFRNav.",
+            component: "Componente",
+            result: "Risultato",
+            hash: "SHA-256",
+            report: "Rapporto",
+            view: "Visualizza scansione"
+         },
+
+         ja: {
+            title: "VirusTotal セキュリティ検証",
+            subtitle: "MSFS2024 VFRNav の公式 VirusTotal レポート。",
+            component: "コンポーネント",
+            result: "結果",
+            hash: "SHA-256",
+            report: "レポート",
+            view: "スキャンを見る"
+         },
+
+         nl: {
+            title: "VirusTotal Beveiligingscontrole",
+            subtitle: "Officiële VirusTotal-rapporten voor MSFS2024 VFRNav.",
+            component: "Onderdeel",
+            result: "Resultaat",
+            hash: "SHA-256",
+            report: "Rapport",
+            view: "Scan bekijken"
+         },
+
+         pl: {
+            title: "Weryfikacja Bezpieczeństwa VirusTotal",
+            subtitle: "Oficjalne raporty VirusTotal dla MSFS2024 VFRNav.",
+            component: "Komponent",
+            result: "Wynik",
+            hash: "SHA-256",
+            report: "Raport",
+            view: "Pokaż skan"
+         },
+
+         pt: {
+            title: "Verificação de Segurança VirusTotal",
+            subtitle: "Relatórios oficiais VirusTotal para o MSFS2024 VFRNav.",
+            component: "Componente",
+            result: "Resultado",
+            hash: "SHA-256",
+            report: "Relatório",
+            view: "Ver análise"
+         },
+
+         "pt-BR": {
+            title: "Verificação de Segurança VirusTotal",
+            subtitle: "Relatórios oficiais do VirusTotal para o MSFS2024 VFRNav.",
+            component: "Componente",
+            result: "Resultado",
+            hash: "SHA-256",
+            report: "Relatório",
+            view: "Ver análise"
+         },
+
+         ru: {
+            title: "Проверка Безопасности VirusTotal",
+            subtitle: "Официальные отчёты VirusTotal для MSFS2024 VFRNav.",
+            component: "Компонент",
+            result: "Результат",
+            hash: "SHA-256",
+            report: "Отчёт",
+            view: "Открыть отчёт"
+         },
+
+         sv: {
+            title: "VirusTotal Säkerhetskontroll",
+            subtitle: "Officiella VirusTotal-rapporter för MSFS2024 VFRNav.",
+            component: "Komponent",
+            result: "Resultat",
+            hash: "SHA-256",
+            report: "Rapport",
+            view: "Visa skanning"
+         },
+
+         tr: {
+            title: "VirusTotal Güvenlik Doğrulaması",
+            subtitle: "MSFS2024 VFRNav için resmi VirusTotal raporları.",
+            component: "Bileşen",
+            result: "Sonuç",
+            hash: "SHA-256",
+            report: "Rapor",
+            view: "Taramayı Görüntüle"
+         },
+
+         "zh-CN": {
+            title: "VirusTotal 安全验证",
+            subtitle: "MSFS2024 VFRNav 官方 VirusTotal 报告。",
+            component: "组件",
+            result: "结果",
+            hash: "SHA-256",
+            report: "报告",
+            view: "查看扫描结果"
+         }
+      };
+
+      let releasesData = [];
+      let currentLang = "en";
+
+      function scoreClass(score) {
+         const value =
+            parseInt(score.split('/')[0]);
+
+         if (value === 0)
+            return "score-green";
+
+         if (value <= 3)
+            return "score-yellow";
+
+         return "score-red";
+      }
+
+      function applyLanguage(lang) {
+         currentLang =
+            translations[lang]
+               ? lang
+               : "en";
+
+         const t =
+            translations[currentLang];
+
+         document.getElementById("ui-title")
+            .textContent = t.title;
+
+         document.getElementById("ui-subtitle")
+            .textContent = t.subtitle;
+
+         render();
+      }
+
+      function render() {
+         const t =
+            translations[currentLang];
+
+         const selectedRelease =
+            document.getElementById("releaseSelector").value;
+
+         const search =
+            document.getElementById("search")
+               .value
+               .toLowerCase();
+
+         const container =
+            document.getElementById("releases");
+
+         container.innerHTML = "";
+
+         const filtered =
+            releasesData.filter(r =>
+               !selectedRelease ||
+               r.version === selectedRelease
+            );
+
+         filtered.forEach(release => {
+
+            let rows = "";
+
+            release.scans.forEach(scan => {
+               const searchable =
+                  (
+                     release.version +
+                     " " +
+                     scan.type +
+                     " " +
+                     scan.filename
+                  ).toLowerCase();
+
+               if (!searchable.includes(search))
+                  return;
+
+               rows += `
+            <tr>
+
+                <td>
+                    <span class="file-title">${scan.type}</span>
+                    <span class="file-name">${scan.filename}</span>
+                </td>
+
+                <td>
+                    <span class="badge ${scoreClass(scan.score)}">
+                        ${scan.score}
+                    </span>
+                </td>
+
+                <td>
+                    <code class="hash"
+                          title="${scan.sha256}">
+                        ${scan.sha256.substring(0, 14)}...
+                    </code>
+                </td>
+
+                <td>
+                    <a class="btn"
+                       href="${scan.vt}"
+                       target="_blank">
+                        ${t.view}
+                    </a>
+                </td>
+
+            </tr>
+            `;
+            });
+
+            if (rows === "")
+               return;
+
+            container.innerHTML += `
+        <div class="release-card">
+
+            <div class="release-header">
+
+                <span class="release-version">
+                    ${release.version}
+                </span>
+
+                <span class="release-date">
+                    ${release.date}
+                </span>
+
+            </div>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>${t.component}</th>
+                        <th>${t.result}</th>
+                        <th>${t.hash}</th>
+                        <th>${t.report}</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${rows}
+                </tbody>
+
+            </table>
+
+        </div>
+        `;
+         });
+      }
+
+      fetch("releases.json")
+         .then(r => r.json())
+         .then(data => {
+            releasesData = data;
+
+            const selector =
+               document.getElementById("releaseSelector");
+
+            data.forEach(release => {
+               selector.innerHTML += `
+        <option value="${release.version}">
+            ${release.version}
+        </option>`;
+            });
+
+            const browserLang = navigator.language;
+
+            let autoLang = "en";
+
+            if (translations[browserLang]) {
+               autoLang = browserLang;
+            }
+            else {
+               const shortLang = browserLang.substring(0, 2);
+
+               if (translations[shortLang]) {
+                  autoLang = shortLang;
+               }
+            }
+
+            document.getElementById("lang").value = autoLang;
+            applyLanguage(autoLang);
+         });
+
+      document
+         .getElementById("search")
+         .addEventListener("input", render);
+
+      document
+         .getElementById("releaseSelector")
+         .addEventListener("change", render);
+
+      document
+         .getElementById("lang")
+         .addEventListener("change", e =>
+            applyLanguage(e.target.value));
+
+   </script>
+
+</body>
+
+</html>
