@@ -1,0 +1,31 @@
+{
+  "name": "@vfrnav/github-app",
+  "version": "1.0.0",
+  "license": "GPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "test": "node --test scripts/*.test.mjs",
+    "dev": "tsx build.ts --dev --watch",
+    "watch": "tsx build.ts --dev --watch",
+    "build": "npm run typecheck && tsx build.ts",
+    "build:dev": "npm run build -- --dev",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.build.json",
+    "publish": "node scripts/publish.mjs",
+    "preview": "vite preview --outDir ../../build/github_app/dist --host 127.0.0.1"
+  },
+  "dependencies": {
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.5",
+    "tailwindcss": "4.3.5",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3",
+    "vite": "8.0.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "extends": "../submodules/ts-utils/tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "@alx-home/build": ["../submodules/ts-utils/build_template.ts"]
+    }
+  }
+}

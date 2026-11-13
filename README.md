@@ -44,6 +44,14 @@ https://github.com/alx-home/msfs2024-vfrnav-efb/wiki
 
 ## For building this project / Pour compiler ce projet
 
+### GitHub Pages app
+
+The website and antivirus reports are maintained in
+[`github_app/app`](./github_app/app/README.md). The default CMake build includes
+them; `cmake --build build --target github_app` builds only the website to
+`build/github_app/dist/`. See the app README for npm setup, tests and publishing
+to the Pages checkout.
+
 - Commencer par suivre les instructions de https://github.com/coreybutler/nvm-windows pour installer npm sous windows
 - Installez les modules node `npm install --save`
 - Compillez le projet `npm run build`

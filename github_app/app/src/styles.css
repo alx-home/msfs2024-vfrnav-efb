@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-page: #0b1220;
+  --color-surface: #111c2c;
+  --color-raised: #172437;
+  --color-ink: #edf5ff;
+  --color-muted: #9aacc2;
+  --color-accent: #61d5c2;
+  --color-sky: #82b8ff;
+  --color-line: rgba(179, 205, 230, .14);
+  --color-warning: #f3c879;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}

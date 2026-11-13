@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../../build/github_app/ts-dist/app",
+    "types": ["vite/client"]
+  },
+  "include": ["src"]
+}

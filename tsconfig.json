@@ -19,7 +19,8 @@
       { "path": "./server/ts/tsconfig.json" },
       { "path": "./installer/ts/tsconfig.json" },
       { "path": "./common/ts/tsconfig.json" },
-      { "path": "./vfrnav_efb/tsconfig.json" }
+      { "path": "./vfrnav_efb/tsconfig.json" },
+      { "path": "./github_app/app/tsconfig.json" }
    ],
    "compilerOptions": {
       "composite": true,

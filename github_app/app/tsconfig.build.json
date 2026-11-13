@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "outDir": "../../build/github_app/ts-dist/build"
+  },
+  "include": ["build.ts", "../../submodules/ts-utils/build_template.ts"]
+}

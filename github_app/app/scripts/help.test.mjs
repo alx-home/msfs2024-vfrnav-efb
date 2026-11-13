@@ -1,0 +1,144 @@
+import assert from "node:assert/strict";
+import { after, test } from "node:test";
+import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
+import { createServer } from "vite";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
+const server = await createServer({
+  configFile: false,
+  esbuild: { jsx: "automatic" },
+  root: fileURLToPath(new URL("..", import.meta.url)),
+  server: { middlewareMode: true, watch: null, hmr: false },
+  appType: "custom"
+});
+after(() => server.close());
+
+const { createSearchDocuments, searchHelp } = await server.ssrLoadModule("/src/search.ts");
+const { languages } = await server.ssrLoadModule("/src/content/types.ts");
+const { screenshotWalkthrough } = await server.ssrLoadModule("/src/content/screenshots.ts");
+const { efbModes } = await server.ssrLoadModule("/src/content/efbModes.ts");
+const { KeyboardText } = await server.ssrLoadModule("/src/components/KeyboardShortcut.tsx");
+const { parseReleases, filterReleases, scoreTone } = await server.ssrLoadModule("/src/reports.ts");
+
+test("searches localized headings and bodies in every language", () => {
+  for (const language of languages) {
+    const documents = createSearchDocuments(language);
+    for (const document of documents) {
+      assert.ok(searchHelp(documents, document.title).some((result) =>
+        result.id === document.id && result.title === document.title), `${language}: ${document.title}`);
+    }
+  }
+});
+
+test("ignores case and accents and requires every search word", () => {
+  const documents = createSearchDocuments("fr");
+  assert.ok(searchHelp(documents, "  DEVIATION   compas ").some((result) => result.id === "install"));
+  assert.deepEqual(searchHelp(documents, "DEVIATION compas nonexistent-word-xyz"), []);
+});
+
+test("ranks matching headings before body-only matches and shows nearby text", () => {
+  const results = searchHelp([
+    { id: "body", title: "Other", section: "Usage", body: `${"Intro ".repeat(50)}map instructions` },
+    { id: "title", title: "Map", section: "Usage", body: "Navigation" }
+  ], "map");
+  assert.equal(results[0].id, "title");
+  assert.ok(results[1].snippet.includes("map instructions"));
+  assert.ok(results[1].snippet.startsWith("..."));
+});
+
+test("finds screenshot instructions under their actual charts and navlog topics", () => {
+  const documents = createSearchDocuments("en");
+  for (const [index, id] of [[11, "charts-guide"], [8, "navlog-guide"]]) {
+    assert.ok(searchHelp(documents, screenshotWalkthrough.en.items[index]).some((result) => result.id === id));
+  }
+});
+
+test("indexes installer details, 3D controls, and donation notes", () => {
+  const documents = createSearchDocuments("en");
+  for (const [query, id] of [
+    ["Windows login", "install"],
+    ["Ctrl+T", "efb-modes"],
+    ["rotation rings", "efb-modes"],
+    ["width and height change together", "efb-modes"],
+    ["SHA-256", "antivirus"],
+    ["platform fees", "support"]
+  ]) {
+    assert.ok(searchHelp(documents, query).some((result) => result.id === id), query);
+  }
+});
+
+test("keeps illustrated panel instructions and shortcuts searchable in every language", () => {
+  for (const language of languages) {
+    const documents = createSearchDocuments(language);
+    for (const [title, body, shortcut] of efbModes[language].panelSteps) {
+      for (const query of [title, body, ...(shortcut ? [shortcut] : [])]) {
+        assert.ok(searchHelp(documents, query).some((result) => result.id === "efb-modes"), `${language}: ${query}`);
+      }
+    }
+  }
+});
+
+test("returns no results for blank, unmatched, or literal special-character queries", () => {
+  const documents = createSearchDocuments("en");
+  for (const query of ["", " \t ", "nonexistent-word-xyz", "[.*]"]) {
+    assert.deepEqual(searchHelp(documents, query), []);
+  }
+});
+
+test("renders inline localized shortcuts as keycaps while keeping mouse gestures as text", () => {
+  const text = "Ctrl+Maj+clic droit ; Ctrl + T ; Alt/Maj+molette ; Alt + Maj + glisser.";
+  const html = renderToStaticMarkup(createElement(KeyboardText, { children: text }));
+  assert.deepEqual([...html.matchAll(/<kbd[^>]*>(.*?)<\/kbd>/g)].map((match) => match[1]),
+    ["Ctrl", "Maj", "Ctrl", "T", "Alt", "Maj", "Alt", "Maj"]);
+  assert.equal(html.replace(/<[^>]*>/g, "").replace(/\s/g, ""), text.replace(/\s/g, ""));
+});
+
+test("recognizes shortcuts beside CJK text without matching ordinary words", () => {
+  const text = "按Ctrl+T显示。Altitude Controls Shifted Major PreCtrl.";
+  const html = renderToStaticMarkup(createElement(KeyboardText, { children: text }));
+  assert.deepEqual([...html.matchAll(/<kbd[^>]*>(.*?)<\/kbd>/g)].map((match) => match[1]), ["Ctrl", "T"]);
+  assert.equal(html.replace(/<[^>]*>/g, "").replace(/\s/g, ""), text.replace(/\s/g, ""));
+});
+
+test("formats PDF zoom controls without turning ordinary operators into keys", () => {
+  const text = "PDF: +/- or + / - to zoom; 95 + 5 = 100.";
+  const html = renderToStaticMarkup(createElement(KeyboardText, { children: text }));
+  assert.deepEqual([...html.matchAll(/<kbd[^>]*>(.*?)<\/kbd>/g)].map((match) => match[1]), ["+", "-", "+", "-"]);
+  assert.equal(html.replace(/<[^>]*>/g, "").replace(/\s/g, ""), text.replace(/\s/g, ""));
+});
+
+test("preserves original report data and detection-score thresholds", async () => {
+  const source = JSON.parse(await readFile(new URL("../public/releases.json", import.meta.url), "utf8"));
+  assert.deepEqual(parseReleases(source), source);
+  assert.equal(scoreTone("0 / 71"), "green");
+  assert.equal(scoreTone("3 / 71"), "yellow");
+  assert.equal(scoreTone("4 / 71"), "red");
+});
+
+const scan = {
+  type: "installer", filename: "installer.exe", score: "2 / 70", sha256: "a".repeat(64),
+  vt: `https://virustotal.com/gui/file/${"a".repeat(64)}`
+};
+const releases = [
+  { version: "Alpha", date: "13-11-2026", scans: [scan, { ...scan, type: "community", filename: "community.zip" }] },
+  { version: "Beta", date: "12-11-2026", scans: [{ ...scan, type: "server", filename: "server.exe" }] }
+];
+
+test("combines release selection with case-insensitive version, component and filename filters", () => {
+  assert.deepEqual(filterReleases(releases, "Alpha", "  INSTALLER  ")[0].scans, [scan]);
+  assert.deepEqual(filterReleases(releases, "", "BETA"), [releases[1]]);
+  assert.deepEqual(filterReleases(releases, "", "COMMUNITY.ZIP")[0].scans, [releases[0].scans[1]]);
+  assert.deepEqual(filterReleases(releases, "Alpha", "server"), []);
+});
+
+test("rejects malformed or inconsistent reports instead of presenting them as valid", () => {
+  assert.throws(() => parseReleases({}), /array/);
+  for (const change of [
+    { score: "not a score" }, { score: "71 / 70" }, { score: "0 / 0" }, { sha256: "invalid" },
+    { vt: "https://example.com/report" }, { filename: null }
+  ]) {
+    assert.throws(() => parseReleases([{ ...releases[0], scans: [{ ...scan, ...change }] }]));
+  }
+});

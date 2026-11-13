@@ -40,6 +40,7 @@ add_subdirectory(efb_tablet_panel)
 add_dependencies(vfrnav_efb_msfs efb_tablet_panel)
 add_subdirectory(server)
 add_subdirectory(installer)
+add_subdirectory(github_app)
 
 add_custom_target(init_submodules
    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -104,6 +105,8 @@ foreach(VARIABLE ${ALL_TARGETS})
       set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/Tablet/Panel")
    elseif(VARIABLE MATCHES "^efb_tablet_.*$")
       set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/Tablet")
+   elseif(VARIABLE MATCHES "^github_app($|_.*)")
+      set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/GitHub App")
    elseif(VARIABLE MATCHES "^vfrnav.*$")
       set_property(TARGET ${VARIABLE} PROPERTY FOLDER "VFRNav/Core/EFB")
    endif()
