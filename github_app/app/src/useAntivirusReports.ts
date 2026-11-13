@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { parseReleases, type Release } from "./reports";
+import { parseReleases, parseVirusTotalSnapshot } from "./reports";
 
-type ReportsState = { status: "loading" } | { status: "error" } | { status: "ready"; releases: Release[] };
+type DataState<T> = { status: "loading" } | { status: "error" } | { status: "ready"; value: T };
 
-export function useAntivirusReports() {
-  const [state, setState] = useState<ReportsState>({ status: "loading" });
+function useReportData<T>(path: string, parse: (value: unknown) => T) {
+  const [state, setState] = useState<DataState<T>>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -12,20 +12,29 @@ export function useAntivirusReports() {
     setState({ status: "loading" });
     const load = async () => {
       try {
-        const response = await fetch("./releases.json", { signal: controller.signal });
+        const response = await fetch(path, { signal: controller.signal, cache: "no-store" });
         if (!response.ok) throw new Error(`Reports request failed: HTTP ${response.status}`);
         const data: unknown = await response.json();
-        const releases = parseReleases(data);
-        if (!controller.signal.aborted) setState({ status: "ready", releases });
+        const value = parse(data);
+        if (!controller.signal.aborted) setState({ status: "ready", value });
       } catch (error) {
         if (controller.signal.aborted) return;
-        console.error("Unable to load VirusTotal reports.", error);
+        console.error(`Unable to load VirusTotal reports from ${path}.`, error);
         setState({ status: "error" });
       }
     };
     void load();
     return () => controller.abort();
-  }, [attempt]);
+  }, [attempt, path, parse]);
 
   return { state, retry: () => setAttempt((value) => value + 1) };
+}
+
+export function useAntivirusReports() {
+  const { state, retry } = useReportData("./releases.json", parseReleases);
+  return { state: state.status === "ready" ? { status: "ready" as const, releases: state.value } : state, retry };
+}
+
+export function useVirusTotalResults() {
+  return useReportData("./virustotal.json", parseVirusTotalSnapshot);
 }

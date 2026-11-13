@@ -29,7 +29,9 @@ const { default: ReleasesPage } = await server.ssrLoadModule("/src/pages/Release
 const { getTabFromHash, tabIds, tabLabels } = await server.ssrLoadModule("/src/navigation.ts");
 const { default: TabNavigation } = await server.ssrLoadModule("/src/components/TabNavigation.tsx");
 const { default: donationIcon } = await server.ssrLoadModule("/src/assets/donation.svg");
-const { parseReleases, filterReleases, findVersionReport, scoreTone } = await server.ssrLoadModule("/src/reports.ts");
+const { parseReleases, parseVirusTotalSnapshot, filterReleases, findVersionReport, scoreTone } = await server.ssrLoadModule("/src/reports.ts");
+const { default: VirusTotalAnalysis } = await server.ssrLoadModule("/src/components/VirusTotalAnalysis.tsx");
+const { antivirusUpdates } = await server.ssrLoadModule("/src/content/antivirusUpdates.ts");
 
 test("searches localized headings and bodies in every language", () => {
   for (const language of languages) {
@@ -226,7 +228,7 @@ test("finds every release using its rewritten notes in the selected language", (
   }
 });
 
-test("preserves original report data and detection-score thresholds", async () => {
+test("preserves report metadata without hardcoded scores and keeps detection-score thresholds", async () => {
   const source = JSON.parse(await readFile(new URL("../public/releases.json", import.meta.url), "utf8"));
   assert.deepEqual(parseReleases(source), source);
   assert.equal(scoreTone("0 / 71"), "green");
@@ -235,7 +237,7 @@ test("preserves original report data and detection-score thresholds", async () =
 });
 
 const scan = {
-  type: "installer", filename: "installer.exe", score: "2 / 70", sha256: "a".repeat(64),
+  type: "installer", filename: "installer.exe", sha256: "a".repeat(64),
   vt: `https://virustotal.com/gui/file/${"a".repeat(64)}`
 };
 const releases = [
@@ -266,9 +268,40 @@ test("matches version-specific antivirus reports without mixing stable, alpha or
 test("rejects malformed or inconsistent reports instead of presenting them as valid", () => {
   assert.throws(() => parseReleases({}), /array/);
   for (const change of [
-    { score: "not a score" }, { score: "71 / 70" }, { score: "0 / 0" }, { sha256: "invalid" },
+    { sha256: "invalid" },
     { vt: "https://example.com/report" }, { filename: null }
   ]) {
     assert.throws(() => parseReleases([{ ...releases[0], scans: [{ ...scan, ...change }] }]));
+  }
+});
+
+test("validates refreshed VirusTotal snapshots and rejects invalid or misleading results", () => {
+  const analysis = { analyzedAt: "2026-11-13T21:00:00.000Z", score: "1 / 70",
+    vendors: [{ name: "Vendor", category: "malicious", label: "Trojan.Test" }] };
+  const snapshot = { checkedAt: "2026-11-13T22:00:00.000Z", files: { [scan.sha256]: analysis } };
+  assert.deepEqual(parseVirusTotalSnapshot(snapshot), snapshot);
+  assert.deepEqual(parseVirusTotalSnapshot({ checkedAt: null, files: {} }), { checkedAt: null, files: {} });
+  for (const change of [{ score: "0 / 70" }, { score: "1 / 0" }, { analyzedAt: "invalid" },
+    { vendors: [{ name: "Vendor", category: "harmless", label: null }] }]) {
+    assert.throws(() => parseVirusTotalSnapshot({ ...snapshot, files: { [scan.sha256]: { ...analysis, ...change } } }));
+  }
+  assert.throws(() => parseVirusTotalSnapshot({ ...snapshot, checkedAt: null }));
+});
+
+test("renders vendor labels safely and distinguishes pending from zero detections in every language", () => {
+  const analysis = { analyzedAt: "2026-11-13T21:00:00.000Z", score: "1 / 70",
+    vendors: [{ name: "Test vendor", category: "suspicious", label: "<script>unsafe</script>" }] };
+  for (const language of languages) {
+    const render = (value) => renderToStaticMarkup(createElement(VirusTotalAnalysis, { language, analysis: value }));
+    const escaped = (value) => renderToStaticMarkup(createElement("span", null, value)).slice(6, -7);
+    const html = render(analysis);
+    assert.ok(html.includes("Test vendor"));
+    assert.ok(html.includes("suspicious"));
+    assert.ok(html.includes("&lt;script&gt;unsafe&lt;/script&gt;"));
+    assert.ok(!html.includes("<script>"));
+    assert.ok(render(undefined).includes(escaped(antivirusUpdates[language].pending)), language);
+    const clear = render({ ...analysis, score: "0 / 70", vendors: [] });
+    assert.ok(clear.includes(escaped(antivirusUpdates[language].none)), language);
+    assert.ok(!clear.includes(escaped(antivirusUpdates[language].pending)), language);
   }
 });

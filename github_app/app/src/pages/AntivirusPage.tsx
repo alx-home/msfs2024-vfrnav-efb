@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
 import type { Language } from "../content";
 import { antivirusText } from "../content/antivirus";
-import { filterReleases, findVersionReport, scoreTone } from "../reports";
-import { useAntivirusReports } from "../useAntivirusReports";
+import { antivirusUpdates } from "../content/antivirusUpdates";
+import { filterReleases, findVersionReport } from "../reports";
+import { useAntivirusReports, useVirusTotalResults } from "../useAntivirusReports";
 import SectionHeading from "../components/SectionHeading";
 import SupportIcon from "../components/SupportIcon";
-
-const tones = {
-  green: "border-green-400/30 bg-green-400/10 text-green-300",
-  yellow: "border-amber-400/30 bg-amber-400/10 text-amber-300",
-  red: "border-red-400/30 bg-red-400/10 text-red-300"
-};
+import VirusTotalAnalysis from "../components/VirusTotalAnalysis";
 
 export default function AntivirusPage({ language, locationHash }: { language: Language; locationHash: string }) {
   const text = antivirusText[language];
   const { state, retry } = useAntivirusReports();
+  const results = useVirusTotalResults();
+  const updateText = antivirusUpdates[language];
   const [version, setVersion] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
@@ -33,6 +31,17 @@ export default function AntivirusPage({ language, locationHash }: { language: La
       <p className="mb-8 flex items-start gap-4 rounded-2xl border border-sky/25 bg-sky/5 p-5 text-sm leading-7 text-muted">
         <span className="mt-1 shrink-0 text-sky"><SupportIcon name="shield" /></span>{text.note}
       </p>
+      <p className="mb-4 text-sm leading-7 text-muted">{updateText.explanation}</p>
+      {results.state.status === "loading" && <p role="status" className="mb-6 text-muted">{text.loading}</p>}
+      {results.state.status === "error" && <div role="alert" className="mb-6 rounded-xl border border-red-400/30 p-4">
+        <p className="text-red-300">{text.error}</p>
+        <button type="button" className="mt-2 min-h-11 cursor-pointer text-accent underline" onClick={results.retry}>{text.retry}</button>
+      </div>}
+      {results.state.status === "ready" && <p className="mb-6 text-sm text-muted">
+        {results.state.value.checkedAt ? <>{updateText.checked}: <time dateTime={results.state.value.checkedAt}>
+          {new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short" }).format(new Date(results.state.value.checkedAt))}
+        </time></> : updateText.pending}
+      </p>}
       {state.status === "loading" && <p role="status" className="py-8 text-muted">{text.loading}</p>}
       {state.status === "error" && <div role="alert" className="rounded-2xl border border-red-400/30 bg-surface p-6">
         <p className="mb-4 text-red-300">{text.error}</p>
@@ -72,11 +81,12 @@ export default function AntivirusPage({ language, locationHash }: { language: La
                   <p className="mt-1 text-sm break-all text-muted">{scan.filename}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <span aria-label={`${text.result}: ${scan.score}`}
-                    className={`rounded-full border px-3 py-1 text-sm font-bold ${tones[scoreTone(scan.score)]}`}>{scan.score}</span>
                   <a className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-sm font-semibold text-accent no-underline hover:border-accent"
                     href={scan.vt} target="_blank" rel="noopener noreferrer">{text.view}<SupportIcon name="arrow" /></a>
                 </div>
+                {results.state.status === "ready" && <div className="col-span-full min-w-0">
+                  <VirusTotalAnalysis language={language} analysis={results.state.value.files[scan.sha256]} />
+                </div>}
                 <p className="col-span-full min-w-0 rounded-lg bg-page/50 px-4 py-3 text-xs leading-6 text-muted">
                   <span className="mr-3 font-semibold">{text.hash}</span><code className="break-all select-all">{scan.sha256}</code>
                 </p>

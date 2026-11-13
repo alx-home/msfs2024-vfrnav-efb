@@ -136,12 +136,66 @@ status suffix; alpha and stable versions remain distinct. Both tabs use the same
 validated report loader with visible loading, error and retry states. Older
 versions without reports do not show an Antivirus link.
 
-`public/releases.json` is the canonical antivirus report data, migrated unchanged.
-The Antivirus tab fetches it at runtime, validates the report structure, and
-preserves release/component/filename filtering, full SHA-256 hashes, report links
-and the original detection-score thresholds (0 green, 1–3 yellow, 4+ red).
+`public/releases.json` is the canonical antivirus file manifest: release metadata,
+filenames, hashes and report links, without manually maintained detection counts.
+The Antivirus tab fetches it and `virustotal.json` at runtime, validates both, and
+preserves release/component/filename filtering, full SHA-256 hashes and report links.
+The generated snapshot contains the last successful check time, each file's
+VirusTotal analysis time, and malicious/suspicious vendors with their verbatim
+detection labels and categories. Counts are flagged verdicts divided by completed
+engine results (malicious, suspicious, harmless and undetected); timeouts, failures
+and unsupported engines are excluded. Badge thresholds remain 0 green,
+1–3 yellow and 4+ red. The page explains this definition in every language.
+Before the first check, or for a newly added hash, it shows a pending state,
+never a fabricated zero. Timestamps distinguish cached results from live data.
 Network or invalid-data errors are visible and retryable; results are not
 presented as a safety guarantee. All new interface text supports all 14 locales.
+
+### Automatic VirusTotal updates
+
+Publishing also copies `.github/workflows/virustotal.yml` and the small standalone
+updater/test scripts into `.github/scripts/` on `github-pages`. The workflow
+always checks out only `github-pages`, reads its root `releases.json`, and uses the supported
+VirusTotal v3 file API. It retrieves existing analyses only: it does not upload
+files or request rescans. It does not need `github_app`, app source, dependencies
+or build tools on the published branch. Changes to the published manifest or
+updater trigger a check, and manual runs can select `github-pages`.
+Before enabling it:
+
+1. Add a repository **Actions secret** named `VIRUSTOTAL_API_KEY`. Never add the
+   key to source, public JSON, browser code or a `VITE_` environment variable.
+   Ensure your VirusTotal API plan permits this use.
+2. Set **Settings > Pages > Build and deployment > Source** to **GitHub Actions**.
+   Allow this workflow to write to the `github-pages` branch, and permit the
+   `github-pages` branch to deploy to the `github-pages` environment.
+3. Publish the site changes, including the copied `.github` files, to
+   `github-pages`, then run **Actions > Update VirusTotal reports > Run workflow**
+   on that branch. Check its update and deployment jobs.
+
+GitHub runs cron schedules and discovers manually dispatchable workflows only
+when the workflow also exists on the repository's default branch. The canonical
+workflow in the source checkout provides this definition (every six hours);
+even a scheduled run checks out only `github-pages` and never writes to the
+default branch. If you publish the workflow only on `github-pages` while another
+branch remains the default, its push trigger works, but GitHub will not run its
+cron schedule.
+
+No npm install or build is needed for scheduled updates. The updater deduplicates
+hashes, spaces requests by 16 seconds (four requests/minute), and fails explicitly
+on missing secrets, API/HTTP errors, missing files or inconsistent results.
+Only a completely successful fetch replaces the snapshot. The workflow commits
+`virustotal.json` to `github-pages` and deploys a Pages artifact explicitly:
+commits made with `GITHUB_TOKEN` alone do not trigger a branch-based Pages build.
+If a check fails, the previous published snapshot and its timestamps remain.
+The API's daily quota still applies; avoid overlapping manual runs or sharing
+the key with other high-volume tasks.
+
+Local builds contain an empty initial snapshot. The explicit publish script
+preserves an existing Pages `virustotal.json` instead of overwriting scheduled
+results with that empty file. To add files, update the source manifest, build
+and publish the site, then run the workflow. No API key is needed for local
+builds, tests or normal site visitors.
+
 The support page uses icon cards and the donation SVGs from the VFRNav project's
 `images/` directory, copied into `src/assets/` for self-contained builds.
 Donation cards also mirror its Preferred/Convenient badges and platform-fee

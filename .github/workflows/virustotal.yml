@@ -1,0 +1,63 @@
+name: Update VirusTotal reports
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 */6 * * *"
+  push:
+    branches: [github-pages]
+    paths:
+      - .github/workflows/virustotal.yml
+      - .github/scripts/update-virustotal.mjs
+      - .github/scripts/virustotal.test.mjs
+      - releases.json
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: github-pages
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test updater
+        run: node --test .github/scripts/virustotal.test.mjs
+      - name: Fetch current VirusTotal analyses
+        env:
+          VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
+        run: node .github/scripts/update-virustotal.mjs releases.json virustotal.json
+      - name: Persist refreshed reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add virustotal.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update VirusTotal reports"
+            git push origin HEAD:github-pages
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy refreshed site
+        id: deployment
+        uses: actions/deploy-pages@v4
