@@ -169,8 +169,12 @@ Before enabling it:
    Install a dedicated GitHub App on this repository with **Contents: Read and
    write**. Add Actions secrets `VT_APP_ID` (App ID) and `VT_APP_PRIVATE_KEY`
    (the complete generated PEM private key). Grant that App **Always allow**
-   bypass on the rulesets targeting `github-pages`, including PR and signed-commit
-   requirements; overlapping branch protections still apply. The workflow creates
+   bypass for the PR requirement on `github-pages` (or its classic branch
+   protection equivalent); overlapping branch protections still apply.
+   The signed-commit requirement can remain enabled: the workflow uses GitHub's
+   `createCommitOnBranch` API, which automatically signs commits, and checks
+   the returned signature. Its expected-head check rejects concurrent branch
+   changes rather than overwriting them. The workflow creates
    a short-lived, current-repository-only App token for checkout and push, so
    only that App identity needs the exception. Its private key never reaches the
    published site. The normal `GITHUB_TOKEN` retains read-only contents access.
