@@ -64,7 +64,7 @@ message(STATUS "Fetching upx...")
 FetchContent_Declare(
     upx
     GIT_REPOSITORY https://github.com/upx/upx.git
-    GIT_TAG v5.0.2
+    GIT_TAG v5.3.0
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
 )

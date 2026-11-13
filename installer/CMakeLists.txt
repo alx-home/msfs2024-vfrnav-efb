@@ -53,13 +53,13 @@ set_target_properties(installer PROPERTIES VERSION ${MAJOR_VERSION})
 set_target_properties(installer PROPERTIES SOVERSION ${MAJOR_VERSION}.${MINOR_VERSION})
 set_target_properties(installer PROPERTIES OUTPUT_NAME "msfs2024-vfrnav_installer")
 
-# if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    # add_custom_command(TARGET installer POST_BUILD
-    #     COMMAND $<TARGET_FILE:upx> --best --lzma $<TARGET_FILE:installer>
-    #     COMMENT "Zipping executable (may takes some times...)"
-    #     VERBATIM
-    # )
-# endif()
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_custom_command(TARGET installer POST_BUILD
+        COMMAND $<TARGET_FILE:upx> --best --lzma $<TARGET_FILE:installer>
+        COMMENT "Zipping executable (may takes some times...)"
+        VERBATIM
+    )
+endif()
 
 target_link_libraries(installer PRIVATE
     alx-home::windows
