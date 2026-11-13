@@ -28,9 +28,11 @@ Styling uses Tailwind CSS utilities in the React components and HTML shell,
 compiled by the Tailwind Vite plugin. `src/styles.css` only imports Tailwind and
 declares the shared theme tokens; it contains no custom selectors or styles.
 
-`src/pages/` contains the seven tab pages; `src/components/` contains the shared
+`src/pages/` contains the eight tab pages; `src/components/` contains the shared
 header, tab navigation and section heading. Only the active tab is rendered.
 Tabs support arrow keys, Home and End, URL hashes and browser Back/Forward.
+Each tab has a decorative icon alongside its localized label; Support reuses the
+donation SVG from the donation section, while other tabs use the shared icons.
 Short localized tab labels live in `src/navigation.ts`, separately from the
 full headings displayed on each page.
 The search field matches headings and article text in the current language,
@@ -96,6 +98,43 @@ introduction, gallery and quick-start sections. Each has a fixed destination and
 an inviting localized label describing it, and scrolls there without changing
 tabs or hiding the heading under the navigation. Button backgrounds remain opaque
 on hover to keep their labels readable over gallery images.
+
+A bell beside the header search opens the important-message box without adding
+height to the page. It contains the standalone-version survey and a link to the
+1.5.0 notes in the Releases tab, rather than duplicated release details. The survey reuses
+the Support tab's Microsoft Forms link; downloads still go to Flightsim.to.
+All messages support the 14 site languages. The native non-modal popover closes
+with Escape, an outside click or its close button; its content scrolls within the
+viewport. Edit `src/content/notifications.ts`
+to update the localized messages.
+
+The Releases tab has independently authored website copy for all 46 historical
+versions in all 14 supported languages. `src/content/releases/manifest.ts`
+defines version dates, components, categories and change IDs; the locale files
+beside it contain the rewritten notes. They preserve the original changes,
+limitations, historical shortcuts and issue references without repeating
+English/French source paragraphs. Dates and category/component headings follow
+the selected language. The project JSON is an authoring reference, not a runtime
+import or build dependency; tests check that its historical versions remain
+covered. This is separate from the antivirus `public/releases.json`.
+All versions are available newest first through the scrolling desktop sidebar
+or mobile selector. Category headings use shared SVG icons rather than emojis.
+Project-wide, installer/server and EFB changes have separate bordered cards
+with header bands; improvement categories use teal badges and fixes use amber
+badges, with explicit text and icons so color is not the only distinction.
+Each category and its bullet points sit in their own bordered subframe within
+the component card.
+Search includes every version and its rewritten notes in the selected language.
+Links such as `#release-1.5.0` select a specific version and support reload and
+Back/Forward. Notes scroll inside the existing viewport-bounded documentation
+layout. When adding a release, update the site manifest and all 14 locale files;
+missing translations fail the typecheck instead of silently falling back to
+another language. Shortcut descriptions reuse the guide's keycap formatting.
+Versions with available scans show an Antivirus link to their filtered reports
+(`#antivirus-1.5.0`, for example). Report labels may include a `v` prefix and
+status suffix; alpha and stable versions remain distinct. Both tabs use the same
+validated report loader with visible loading, error and retry states. Older
+versions without reports do not show an Antivirus link.
 
 `public/releases.json` is the canonical antivirus report data, migrated unchanged.
 The Antivirus tab fetches it at runtime, validates the report structure, and

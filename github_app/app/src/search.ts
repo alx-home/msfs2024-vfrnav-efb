@@ -7,6 +7,7 @@ import { workflowTitles } from "./content/workflow";
 import { antivirusText } from "./content/antivirus";
 import { efbEditing } from "./content/efbEditing";
 import { detailTopicIds, tabLabels, usageTopicIds } from "./navigation";
+import { getReleaseNotes, releaseTopics } from "./releaseNotes";
 
 type SearchDocument = { id: string; title: string; section: string; body: string };
 
@@ -40,6 +41,10 @@ export function createSearchDocuments(language: Language): SearchDocument[] {
     })),
     { id: "notes", title: text.notes[0], body: text.notes[1], section: labels.notes },
     ...text.notes[2].map(([title, body]) => ({ id: "notes", title, body, section: labels.notes })),
+    ...getReleaseNotes(language).map((release, index) => ({
+      id: releaseTopics[index].id, title: release.version, section: labels.releases,
+      body: [release.date, ...release.groups.flatMap((group) => group.categories.flatMap((category) => category.items))].join(" ")
+    })),
     { id: "antivirus", title: antivirusText[language].title, section: labels.antivirus,
       body: [antivirusText[language].subtitle, antivirusText[language].note, antivirusText[language].hash].join(" ") },
     { id: "support", title: text.support[0], section: labels.support,

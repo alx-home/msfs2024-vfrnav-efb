@@ -1,5 +1,12 @@
 import { useRef } from "react";
 import { tabIds, type TabId } from "../navigation";
+import SupportIcon from "./SupportIcon";
+import donationIcon from "../assets/donation.svg";
+
+const tabIcons = {
+  overview: "home", install: "download", using: "book", details: "info",
+  notes: "issue", releases: "review", antivirus: "shield"
+} as const;
 
 export default function TabNavigation({
   activeTab,
@@ -18,7 +25,7 @@ export default function TabNavigation({
     <div className="flex items-stretch gap-2 overflow-x-auto border-b border-line py-4" role="tablist" aria-label={label}>
       {tabIds.map((tab, index) => (
         <button
-          className="min-h-11 min-w-max shrink-0 flex-1 cursor-pointer rounded-[9px] border border-line bg-surface p-[.7rem] text-[.9rem] leading-[1.4] whitespace-nowrap text-muted hover:border-accent hover:text-ink aria-selected:border-accent aria-selected:bg-accent aria-selected:font-bold aria-selected:text-[#06201d]"
+          className="inline-flex min-h-11 min-w-max shrink-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-line bg-surface p-[.7rem] text-[.9rem] leading-[1.4] whitespace-nowrap text-muted hover:border-accent hover:text-ink aria-selected:border-accent aria-selected:bg-accent aria-selected:font-bold aria-selected:text-[#06201d] [&>svg]:shrink-0"
           key={tab}
           ref={(element) => { buttons.current[index] = element; }}
           type="button"
@@ -42,6 +49,9 @@ export default function TabNavigation({
             onSelect(tabIds[nextIndex]);
           }}
         >
+          {tab === "support"
+            ? <img className="block size-5 shrink-0" src={donationIcon} alt="" width="20" height="20" />
+            : <SupportIcon name={tabIcons[tab]} />}
           {labels[tab]}
         </button>
       ))}

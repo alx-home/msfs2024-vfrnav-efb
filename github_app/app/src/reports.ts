@@ -38,6 +38,11 @@ export function filterReleases(releases: readonly Release[], version: string, qu
   });
 }
 
+export function findVersionReport(releases: readonly Release[], version: string): Release | undefined {
+  return releases.find((release) => release.scans.length > 0
+    && release.version.replace(/^v(?=\d)/, "").replace(/\s+\([^)]*\)$/, "") === version);
+}
+
 export function scoreTone(score: string) {
   const detections = Number(score.split("/")[0]);
   return detections === 0 ? "green" : detections <= 3 ? "yellow" : "red";

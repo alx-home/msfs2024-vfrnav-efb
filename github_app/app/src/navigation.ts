@@ -1,6 +1,6 @@
 import type { LocaleMap } from "./content/types";
 
-export const tabIds = ["overview", "install", "using", "details", "notes", "antivirus", "support"] as const;
+export const tabIds = ["overview", "install", "using", "details", "notes", "releases", "antivirus", "support"] as const;
 export type TabId = typeof tabIds[number];
 
 export function scrollToSection(section: HTMLElement, behavior: ScrollBehavior = "auto") {
@@ -13,20 +13,20 @@ export function scrollToSection(section: HTMLElement, behavior: ScrollBehavior =
 }
 
 export const tabLabels = {
-  en: { overview: "Overview", install: "Install", using: "Usage", details: "Details", notes: "Limits", antivirus: "Antivirus", support: "Support" },
-  fr: { overview: "Aperçu", install: "Installer", using: "Utiliser", details: "Détails", notes: "Limites", antivirus: "Antivirus", support: "Soutien" },
-  de: { overview: "Übersicht", install: "Installation", using: "Nutzung", details: "Details", notes: "Grenzen", antivirus: "Virenschutz", support: "Support" },
-  es: { overview: "Resumen", install: "Instalar", using: "Uso", details: "Detalles", notes: "Límites", antivirus: "Antivirus", support: "Apoyo" },
-  it: { overview: "Panoramica", install: "Installa", using: "Uso", details: "Dettagli", notes: "Limiti", antivirus: "Antivirus", support: "Supporto" },
-  ja: { overview: "概要", install: "導入", using: "使い方", details: "詳細", notes: "制限", antivirus: "ウイルス対策", support: "支援" },
-  nl: { overview: "Overzicht", install: "Installeren", using: "Gebruik", details: "Details", notes: "Beperkingen", antivirus: "Antivirus", support: "Steun" },
-  pl: { overview: "Przegląd", install: "Instalacja", using: "Obsługa", details: "Szczegóły", notes: "Ograniczenia", antivirus: "Antywirus", support: "Wsparcie" },
-  pt: { overview: "Início", install: "Instalar", using: "Uso", details: "Detalhes", notes: "Limites", antivirus: "Antivírus", support: "Apoiar" },
-  "pt-BR": { overview: "Início", install: "Instalar", using: "Uso", details: "Detalhes", notes: "Limites", antivirus: "Antivírus", support: "Apoiar" },
-  ru: { overview: "Обзор", install: "Установка", using: "Работа", details: "Подробно", notes: "Ограничения", antivirus: "Антивирус", support: "Поддержка" },
-  sv: { overview: "Översikt", install: "Installera", using: "Användning", details: "Detaljer", notes: "Gränser", antivirus: "Antivirus", support: "Stöd" },
-  tr: { overview: "Genel bakış", install: "Kurulum", using: "Kullanım", details: "Ayrıntılar", notes: "Sınırlamalar", antivirus: "Antivirüs", support: "Destek" },
-  "zh-CN": { overview: "概览", install: "安装", using: "使用", details: "详情", notes: "限制", antivirus: "病毒检测", support: "支持" }
+  en: { overview: "Overview", install: "Install", using: "Usage", details: "Details", notes: "Limits", releases: "Releases", antivirus: "Antivirus", support: "Support" },
+  fr: { overview: "Aperçu", install: "Installer", using: "Utiliser", details: "Détails", notes: "Limites", releases: "Releases", antivirus: "Antivirus", support: "Soutien" },
+  de: { overview: "Übersicht", install: "Installation", using: "Nutzung", details: "Details", notes: "Grenzen", releases: "Releases", antivirus: "Virenschutz", support: "Support" },
+  es: { overview: "Resumen", install: "Instalar", using: "Uso", details: "Detalles", notes: "Límites", releases: "Releases", antivirus: "Antivirus", support: "Apoyo" },
+  it: { overview: "Panoramica", install: "Installa", using: "Uso", details: "Dettagli", notes: "Limiti", releases: "Releases", antivirus: "Antivirus", support: "Supporto" },
+  ja: { overview: "概要", install: "導入", using: "使い方", details: "詳細", notes: "制限", releases: "Releases", antivirus: "ウイルス対策", support: "支援" },
+  nl: { overview: "Overzicht", install: "Installeren", using: "Gebruik", details: "Details", notes: "Beperkingen", releases: "Releases", antivirus: "Antivirus", support: "Steun" },
+  pl: { overview: "Przegląd", install: "Instalacja", using: "Obsługa", details: "Szczegóły", notes: "Ograniczenia", releases: "Releases", antivirus: "Antywirus", support: "Wsparcie" },
+  pt: { overview: "Início", install: "Instalar", using: "Uso", details: "Detalhes", notes: "Limites", releases: "Releases", antivirus: "Antivírus", support: "Apoiar" },
+  "pt-BR": { overview: "Início", install: "Instalar", using: "Uso", details: "Detalhes", notes: "Limites", releases: "Releases", antivirus: "Antivírus", support: "Apoiar" },
+  ru: { overview: "Обзор", install: "Установка", using: "Работа", details: "Подробно", notes: "Ограничения", releases: "Releases", antivirus: "Антивирус", support: "Поддержка" },
+  sv: { overview: "Översikt", install: "Installera", using: "Användning", details: "Detaljer", notes: "Gränser", releases: "Releases", antivirus: "Antivirus", support: "Stöd" },
+  tr: { overview: "Genel bakış", install: "Kurulum", using: "Kullanım", details: "Ayrıntılar", notes: "Sınırlamalar", releases: "Releases", antivirus: "Antivirüs", support: "Destek" },
+  "zh-CN": { overview: "概览", install: "安装", using: "使用", details: "详情", notes: "限制", releases: "Releases", antivirus: "病毒检测", support: "支持" }
 } satisfies LocaleMap<Record<TabId, string>>;
 
 export const usageTopicIds = [
@@ -45,6 +45,8 @@ export const detailTopicIds = [
 
 export function getTabFromHash(locationHash = window.location.hash): TabId {
   const hash = locationHash.slice(1);
+  if (hash.startsWith("release-")) return "releases";
+  if (hash.startsWith("antivirus-")) return "antivirus";
   if (hash === "workflow" || hash === "features") return "overview";
   if (usageTopicIds.some((topic) => topic === hash)) return "using";
   if (detailTopicIds.some((topic) => topic === hash)) return "details";

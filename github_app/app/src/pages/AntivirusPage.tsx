@@ -1,45 +1,32 @@
 import { useEffect, useState } from "react";
 import type { Language } from "../content";
 import { antivirusText } from "../content/antivirus";
-import { filterReleases, parseReleases, scoreTone, type Release } from "../reports";
+import { filterReleases, findVersionReport, scoreTone } from "../reports";
+import { useAntivirusReports } from "../useAntivirusReports";
 import SectionHeading from "../components/SectionHeading";
 import SupportIcon from "../components/SupportIcon";
 
-type ReportsState = { status: "loading" } | { status: "error" } | { status: "ready"; releases: Release[] };
 const tones = {
   green: "border-green-400/30 bg-green-400/10 text-green-300",
   yellow: "border-amber-400/30 bg-amber-400/10 text-amber-300",
   red: "border-red-400/30 bg-red-400/10 text-red-300"
 };
 
-export default function AntivirusPage({ language }: { language: Language }) {
+export default function AntivirusPage({ language, locationHash }: { language: Language; locationHash: string }) {
   const text = antivirusText[language];
-  const [state, setState] = useState<ReportsState>({ status: "loading" });
-  const [attempt, setAttempt] = useState(0);
-  const [version, setVersion] = useState("");
+  const { state, retry } = useAntivirusReports();
+  const [version, setVersion] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    const controller = new AbortController();
-    setState({ status: "loading" });
-    const load = async () => {
-      try {
-        const response = await fetch("./releases.json", { signal: controller.signal });
-        if (!response.ok) throw new Error(`Reports request failed: HTTP ${response.status}`);
-        const data: unknown = await response.json();
-        const releases = parseReleases(data);
-        if (!controller.signal.aborted) setState({ status: "ready", releases });
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        console.error("Unable to load VirusTotal reports.", error);
-        setState({ status: "error" });
-      }
-    };
-    void load();
-    return () => controller.abort();
-  }, [attempt]);
+    setVersion(null);
+    setQuery("");
+  }, [locationHash]);
 
-  const releases = state.status === "ready" ? filterReleases(state.releases, version, query) : [];
+  const requestedVersion = locationHash.startsWith("#antivirus-") ? locationHash.slice("#antivirus-".length) : "";
+  const selectedVersion = version ?? (state.status === "ready" && requestedVersion
+    ? findVersionReport(state.releases, requestedVersion)?.version ?? requestedVersion : "");
+  const releases = state.status === "ready" ? filterReleases(state.releases, selectedVersion, query) : [];
   return (
     <section id="antivirus" className="scroll-mt-24 py-[clamp(3.4rem,7vw,5rem)] max-[600px]:py-10">
       <SectionHeading title={text.title} description={text.subtitle} />
@@ -50,7 +37,7 @@ export default function AntivirusPage({ language }: { language: Language }) {
       {state.status === "error" && <div role="alert" className="rounded-2xl border border-red-400/30 bg-surface p-6">
         <p className="mb-4 text-red-300">{text.error}</p>
         <button type="button" className="min-h-11 cursor-pointer rounded-lg border border-line px-4 text-ink hover:border-accent"
-          onClick={() => setAttempt((value) => value + 1)}>{text.retry}</button>
+          onClick={retry}>{text.retry}</button>
       </div>}
       {state.status === "ready" && <>
         <div className="mb-8 grid grid-cols-[minmax(0,1fr)_auto] gap-4 max-[600px]:grid-cols-1">
@@ -63,7 +50,7 @@ export default function AntivirusPage({ language }: { language: Language }) {
           </label>
           <label className="min-w-0">
             <span className="sr-only">{text.releases}</span>
-            <select id="report-release" value={version} onChange={(event) => setVersion(event.currentTarget.value)}
+            <select id="report-release" value={selectedVersion} onChange={(event) => setVersion(event.currentTarget.value)}
               className="min-h-12 w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-ink">
               <option value="">{text.releases}</option>
               {state.releases.map((release) => <option key={release.version} value={release.version}>{release.version}</option>)}

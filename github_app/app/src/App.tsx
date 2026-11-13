@@ -11,6 +11,8 @@ import NotesPage from "./pages/NotesPage";
 import SupportPage from "./pages/SupportPage";
 import HelpSearch from "./components/HelpSearch";
 import AntivirusPage from "./pages/AntivirusPage";
+import Notifications from "./components/Notifications";
+import ReleasesPage from "./pages/ReleasesPage";
 
 function getInitialLanguage(): Language {
   const browserLanguage = navigator.language;
@@ -26,8 +28,7 @@ function getInitialLanguage(): Language {
 const pages = {
   install: InstallPage,
   notes: NotesPage,
-  support: SupportPage,
-  antivirus: AntivirusPage
+  support: SupportPage
 };
 
 export default function App() {
@@ -79,7 +80,7 @@ export default function App() {
     const changedTab = previousTab.current !== undefined && previousTab.current !== activeTab;
     const sameTab = previousTab.current === activeTab;
     previousTab.current = activeTab;
-    if (sameTab && (activeTab === "using" || activeTab === "details")) return;
+    if (sameTab && (activeTab === "using" || activeTab === "details" || activeTab === "releases")) return;
     if (changedTab) {
       window.scrollTo({ top: 0, behavior: "instant" });
       return;
@@ -110,7 +111,10 @@ export default function App() {
     <div className="mx-auto flex min-h-dvh w-[min(1120px,calc(100%_-_2.5rem))] flex-col max-[600px]:w-[min(1120px,calc(100%_-_1.5rem))] [&_a:not([class])]:text-accent [&_a:not([class])]:underline [&_a:not([class])]:underline-offset-[.2em] [&_a:not([class])]:hover:text-[#a4f3e7] [&_:is(a,button,select):focus-visible]:rounded-sm [&_:is(a,button,select):focus-visible]:outline-2 [&_:is(a,button,select):focus-visible]:outline-offset-4 [&_:is(a,button,select):focus-visible]:outline-accent motion-reduce:[&_*]:transition-none">
       <div id="site-navigation" ref={navigation} className="isolate sticky top-0 z-40 before:pointer-events-none before:fixed before:inset-x-0 before:top-0 before:-z-10 before:h-[calc(var(--navigation-height,0px)_+_1.5rem)] before:bg-page/95 before:opacity-0 before:backdrop-blur-xl before:[mask-image:linear-gradient(to_bottom,black_calc(100%_-_1.5rem),transparent)] before:transition-opacity before:duration-200 data-[scrolled=true]:before:opacity-100">
         <Header language={language} label={text.language} onLanguageChange={setLanguage}>
-          <HelpSearch key={language} language={language} onSelectTopic={selectTopic} />
+          <div className="flex min-w-0 items-center gap-3 max-[900px]:col-span-2 max-[900px]:row-start-2">
+            <HelpSearch key={language} language={language} onSelectTopic={selectTopic} />
+            <Notifications language={language} onSelectTopic={selectTopic} />
+          </div>
         </Header>
         <TabNavigation activeTab={activeTab} labels={labels} label={text.navLabel} onSelect={selectTab} />
       </div>
@@ -120,6 +124,8 @@ export default function App() {
             if (tab === "overview") return <OverviewPage language={language} onSelectTopic={selectTopic} />;
             if (tab === "using") return <UsagePage language={language} locationHash={locationHash} onSelectTopic={selectTopic} />;
             if (tab === "details") return <DetailsPage language={language} locationHash={locationHash} onSelectTopic={selectTopic} />;
+            if (tab === "releases") return <ReleasesPage language={language} locationHash={locationHash} onSelectTopic={selectTopic} />;
+            if (tab === "antivirus") return <AntivirusPage language={language} locationHash={locationHash} />;
             const Page = pages[tab];
             return <Page language={language} />;
           };

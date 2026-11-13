@@ -21,7 +21,15 @@ const { screenshotWalkthrough } = await server.ssrLoadModule("/src/content/scree
 const { efbModes } = await server.ssrLoadModule("/src/content/efbModes.ts");
 const { KeyboardText } = await server.ssrLoadModule("/src/components/KeyboardShortcut.tsx");
 const { default: NextSectionButton } = await server.ssrLoadModule("/src/components/NextSectionButton.tsx");
-const { parseReleases, filterReleases, scoreTone } = await server.ssrLoadModule("/src/reports.ts");
+const { default: Notifications } = await server.ssrLoadModule("/src/components/Notifications.tsx");
+const { resourceUrls } = await server.ssrLoadModule("/src/content/support.ts");
+const { getReleaseNotes, releaseTopics } = await server.ssrLoadModule("/src/releaseNotes.ts");
+const { releaseChanges } = await server.ssrLoadModule("/src/content/releases/index.ts");
+const { default: ReleasesPage } = await server.ssrLoadModule("/src/pages/ReleasesPage.tsx");
+const { getTabFromHash, tabIds, tabLabels } = await server.ssrLoadModule("/src/navigation.ts");
+const { default: TabNavigation } = await server.ssrLoadModule("/src/components/TabNavigation.tsx");
+const { default: donationIcon } = await server.ssrLoadModule("/src/assets/donation.svg");
+const { parseReleases, filterReleases, findVersionReport, scoreTone } = await server.ssrLoadModule("/src/reports.ts");
 
 test("searches localized headings and bodies in every language", () => {
   for (const language of languages) {
@@ -123,6 +131,101 @@ test("renders visible destination-specific section controls without waiting for 
   }
 });
 
+test("keeps the survey and links to release details instead of duplicating them in notifications", () => {
+  for (const language of languages) {
+    const html = renderToStaticMarkup(createElement(Notifications, { language, onSelectTopic: () => {} }));
+    assert.equal([...html.matchAll(/<article\b/g)].length, 2, language);
+    assert.match(html, /popovertarget="important-messages"/i);
+    assert.match(html, /popover="auto"/);
+    assert.ok(html.includes(resourceUrls[5]), language);
+    assert.match(html, /href="#release-1\.5\.0"/);
+    assert.match(html, /<h3[^>]*id="notification-version"[^>]*>[^<]*1\.5\.0/);
+    assert.ok(!html.includes("<details"), language);
+    assert.ok(!html.includes("<li"), language);
+    assert.ok(!html.includes("/releases/"), language);
+  }
+});
+
+test("keeps all historical versions and dates in the independently authored site manifest", async () => {
+  const source = JSON.parse(await readFile(new URL("../../../vfrnav_efb/EFB/release_notes.json", import.meta.url), "utf8"));
+  const notes = getReleaseNotes("en");
+  assert.deepEqual(notes.map(({ version, date }) => ({ version, date })),
+    [...source.release_notes].reverse().map(({ version, date }) => ({
+      version, date: new Date(`${date} UTC`).toISOString().slice(0, 10)
+    })));
+  assert.equal(new Set(notes.map((release) => release.version)).size, notes.length);
+  for (const release of notes) {
+    assert.ok(releaseTopics.some((topic) => topic.id === `release-${release.version}`));
+    assert.equal(getTabFromHash(`#release-${release.version}`), "releases");
+  }
+});
+
+test("provides every rewritten change in all languages without English fallbacks or lost issue references", () => {
+  const keys = Object.keys(releaseChanges.en).sort();
+  for (const language of languages) {
+    const changes = releaseChanges[language];
+    assert.deepEqual(Object.keys(changes).sort(), keys, language);
+    for (const id of keys) {
+      assert.ok(changes[id].trim(), `${language}: ${id}`);
+      if (language !== "en") assert.notEqual(changes[id], releaseChanges.en[id], `${language}: ${id}`);
+      for (const [reference] of releaseChanges.en[id].matchAll(/\(#\d+\)/g)) {
+        assert.ok(changes[id].includes(reference), `${language}: ${id}: ${reference}`);
+      }
+    }
+  }
+});
+
+test("renders localized release text, dates and framed categories while keeping Flightsim.to downloads", () => {
+  for (const language of languages) {
+    const notes = getReleaseNotes(language);
+    for (const release of [notes[0], notes[notes.length - 1]]) {
+      const html = renderToStaticMarkup(createElement(ReleasesPage, {
+        language, locationHash: `#release-${release.version}`, onSelectTopic: () => {}
+      }));
+      assert.ok(html.includes(`id="release-${release.version}"`));
+      assert.ok(html.includes(`<h3>${release.version}</h3>`));
+      assert.match(html, new RegExp(`datetime="${release.date}"`, "i"));
+      assert.equal([...html.matchAll(/<option\b/g)].length, notes.length);
+      assert.ok(html.includes(resourceUrls[0]));
+      assert.ok(!/[\u{1F527}\u{1F41E}]/u.test(html));
+      assert.match(html, /<h4[^>]*>[\s\S]*?<svg/);
+      for (const item of release.groups.flatMap((group) => group.categories.flatMap((category) => category.items))) {
+        const escaped = renderToStaticMarkup(createElement(KeyboardText, { children: item }));
+        assert.ok(html.includes(escaped), `${language}: ${release.version}: ${item}`);
+      }
+    }
+  }
+});
+
+test("renders decorative icons alongside every tab label, reusing the donation image for Support", () => {
+  const html = renderToStaticMarkup(createElement(TabNavigation, {
+    activeTab: "overview", labels: tabLabels.en, label: "Navigation", onSelect: () => {}
+  }));
+  const buttons = [...html.matchAll(/<button\b[\s\S]*?<\/button>/g)].map((match) => match[0]);
+  assert.equal(buttons.length, tabIds.length);
+  for (const [index, button] of buttons.entries()) {
+    assert.ok(button.includes(tabLabels.en[tabIds[index]]));
+    if (tabIds[index] === "support") {
+      const expectedSource = renderToStaticMarkup(createElement("img", { src: donationIcon, alt: "" })).match(/src="[^"]*"/)[0];
+      assert.ok(button.includes(expectedSource));
+      assert.match(button, /<img[^>]*alt=""/);
+    } else {
+      assert.match(button, /<svg[^>]*aria-hidden="true"/);
+    }
+  }
+});
+
+test("finds every release using its rewritten notes in the selected language", () => {
+  for (const language of languages) {
+    const documents = createSearchDocuments(language);
+    for (const release of getReleaseNotes(language)) {
+      const item = release.groups[0].categories[0].items[0];
+      assert.ok(searchHelp(documents, item).some((result) => result.id === `release-${release.version}`),
+        `${language}: ${release.version}`);
+    }
+  }
+});
+
 test("preserves original report data and detection-score thresholds", async () => {
   const source = JSON.parse(await readFile(new URL("../public/releases.json", import.meta.url), "utf8"));
   assert.deepEqual(parseReleases(source), source);
@@ -145,6 +248,19 @@ test("combines release selection with case-insensitive version, component and fi
   assert.deepEqual(filterReleases(releases, "", "BETA"), [releases[1]]);
   assert.deepEqual(filterReleases(releases, "", "COMMUNITY.ZIP")[0].scans, [releases[0].scans[1]]);
   assert.deepEqual(filterReleases(releases, "Alpha", "server"), []);
+});
+
+test("matches version-specific antivirus reports without mixing stable, alpha or partial versions", () => {
+  const stable = { ...releases[0], version: "v1.5.0 (under testing)" };
+  const alpha = { ...releases[0], version: "alpha-1.5.0" };
+  const reports = [stable, alpha, { ...releases[0], version: "v1.5.1 (latest)" }];
+  assert.equal(findVersionReport(reports, "1.5.0"), stable);
+  assert.equal(findVersionReport(reports, "alpha-1.5.0"), alpha);
+  assert.equal(findVersionReport(reports, "1.5"), undefined);
+  assert.equal(findVersionReport(reports, "1.4.0"), undefined);
+  assert.equal(findVersionReport([{ ...stable, scans: [] }], "1.5.0"), undefined);
+  assert.equal(getTabFromHash("#antivirus-1.5.0"), "antivirus");
+  assert.deepEqual(filterReleases(reports, findVersionReport(reports, "1.5.0").version, ""), [stable]);
 });
 
 test("rejects malformed or inconsistent reports instead of presenting them as valid", () => {
