@@ -13,7 +13,7 @@ on:
       - releases.json
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -26,9 +26,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - name: Create updater App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.VT_APP_ID }}
+          private-key: ${{ secrets.VT_APP_PRIVATE_KEY }}
+          permission-contents: write
       - uses: actions/checkout@v4
         with:
           ref: github-pages
+          token: ${{ steps.app-token.outputs.token }}
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
