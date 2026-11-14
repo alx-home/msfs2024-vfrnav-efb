@@ -76,9 +76,13 @@ requirements in each language. The header and favicon reuse VFRNav's `app-icon.s
 `src/content/efbEditing.ts` describes the tablet's right-click editing cycle,
 left-drag handles, uniform scaling, Shift acceleration and per-aircraft saving.
 Instructions use numbered, illustrated steps with roomier reading spacing.
-The 3D tablet guide warns in all 14 languages that patching the Asobo C172sp G1000
-or Microsoft A320neo blocks access to Career mode entirely and advises Career
-users to leave these aircraft unpatched. A separate compatibility warning explains
+The 3D tablet guide warns in all 14 languages that the simulator excludes any
+patched aircraft from Career missions — patches must be removed and MSFS
+restarted before playing Career — and that patching the Asobo C172sp G1000
+or Microsoft A320neo can even block access to Career mode entirely. The warning
+also mentions that making the 3D EFB work in Career mode is being investigated,
+if at all possible. A separate
+compatibility warning explains
 that not every aircraft has been tested, asks users to enable patches only for
 aircraft they want to use, and invites issue reports. Both warnings appear before
 the editing and setup instructions and are included in localized search. The

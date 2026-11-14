@@ -14,7 +14,7 @@ type EfbModes = {
 
 export const efbModes: LocaleMap<EfbModes> = {
   en: {
-    careerWarning: "Career mode: patching the Asobo C172sp G1000 or Microsoft A320neo with the 3D tablet has been found to block access to Career mode entirely. Leave these aircraft unpatched if you use Career mode.",
+    careerWarning: "Career mode: the simulator excludes any patched aircraft from Career missions, so remove the aircraft patches and restart MSFS before playing Career. Patching the Asobo C172sp G1000 or Microsoft A320neo has even been found to block access to Career mode entirely. I am looking into making the 3D EFB work in Career mode, if at all possible.",
     compatibilityWarning: "Aircraft compatibility: I have not tested every aircraft, and some may not work as expected with the 3D tablet. Please enable patches only for the aircraft you want to use, and kindly let me know if you encounter an issue with one of them.",
     title: "Two EFB improvement modes",
     summary: "Two EFB modes: resize the 2D panel in VR, or add a placeable 3D cockpit tablet to your aircraft and adjust its position, rotation and scale.",
@@ -30,7 +30,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T shows/hides the 3D tablet by default. In the integrated VFRNav Settings > EFB, Tablet shortcut captures a different global combination; Tablet joystick button captures a button during a flight. These visibility bindings apply across aircraft and do not resize the 2D panel."
   },
   fr: {
-    careerWarning: "Mode carrière : le patch de tablette 3D sur l'Asobo C172sp G1000 ou le Microsoft A320neo a été identifié comme bloquant l'accès au mode carrière dans son ensemble. Ne patchez pas ces avions si vous utilisez le mode carrière.",
+    careerWarning: "Mode carrière : le simulateur exclut des missions carrière tout avion patché ; retirez les patchs d'avions et redémarrez MSFS avant de jouer en carrière. Le patch de l'Asobo C172sp G1000 ou du Microsoft A320neo peut même bloquer l'accès au mode carrière dans son ensemble. J'étudie la possibilité, si cela s'avère faisable, de faire fonctionner l'EFB 3D en mode carrière.",
     compatibilityWarning: "Compatibilité des avions : je n'ai pas testé tous les avions, et certains peuvent ne pas fonctionner comme prévu avec la tablette 3D. Merci d'activer les patchs uniquement pour les avions que vous souhaitez utiliser et de me signaler tout problème rencontré avec l'un d'eux.",
     title: "Deux modes d'amélioration de l'EFB",
     summary: "Deux modes EFB : redimensionnez le panneau 2D en VR, ou ajoutez une tablette 3D dans votre avion et réglez librement sa position, sa rotation et son échelle.",
@@ -46,7 +46,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T affiche/masque la tablette 3D par défaut. Dans les Settings > EFB de VFRNav intégré, Tablet shortcut capture une autre combinaison globale ; Tablet joystick button capture un bouton pendant un vol. Ces commandes de visibilité s'appliquent aux avions et ne redimensionnent pas le panneau 2D."
   },
   de: {
-    careerWarning: "Karrieremodus: Der 3D-Tablet-Patch für die Asobo C172sp G1000 oder den Microsoft A320neo blockiert nach bisherigen Tests den Zugang zum gesamten Karrieremodus. Lassen Sie diese Flugzeuge ungepatcht, wenn Sie den Karrieremodus nutzen.",
+    careerWarning: "Karrieremodus: Der Simulator schließt jedes gepatchte Flugzeug von Karrieremissionen aus. Entfernen Sie die Flugzeug-Patches und starten Sie MSFS neu, bevor Sie den Karrieremodus spielen. Der Patch für die Asobo C172sp G1000 oder den Microsoft A320neo kann sogar den Zugang zum gesamten Karrieremodus blockieren. Ich prüfe, ob sich der 3D-EFB – falls überhaupt möglich – im Karrieremodus zum Laufen bringen lässt.",
     compatibilityWarning: "Flugzeugkompatibilität: Ich habe nicht jedes Flugzeug getestet. Einige funktionieren mit dem 3D-Tablet möglicherweise nicht wie erwartet. Aktivieren Sie bitte nur Patches für Flugzeuge, die Sie nutzen möchten, und melden Sie mir bitte auftretende Probleme.",
     title: "Zwei EFB-Erweiterungsmodi",
     summary: "Zwei EFB-Modi: das 2D-Panel in VR skalieren oder ein frei platzierbares 3D-Cockpit-Tablet hinzufügen und Position, Drehung und Größe anpassen.",
@@ -62,7 +62,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T blendet das 3D-Tablet standardmäßig ein/aus. Unter Settings > EFB im integrierten VFRNav erfasst Tablet shortcut eine andere globale Kombination; Tablet joystick button erfasst im Flug eine Taste. Die Sichtbarkeitsbindungen gelten flugzeugübergreifend und ändern nicht die Größe des 2D-Panels."
   },
   es: {
-    careerWarning: "Modo Carrera: se ha comprobado que aplicar el parche de la tableta 3D al Asobo C172sp G1000 o al Microsoft A320neo bloquea el acceso a todo el modo Carrera. No apliques el parche a estos aviones si usas el modo Carrera.",
+    careerWarning: "Modo Carrera: el simulador excluye de las misiones de Carrera cualquier avión parcheado; quita los parches de aviones y reinicia MSFS antes de jugar en modo Carrera. Aplicar el parche al Asobo C172sp G1000 o al Microsoft A320neo puede incluso bloquear por completo el acceso al modo Carrera. Estoy estudiando, si resulta posible, hacer que el EFB 3D funcione en el modo Carrera.",
     compatibilityWarning: "Compatibilidad de aviones: no he probado todos los aviones y algunos pueden no funcionar como se espera con la tableta 3D. Activa los parches solo para los aviones que quieras usar y, por favor, avísame si encuentras algún problema con ellos.",
     title: "Dos modos de mejora del EFB",
     summary: "Dos modos EFB: redimensiona el panel 2D en VR o añade una tableta 3D al avión y ajusta libremente su posición, rotación y escala.",
@@ -78,7 +78,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T muestra/oculta la tableta 3D por defecto. En Settings > EFB del VFRNav integrado, Tablet shortcut captura otra combinación global y Tablet joystick button captura un botón durante un vuelo. Estos atajos de visibilidad se aplican a los aviones y no redimensionan el panel 2D."
   },
   it: {
-    careerWarning: "Modalità Carriera: è stato riscontrato che la patch del tablet 3D per Asobo C172sp G1000 o Microsoft A320neo blocca l'accesso all'intera modalità Carriera. Non applicare la patch a questi aerei se utilizzi la modalità Carriera.",
+    careerWarning: "Modalità Carriera: il simulatore esclude dalle missioni Carriera qualsiasi aereo con patch; rimuovi le patch degli aerei e riavvia MSFS prima di giocare in Carriera. La patch per Asobo C172sp G1000 o Microsoft A320neo può persino bloccare completamente l'accesso alla modalità Carriera. Sto valutando, se possibile, di far funzionare l'EFB 3D in modalità Carriera.",
     compatibilityWarning: "Compatibilità degli aerei: non ho testato tutti gli aerei e alcuni potrebbero non funzionare come previsto con il tablet 3D. Abilita le patch solo per gli aerei che desideri utilizzare e, per favore, segnalami eventuali problemi riscontrati.",
     title: "Due modalità di miglioramento EFB",
     summary: "Due modalità EFB: ridimensiona il pannello 2D in VR oppure aggiungi un tablet 3D nell'aereo e regolane posizione, rotazione e scala.",
@@ -94,7 +94,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T mostra/nasconde il tablet 3D per impostazione predefinita. In Settings > EFB di VFRNav integrato, Tablet shortcut acquisisce una combinazione globale diversa; Tablet joystick button acquisisce un pulsante durante il volo. Questi comandi valgono per gli aerei e non ridimensionano il pannello 2D."
   },
   ja: {
-    careerWarning: "キャリアモード：Asobo C172sp G1000またはMicrosoft A320neoに3Dタブレットのパッチを適用すると、キャリアモード全体にアクセスできなくなることが確認されています。キャリアモードを利用する場合、これらの機体にはパッチを適用しないでください。",
+    careerWarning: "キャリアモード：パッチを適用した機体はシミュレーターによってキャリアミッションから除外されます。キャリアモードをプレイする前に機体パッチを削除し、MSFSを再起動してください。Asobo C172sp G1000またはMicrosoft A320neoにパッチを適用すると、キャリアモード全体にアクセスできなくなる場合もあります。可能であれば、3D EFBをキャリアモードで動作させることを検討しています。",
     compatibilityWarning: "機体の互換性：すべての機体をテストしたわけではなく、3Dタブレットが期待どおりに動作しない機体もあります。使用したい機体にのみパッチを有効にし、問題が発生した場合はお知らせいただけると幸いです。",
     title: "2種類のEFB拡張モード",
     summary: "EFBには2つのモードがあります。VRでもサイズ変更できる2Dパネルと、機内で位置・回転・大きさを調整できる3Dタブレットです。",
@@ -110,7 +110,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "3Dタブレットの表示切り替えは既定でCtrl+Tです。統合版VFRNavのSettings > EFBでTablet shortcutから共通ショートカットを変更し、Tablet joystick buttonから飛行中にボタンを登録できます。表示切り替え設定は機体共通で、2Dパネルのサイズ変更とは別です。"
   },
   nl: {
-    careerWarning: "Carrièremodus: de 3D-tabletpatch voor de Asobo C172sp G1000 of Microsoft A320neo blijkt de toegang tot de volledige carrièremodus te blokkeren. Patch deze vliegtuigen niet als je de carrièremodus gebruikt.",
+    careerWarning: "Carrièremodus: de simulator sluit elk gepatcht vliegtuig uit van carrièremissies; verwijder de vliegtuigpatches en herstart MSFS voordat je de carrièremodus speelt. De patch voor de Asobo C172sp G1000 of Microsoft A320neo kan zelfs de toegang tot de volledige carrièremodus blokkeren. Ik onderzoek of het mogelijk is om de 3D-EFB in de carrièremodus te laten werken.",
     compatibilityWarning: "Vliegtuigcompatibiliteit: ik heb niet elk vliegtuig getest en sommige werken mogelijk niet zoals verwacht met de 3D-tablet. Schakel alleen patches in voor vliegtuigen die je wilt gebruiken en laat het me alsjeblieft weten als je problemen tegenkomt.",
     title: "Twee EFB-uitbreidingsmodi",
     summary: "Twee EFB-modi: pas het 2D-paneel aan in VR of voeg een plaatsbare 3D-tablet toe aan je vliegtuig en wijzig positie, rotatie en schaal.",
@@ -126,7 +126,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T toont/verbergt standaard de 3D-tablet. Via Settings > EFB in geïntegreerd VFRNav legt Tablet shortcut een andere algemene combinatie vast; Tablet joystick button legt tijdens een vlucht een knop vast. De zichtbaarheidsbindingen gelden voor alle vliegtuigen en wijzigen het 2D-paneel niet."
   },
   pl: {
-    careerWarning: "Tryb kariery: stwierdzono, że poprawka tabletu 3D dla Asobo C172sp G1000 lub Microsoft A320neo blokuje dostęp do całego trybu kariery. Nie stosuj poprawki do tych samolotów, jeśli korzystasz z trybu kariery.",
+    careerWarning: "Tryb kariery: symulator wyklucza z misji kariery każdy samolot z poprawką; usuń poprawki samolotów i uruchom ponownie MSFS przed grą w trybie kariery. Poprawka dla Asobo C172sp G1000 lub Microsoft A320neo     może nawet całkowicie zablokować dostęp do trybu kariery. Badam, o ile to wykonalne, możliwość uruchomienia EFB 3D w trybie kariery.",
     compatibilityWarning: "Zgodność samolotów: nie przetestowałem wszystkich samolotów i niektóre mogą nie działać zgodnie z oczekiwaniami z tabletem 3D. Włączaj poprawki tylko dla samolotów, których chcesz używać, i proszę, zgłaszaj mi napotkane problemy.",
     title: "Dwa tryby ulepszeń EFB",
     summary: "Dwa tryby EFB: zmieniaj rozmiar panelu 2D w VR albo dodaj tablet 3D do samolotu i dostosuj jego pozycję, obrót oraz skalę.",
@@ -142,7 +142,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T domyślnie pokazuje/ukrywa tablet 3D. W Settings > EFB zintegrowanego VFRNav Tablet shortcut rejestruje inny skrót globalny, a Tablet joystick button przycisk podczas lotu. Powiązania widoczności dotyczą wszystkich samolotów i nie zmieniają rozmiaru panelu 2D."
   },
   pt: {
-    careerWarning: "Modo Carreira: verificou-se que o patch da tablet 3D para o Asobo C172sp G1000 ou o Microsoft A320neo bloqueia o acesso a todo o modo Carreira. Não aplique o patch a estas aeronaves se utilizar o modo Carreira.",
+    careerWarning: "Modo Carreira: o simulador exclui das missões de Carreira qualquer aeronave com patch; remova os patches das aeronaves e reinicie o MSFS antes de jogar no modo Carreira. O patch do Asobo C172sp G1000 ou do Microsoft A320neo     pode até bloquear totalmente o acesso ao modo Carreira. Estou a estudar, se possível, uma forma de fazer o EFB 3D funcionar no modo Carreira.",
     compatibilityWarning: "Compatibilidade das aeronaves: não testei todas as aeronaves e algumas poderão não funcionar como esperado com a tablet 3D. Ative os patches apenas para as aeronaves que pretende utilizar e, por favor, avise-me se encontrar algum problema.",
     title: "Dois modos de melhoria do EFB",
     summary: "Dois modos EFB: redimensione o painel 2D em VR ou adicione um tablet 3D ao avião e ajuste livremente posição, rotação e escala.",
@@ -158,7 +158,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T mostra/oculta o tablet 3D por predefinição. Em Settings > EFB do VFRNav integrado, Tablet shortcut captura outra combinação global; Tablet joystick button captura um botão durante um voo. Estas associações de visibilidade aplicam-se aos aviões e não redimensionam o painel 2D."
   },
   "pt-BR": {
-    careerWarning: "Modo Carreira: foi identificado que o patch do tablet 3D para o Asobo C172sp G1000 ou o Microsoft A320neo bloqueia o acesso a todo o modo Carreira. Não aplique o patch a essas aeronaves se usar o modo Carreira.",
+    careerWarning: "Modo Carreira: o simulador exclui das missões de Carreira qualquer aeronave com patch; remova os patches das aeronaves e reinicie o MSFS antes de jogar no modo Carreira. O patch do Asobo C172sp G1000 ou do Microsoft A320neo     pode até bloquear totalmente o acesso ao modo Carreira. Estou estudando, se possível, uma forma de fazer o EFB 3D funcionar no modo Carreira.",
     compatibilityWarning: "Compatibilidade das aeronaves: não testei todas as aeronaves e algumas podem não funcionar como esperado com o tablet 3D. Ative os patches apenas para as aeronaves que deseja usar e, por favor, me avise se encontrar algum problema.",
     title: "Dois modos de melhoria do EFB",
     summary: "Dois modos EFB: redimensione o painel 2D em VR ou adicione um tablet 3D à aeronave e ajuste livremente posição, rotação e escala.",
@@ -174,7 +174,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T mostra/oculta o tablet 3D por padrão. Em Settings > EFB do VFRNav integrado, Tablet shortcut captura outra combinação global; Tablet joystick button captura um botão durante um voo. Esses atalhos de visibilidade se aplicam às aeronaves e não redimensionam o painel 2D."
   },
   ru: {
-    careerWarning: "Режим карьеры: установлено, что патч 3D-планшета для Asobo C172sp G1000 или Microsoft A320neo полностью блокирует доступ к режиму карьеры. Не применяйте патч к этим самолётам, если используете режим карьеры.",
+    careerWarning: "Режим карьеры: симулятор исключает из карьерных миссий любой самолёт с патчем; удалите патчи самолётов и перезапустите MSFS перед игрой в режиме карьеры. Патч для Asobo C172sp G1000 или Microsoft A320neo может даже полностью заблокировать доступ к режиму карьеры. Я изучаю возможность — если это вообще осуществимо — заставить 3D EFB работать в режиме карьеры.",
     compatibilityWarning: "Совместимость самолётов: я протестировал не все самолёты, и на некоторых 3D-планшет может работать не так, как ожидается. Включайте патчи только для самолётов, которыми хотите пользоваться, и, пожалуйста, сообщайте мне о возникающих проблемах.",
     title: "Два режима улучшения EFB",
     summary: "Два режима EFB: меняйте размер 2D-панели в VR или добавьте в самолёт 3D-планшет и настройте его положение, поворот и масштаб.",
@@ -190,7 +190,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T по умолчанию показывает/скрывает 3D-планшет. В Settings > EFB встроенного VFRNav пункт Tablet shortcut задаёт другую общую комбинацию, а Tablet joystick button позволяет назначить кнопку во время полёта. Назначения видимости действуют для всех самолётов и не меняют размер 2D-панели."
   },
   sv: {
-    careerWarning: "Karriärläge: 3D-tablettens patch för Asobo C172sp G1000 eller Microsoft A320neo har visat sig blockera åtkomsten till hela karriärläget. Patcha inte dessa flygplan om du använder karriärläget.",
+    careerWarning: "Karriärläge: simulatorn utesluter alla patchade flygplan från karriäruppdrag; ta bort flygplanspatcharna och starta om MSFS innan du spelar karriärläget. Patchen för Asobo C172sp G1000 eller Microsoft A320neo kan till och med blockera åtkomsten till hela karriärläget. Jag undersöker om det är möjligt att få 3D-EFB:n att fungera i karriärläget.",
     compatibilityWarning: "Flygplanskompatibilitet: jag har inte testat alla flygplan och vissa kanske inte fungerar som förväntat med 3D-tabletten. Aktivera bara patchar för flygplan du vill använda och meddela mig gärna om du stöter på problem.",
     title: "Två lägen för EFB-förbättringar",
     summary: "Två EFB-lägen: ändra 2D-panelens storlek i VR eller lägg till en placerbar 3D-surfplatta och justera position, rotation och skala.",
@@ -206,7 +206,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T visar/döljer 3D-surfplattan som standard. I integrerade VFRNav Settings > EFB kan Tablet shortcut fånga en annan global kombination och Tablet joystick button en knapp under flygning. Dessa synlighetsbindningar gäller alla flygplan och ändrar inte 2D-panelens storlek."
   },
   tr: {
-    careerWarning: "Kariyer modu: Asobo C172sp G1000 veya Microsoft A320neo için 3D tablet yamasının Kariyer moduna erişimi tamamen engellediği tespit edilmiştir. Kariyer modunu kullanıyorsanız bu uçaklara yama uygulamayın.",
+    careerWarning: "Kariyer modu: simülatör, yama uygulanmış tüm uçakları Kariyer görevlerinin dışında bırakır; Kariyer modunu oynamadan önce uçak yamalarını kaldırın ve MSFS'yi yeniden başlatın. Asobo C172sp G1000 veya Microsoft A320neo'ya yama uygulamak Kariyer moduna erişimi tamamen bile engelleyebilir. Mümkünse 3D EFB'nin Kariyer modunda çalışmasını sağlamayı araştırıyorum.",
     compatibilityWarning: "Uçak uyumluluğu: her uçağı test etmedim ve bazıları 3D tabletle beklendiği gibi çalışmayabilir. Lütfen yalnızca kullanmak istediğiniz uçaklar için yamaları etkinleştirin ve bir sorunla karşılaşırsanız bana bildirin.",
     title: "İki EFB iyileştirme modu",
     summary: "İki EFB modu: VR'da 2D paneli yeniden boyutlandırın veya uçağa yerleştirilebilir bir 3D tablet ekleyip konum, dönüş ve ölçeğini ayarlayın.",
@@ -222,7 +222,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T varsayılan olarak 3D tableti gösterir/gizler. Tümleşik VFRNav Settings > EFB içinde Tablet shortcut başka bir genel kombinasyon, Tablet joystick button uçuş sırasında bir düğme kaydeder. Görünürlük atamaları uçaklar genelinde geçerlidir ve 2D paneli boyutlandırmaz."
   },
   "zh-CN": {
-    careerWarning: "生涯模式：已确认，为Asobo C172sp G1000或Microsoft A320neo应用3D平板补丁会导致整个生涯模式无法访问。如果您使用生涯模式，请不要为这两款航空器应用补丁。",
+    careerWarning: "生涯模式：模拟器会将所有已应用补丁的航空器排除在生涯任务之外；请在进入生涯模式前移除航空器补丁并重启MSFS。为Asobo C172sp G1000或Microsoft A320neo应用补丁甚至可能导致整个生涯模式无法访问。如果可行，我正计划让3D EFB在生涯模式下运行。",
     compatibilityWarning: "航空器兼容性：我尚未测试所有航空器，部分航空器可能无法与3D平板按预期配合使用。请仅为您打算使用的航空器启用补丁；如果遇到问题，还请告知我。",
     title: "两种 EFB 增强模式",
     summary: "两种 EFB 模式：在 VR 中调整 2D 面板大小，或向飞机添加可自由摆放的 3D 平板，并调整位置、旋转和缩放。",
