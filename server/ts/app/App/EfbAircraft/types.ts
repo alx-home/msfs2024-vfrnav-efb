@@ -76,6 +76,17 @@ export const statusColors: Record<Status, string> = {
 export const selectable = (aircraft: Aircraft) =>
    !aircraft.installedOnly && aircraft.status !== "unsupported" && aircraft.status !== "foreign";
 
+/** @brief Identify aircraft patches known to block Career mode. */
+export const blocksCareerMode = (aircraft: Aircraft) => {
+   const identity = `${aircraft.name} ${aircraft.container}`.toLowerCase().replace(/[^a-z0-9]/g, "");
+   return identity.includes("c172spg1000")
+      || identity.includes("microsofta320neo")
+      || identity.includes("microsoftaircrafta320neo");
+};
+
+export const selectedCareerRisks = (aircraft: Aircraft[], selected: ReadonlySet<string>) =>
+   aircraft.filter(item => selected.has(item.id) && selectable(item) && blocksCareerMode(item));
+
 export const pendingAircraftChanges = (aircraft: Aircraft[], selected: ReadonlySet<string>) => ({
    toPatch: aircraft.filter(item => selected.has(item.id) && selectable(item) && item.status !== "patched"),
    toRemove: aircraft.filter(item => !selected.has(item.id) && (item.status === "patched" || item.status === "outdated"))

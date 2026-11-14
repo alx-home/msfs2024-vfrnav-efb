@@ -1,7 +1,55 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { matchesAircraft, pendingAircraftChanges, type Aircraft } from "./types";
+import { blocksCareerMode, matchesAircraft, pendingAircraftChanges, selectedCareerRisks, type Aircraft } from "./types";
+
+test("identifies the two aircraft known to block Career mode", () => {
+   const aircraft: Aircraft = {
+      id: "test", name: "", container: "",
+      presetCount: 1, presetNames: [], status: "available", efb: "none", reason: "", warnings: []
+   };
+   for (const identity of [
+      { name: "C172sp G1000", container: "" },
+      { name: "", container: "Community/asobo_c172sp_g1000" },
+      { name: "A320neo", container: "microsoft-aircraft-a320neo" }
+   ]) {
+      assert.equal(blocksCareerMode({ ...aircraft, ...identity }), true);
+   }
+   for (const identity of [
+      { name: "C172sp", container: "asobo_c172sp" },
+      { name: "A320neo", container: "community/other-a320neo" }
+   ]) {
+      assert.equal(blocksCareerMode({ ...aircraft, ...identity }), false);
+   }
+
+   const risks = [
+      { ...aircraft, id: "c172", name: "C172sp G1000" },
+      { ...aircraft, id: "a320", container: "microsoft-aircraft-a320neo" },
+      { ...aircraft, id: "patched", name: "C172sp G1000", status: "patched" as const },
+      { ...aircraft, id: "installed", name: "C172sp G1000", installedOnly: true }
+   ];
+   const pendingRisks = pendingAircraftChanges(risks, new Set(risks.map(item => item.id))).toPatch.filter(blocksCareerMode);
+   assert.deepEqual(pendingRisks.map(item => item.id), ["c172", "a320"]);
+});
+
+test("warns only when a selectable affected aircraft is selected", () => {
+   const aircraft: Aircraft = {
+      id: "c172", name: "C172sp G1000", container: "asobo_c172sp_g1000",
+      presetCount: 1, presetNames: [], status: "available", efb: "none", reason: "", warnings: []
+   };
+   const fleet = [
+      aircraft,
+      { ...aircraft, id: "a320", name: "Microsoft A320neo", container: "microsoft-a320neo" },
+      { ...aircraft, id: "patched", status: "patched" as const },
+      { ...aircraft, id: "installed", installedOnly: true },
+      { ...aircraft, id: "unsupported", status: "unsupported" as const },
+      { ...aircraft, id: "other", name: "C172sp", container: "asobo_c172sp" }
+   ];
+   assert.deepEqual(selectedCareerRisks(fleet, new Set()), []);
+   assert.deepEqual(selectedCareerRisks(fleet, new Set(["c172", "a320", "patched", "installed", "unsupported", "other"]))
+      .map(item => item.id), ["c172", "a320", "patched"]);
+   assert.deepEqual(selectedCareerRisks(fleet, new Set(["a320"])).map(item => item.id), ["a320"]);
+});
 
 test("protected aircraft can be found by preset names even when the container name differs", () => {
    const aircraft: Aircraft = {
