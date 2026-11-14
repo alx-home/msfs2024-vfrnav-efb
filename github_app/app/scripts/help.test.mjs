@@ -90,14 +90,20 @@ test("searches localized headings and bodies in every language", () => {
   }
 });
 
-test("shows the Career aircraft warning in the 3D guide and localized search", () => {
+test("shows both 3D aircraft warnings before instructions and includes them in localized search", () => {
   for (const language of languages) {
-    const warning = efbModes[language].careerWarning;
     const html = renderToStaticMarkup(createElement(EfbModesGuide, { language }));
-    const escaped = renderToStaticMarkup(createElement("span", null, warning)).slice(6, -7);
-    assert.ok(html.includes(escaped), language);
-    assert.ok(html.indexOf(escaped) < html.indexOf('<h5 class="mb-6'), language);
-    assert.ok(searchHelp(createSearchDocuments(language), warning).some((result) => result.id === "efb-modes"), language);
+    const documents = createSearchDocuments(language);
+    for (const warning of [efbModes[language].careerWarning, efbModes[language].compatibilityWarning]) {
+      const escaped = renderToStaticMarkup(createElement("span", null, warning)).slice(6, -7);
+      assert.ok(html.includes(escaped), language);
+      assert.ok(html.indexOf(escaped) < html.indexOf('<h5 class="mb-6'), language);
+      assert.ok(searchHelp(documents, warning).some((result) => result.id === "efb-modes"), language);
+    }
+    for (const aircraft of ["Asobo C172sp G1000", "Microsoft A320neo"]) {
+      assert.ok(html.includes(aircraft), language);
+      assert.ok(searchHelp(documents, aircraft).some((result) => result.id === "efb-modes"), language);
+    }
   }
 });
 

@@ -30,7 +30,7 @@ export function createSearchDocuments(language: Language): SearchDocument[] {
       body: [group.description, ...group.items].join(" ")
     })),
     { id: "efb-modes", title: modes.title, section: labels.using,
-      body: [modes.summary, ...modes.twoD, ...modes.panelSteps.flat(), ...modes.threeD, modes.careerWarning, modes.setup, modes.controls,
+      body: [modes.summary, ...modes.twoD, ...modes.panelSteps.flat(), ...modes.threeD, modes.careerWarning, modes.compatibilityWarning, modes.setup, modes.controls,
         efbEditing[language].title, ...efbEditing[language].steps.flat(), efbEditing[language].tip].join(" ") },
     { id: "controls", title: text.controls[0], section: labels.using,
       body: [text.controls[1], ...text.controls[2]].join(" ") },
