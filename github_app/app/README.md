@@ -57,6 +57,9 @@ Each scrolls independently, without shrinking the topic buttons;
 the surrounding page keeps its normal layout. The limit updates on scrolling,
 resizing and heading/navigation size changes. Articles are keyboard-focusable;
 switching topics resets their internal scroll without moving the surrounding page.
+Below 900px, the topic selector replaces the left sidebar and articles
+expand to their full height: scrolling uses the page instead of a nested article
+viewport. Returning to the desktop layout restores the bounded article/sidebar.
 The height budget reserves the footer and bottom padding. A 160px minimum keeps
 articles readable on very short screens. Footer padding and topic-button sizes
 remain unchanged between pages; long topic lists scroll inside their own column.
@@ -73,6 +76,10 @@ requirements in each language. The header and favicon reuse VFRNav's `app-icon.s
 `src/content/efbEditing.ts` describes the tablet's right-click editing cycle,
 left-drag handles, uniform scaling, Shift acceleration and per-aircraft saving.
 Instructions use numbered, illustrated steps with roomier reading spacing.
+The 3D tablet guide warns in all 14 languages that patching certain Asobo Career
+aircraft can prevent access to Career mode entirely. Only a subset of Asobo
+aircraft is affected, not all of them. The warning appears before the editing and setup instructions and is
+included in localized search.
 The 2D and 3D modes share the same card layout. Panel settings, movement,
 resizing and reset are separate illustrated steps, with keyboard combinations
 shown as keycaps. On small screens step descriptions use the full card width.

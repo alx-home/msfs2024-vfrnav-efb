@@ -7,11 +7,13 @@ type EfbModes = {
   panelSteps: readonly (readonly [title: string, body: string, shortcut?: string])[];
   threeD: readonly [string, string];
   setup: string;
+  careerWarning: string;
   controls: string;
 };
 
 export const efbModes: LocaleMap<EfbModes> = {
   en: {
+    careerWarning: "Career mode: applying the 3D tablet patch to certain Asobo Career aircraft can prevent access to Career mode entirely. Only a subset of Asobo aircraft is affected, not all of them.",
     title: "Two EFB improvement modes",
     summary: "Two EFB modes: resize the 2D panel in VR, or add a placeable 3D cockpit tablet to your aircraft and adjust its position, rotation and scale.",
     twoD: ["2D EFB improvement", "Keep the simulator's panel EFB and resize its visible area, including in VR. This changes the visible panel area, not a physical cockpit tablet."],
@@ -26,6 +28,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T shows/hides the 3D tablet by default. In the integrated VFRNav Settings > EFB, Tablet shortcut captures a different global combination; Tablet joystick button captures a button during a flight. These visibility bindings apply across aircraft and do not resize the 2D panel."
   },
   fr: {
+    careerWarning: "Mode carrière : appliquer le patch de tablette 3D à certains avions Asobo du mode carrière peut empêcher l'accès au mode carrière dans son ensemble. Seule une partie des avions Asobo est concernée, pas tous.",
     title: "Deux modes d'amélioration de l'EFB",
     summary: "Deux modes EFB : redimensionnez le panneau 2D en VR, ou ajoutez une tablette 3D dans votre avion et réglez librement sa position, sa rotation et son échelle.",
     twoD: ["Amélioration de l'EFB 2D", "Conservez l'EFB en panneau du simulateur et redimensionnez sa zone visible, y compris en VR. Cela modifie la zone visible du panneau, pas une tablette physique dans le cockpit."],
@@ -40,6 +43,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T affiche/masque la tablette 3D par défaut. Dans les Settings > EFB de VFRNav intégré, Tablet shortcut capture une autre combinaison globale ; Tablet joystick button capture un bouton pendant un vol. Ces commandes de visibilité s'appliquent aux avions et ne redimensionnent pas le panneau 2D."
   },
   de: {
+    careerWarning: "Karrieremodus: Der 3D-Tablet-Patch kann bei bestimmten Asobo-Karriereflugzeugen den Zugang zum gesamten Karrieremodus verhindern. Nur ein Teil der Asobo-Flugzeuge ist betroffen, nicht alle.",
     title: "Zwei EFB-Erweiterungsmodi",
     summary: "Zwei EFB-Modi: das 2D-Panel in VR skalieren oder ein frei platzierbares 3D-Cockpit-Tablet hinzufügen und Position, Drehung und Größe anpassen.",
     twoD: ["2D-EFB-Erweiterung", "Das Panel-EFB des Simulators bleibt erhalten; sein sichtbarer Bereich lässt sich auch in VR ändern. Dies verändert den sichtbaren Panelbereich, nicht ein physisches Cockpit-Tablet."],
@@ -54,6 +58,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T blendet das 3D-Tablet standardmäßig ein/aus. Unter Settings > EFB im integrierten VFRNav erfasst Tablet shortcut eine andere globale Kombination; Tablet joystick button erfasst im Flug eine Taste. Die Sichtbarkeitsbindungen gelten flugzeugübergreifend und ändern nicht die Größe des 2D-Panels."
   },
   es: {
+    careerWarning: "Modo Carrera: aplicar el parche de la tableta 3D a ciertos aviones Asobo de Carrera puede impedir el acceso a todo el modo Carrera. Solo afecta a algunos aviones Asobo, no a todos.",
     title: "Dos modos de mejora del EFB",
     summary: "Dos modos EFB: redimensiona el panel 2D en VR o añade una tableta 3D al avión y ajusta libremente su posición, rotación y escala.",
     twoD: ["Mejora del EFB 2D", "Conserva el EFB de panel del simulador y cambia su área visible, incluso en VR. No modifica una tableta física del cockpit."],
@@ -68,6 +73,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T muestra/oculta la tableta 3D por defecto. En Settings > EFB del VFRNav integrado, Tablet shortcut captura otra combinación global y Tablet joystick button captura un botón durante un vuelo. Estos atajos de visibilidad se aplican a los aviones y no redimensionan el panel 2D."
   },
   it: {
+    careerWarning: "Modalità Carriera: applicare la patch del tablet 3D a determinati aerei Asobo della Carriera può impedire l'accesso all'intera modalità Carriera. Il problema riguarda solo alcuni aerei Asobo, non tutti.",
     title: "Due modalità di miglioramento EFB",
     summary: "Due modalità EFB: ridimensiona il pannello 2D in VR oppure aggiungi un tablet 3D nell'aereo e regolane posizione, rotazione e scala.",
     twoD: ["Miglioramento EFB 2D", "Mantieni l'EFB a pannello del simulatore e ridimensionane l'area visibile, anche in VR. Non modifica un tablet fisico nella cabina."],
@@ -82,6 +88,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T mostra/nasconde il tablet 3D per impostazione predefinita. In Settings > EFB di VFRNav integrato, Tablet shortcut acquisisce una combinazione globale diversa; Tablet joystick button acquisisce un pulsante durante il volo. Questi comandi valgono per gli aerei e non ridimensionano il pannello 2D."
   },
   ja: {
+    careerWarning: "キャリアモード：Asoboの一部のキャリア機体に3Dタブレットのパッチを適用すると、キャリアモード全体にアクセスできなくなる場合があります。対象はAsobo機体の一部であり、すべてではありません。",
     title: "2種類のEFB拡張モード",
     summary: "EFBには2つのモードがあります。VRでもサイズ変更できる2Dパネルと、機内で位置・回転・大きさを調整できる3Dタブレットです。",
     twoD: ["2D EFB拡張", "シミュレーターのパネル型EFBを使い、VRでも表示領域を変更できます。機内の物理的なタブレットではなく、パネルの表示領域を変更する機能です。"],
@@ -96,6 +103,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "3Dタブレットの表示切り替えは既定でCtrl+Tです。統合版VFRNavのSettings > EFBでTablet shortcutから共通ショートカットを変更し、Tablet joystick buttonから飛行中にボタンを登録できます。表示切り替え設定は機体共通で、2Dパネルのサイズ変更とは別です。"
   },
   nl: {
+    careerWarning: "Carrièremodus: de 3D-tabletpatch kan bij bepaalde Asobo-carrièrevliegtuigen de toegang tot de volledige carrièremodus blokkeren. Dit betreft slechts een deel van de Asobo-vliegtuigen, niet allemaal.",
     title: "Twee EFB-uitbreidingsmodi",
     summary: "Twee EFB-modi: pas het 2D-paneel aan in VR of voeg een plaatsbare 3D-tablet toe aan je vliegtuig en wijzig positie, rotatie en schaal.",
     twoD: ["2D-EFB-uitbreiding", "Behoud het EFB-paneel van de simulator en wijzig het zichtbare gebied, ook in VR. Dit wijzigt het paneel, niet een fysieke cockpittablet."],
@@ -110,6 +118,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T toont/verbergt standaard de 3D-tablet. Via Settings > EFB in geïntegreerd VFRNav legt Tablet shortcut een andere algemene combinatie vast; Tablet joystick button legt tijdens een vlucht een knop vast. De zichtbaarheidsbindingen gelden voor alle vliegtuigen en wijzigen het 2D-paneel niet."
   },
   pl: {
+    careerWarning: "Tryb kariery: zastosowanie poprawki tabletu 3D do niektórych samolotów Asobo z trybu kariery może zablokować dostęp do całego trybu kariery. Problem dotyczy tylko części samolotów Asobo, nie wszystkich.",
     title: "Dwa tryby ulepszeń EFB",
     summary: "Dwa tryby EFB: zmieniaj rozmiar panelu 2D w VR albo dodaj tablet 3D do samolotu i dostosuj jego pozycję, obrót oraz skalę.",
     twoD: ["Ulepszenie EFB 2D", "Zachowaj panel EFB symulatora i zmieniaj jego widoczny obszar, także w VR. Nie zmienia to fizycznego tabletu w kokpicie."],
@@ -124,6 +133,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T domyślnie pokazuje/ukrywa tablet 3D. W Settings > EFB zintegrowanego VFRNav Tablet shortcut rejestruje inny skrót globalny, a Tablet joystick button przycisk podczas lotu. Powiązania widoczności dotyczą wszystkich samolotów i nie zmieniają rozmiaru panelu 2D."
   },
   pt: {
+    careerWarning: "Modo Carreira: aplicar o patch da tablet 3D a determinadas aeronaves Asobo da Carreira pode impedir o acesso a todo o modo Carreira. Apenas algumas aeronaves Asobo são afetadas, não todas.",
     title: "Dois modos de melhoria do EFB",
     summary: "Dois modos EFB: redimensione o painel 2D em VR ou adicione um tablet 3D ao avião e ajuste livremente posição, rotação e escala.",
     twoD: ["Melhoria do EFB 2D", "Mantenha o EFB em painel do simulador e redimensione a área visível, incluindo em VR. Isto altera o painel, não um tablet físico no cockpit."],
@@ -138,6 +148,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T mostra/oculta o tablet 3D por predefinição. Em Settings > EFB do VFRNav integrado, Tablet shortcut captura outra combinação global; Tablet joystick button captura um botão durante um voo. Estas associações de visibilidade aplicam-se aos aviões e não redimensionam o painel 2D."
   },
   "pt-BR": {
+    careerWarning: "Modo Carreira: aplicar o patch do tablet 3D a determinadas aeronaves Asobo da Carreira pode impedir o acesso a todo o modo Carreira. Apenas algumas aeronaves Asobo são afetadas, não todas.",
     title: "Dois modos de melhoria do EFB",
     summary: "Dois modos EFB: redimensione o painel 2D em VR ou adicione um tablet 3D à aeronave e ajuste livremente posição, rotação e escala.",
     twoD: ["Melhoria do EFB 2D", "Mantenha o EFB em painel do simulador e redimensione a área visível, inclusive em VR. Isso altera o painel, não um tablet físico no cockpit."],
@@ -152,6 +163,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T mostra/oculta o tablet 3D por padrão. Em Settings > EFB do VFRNav integrado, Tablet shortcut captura outra combinação global; Tablet joystick button captura um botão durante um voo. Esses atalhos de visibilidade se aplicam às aeronaves e não redimensionam o painel 2D."
   },
   ru: {
+    careerWarning: "Режим карьеры: применение патча 3D-планшета к некоторым самолётам Asobo для карьеры может полностью заблокировать доступ к режиму карьеры. Проблема затрагивает лишь часть самолётов Asobo, а не все.",
     title: "Два режима улучшения EFB",
     summary: "Два режима EFB: меняйте размер 2D-панели в VR или добавьте в самолёт 3D-планшет и настройте его положение, поворот и масштаб.",
     twoD: ["Улучшение 2D EFB", "Сохраняется панель EFB симулятора с изменяемой видимой областью, в том числе в VR. Это не физический планшет в кабине."],
@@ -166,6 +178,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T по умолчанию показывает/скрывает 3D-планшет. В Settings > EFB встроенного VFRNav пункт Tablet shortcut задаёт другую общую комбинацию, а Tablet joystick button позволяет назначить кнопку во время полёта. Назначения видимости действуют для всех самолётов и не меняют размер 2D-панели."
   },
   sv: {
+    careerWarning: "Karriärläge: 3D-tablettens patch kan på vissa Asobo-karriärflygplan blockera åtkomsten till hela karriärläget. Endast en del av Asobos flygplan berörs, inte alla.",
     title: "Två lägen för EFB-förbättringar",
     summary: "Två EFB-lägen: ändra 2D-panelens storlek i VR eller lägg till en placerbar 3D-surfplatta och justera position, rotation och skala.",
     twoD: ["2D-EFB-förbättring", "Behåll simulatorns panel-EFB och ändra dess synliga område, även i VR. Det ändrar panelområdet, inte en fysisk surfplatta i cockpit."],
@@ -180,6 +193,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T visar/döljer 3D-surfplattan som standard. I integrerade VFRNav Settings > EFB kan Tablet shortcut fånga en annan global kombination och Tablet joystick button en knapp under flygning. Dessa synlighetsbindningar gäller alla flygplan och ändrar inte 2D-panelens storlek."
   },
   tr: {
+    careerWarning: "Kariyer modu: belirli Asobo Kariyer uçaklarına 3D tablet yaması uygulamak, Kariyer moduna erişimi tamamen engelleyebilir. Tüm Asobo uçakları değil, yalnızca bir kısmı etkilenir.",
     title: "İki EFB iyileştirme modu",
     summary: "İki EFB modu: VR'da 2D paneli yeniden boyutlandırın veya uçağa yerleştirilebilir bir 3D tablet ekleyip konum, dönüş ve ölçeğini ayarlayın.",
     twoD: ["2D EFB iyileştirmesi", "Simülatörün panel EFB'sini koruyup VR dahil görünür alanını yeniden boyutlandırın. Bu, fiziksel kokpit tabletini değil panel alanını değiştirir."],
@@ -194,6 +208,7 @@ export const efbModes: LocaleMap<EfbModes> = {
     controls: "Ctrl+T varsayılan olarak 3D tableti gösterir/gizler. Tümleşik VFRNav Settings > EFB içinde Tablet shortcut başka bir genel kombinasyon, Tablet joystick button uçuş sırasında bir düğme kaydeder. Görünürlük atamaları uçaklar genelinde geçerlidir ve 2D paneli boyutlandırmaz."
   },
   "zh-CN": {
+    careerWarning: "生涯模式：为某些Asobo生涯模式航空器应用3D平板补丁，可能导致整个生涯模式无法访问。此问题仅影响部分Asobo航空器，并非全部。",
     title: "两种 EFB 增强模式",
     summary: "两种 EFB 模式：在 VR 中调整 2D 面板大小，或向飞机添加可自由摆放的 3D 平板，并调整位置、旋转和缩放。",
     twoD: ["2D EFB 增强", "保留模拟器的面板式 EFB，并调整可见区域，VR 中也可使用。这改变的是面板可见区域，而不是驾驶舱中的实体平板。"],

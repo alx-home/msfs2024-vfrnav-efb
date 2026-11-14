@@ -19,6 +19,7 @@ const { createSearchDocuments, searchHelp } = await server.ssrLoadModule("/src/s
 const { languages } = await server.ssrLoadModule("/src/content/types.ts");
 const { screenshotWalkthrough } = await server.ssrLoadModule("/src/content/screenshots.ts");
 const { efbModes } = await server.ssrLoadModule("/src/content/efbModes.ts");
+const { default: EfbModesGuide } = await server.ssrLoadModule("/src/components/EfbModesGuide.tsx");
 const { KeyboardText } = await server.ssrLoadModule("/src/components/KeyboardShortcut.tsx");
 const { default: NextSectionButton } = await server.ssrLoadModule("/src/components/NextSectionButton.tsx");
 const { default: Notifications } = await server.ssrLoadModule("/src/components/Notifications.tsx");
@@ -86,6 +87,17 @@ test("searches localized headings and bodies in every language", () => {
       assert.ok(searchHelp(documents, document.title).some((result) =>
         result.id === document.id && result.title === document.title), `${language}: ${document.title}`);
     }
+  }
+});
+
+test("shows the Career aircraft warning in the 3D guide and localized search", () => {
+  for (const language of languages) {
+    const warning = efbModes[language].careerWarning;
+    const html = renderToStaticMarkup(createElement(EfbModesGuide, { language }));
+    const escaped = renderToStaticMarkup(createElement("span", null, warning)).slice(6, -7);
+    assert.ok(html.includes(escaped), language);
+    assert.ok(html.indexOf(escaped) < html.indexOf('<h5 class="mb-6'), language);
+    assert.ok(searchHelp(createSearchDocuments(language), warning).some((result) => result.id === "efb-modes"), language);
   }
 });
 

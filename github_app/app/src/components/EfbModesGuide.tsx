@@ -60,6 +60,10 @@ export default function EfbModesGuide({ language }: { language: Language }) {
           </h4>
           <p className="max-w-prose leading-8">{modes.threeD[1]}</p>
         </div>
+        <p className="flex items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm leading-7 text-amber-200">
+          <span className="mt-1 shrink-0"><SupportIcon name="issue" /></span>
+          <span className="min-w-0">{modes.careerWarning}</span>
+        </p>
         <div className="border-t border-line pt-8">
           <h5 className="mb-6 text-lg font-bold text-ink">{editing.title}</h5>
           <GuideSteps steps={editing.steps} icons={editingIcons} color="accent" heading="h6" />

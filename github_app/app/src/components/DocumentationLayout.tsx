@@ -25,6 +25,10 @@ export default function DocumentationLayout({
     const section = article?.closest("section");
     if (!article || !container || !navigation || !footer || !section) throw new Error("The documentation layout elements were not found.");
     const updateHeight = () => {
+      if (window.matchMedia("(width < 900px)").matches) {
+        container.style.removeProperty("--documentation-height");
+        return;
+      }
       const top = article.getBoundingClientRect().top + window.scrollY;
       const bottomSpace = footer.getBoundingClientRect().height + parseFloat(getComputedStyle(section).paddingBottom);
       const height = `${Math.max(160, window.innerHeight - top - bottomSpace)}px`;
@@ -89,7 +93,7 @@ export default function DocumentationLayout({
           {topics.map((topic) => <option value={topic.id} key={topic.id}>{topic.label}</option>)}
         </select>
       </label>
-      <article key={selectedId} ref={content} className="documentation-article max-h-[var(--documentation-height)] min-w-0 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-[clamp(1.25rem,3vw,2.5rem)] text-base leading-8 text-muted [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&_h3]:mb-6 [&_h3]:text-[clamp(1.35rem,3vw,1.8rem)] [&_h3]:leading-[1.3] [&_h3]:font-bold [&_h3]:text-ink [&>p]:mb-6 [&>:last-child]:mb-0" id={selectedId} tabIndex={0}>
+      <article key={selectedId} ref={content} className="documentation-article max-h-[var(--documentation-height)] min-w-0 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-surface p-[clamp(1.25rem,3vw,2.5rem)] text-base leading-8 text-muted [scrollbar-gutter:stable] max-[900px]:max-h-none max-[900px]:overflow-visible max-[900px]:overscroll-auto max-[900px]:[scrollbar-gutter:auto] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&_h3]:mb-6 [&_h3]:text-[clamp(1.35rem,3vw,1.8rem)] [&_h3]:leading-[1.3] [&_h3]:font-bold [&_h3]:text-ink [&>p]:mb-6 [&>:last-child]:mb-0" id={selectedId} tabIndex={0}>
         {children}
       </article>
     </div>
