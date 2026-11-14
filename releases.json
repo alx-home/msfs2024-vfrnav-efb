@@ -6,20 +6,20 @@
          {
             "type": "installer",
             "filename": "msfs2024-vfrnav_installer.exe",
-            "sha256": "34ff270eb63b89e1c46921aba5c86c361f6cae4d030d239391c16937454833a8",
-            "vt": "https://virustotal.com/gui/file/34ff270eb63b89e1c46921aba5c86c361f6cae4d030d239391c16937454833a8"
+            "sha256": "e9b8ac1a4b05ca54d747ed02d16be7a03995b50cb9de913361ba26287b0aa5b9",
+            "vt": "https://virustotal.com/gui/file/e9b8ac1a4b05ca54d747ed02d16be7a03995b50cb9de913361ba26287b0aa5b9"
          },
          {
             "type": "installer_uncompressed",
             "filename": "msfs2024-vfrnav_installer_uncompressed.exe",
-            "sha256": "6e134ff7ce152f9641d75f47942183928e8512d61e2f9ab6d21df49eefa39378",
-            "vt": "https://virustotal.com/gui/file/6e134ff7ce152f9641d75f47942183928e8512d61e2f9ab6d21df49eefa39378"
+            "sha256": "1593c5fd1687a2c742b9acc0e73cc9561f71b28554e0b71be75c4993b6fe1111",
+            "vt": "https://virustotal.com/gui/file/1593c5fd1687a2c742b9acc0e73cc9561f71b28554e0b71be75c4993b6fe1111"
          },
          {
             "type": "server",
             "filename": "msfs2024-vfrnav_server.exe",
-            "sha256": "5accd57338d77dba8633ccc297a1d380774684e1365c5372c5741a7121599fd0",
-            "vt": "https://virustotal.com/gui/file/5accd57338d77dba8633ccc297a1d380774684e1365c5372c5741a7121599fd0"
+            "sha256": "fe94bf8a9bf79ffdade12710db1eda2d58977616c25a0334e5bd5eb3a4c824e4",
+            "vt": "https://virustotal.com/gui/file/fe94bf8a9bf79ffdade12710db1eda2d58977616c25a0334e5bd5eb3a4c824e4"
          },
          {
             "type": "community",
