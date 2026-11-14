@@ -123,6 +123,44 @@ Window<WINDOW>::ServerPort(std::optional<uint16_t> port) {
    co_return *registry.alx_home_->settings_->server_port_;
 }
 
+/** @brief Read or persistently store the Career mode notice acknowledgement.
+ *
+ * @tparam WINDOW Window type providing the binding.
+ *
+ * @param value Acknowledgement to store, or nullopt to read the stored state.
+ *
+ * @return Promise for the stored acknowledgement. */
+template <WIN WINDOW>
+Promise<bool>
+Window<WINDOW>::CareerNoticeDismissed(std::optional<bool> value) {
+   auto& dismissed = registry::Get().alx_home_->settings_->career_notice_dismissed_;
+   if (value) {
+      dismissed = *value;
+      co_return *value;
+   }
+
+   co_return dismissed ? *dismissed : false;
+}
+
+/** @brief Read or persistently store the MSFS restart reminder acknowledgement.
+ *
+ * @tparam WINDOW Window type providing the binding.
+ *
+ * @param value Acknowledgement to store, or nullopt to read the stored state.
+ *
+ * @return Promise for the stored acknowledgement. */
+template <WIN WINDOW>
+Promise<bool>
+Window<WINDOW>::RestartNoticeDismissed(std::optional<bool> value) {
+   auto& dismissed = registry::Get().alx_home_->settings_->restart_notice_dismissed_;
+   if (value) {
+      dismissed = *value;
+      co_return *value;
+   }
+
+   co_return dismissed ? *dismissed : false;
+}
+
 template <WIN WINDOW>
 Promise<js::Enum<"Startup", "Login", "Never">>
 Window<WINDOW>::StartupOption(std::optional<js::Enum<"Startup", "Login", "Never">> value) {

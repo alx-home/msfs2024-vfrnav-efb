@@ -127,6 +127,18 @@ private:
 
    Promise<bool>                                  AutostartServer(std::optional<bool> value);
    Promise<uint16_t>                              ServerPort(std::optional<uint16_t> port);
+   /** @brief Read or persistently store the Career mode notice acknowledgement.
+    *
+    * @param value Acknowledgement to store, or nullopt to read the stored state.
+    *
+    * @return Promise for the stored acknowledgement. */
+   Promise<bool> CareerNoticeDismissed(std::optional<bool> value);
+   /** @brief Read or persistently store the MSFS restart reminder acknowledgement.
+    *
+    * @param value Acknowledgement to store, or nullopt to read the stored state.
+    *
+    * @return Promise for the stored acknowledgement. */
+   Promise<bool>                                  RestartNoticeDismissed(std::optional<bool> value);
    Promise<js::Enum<"Startup", "Login", "Never">> StartupOption(
      std::optional<js::Enum<"Startup", "Login", "Never">> port
    );

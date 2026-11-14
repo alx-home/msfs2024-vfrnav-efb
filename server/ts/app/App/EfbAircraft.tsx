@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { useMemo, useState, type PropsWithChildren } from "react";
+import { useEffect, useMemo, useState, type PropsWithChildren } from "react";
 import { Button, Scroll, Select, SelectOption } from "@alx-home/Utils";
 import loadingIcon from "@alx-home/images/loading.svg";
 import { useEvent } from "react-use-event-hook";
@@ -21,7 +21,7 @@ import { AircraftResults, OperationStatus } from "./EfbAircraft/AircraftResults"
 import { PatchPlan } from "./EfbAircraft/PatchPlan";
 import { useAircraftManager } from "./EfbAircraft/useAircraftManager";
 import type { Mode, Report } from "./EfbAircraft/types";
-import { pendingAircraftChanges } from "./EfbAircraft/types";
+import { pendingAircraftChanges, selectedCareerRisks } from "./EfbAircraft/types";
 
 const Elem = ({ children }: PropsWithChildren) =>
    <div className='flex flex-row bg-slate-800 p-3 text-left h-14'>{children}</div>;
@@ -34,16 +34,29 @@ export const EfbAircraft = () => {
       vfs, deepBlocked, run, changeMode } = useAircraftManager();
    const blocked = busy || deepBlocked;
    const pending = pendingAircraftChanges(report?.aircraft ?? [], selected);
+   const careerRisk = selectedCareerRisks(report?.aircraft ?? [], selected);
    const hasPendingChanges = pending.toPatch.length > 0 || pending.toRemove.length > 0;
    const confirmationBlocked = busy || (deepBlocked && hasScanned && confirmation !== "remove")
       || (confirmation === "apply" && !hasPendingChanges);
    // A new report may require a fresh acknowledgement after later package changes.
    const [dismissedRestartReport, setDismissedRestartReport] = useState<Report>();
+   // Acknowledged notices persist in the registry; start hidden until the stored state loads.
+   const [careerNoticeDismissed, setCareerNoticeDismissed] = useState(true);
+   const [restartNoticeDismissed, setRestartNoticeDismissed] = useState(true);
+
    const applyBlocked = busy || (hasScanned && deepBlocked) || !hasPendingChanges;
    const vfsMessage = deepBlocked ? vfs.message : "";
-   const restartRequired = (report?.restartRequired ?? false) && report !== dismissedRestartReport;
-   const dismissRestart = useEvent(() => setDismissedRestartReport(report));
-   const showStatus = [operation, error, vfsMessage, restartRequired, confirmation].some(Boolean);
+   const restartRequired = (report?.restartRequired ?? false) && report !== dismissedRestartReport
+      && !restartNoticeDismissed;
+   const dismissRestart = useEvent(() => {
+      setDismissedRestartReport(report);
+      setRestartNoticeDismissed(true);
+      void globalThis.window.restartNoticeDismissed(true);
+   });
+   const dismissCareerNotice = useEvent(() => {
+      setCareerNoticeDismissed(true);
+      void globalThis.window.careerNoticeDismissed(true);
+   });
    const scan = useEvent(() => { void run("scan"); });
    const requestApply = useEvent(() => setConfirmation("apply"));
    const cancel = useEvent(() => setConfirmation(undefined));
@@ -62,6 +75,13 @@ export const EfbAircraft = () => {
 
    const installedCount = useMemo(() => report?.aircraft.filter(item => item.status === "patched" || item.status === "outdated").length ?? 0, [report]);
    const outdatedCount = useMemo(() => report?.aircraft.filter(item => item.status === "outdated").length ?? 0, [report]);
+
+   useEffect(() => {
+      void (async () => {
+         setCareerNoticeDismissed(await globalThis.window.careerNoticeDismissed());
+         setRestartNoticeDismissed(await globalThis.window.restartNoticeDismissed());
+      })();
+   }, []);
 
    return <Scroll className='flex-col grow'>
       <div className='flex flex-col grow w-full min-w-0 box-border justify-center p-5 gap-3 py-6'>
@@ -98,7 +118,18 @@ export const EfbAircraft = () => {
                <img src={loadingIcon} alt="" className="w-12 h-6 shrink-0" />
                <span>Loading installed aircraft patches...</span>
             </output>}
-            {showStatus && <div className="sticky top-0 z-30 flex shrink-0 flex-col gap-3">
+            <div className="sticky top-0 z-30 flex shrink-0 flex-col gap-3">
+               {!careerNoticeDismissed && <div className="flex items-center gap-3 p-4 border-s-4 border-yellow-500 bg-gray-800 text-sm text-yellow-300 shadow-lg shadow-black/40">
+                  <output>Career mode: the simulator excludes any patched aircraft from Career missions.
+                     <br /> Remove the aircraft patches and restart MSFS before playing Career; the 2D EFB keeps working in Career.
+                  </output>
+                  <div className="flex flex-1 ml-auto mr-4 max-w-32">
+                     <Button active={true} onClick={dismissCareerNotice}>Got it</Button>
+                  </div>
+               </div>}
+               {careerRisk.length > 0 && <p role="alert" className="p-4 border-s-4 border-yellow-500 bg-gray-800 text-sm text-yellow-300 shadow-lg shadow-black/40">
+                  Career mode warning: patching {careerRisk.map(item => item.name).join(" and ")} can make the entire Career mode unavailable, beyond the simulator excluding patched aircraft from Career missions. Leave {careerRisk.length === 1 ? "this aircraft" : "these aircraft"} unpatched if you use Career mode.
+               </p>}
                <OperationStatus mode={mode} operation={operation} error={error} vfsMessage={vfsMessage} restartRequired={restartRequired} onDismissRestart={dismissRestart} />
                {confirmation && <div role="alert" className="flex flex-col gap-3 p-4 border-s-4 border-yellow-500 bg-gray-800 text-sm shadow-lg shadow-black/40">
                   <PatchPlan action={confirmation} report={report} installed={installed} selected={selected} />
@@ -107,7 +138,7 @@ export const EfbAircraft = () => {
                      <Button active={!busy} disabled={busy} onClick={cancel}>Cancel</Button>
                   </div>
                </div>}
-            </div>}
+            </div>
             <AircraftResults report={report} selected={selected} setSelected={setSelected} busy={busy} />
             <div className="flex flex-col gap-3 bg-gray-800 p-2">
                <div className="flex flex-row gap-3">

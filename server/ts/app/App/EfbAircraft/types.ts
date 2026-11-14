@@ -76,7 +76,8 @@ export const statusColors: Record<Status, string> = {
 export const selectable = (aircraft: Aircraft) =>
    !aircraft.installedOnly && aircraft.status !== "unsupported" && aircraft.status !== "foreign";
 
-/** @brief Identify aircraft patches known to block Career mode. */
+/** @brief Identify aircraft patches known to block the entire Career mode (the simulator
+ * additionally excludes every patched aircraft from Career missions). */
 export const blocksCareerMode = (aircraft: Aircraft) => {
    const identity = `${aircraft.name} ${aircraft.container}`.toLowerCase().replace(/[^a-z0-9]/g, "");
    return identity.includes("c172spg1000")

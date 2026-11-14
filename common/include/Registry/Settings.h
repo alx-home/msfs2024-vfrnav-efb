@@ -32,6 +32,8 @@ public:
    Value<std::string, Settings, "DefaultDeviationPreset"> default_deviation_preset_;
    Value<bool, Settings, "AutoStartServer">               auto_start_server_;
    Value<uint16_t, Settings, "ServerPort">                server_port_;
+   Value<bool, Settings, "CareerNoticeDismissed">         career_notice_dismissed_;
+   Value<bool, Settings, "RestartNoticeDismissed">        restart_notice_dismissed_;
 
    static constexpr Values VALUES{
      &Settings::launch_mode_,
@@ -42,6 +44,8 @@ public:
      &Settings::default_deviation_preset_,
      &Settings::auto_start_server_,
      &Settings::server_port_,
+     &Settings::career_notice_dismissed_,
+     &Settings::restart_notice_dismissed_,
    };
    static constexpr KeysPtr<> KEYS{};
 };

@@ -18,7 +18,7 @@ import { Button, CheckBox, Input, Scroll, Select, SelectOption } from "@alx-home
 import { useEvent } from "react-use-event-hook";
 import loadingIcon from "@alx-home/images/loading.svg";
 import type { Aircraft, Operation, Report, Sort, Mode } from "./types";
-import { blocksCareerMode, matchesAircraft, operationText, selectable, selectedCareerRisks, statusColors, statuses } from "./types";
+import { blocksCareerMode, matchesAircraft, operationText, selectable, statusColors, statuses } from "./types";
 import { VfsHelpPopup } from "../VfsHelp";
 import { addPopup } from "@common/Popup";
 
@@ -111,7 +111,7 @@ const AircraftRow = ({ item, checked, busy, onSelection }: {
             <div className="flex flex-wrap items-center gap-2">
                <span>{item.name}</span>
                {blocksCareerMode(item) && <span className="ml-auto rounded-sm border border-amber-500/60 bg-amber-900 px-2 py-1 text-xs text-amber-100"
-                  title="Patching this aircraft can make Career mode unavailable">Career issue expected</span>}
+                  title="Patching this aircraft can make the entire Career mode unavailable, not just this aircraft">Blocks entire Career mode</span>}
             </div>
             <div className="text-xs break-all text-slate-400">{item.container}
             </div>
@@ -196,7 +196,6 @@ export const AircraftResults = ({ report, selected, setSelected, busy }: {
          const order = typeof a === "number" && typeof b === "number" ? a - b : String(a).localeCompare(String(b));
          return descending ? -order : order;
       });
-   const careerRisk = selectedCareerRisks(report?.aircraft ?? [], selected);
    const selectAll = useEvent(() => setSelected(new Set([...selected, ...visible.filter(item => item.installedOnly || selectable(item)).map(item => item.id)])));
    const selectNone = useEvent(() => setSelected(new Set([...selected].filter(id => !visible.some(item => item.id === id)))));
    const selectAircraft = useEvent((id: string, checked: boolean) => {
@@ -211,9 +210,6 @@ export const AircraftResults = ({ report, selected, setSelected, busy }: {
 
    return <>
       <h2 className="mt-2 text-lg">Aircraft</h2>
-      {careerRisk.length > 0 && <p role="alert" className="border-s-4 border-yellow-500 bg-gray-800 p-4 text-sm text-yellow-300">
-         Career mode warning: patching {careerRisk.map(item => item.name).join(" and ")} can make Career mode unavailable entirely. Leave {careerRisk.length === 1 ? "this aircraft" : "these aircraft"} unpatched if you use Career mode.
-      </p>}
       <div className="flex flex-row items-end gap-3 bg-slate-800 p-3 text-left">
          <label className="flex flex-col flex-1 gap-2 min-w-0" title="Filter aircraft">
             <span>Filter aircraft :</span>
