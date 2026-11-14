@@ -19,6 +19,7 @@ const { createSearchDocuments, searchHelp } = await server.ssrLoadModule("/src/s
 const { languages } = await server.ssrLoadModule("/src/content/types.ts");
 const { screenshotWalkthrough } = await server.ssrLoadModule("/src/content/screenshots.ts");
 const { efbModes } = await server.ssrLoadModule("/src/content/efbModes.ts");
+const { translations } = await server.ssrLoadModule("/src/content/translations.ts");
 const { default: EfbModesGuide } = await server.ssrLoadModule("/src/components/EfbModesGuide.tsx");
 const { KeyboardText } = await server.ssrLoadModule("/src/components/KeyboardShortcut.tsx");
 const { default: NextSectionButton } = await server.ssrLoadModule("/src/components/NextSectionButton.tsx");
@@ -104,6 +105,20 @@ test("shows both 3D aircraft warnings before instructions and includes them in l
       assert.ok(html.includes(aircraft), language);
       assert.ok(searchHelp(documents, aircraft).some((result) => result.id === "efb-modes"), language);
     }
+  }
+});
+
+test("lists the Career aircraft limitation in all locales and makes it searchable", () => {
+  for (const language of languages) {
+    const limitations = translations[language].notes[2];
+    const [careerTitle, careerBody] = limitations[3];
+    const [patchTitle, patchBody] = limitations[4];
+    assert.ok(careerBody.includes("Asobo C172sp G1000") && careerBody.includes("Microsoft A320neo"), language);
+    assert.ok(patchBody.includes("3D"), language);
+    assert.ok(!patchBody.includes("Asobo C172sp G1000") && !patchBody.includes("Microsoft A320neo"), language);
+    const documents = createSearchDocuments(language);
+    assert.ok(searchHelp(documents, careerTitle).some((result) => result.id === "notes"), language);
+    assert.ok(searchHelp(documents, patchTitle).some((result) => result.id === "notes"), language);
   }
 });
 

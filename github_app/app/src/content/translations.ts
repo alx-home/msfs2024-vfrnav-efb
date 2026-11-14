@@ -62,6 +62,8 @@ export const translations: LocaleMap<Translation> = {
                   ["PDF rendering", "The simulator uses an older embedded browser, so PDFs may occasionally render incorrectly. Zoom in or out to force a redraw. Avoid very large PDFs, such as manuals, because they may crash the simulator."],
                   ["EFB resizing", "Resizing is a workaround that changes the visible area rather than the actual EFB size. Items behind the EFB may remain unclickable."],
                   ["Antivirus reports", "Some heuristic antivirus engines may flag the compressed installer as a false positive. Review the per-release VirusTotal results and the public source code before deciding whether to install."],
+                  ["Career mode", "Patching the Asobo C172sp G1000 or Microsoft A320neo with the 3D tablet can make Career mode unavailable entirely. Leave these aircraft unpatched if you use Career mode."],
+                  ["3D EFB patch testing", "I have not verified that the 3D EFB patch works correctly with every aircraft. Enable patches only for aircraft you want to use, and please let me know if you encounter an issue."],
                   ["External EFB", "External browser/device support is still in development. Settings in the external EFB are not yet persistent."]
                ]
             ],
@@ -133,6 +135,8 @@ export const translations: LocaleMap<Translation> = {
                   ["Affichage PDF", "Le simulateur utilise un navigateur intégré ancien ; l'affichage PDF peut parfois être incorrect. Zoomez pour forcer le rafraîchissement. Évitez les PDF très volumineux, comme les manuels, qui peuvent faire planter le simulateur."],
                   ["Redimensionnement de l'EFB", "Ce contournement modifie la zone visible, pas la taille réelle de l'EFB. Les éléments situés derrière peuvent rester impossibles à cliquer."],
                   ["Rapports antivirus", "Certains antivirus heuristiques peuvent signaler à tort l'installeur compressé. Consultez les résultats VirusTotal par version et le code source public avant de décider de l'installation."],
+                  ["Mode carrière", "Le patch de tablette 3D de l'Asobo C172sp G1000 ou du Microsoft A320neo peut rendre le mode carrière entièrement indisponible. Ne patchez pas ces avions si vous utilisez le mode carrière."],
+                  ["Compatibilité du patch EFB 3D", "Je n'ai pas vérifié que le patch EFB 3D fonctionne correctement avec tous les avions. Activez les patchs uniquement pour les avions que vous souhaitez utiliser et signalez-moi tout problème rencontré."],
                   ["EFB externe", "La prise en charge du navigateur et des appareils externes est encore en développement. Les paramètres de l'EFB externe ne sont pas encore persistants."]
                ]
             ],
@@ -204,6 +208,8 @@ export const translations: LocaleMap<Translation> = {
                   ["PDF-Darstellung", "Der Simulator verwendet einen älteren integrierten Browser; PDFs können gelegentlich falsch dargestellt werden. Zoomen Sie zum erneuten Rendern. Sehr große PDFs wie Handbücher können den Simulator zum Absturz bringen."],
                   ["EFB-Größe", "Die Umgehungslösung ändert nur den sichtbaren Bereich, nicht die tatsächliche EFB-Größe. Elemente hinter dem EFB können weiterhin nicht anklickbar sein."],
                   ["Antivirus-Berichte", "Heuristische Virenscanner können den komprimierten Installer fälschlich melden. Prüfen Sie vor der Installation die VirusTotal-Ergebnisse der Versionen und den öffentlichen Quellcode."],
+                  ["Karrieremodus", "Der 3D-Tablet-Patch für die Asobo C172sp G1000 oder Microsoft A320neo kann den Karrieremodus vollständig unzugänglich machen. Lassen Sie diese Flugzeuge ungepatcht, wenn Sie den Karrieremodus nutzen."],
+                  ["Tests des 3D-EFB-Patches", "Ich habe nicht überprüft, ob der 3D-EFB-Patch mit allen Flugzeugen korrekt funktioniert. Aktivieren Sie Patches nur für Flugzeuge, die Sie nutzen möchten, und melden Sie mir bitte auftretende Probleme."],
                   ["Externes EFB", "Die Unterstützung externer Browser und Geräte ist noch in Entwicklung. Einstellungen im externen EFB bleiben derzeit nicht erhalten."]
                ]
             ],
@@ -275,6 +281,8 @@ export const translations: LocaleMap<Translation> = {
                   ["Visualización de PDF", "El simulador usa un navegador integrado antiguo, por lo que algunos PDF pueden mostrarse mal. Haz zoom para volver a dibujarlos. Los archivos muy grandes, como manuales, pueden bloquear el simulador."],
                   ["Cambio de tamaño del EFB", "Esta solución cambia el área visible, no el tamaño real del EFB. Es posible que no se pueda hacer clic en elementos situados detrás."],
                   ["Informes antivirus", "Algunos antivirus heurísticos pueden marcar erróneamente el instalador comprimido. Revisa los resultados de VirusTotal por versión y el código fuente público antes de instalar."],
+                  ["Modo Carrera", "El parche de la tableta 3D para el Asobo C172sp G1000 o el Microsoft A320neo puede dejar totalmente inaccesible el modo Carrera. No apliques el parche a estos aviones si usas el modo Carrera."],
+                  ["Pruebas del parche EFB 3D", "No he comprobado que el parche EFB 3D funcione correctamente con todos los aviones. Activa los parches solo para los aviones que quieras usar y avísame si encuentras algún problema."],
                   ["EFB externo", "La compatibilidad con navegadores y dispositivos externos sigue en desarrollo. Los ajustes del EFB externo aún no son persistentes."]
                ]
             ],
@@ -346,6 +354,8 @@ export const translations: LocaleMap<Translation> = {
                   ["Visualizzazione PDF", "Il simulatore usa un browser integrato datato, quindi alcuni PDF possono essere visualizzati in modo errato. Zooma per forzare il ridisegno. I PDF molto grandi, come i manuali, possono bloccare il simulatore."],
                   ["Ridimensionamento EFB", "Questa soluzione modifica l'area visibile, non la dimensione effettiva dell'EFB. Gli elementi dietro l'EFB potrebbero restare non cliccabili."],
                   ["Rapporti antivirus", "Alcuni antivirus euristici possono segnalare erroneamente l'installer compresso. Prima di installare, consulta i risultati VirusTotal per versione e il codice sorgente pubblico."],
+                  ["Modalità Carriera", "La patch del tablet 3D per Asobo C172sp G1000 o Microsoft A320neo può rendere completamente inaccessibile la modalità Carriera. Non applicare la patch a questi aerei se usi la modalità Carriera."],
+                  ["Test della patch EFB 3D", "Non ho verificato che la patch EFB 3D funzioni correttamente con tutti gli aerei. Attiva le patch solo per gli aerei che vuoi usare e segnalami eventuali problemi."],
                   ["EFB esterno", "Il supporto per browser e dispositivi esterni è ancora in sviluppo. Le impostazioni dell'EFB esterno non sono ancora persistenti."]
                ]
             ],
@@ -417,6 +427,8 @@ export const translations: LocaleMap<Translation> = {
                   ["PDFの表示", "シミュレーターの内蔵ブラウザーは古いため、PDFが正しく表示されない場合があります。ズームすると再描画されます。マニュアルなど大きなPDFはシミュレーターがクラッシュする可能性があります。"],
                   ["EFBのサイズ変更", "この回避策はEFB自体ではなく表示範囲を変更します。EFBの背後にある項目をクリックできない場合があります。"],
                   ["ウイルス対策レポート", "一部のヒューリスティック型ウイルス対策ソフトが圧縮インストーラーを誤検知する場合があります。インストール前に各バージョンのVirusTotal結果と公開ソースコードをご確認ください。"],
+                  ["キャリアモード", "Asobo C172sp G1000またはMicrosoft A320neoに3Dタブレットのパッチを適用すると、キャリアモード全体にアクセスできなくなる場合があります。キャリアモードを利用する場合、これらの機体にはパッチを適用しないでください。"],
+                  ["3D EFBパッチのテスト", "すべての機体で3D EFBパッチが正常に動作するかは確認できていません。使用する機体にのみパッチを有効にし、問題が発生した場合はお知らせください。"],
                   ["外部EFB", "外部ブラウザーやデバイスへの対応は開発中です。外部EFBの設定はまだ保持されません。"]
                ]
             ],
@@ -488,6 +500,8 @@ export const translations: LocaleMap<Translation> = {
                   ["Pdf-weergave", "De simulator gebruikt een oudere ingebouwde browser, waardoor pdf's soms verkeerd worden weergegeven. Zoom in of uit om opnieuw te tekenen. Zeer grote pdf's, zoals handleidingen, kunnen de simulator laten vastlopen."],
                   ["EFB-formaat", "Deze workaround verandert het zichtbare gebied, niet de werkelijke EFB-grootte. Elementen achter de EFB zijn mogelijk niet aanklikbaar."],
                   ["Antivirusrapporten", "Sommige heuristische antivirusprogramma's kunnen de gecomprimeerde installer ten onrechte markeren. Bekijk de VirusTotal-resultaten per versie en de openbare broncode voordat je installeert."],
+                  ["Carrièremodus", "De 3D-tabletpatch voor de Asobo C172sp G1000 of Microsoft A320neo kan de volledige carrièremodus ontoegankelijk maken. Patch deze vliegtuigen niet als je de carrièremodus gebruikt."],
+                  ["Testen van de 3D-EFB-patch", "Ik heb niet gecontroleerd of de 3D-EFB-patch met elk vliegtuig goed werkt. Schakel alleen patches in voor vliegtuigen die je wilt gebruiken en laat het me weten als je een probleem tegenkomt."],
                   ["Externe EFB", "Ondersteuning voor externe browsers en apparaten is nog in ontwikkeling. Instellingen in de externe EFB worden nog niet bewaard."]
                ]
             ],
@@ -559,6 +573,8 @@ export const translations: LocaleMap<Translation> = {
                   ["Wyświetlanie PDF", "Symulator korzysta ze starszej wbudowanej przeglądarki, więc PDF może czasem wyświetlać się niepoprawnie. Zmień powiększenie, aby wymusić odświeżenie. Bardzo duże pliki, np. instrukcje, mogą zawiesić symulator."],
                   ["Zmiana rozmiaru EFB", "To obejście zmienia widoczny obszar, a nie rzeczywisty rozmiar EFB. Elementy za EFB mogą pozostać nieklikalne."],
                   ["Raporty antywirusowe", "Niektóre heurystyczne programy antywirusowe mogą błędnie oznaczyć skompresowany instalator. Przed instalacją sprawdź raporty VirusTotal dla wersji i publiczny kod źródłowy."],
+                  ["Tryb kariery", "Poprawka tabletu 3D dla Asobo C172sp G1000 lub Microsoft A320neo może całkowicie zablokować dostęp do trybu kariery. Nie stosuj jej do tych samolotów, jeśli korzystasz z trybu kariery."],
+                  ["Testowanie poprawki tabletu 3D", "Nie sprawdziłem, czy poprawka tabletu 3D działa prawidłowo ze wszystkimi samolotami. Włączaj poprawki tylko dla samolotów, których chcesz używać, i zgłaszaj mi napotkane problemy."],
                   ["Zewnętrzne EFB", "Obsługa zewnętrznych przeglądarek i urządzeń jest w trakcie rozwoju. Ustawienia zewnętrznego EFB nie są jeszcze trwałe."]
                ]
             ],
@@ -630,6 +646,8 @@ export const translations: LocaleMap<Translation> = {
                   ["Apresentação de PDF", "O simulador utiliza um browser integrado antigo, pelo que alguns PDFs podem ser apresentados incorretamente. Altere o zoom para forçar uma nova apresentação. PDFs muito grandes, como manuais, podem bloquear o simulador."],
                   ["Redimensionar o EFB", "Esta solução altera a área visível, não o tamanho real do EFB. Os elementos por trás do EFB podem continuar sem aceitar cliques."],
                   ["Relatórios antivírus", "Alguns antivírus heurísticos podem sinalizar incorretamente o instalador comprimido. Consulte os resultados VirusTotal por versão e o código-fonte público antes de instalar."],
+                  ["Modo Carreira", "O patch da tablet 3D para o Asobo C172sp G1000 ou o Microsoft A320neo pode tornar todo o modo Carreira inacessível. Não aplique o patch a estas aeronaves se utilizar o modo Carreira."],
+                  ["Testes do patch da EFB 3D", "Não verifiquei se o patch da EFB 3D funciona corretamente com todas as aeronaves. Ative patches apenas para as aeronaves que pretende usar e avise-me se encontrar algum problema."],
                   ["EFB externo", "O suporte para browsers e dispositivos externos ainda está em desenvolvimento. As definições do EFB externo ainda não são guardadas."]
                ]
             ],
@@ -701,6 +719,8 @@ export const translations: LocaleMap<Translation> = {
                   ["Exibição de PDF", "O simulador usa um navegador integrado antigo, então alguns PDFs podem ser exibidos incorretamente. Altere o zoom para redesenhar. PDFs muito grandes, como manuais, podem travar o simulador."],
                   ["Redimensionamento do EFB", "Essa solução altera a área visível, não o tamanho real do EFB. Os itens atrás do EFB podem continuar sem receber cliques."],
                   ["Relatórios de antivírus", "Alguns antivírus heurísticos podem sinalizar incorretamente o instalador compactado. Consulte os resultados do VirusTotal por versão e o código-fonte público antes de instalar."],
+                  ["Modo Carreira", "O patch do tablet 3D para o Asobo C172sp G1000 ou o Microsoft A320neo pode tornar todo o modo Carreira inacessível. Não aplique o patch a essas aeronaves se usar o modo Carreira."],
+                  ["Testes do patch do EFB 3D", "Não verifiquei se o patch do EFB 3D funciona corretamente com todas as aeronaves. Ative patches somente para as aeronaves que deseja usar e me avise se encontrar algum problema."],
                   ["EFB externo", "O suporte a navegadores e dispositivos externos ainda está em desenvolvimento. As configurações do EFB externo ainda não são salvas."]
                ]
             ],
@@ -772,6 +792,8 @@ export const translations: LocaleMap<Translation> = {
                   ["Отображение PDF", "В симуляторе используется устаревший встроенный браузер, поэтому PDF иногда отображаются неправильно. Измените масштаб, чтобы обновить страницу. Очень большие PDF, например руководства, могут вызвать сбой симулятора."],
                   ["Изменение размера EFB", "Этот обходной способ меняет видимую область, а не фактический размер EFB. Элементы за окном EFB могут оставаться недоступными для нажатия."],
                   ["Антивирусные отчёты", "Некоторые эвристические антивирусы могут ошибочно помечать сжатый установщик. Перед установкой проверьте результаты VirusTotal для версии и открытый исходный код."],
+                  ["Режим карьеры", "Патч 3D-планшета для Asobo C172sp G1000 или Microsoft A320neo может полностью закрыть доступ к режиму карьеры. Не применяйте патч к этим самолётам, если используете режим карьеры."],
+                  ["Тестирование патча 3D-планшета", "Я не проверил, правильно ли работает патч 3D-планшета со всеми самолётами. Включайте патчи только для самолётов, которыми хотите пользоваться, и сообщайте мне о возникших проблемах."],
                   ["Внешняя EFB", "Поддержка внешних браузеров и устройств ещё разрабатывается. Настройки внешней EFB пока не сохраняются."]
                ]
             ],
@@ -843,6 +865,8 @@ export const translations: LocaleMap<Translation> = {
                   ["PDF-visning", "Simulatorn använder en äldre inbyggd webbläsare, så PDF-filer kan ibland visas fel. Zooma in eller ut för att rita om. Mycket stora PDF-filer, till exempel manualer, kan krascha simulatorn."],
                   ["Ändra EFB-storlek", "Den här lösningen ändrar det synliga området, inte EFB:ns faktiska storlek. Innehåll bakom EFB:n kan fortfarande vara oklickbart."],
                   ["Antivirusrapporter", "Vissa heuristiska antivirusprogram kan felaktigt flagga det komprimerade installationsprogrammet. Granska VirusTotal-resultat per version och den offentliga källkoden före installation."],
+                  ["Karriärläge", "3D-tablettens patch för Asobo C172sp G1000 eller Microsoft A320neo kan göra hela karriärläget otillgängligt. Använd inte patchen på dessa flygplan om du använder karriärläget."],
+                  ["Test av 3D EFB-patchen", "Jag har inte kontrollerat att 3D EFB-patchen fungerar som den ska med alla flygplan. Aktivera bara patchar för flygplan du vill använda och meddela mig om du stöter på problem."],
                   ["Extern EFB", "Stöd för externa webbläsare och enheter utvecklas fortfarande. Inställningar i den externa EFB:n sparas ännu inte."]
                ]
             ],
@@ -914,6 +938,8 @@ export const translations: LocaleMap<Translation> = {
                   ["PDF görüntüleme", "Simülatör eski bir yerleşik tarayıcı kullanır; PDF'ler bazen hatalı görüntülenebilir. Yeniden çizmek için yakınlaştırıp uzaklaştırın. Kılavuz gibi çok büyük PDF'ler simülatörün çökmesine neden olabilir."],
                   ["EFB boyutlandırma", "Bu geçici çözüm EFB'nin gerçek boyutunu değil, görünür alanı değiştirir. EFB'nin arkasındaki öğelere tıklanamayabilir."],
                   ["Antivirüs raporları", "Bazı sezgisel antivirüsler sıkıştırılmış yükleyiciyi yanlışlıkla işaretleyebilir. Kurmadan önce sürüm bazındaki VirusTotal sonuçlarını ve herkese açık kaynak kodunu inceleyin."],
+                  ["Kariyer modu", "Asobo C172sp G1000 veya Microsoft A320neo için 3D tablet yaması, Kariyer modunun tamamına erişimi engelleyebilir. Kariyer modunu kullanıyorsanız bu uçaklara yama uygulamayın."],
+                  ["3D EFB yaması testleri", "3D EFB yamasının tüm uçaklarda düzgün çalıştığını doğrulamadım. Yamaları yalnızca kullanmak istediğiniz uçaklar için etkinleştirin ve bir sorunla karşılaşırsanız lütfen bana bildirin."],
                   ["Harici EFB", "Harici tarayıcı ve cihaz desteği geliştirme aşamasındadır. Harici EFB ayarları henüz kalıcı değildir."]
                ]
             ],
@@ -985,6 +1011,8 @@ export const translations: LocaleMap<Translation> = {
                   ["PDF 显示", "模拟器使用较旧的内置浏览器，PDF 有时可能显示异常。缩放可强制重新绘制。大型 PDF（如手册）可能导致模拟器崩溃。"],
                   ["调整 EFB 尺寸", "此变通方法改变可见区域，而不是 EFB 的实际尺寸。EFB 后面的内容可能仍无法点击。"],
                   ["杀毒报告", "某些启发式杀毒软件可能误报压缩后的安装程序。安装前请查看各版本的 VirusTotal 结果和公开源代码。"],
+                  ["生涯模式", "为Asobo C172sp G1000或Microsoft A320neo应用3D平板补丁，可能导致整个生涯模式无法访问。如果您使用生涯模式，请不要为这两款航空器应用补丁。"],
+                  ["3D EFB补丁测试", "我尚未确认3D EFB补丁能否在所有航空器上正常工作。请仅为您想使用的航空器启用补丁；如果遇到问题，请告知我。"],
                   ["外部 EFB", "外部浏览器和设备支持仍在开发中。外部 EFB 设置目前不会保存。"]
                ]
             ],

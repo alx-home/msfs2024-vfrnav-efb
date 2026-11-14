@@ -81,7 +81,9 @@ or Microsoft A320neo blocks access to Career mode entirely and advises Career
 users to leave these aircraft unpatched. A separate compatibility warning explains
 that not every aircraft has been tested, asks users to enable patches only for
 aircraft they want to use, and invites issue reports. Both warnings appear before
-the editing and setup instructions and are included in localized search.
+the editing and setup instructions and are included in localized search. The
+Limitations tab separates the Career-specific restrictions from the general
+statement that not every aircraft has been verified with the 3D EFB patch.
 The 2D and 3D modes share the same card layout. Panel settings, movement,
 resizing and reset are separate illustrated steps, with keyboard combinations
 shown as keycaps. On small screens step descriptions use the full card width.
