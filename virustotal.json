@@ -1,36 +1,41 @@
 {
-  "checkedAt": "2026-11-14T06:46:37.575Z",
+  "checkedAt": "2026-11-14T17:09:58.887Z",
   "files": {
-    "e1571842c1970dd26c32751caafcdb843a3f2a5b492ce4240ee1bb8bf8a74f29": {
-      "analyzedAt": "2026-11-13T13:43:40.000Z",
-      "score": "2 / 70",
+    "34ff270eb63b89e1c46921aba5c86c361f6cae4d030d239391c16937454833a8": {
+      "analyzedAt": "2026-11-14T17:02:59.000Z",
+      "score": "3 / 69",
       "vendors": [
         {
           "name": "Bkav",
           "category": "malicious",
-          "label": "W32.Malware.7B744DE9"
+          "label": "W32.Malware.74977872"
+        },
+        {
+          "name": "Cylance",
+          "category": "malicious",
+          "label": "Unsafe"
         },
         {
           "name": "McAfeeD",
           "category": "malicious",
-          "label": "ti!E1571842C197"
+          "label": "ti!34FF270EB63B"
         }
       ]
     },
-    "2c0abcb8ae8fb1011dceb7779aaf3a5e72cc58a05b162d039e961860844c8439": {
-      "analyzedAt": "2026-11-13T13:43:47.000Z",
-      "score": "1 / 70",
+    "6e134ff7ce152f9641d75f47942183928e8512d61e2f9ab6d21df49eefa39378": {
+      "analyzedAt": "2026-11-14T17:04:07.000Z",
+      "score": "1 / 69",
       "vendors": [
         {
           "name": "Bkav",
           "category": "malicious",
-          "label": "W32.Malware.8163F942"
+          "label": "W32.Malware.F7452A60"
         }
       ]
     },
-    "14c16659bf65c1cda1fe699ce6778a5019fbe82b0da437e4c967f50fa065d7e8": {
-      "analyzedAt": "2026-11-13T13:43:57.000Z",
-      "score": "0 / 64",
+    "0623d0a36c77d3ecfb6027e9c91f5322bb21d369169abd0920930d879d9a3162": {
+      "analyzedAt": "2026-11-14T16:55:12.000Z",
+      "score": "0 / 63",
       "vendors": []
     },
     "4323a549643b8dfffe7fff6cfc8dab8df679519d6320b2151843bc69d7371627": {
