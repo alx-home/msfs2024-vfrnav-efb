@@ -263,7 +263,8 @@ const useMap = () => {
 
    if ((navData.length !== lastNavData.length)
       || navData.some((data, index) =>
-         (data.order !== lastNavData[index]?.order)
+         (data.id !== lastNavData[index]?.id)
+         || (data.order !== lastNavData[index]?.order)
          || (data.active !== lastNavData[index]?.active))) {
 
       const newData = navData.filter(data => !features.has(data.id));
