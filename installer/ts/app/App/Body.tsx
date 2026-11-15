@@ -23,13 +23,12 @@ const Elem = ({ children }: PropsWithChildren) => {
    </div>
 }
 
-const Path = ({ onClick, path, defaultValue, placeholder, onChange, reload, validate: _validate, setIsValid, checkParent }: {
+const Path = ({ onClick, path, defaultValue, placeholder, onChange, validate: _validate, setIsValid, checkParent }: {
    onClick: (_value: string) => void,
    path: string,
    onChange: (_path: string) => void,
    defaultValue?: string,
    placeholder?: string,
-   reload: boolean,
    validate?: (_: string) => void,
    setIsValid?: (_: boolean) => void,
    checkParent?: boolean
@@ -48,7 +47,7 @@ const Path = ({ onClick, path, defaultValue, placeholder, onChange, reload, vali
          <div className="flex flex-row transition-all [&>.invalid]:mt-[-10px] justify-end">
             <Input className='peer transition-all pr-0'
                active={true} value={path} ref={ref} defaultValue={defaultValue} placeholder={placeholder} onChange={onChange}
-               validate={validate} reload={reload} setIsValid={setIsValid}  >
+               validate={validate} setIsValid={setIsValid}  >
                <EndSlot>
                   <div className='[&>*]:border-0 [&>*]:hover:border-l-2 [&>*]:bg-slate-600 [&>*]:hover:bg-slate-700 [&>*]:h-full'>
                      <Button active={true} className='px-4'
@@ -77,17 +76,14 @@ const useFolder = ({ placeholder, initPath, autoSub }: {
 ) => {
    const [path, setPath] = useState(initPath ?? '');
    const [pathValid, setPathValid] = useState(true);
-   const [pathReload, setPathReload] = useState(false);
    const forcePath = useCallback((path: string) => {
       setPath(path)
-      setPathReload(true);
    }, []);
    const askPath = useCallback(async (value: string) => {
       try {
          const result = await window.openFolder((autoSub && value.lastIndexOf('\\') > 0) ? value.substring(0, value.lastIndexOf('\\') + 1) : value)
          if (result && result !== '') {
             setPath(autoSub ? result + '\\' + autoSub : result);
-            setPathReload(true);
             setPathValid(true);
          }
       } catch {
@@ -95,15 +91,10 @@ const useFolder = ({ placeholder, initPath, autoSub }: {
       }
    }, [autoSub]);
 
-   useEffect(() => {
-      if (pathReload) {
-         setPathReload(false);
-      }
-   }, [pathReload]);
 
    return {
-      path: path, valid: pathValid, setValid: setPathValid, ask: askPath, set: forcePath, reload: pathReload, elem:
-         <Path onClick={askPath} onChange={setPath} path={path} defaultValue='' reload={pathReload}
+      path: path, valid: pathValid, setValid: setPathValid, ask: askPath, set: forcePath, elem:
+         <Path onClick={askPath} onChange={setPath} path={path} defaultValue=''
             placeholder={placeholder} setIsValid={setPathValid} checkParent={!!autoSub} />
    };
 }

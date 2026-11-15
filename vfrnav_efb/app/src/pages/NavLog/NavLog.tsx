@@ -150,8 +150,7 @@ const useFuel = () => {
 }
 
 const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypoints, actives,
-   properties, edit, mode, collapseWaypoints, id, delayedRef, setReset, fromUnit, toUnit, setDelayed,
-   reset
+   properties, edit, mode, collapseWaypoints, id, delayedRef, fromUnit, toUnit, setDelayed
 }: {
    departureTime: number,
    taxiTime: number,
@@ -166,11 +165,9 @@ const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypo
    collapseWaypoints: boolean,
    id: number,
    delayedRef: React.MutableRefObject<(() => void)[]>,
-   setReset: React.Dispatch<React.SetStateAction<number>>,
    fromUnit: (_value: number) => number,
    toUnit: (_value: number) => number,
    setDelayed: React.Dispatch<React.SetStateAction<boolean>>,
-   reset: number
 }) => {
    const [editNavProperties, updateWaypoints, navDatas, activeNav] = useMapSubSettings(settings => ([
       settings.editNavProperties,
@@ -207,7 +204,6 @@ const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypo
                   props[index].ata = date.getHours() * 60 + date.getMinutes();
                   return props;
                });
-               setReset(value => value + 1)
             })
          }
 
@@ -218,7 +214,6 @@ const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypo
                      props[index].curFuel = fromUnit(fuel)
                      return props;
                   });
-                  setReset(value => value + 1)
                })
 
                setDelayed(true)
@@ -235,7 +230,6 @@ const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypo
 
                }
             }
-            setReset(value => value + 1)
          }
       }
 
@@ -260,7 +254,7 @@ const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypo
       result.push(<GridElem key={"Waypoint"} active={true} edit={edit} currentMode={mode}>
          {
             edit ?
-               <Input active={true} className="w-36" reload={lastWaypoints[row] !== name} value={name} onChange={(value) => {
+               <Input active={true} className="w-36" value={name} onChange={(value) => {
                   waypoints[row] = value
                   setLastWaypoints(prev => {
                      const newLastWaypoints = [...prev];
@@ -465,7 +459,6 @@ const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypo
 
                      <Reset className="flex-row justify-end" onReset={() => {
                         navProps.ata = -1;
-                        setReset(value => value + 1)
                      }}>
                         <Input active={true} className="w-16" onChange={(value) => {
                            if (value.length) {
@@ -476,7 +469,7 @@ const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypo
                            }
 
                            editNavProperties(id, properties);
-                        }} reload={reset > 0} value={ataStr}
+                        }} value={ataStr}
                            validate={async (value) => {
                               if (!value.length) {
                                  return true
@@ -552,12 +545,11 @@ const useLegs = ({ departureTime, taxiTime, loadedFuel, taxiConso, coords, waypo
                      <Reset className="flex-row justify-end" onReset={() => {
                         navProps.curFuel = 0;
                         editNavProperties(id, properties);
-                        setReset(value => value + 1)
                      }}>
                         <Input active={true} className="w-12" onChange={(value) => {
                            navProps.curFuel = fromUnit(+value);
                            editNavProperties(id, properties);
-                        }} value={toUnit(curFuel).toString()} reload={reset > 0} validate={async (value) => {
+                        }} value={toUnit(curFuel).toString()} validate={async (value) => {
                            return /^[+]?\d*$/.test(value);
                         }} inputMode='decimal' />
                      </Reset>
@@ -650,7 +642,6 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
    const { getFuel } = useFuel();
 
    const [mode, setMode] = useState<Modes>('Enroute');
-   const [reset, setReset] = useState(0);
    const [collapseWaypoints, setCollapseWaypoints] = useState(true);
    const delayedRef = useRef<(() => void)[]>([])
    const [delayed, setDelayed] = useState(false)
@@ -713,19 +704,10 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
    const legs = useLegs({
       departureTime, taxiTime, loadedFuel, taxiConso,
       coords, waypoints, actives, properties, edit, mode, collapseWaypoints, id,
-      delayedRef, setReset, fromUnit, toUnit, setDelayed, reset
+      delayedRef, fromUnit, toUnit, setDelayed
    });
 
    const tabs = useMemo(() => Array.from(modes), []);
-   useEffect(() => {
-      setReset(value => value + 1)
-   }, [fuelUnit])
-
-   useEffect(() => {
-      if (reset) {
-         setReset(0)
-      }
-   }, [reset])
 
    useEffect(() => {
       if (delayed) {
@@ -781,7 +763,6 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                               <Select active={true} value={link} className="my-1 max-w-32"
                                  onChange={(value) => {
                                     setLinks(id, value);
-                                    setReset(value => value + 1)
                                  }} >
                                  <SelectOption id='None'>
                                     None
@@ -799,13 +780,12 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                                        getFuel().then((fuel) => {
                                           delayedRef.current.push(() => {
                                              setLoadedFuel(id, fuel)
-                                             setReset(value => value + 1)
                                           })
                                           setDelayed(true)
                                        }).catch()
                                     }}>
                                        <div className="flex flex-row shrink [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} reload={reset > 0} inputMode="decimal"
+                                          <Input active={true} className="my-1 max-w-16" value={loadedFuelStr} inputMode="decimal"
                                              onChange={(value) => {
                                                 setLoadedFuel(id, fromUnit(+value));
                                              }} validate={async (value) => {
@@ -820,10 +800,9 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                                     <Reset className="justify-end min-w-20" onReset={async () => {
                                        const date = await getSimDate().catch(() => new Date());
                                        setDepartureTime(id, date.getHours() * 60 + date.getMinutes() + new Date().getTimezoneOffset());
-                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={departureTimeStr}
+                                          <Input active={true} className="my-1 max-w-16" value={departureTimeStr}
                                              onChange={(value) => {
                                                 const data = value.split('h');
                                                 setDepartureTime(id, +data[0] * 60 + +data[1]);
@@ -843,10 +822,9 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                                     <div className="flex mr-2 m-auto grow">Taxi Duration : </div>
                                     <Reset className="justify-end min-w-20" onReset={() => {
                                        setTaxiTime(id, 15);
-                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={taxiTimeStr}
+                                          <Input active={true} className="my-1 max-w-16" value={taxiTimeStr}
                                              onChange={(value) => {
                                                 if (/^\d+h\d*$/.test(value)) {
                                                    const data = value.split('h');
@@ -872,10 +850,9 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                                     <div className="flex mr-2 m-auto grow">Taxi Conso : </div>
                                     <Reset className="justify-end min-w-20" onReset={() => {
                                        setTaxiConso(id, 30);
-                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={taxiFuelStr} inputMode="decimal"
+                                          <Input active={true} className="my-1 max-w-16" value={taxiFuelStr} inputMode="decimal"
                                              onChange={(value) => {
                                                 setTaxiConso(id, fromUnit(+value));
                                              }} validate={async (value) => {
@@ -891,10 +868,9 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                                     <div className="flex mr-2 m-auto grow">Time Offset : </div>
                                     <Reset className="justify-end min-w-20" onReset={() => {
                                        setTaxiTime(id, 0);
-                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={taxiTimeStr}
+                                          <Input active={true} className="my-1 max-w-16" value={taxiTimeStr}
                                              onChange={(value) => {
                                                 if (/^\d+h\d*$/.test(value)) {
                                                    const data = value.split('h');
@@ -920,10 +896,9 @@ export const Navlog = memo(function NavLog({ tab, currentTab, coords, edit, navD
                                     <div className="flex mr-2 m-auto grow">Conso Offset : </div>
                                     <Reset className="justify-end min-w-20" onReset={() => {
                                        setTaxiConso(id, 30);
-                                       setReset(value => value + 1)
                                     }}>
                                        <div className="flex flex-row [&_.invalid]:text-red-500 w-16">
-                                          <Input active={true} className="my-1 max-w-16" reload={reset > 0} value={taxiFuelStr} inputMode="decimal"
+                                          <Input active={true} className="my-1 max-w-16" value={taxiFuelStr} inputMode="decimal"
                                              onChange={(value) => {
                                                 setTaxiConso(id, fromUnit(+value));
                                              }} validate={async (value) => {

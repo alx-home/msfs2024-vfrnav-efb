@@ -95,7 +95,6 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
   const openDialog = useFileDialog();
 
   const [path, setPath] = useState('');
-  const [pathReload, setPathReload] = useState(false);
   const [partialValid, setPartialValid] = useState(true);
   const [reload, setReload] = useState(true);
   const active = useMemo(() => !loading && (sourceType === 'SIA' || sourceType === 'Local'), [sourceType, loading]);
@@ -138,7 +137,6 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
 
     if (result && result !== '') {
       setPath(result);
-      setPathReload(true);
       setValid(true);
       setPartialValid(true);
 
@@ -220,19 +218,12 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
   useEffect(() => {
     if (reload) {
       globalRef.current = inputRef.current;
-      setPathReload(true);
       validator(path);
       setResult(path);
 
       setReload(false);
     }
   }, [globalRef, path, reload, setResult, validator]);
-
-  useEffect(() => {
-    if (pathReload) {
-      setPathReload(false)
-    }
-  }, [pathReload]);
 
   useEffect(() => {
     validator(path);
@@ -253,7 +244,7 @@ const Tab = ({ sourceType, inputRef: globalRef, setValid, setResult, download, l
     <div className="flex flex-row justify-end">
       <Input active={active} ref={inputRef} placeholder={sourceMessage} inputMode="text" value={path}
         validate={partialValidator}
-        reload={pathReload} onValidate={download} className='peer transition-all pr-0'  >
+        onValidate={download} className='peer transition-all pr-0'  >
         {fileBrowser}
       </Input>
     </div>

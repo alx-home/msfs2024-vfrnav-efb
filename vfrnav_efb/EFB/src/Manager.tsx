@@ -374,7 +374,7 @@ export class Manager {
    }
 
    public sendMessage(id: number, message: MessageType) {
-      if (id == 0) {
+      if (id === 0) {
          this.messageHandler?.(message);
       } else {
          this.serverMessageHandler?.(id, message);

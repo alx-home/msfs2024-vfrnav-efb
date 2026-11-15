@@ -308,12 +308,10 @@ export const MapPage = memo(function MapPage() {
     [layers, settings]);
 
   const [icao, setIcao] = useState("");
-  const [refreshIcao, setRefreshIcao] = useState(false);
   const updateIcao = useCallback((icao?: string) => {
     if (icao) {
       setIcao(icao);
       setSuggestIndex(0);
-      setRefreshIcao(true);
     }
   }, [])
   const searchIcao = useCallback((icao: string) => {
@@ -357,11 +355,6 @@ export const MapPage = memo(function MapPage() {
     return () => messageHandler.unsubscribe('__LAT_LON__', callback);
   }, [map]);
 
-  useEffect(() => {
-    if (refreshIcao) {
-      setRefreshIcao(false);
-    }
-  }, [refreshIcao])
 
   useEffect(() => {
     if (icaoValid) {
@@ -395,8 +388,7 @@ export const MapPage = memo(function MapPage() {
                 <div className="hide flex flex-col w-full opacity-0">
                   <div className="flex flex-row w-32 overflow-hidden">
                     <Input active={true} inputMode="text" onChange={searchIcao}
-                      onKeyDown={onIcaoSearchKeyDown} value={icao}
-                      reload={refreshIcao} className={(icaoValid ? '' : ' !text-red-500')}
+                      onKeyDown={onIcaoSearchKeyDown} value={icao} className={(icaoValid ? '' : ' !text-red-500')}
                     />
                   </div>
                   <div className={"flex relative w-full"
