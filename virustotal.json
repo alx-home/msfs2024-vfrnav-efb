@@ -1,24 +1,24 @@
 {
-  "checkedAt": "2026-11-15T06:51:49.288Z",
+  "checkedAt": "2026-11-15T13:39:45.259Z",
   "files": {
-    "1593c5fd1687a2c742b9acc0e73cc9561f71b28554e0b71be75c4993b6fe1111": {
-      "analyzedAt": "2026-11-14T19:01:48.000Z",
+    "05156db823f6adebea8c37fada0161db9ab8cbb0d1549cf8266bdc7855d91b6d": {
+      "analyzedAt": "2026-11-15T13:33:13.000Z",
       "score": "1 / 71",
       "vendors": [
         {
           "name": "Bkav",
           "category": "malicious",
-          "label": "W32.Malware.D074B167"
+          "label": "W32.Malware.B4381788"
         }
       ]
     },
-    "fe94bf8a9bf79ffdade12710db1eda2d58977616c25a0334e5bd5eb3a4c824e4": {
-      "analyzedAt": "2026-11-14T19:00:37.000Z",
+    "3655a04f8ebf2b95a8a8c624f001a12743d9cdbbebba4a4a8049c6a78a7685d3": {
+      "analyzedAt": "2026-11-15T13:36:27.000Z",
       "score": "0 / 71",
       "vendors": []
     },
-    "4323a549643b8dfffe7fff6cfc8dab8df679519d6320b2151843bc69d7371627": {
-      "analyzedAt": "2026-11-13T13:44:21.000Z",
+    "1a0f655b3504bdadddc795f19d680bdf7cfc7653c7b5a873e66a7157fa3cab11": {
+      "analyzedAt": "2026-11-15T13:36:02.000Z",
       "score": "0 / 65",
       "vendors": []
     },
