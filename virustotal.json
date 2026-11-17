@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-16T22:22:09.501Z",
+  "checkedAt": "2026-11-17T08:10:29.859Z",
   "files": {
     "05156db823f6adebea8c37fada0161db9ab8cbb0d1549cf8266bdc7855d91b6d": {
       "analyzedAt": "2026-11-15T13:33:13.000Z",
@@ -13,8 +13,8 @@
       ]
     },
     "3655a04f8ebf2b95a8a8c624f001a12743d9cdbbebba4a4a8049c6a78a7685d3": {
-      "analyzedAt": "2026-11-15T13:36:27.000Z",
-      "score": "0 / 71",
+      "analyzedAt": "2026-11-17T01:23:42.000Z",
+      "score": "0 / 62",
       "vendors": []
     },
     "1a0f655b3504bdadddc795f19d680bdf7cfc7653c7b5a873e66a7157fa3cab11": {
