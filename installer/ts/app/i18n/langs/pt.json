@@ -1,0 +1,35 @@
+{
+   "body": {
+      "invalidPath": "Caminho inválido!",
+      "communityPlaceholder": "Localização da pasta Community do MSFS 2024",
+      "serverPlaceholder": "Caminho de instalação do MSFS2024 VFRNav' Server",
+      "installingTitle": "A instalar",
+      "installingMessage": "A instalar o MSFS2024 VFRNav' Server...",
+      "infoTitle": "Informações",
+      "infoDescription1": "Este programa foi concebido para encaminhar pedidos de exploração de ficheiros para o sistema operativo e disponibilizar a aplicação através de um servidor web.",
+      "infoDescription2Line1": "Tenha em atenção que o MSFS2024 VFRNav' pode funcionar sem este programa apenas ao arrastar o plugin para a pasta Community.",
+      "infoDescription2Line2": "No entanto, fazê-lo não permite abrir ficheiros PDF a partir do computador nem aceder à interface através de um navegador web ou de um dispositivo externo.",
+      "startupTitle": "Arranque",
+      "autoStartLabel": "Iniciar automaticamente o MSFS2024 VFRNav' Server:",
+      "startupLogin": "Ao iniciar sessão no Windows",
+      "startupMsfs": "Ao iniciar o MSFS",
+      "startupNever": "Nunca",
+      "installPathTitle": "Caminho de instalação",
+      "addonLabel": "Addon:",
+      "serverLabel": "Servidor:"
+   },
+   "popup": {
+      "installSuccessTitle": "Informação",
+      "installSuccessMessage": "MSFS2024 VFRNav' Server instalado com sucesso!",
+      "startServer": "Iniciar servidor",
+      "close": "Fechar",
+      "warningTitle": "Aviso",
+      "removingFolder": "A remover pasta:",
+      "continue": "Continuar",
+      "cancel": "Cancelar"
+   },
+   "trailer": {
+      "continue": "Continuar",
+      "abort": "Cancelar"
+   }
+}

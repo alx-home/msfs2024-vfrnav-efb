@@ -1,0 +1,35 @@
+{
+   "body": {
+      "invalidPath": "Geçersiz yol!",
+      "communityPlaceholder": "MSFS 2024 Community klasörünün konumu",
+      "serverPlaceholder": "MSFS2024 VFRNav' Server kurulum yolu",
+      "installingTitle": "Kuruluyor",
+      "installingMessage": "MSFS2024 VFRNav' Server kuruluyor...",
+      "infoTitle": "Bilgi",
+      "infoDescription1": "Bu program, dosya göz atma isteklerini işletim sistemine iletmek ve uygulamayı bir web sunucusu üzerinden sunmak için tasarlanmıştır.",
+      "infoDescription2Line1": "Eklentiyi doğrudan Community klasörüne sürükleyerek MSFS2024 VFRNav' uygulamasını bu program olmadan da kullanabileceğinizi lütfen unutmayın.",
+      "infoDescription2Line2": "Ancak bunu yapmak, bilgisayarınızdan PDF dosyalarını açmanıza veya arayüze bir web tarayıcısı ya da harici bir cihaz üzerinden erişmenize olanak tanımaz.",
+      "startupTitle": "Başlangıç",
+      "autoStartLabel": "MSFS2024 VFRNav' Server'ı otomatik başlat:",
+      "startupLogin": "Windows oturumu açıldığında",
+      "startupMsfs": "MSFS başlatıldığında",
+      "startupNever": "Hiçbir zaman",
+      "installPathTitle": "Kurulum Yolu",
+      "addonLabel": "Eklenti:",
+      "serverLabel": "Sunucu:"
+   },
+   "popup": {
+      "installSuccessTitle": "Bilgi",
+      "installSuccessMessage": "MSFS2024 VFRNav' Server başarıyla kuruldu!",
+      "startServer": "Sunucuyu başlat",
+      "close": "Kapat",
+      "warningTitle": "Uyarı",
+      "removingFolder": "Klasör kaldırılıyor:",
+      "continue": "Devam et",
+      "cancel": "İptal"
+   },
+   "trailer": {
+      "continue": "Devam et",
+      "abort": "İptal"
+   }
+}

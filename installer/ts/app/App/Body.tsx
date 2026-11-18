@@ -16,9 +16,10 @@
 import { Button, EndSlot, Input, Scroll, SelectOption, Select } from "@alx-home/Utils";
 import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useRef, useState, useContext } from 'react';
 import { addPopup, LoadingPopup, PopupContext } from "@common/Popup";
+import { useTranslation } from '../i18n/I18nContext';
 
 const Elem = ({ children }: PropsWithChildren) => {
-   return <div className='flex flex-row bg-slate-800 px-5 py-4 mt-1 text-left h-16'>
+   return <div className='flex flex-row bg-slate-800 px-5 py-4 mt-1 text-left h-16 col-span-2 grid grid-cols-subgrid items-center'>
       {children}
    </div>
 }
@@ -33,6 +34,7 @@ const Path = ({ onClick, path, defaultValue, placeholder, onChange, validate: _v
    setIsValid?: (_: boolean) => void,
    checkParent?: boolean
 }) => {
+   const { t } = useTranslation();
    const ref = useRef<HTMLInputElement>(null);
    const callback = useCallback(() => onClick(ref.current!.value.length ? ref.current!.value : (defaultValue ?? path)), [onClick, defaultValue, path]);
    const validate = useCallback((path: string) => (
@@ -58,7 +60,7 @@ const Path = ({ onClick, path, defaultValue, placeholder, onChange, validate: _v
          </div>
          <div className="flex flex-row grow opacity-0 transition-all">
             <p className="pt-1 text-red-500 text-sm h-0">
-               Invalid path !
+               {t('body.invalidPath')}
             </p>
          </div>
       </div>
@@ -104,9 +106,10 @@ export const Body = ({ setCanContinue, validateRef }: {
    validateRef: RefObject<(() => void) | null>
 }) => {
    const { setInstalling } = useContext(PopupContext)!;
+   const { t } = useTranslation();
 
-   const { path: communityPath, valid: communityValid, set: setCommunityPath, elem: communityElem } = useFolder({ placeholder: 'Location of MSFS 2024 community folder', autoSub: 'alexhome-msfs2024-vfrnav' });
-   const { path: installPath, valid: installPathValid, set: setInstallPath, elem: installPathElem } = useFolder({ placeholder: 'MSFS2024 VFRNav\' Server installation path', autoSub: 'MSFS2024 VFRNav\' Server' });
+   const { path: communityPath, valid: communityValid, set: setCommunityPath, elem: communityElem } = useFolder({ placeholder: t('body.communityPlaceholder'), autoSub: 'alexhome-msfs2024-vfrnav' });
+   const { path: installPath, valid: installPathValid, set: setInstallPath, elem: installPathElem } = useFolder({ placeholder: t('body.serverPlaceholder'), autoSub: 'MSFS2024 VFRNav\' Server' });
 
    const [startupOption, setStartupOption] = useState<StartupOption>('Login');
 
@@ -135,49 +138,55 @@ export const Body = ({ setCanContinue, validateRef }: {
    useEffect(() => {
       validateRef.current = () => {
          setInstalling(true);
-         addPopup(<LoadingPopup title="Installing" message="Installing MSFS2024 VFRNav' Server..." />, 0)
+         addPopup(<LoadingPopup title={t('body.installingTitle')} message={t('body.installingMessage')} />, 0)
 
          window.validate(startupOption, communityPath, installPath).then(() => {
             setInstalling(false);
          }).catch(() => { setInstalling(false); });
       }
-   }, [communityPath, installPath, startupOption, validateRef, setInstalling]);
+   }, [communityPath, installPath, startupOption, validateRef, setInstalling, t]);
 
    return <div className='flex flex-row grow min-h-0 overflow-hidden'>
       <Scroll className='flex-col grow'>
          <div className='flex flex-col grow mx-auto min-w-[80%] max-w-6xl justify-center px-5 pb-4 gap-1'>
-            <h2 className='mt-6 text-lg'>Info</h2>
+            <h2 className='mt-6 text-lg'>{t('body.infoTitle')}</h2>
             <blockquote className="p-4 border-s-4 border-gray-500 bg-gray-800">
                <div className='flex flex-col gap-y-3'>
                   <p className="text-sm italic font-medium leading-relaxed text-white">
-                     This program is designed to proxy file browsing requests to the operating system and serve the app through a web server.
+                     {t('body.infoDescription1')}
                   </p>
                   <p className="text-sm italic font-medium leading-relaxed text-white">
-                     Please note that MSFS2024 VFRNav&apos; can function without this program by simply dragging the plugin into the community folder.<br />
-                     However, doing so does not allow you to open PDF files from the computer or access the UI via a web browser or an external device.
+                     {t('body.infoDescription2Line1')}<br />
+                     {t('body.infoDescription2Line2')}
                   </p>
                </div>
             </blockquote>
-            <h2 className='mt-4 text-lg'>Startup</h2>
-            <Elem>
-               <div className='m-auto mr-5 grow min-w-0'>Auto start MSFS2024 VFRNav&apos; Server :</div>
-               <div className='shrink'>
-                  <Select value={startupOption} active={true} onChange={setStartupOption} className='pl-3'>
-                     <SelectOption<StartupOption> id={'Login'}>Windows login</SelectOption>
-                     <SelectOption<StartupOption> id={'Startup'}>MSFS startup</SelectOption>
-                     <SelectOption<StartupOption> id={'Never'}>Never</SelectOption>
-                  </Select>
-               </div>
-            </Elem>
-            <h2 className='mt-4 text-lg'>Install Path</h2>
-            <Elem>
-               <div className='m-auto mr-4 w-14'>Addon :</div>
-               {communityElem}
-            </Elem>
-            <Elem>
-               <div className='m-auto mr-4 w-14'>Server :</div>
-               {installPathElem}
-            </Elem>
+            <h2 className='mt-4 text-lg'>{t('body.startupTitle')}</h2>
+            <div className='grid grid-cols-[auto_1fr]'>
+               <Elem>
+                  <div className='m-auto mr-5 grow min-w-0'>{t('body.autoStartLabel')}</div>
+                  <div className='flex flex-row justify-end'>
+                     <div className='shrink'>
+                        <Select value={startupOption} active={true} onChange={setStartupOption} className='pl-3'>
+                           <SelectOption<StartupOption> id={'Login'}>{t('body.startupLogin')}</SelectOption>
+                           <SelectOption<StartupOption> id={'Startup'}>{t('body.startupMsfs')}</SelectOption>
+                           <SelectOption<StartupOption> id={'Never'}>{t('body.startupNever')}</SelectOption>
+                        </Select>
+                     </div>
+                  </div>
+               </Elem>
+            </div>
+            <h2 className='mt-4 text-lg'>{t('body.installPathTitle')}</h2>
+            <div className='grid grid-cols-[auto_1fr]'>
+               <Elem>
+                  <div className='m-auto mr-4'>{t('body.addonLabel')}</div>
+                  {communityElem}
+               </Elem>
+               <Elem>
+                  <div className='m-auto mr-4'>{t('body.serverLabel')}</div>
+                  {installPathElem}
+               </Elem>
+            </div>
          </div>
       </Scroll>
    </div>
@@ -186,6 +195,7 @@ export const Body = ({ setCanContinue, validateRef }: {
 const RunClosePopup = ({ resolve }: {
    resolve: (_: boolean | PromiseLike<boolean>) => void
 }) => {
+   const { t } = useTranslation();
    const abort = useCallback(() => {
       resolve(false);
    }, [resolve]);
@@ -194,18 +204,18 @@ const RunClosePopup = ({ resolve }: {
    }, [resolve]);
 
    return <div className='flex flex-col gap-y-5 grow'>
-      <div className='text-2xl text-blue-400'>Info</div>
+      <div className='text-2xl text-blue-400'>{t('popup.installSuccessTitle')}</div>
       <div className='text-sm gap-y-2 overflow-hidden'>
          <Scroll>
             <div>
-               MSFS2024 VFRNav&apos; Server Successfully installed !
+               {t('popup.installSuccessMessage')}
             </div>
          </Scroll>
       </div>
       <div className='flex flex-row [&>*>*]:px-14'>
-         <Button active={true} className="grow" onClick={startServer}>Start Server</Button>
+         <Button active={true} className="grow" onClick={startServer}>{t('popup.startServer')}</Button>
          <div className='flex flex-row [&>*]:bg-red-800 [&>*]:hover:bg-red-500 [&>*]:hover:border-white'>
-            <Button active={true} onClick={abort}>Close</Button>
+            <Button active={true} onClick={abort}>{t('popup.close')}</Button>
          </div>
       </div>
    </div>
@@ -216,6 +226,7 @@ const RunCleanPathPopup = ({ resolve, path, close }: {
    path: string,
    close?: () => void
 }) => {
+   const { t } = useTranslation();
    const abort = useCallback(() => {
       resolve(false);
       close!();
@@ -226,12 +237,12 @@ const RunCleanPathPopup = ({ resolve, path, close }: {
    }, [close, resolve]);
 
    return <div className='flex flex-col gap-y-5 grow'>
-      <div className='text-2xl text-yellow-500'>Warning</div>
+      <div className='text-2xl text-yellow-500'>{t('popup.warningTitle')}</div>
       <div className='text-sm gap-y-2 overflow-hidden'>
          <Scroll>
             <div className="flex flex-col">
                <div>
-                  Removing folder :
+                  {t('popup.removingFolder')}
                </div>
                <div>
                   &ldquo;{path}&ldquo;
@@ -240,9 +251,9 @@ const RunCleanPathPopup = ({ resolve, path, close }: {
          </Scroll>
       </div>
       <div className='flex flex-row [&>*>*]:px-14'>
-         <Button active={true} className="grow" onClick={validate}>Continue</Button>
+         <Button active={true} className="grow" onClick={validate}>{t('popup.continue')}</Button>
          <div className='flex flex-row [&>*]:bg-red-800 [&>*]:hover:bg-red-500 [&>*]:hover:border-white'>
-            <Button active={true} onClick={abort}>Cancel</Button>
+            <Button active={true} onClick={abort}>{t('popup.cancel')}</Button>
          </div>
       </div>
    </div>

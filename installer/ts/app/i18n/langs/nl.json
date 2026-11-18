@@ -1,0 +1,35 @@
+{
+   "body": {
+      "invalidPath": "Ongeldig pad!",
+      "communityPlaceholder": "Locatie van de MSFS 2024 Community-map",
+      "serverPlaceholder": "Installatiepad van MSFS2024 VFRNav' Server",
+      "installingTitle": "Installeren",
+      "installingMessage": "MSFS2024 VFRNav' Server installeren...",
+      "infoTitle": "Info",
+      "infoDescription1": "Dit programma is ontworpen om verzoeken voor het bladeren door bestanden door te sturen naar het besturingssysteem en de app via een webserver aan te bieden.",
+      "infoDescription2Line1": "Houd er rekening mee dat MSFS2024 VFRNav' ook zonder dit programma werkt door de plug-in simpelweg naar de Community-map te slepen.",
+      "infoDescription2Line2": "Hiermee kunt u echter geen PDF-bestanden vanaf de computer openen en heeft u geen toegang tot de interface via een webbrowser of een extern apparaat.",
+      "startupTitle": "Opstarten",
+      "autoStartLabel": "MSFS2024 VFRNav' Server automatisch starten:",
+      "startupLogin": "Bij aanmelden bij Windows",
+      "startupMsfs": "Bij opstarten van MSFS",
+      "startupNever": "Nooit",
+      "installPathTitle": "Installatiepad",
+      "addonLabel": "Add-on:",
+      "serverLabel": "Server:"
+   },
+   "popup": {
+      "installSuccessTitle": "Info",
+      "installSuccessMessage": "MSFS2024 VFRNav' Server succesvol geïnstalleerd!",
+      "startServer": "Server starten",
+      "close": "Sluiten",
+      "warningTitle": "Waarschuwing",
+      "removingFolder": "Map verwijderen:",
+      "continue": "Doorgaan",
+      "cancel": "Annuleren"
+   },
+   "trailer": {
+      "continue": "Doorgaan",
+      "abort": "Afbreken"
+   }
+}

@@ -1,0 +1,35 @@
+{
+   "body": {
+      "invalidPath": "无效路径！",
+      "communityPlaceholder": "MSFS 2024 Community 文件夹位置",
+      "serverPlaceholder": "MSFS2024 VFRNav' Server 安装路径",
+      "installingTitle": "正在安装",
+      "installingMessage": "正在安装 MSFS2024 VFRNav' Server...",
+      "infoTitle": "信息",
+      "infoDescription1": "此程序旨在将文件浏览请求代理到操作系统，并通过 Web 服务器提供应用程序。",
+      "infoDescription2Line1": "请注意，只需将插件拖入 Community 文件夹，MSFS2024 VFRNav' 即可在没有此程序的情况下运行。",
+      "infoDescription2Line2": "但是，这样做将无法从计算机打开 PDF 文件，也无法通过 Web 浏览器或外部设备访问用户界面。",
+      "startupTitle": "启动",
+      "autoStartLabel": "自动启动 MSFS2024 VFRNav' Server：",
+      "startupLogin": "Windows 登录时",
+      "startupMsfs": "MSFS 启动时",
+      "startupNever": "从不",
+      "installPathTitle": "安装路径",
+      "addonLabel": "插件：",
+      "serverLabel": "服务器："
+   },
+   "popup": {
+      "installSuccessTitle": "信息",
+      "installSuccessMessage": "MSFS2024 VFRNav' Server 安装成功！",
+      "startServer": "启动服务器",
+      "close": "关闭",
+      "warningTitle": "警告",
+      "removingFolder": "正在移除文件夹：",
+      "continue": "继续",
+      "cancel": "取消"
+   },
+   "trailer": {
+      "continue": "继续",
+      "abort": "中止"
+   }
+}

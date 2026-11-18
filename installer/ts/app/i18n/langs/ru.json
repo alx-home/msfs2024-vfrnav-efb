@@ -1,0 +1,35 @@
+{
+   "body": {
+      "invalidPath": "Неверный путь!",
+      "communityPlaceholder": "Расположение папки Community в MSFS 2024",
+      "serverPlaceholder": "Путь установки MSFS2024 VFRNav' Server",
+      "installingTitle": "Установка",
+      "installingMessage": "Установка MSFS2024 VFRNav' Server...",
+      "infoTitle": "Информация",
+      "infoDescription1": "Эта программа предназначена для перенаправления запросов обзора файлов в операционную систему и запуска приложения через веб-сервер.",
+      "infoDescription2Line1": "Обратите внимание, что MSFS2024 VFRNav' может работать и без этой программы — достаточно просто перетащить плагин в папку Community.",
+      "infoDescription2Line2": "Однако в этом случае вы не сможете открывать PDF-файлы с компьютера или получать доступ к интерфейсу через веб-браузер или внешнее устройство.",
+      "startupTitle": "Запуск",
+      "autoStartLabel": "Автозапуск MSFS2024 VFRNav' Server:",
+      "startupLogin": "При входе в Windows",
+      "startupMsfs": "При запуске MSFS",
+      "startupNever": "Никогда",
+      "installPathTitle": "Путь установки",
+      "addonLabel": "Аддон:",
+      "serverLabel": "Сервер:"
+   },
+   "popup": {
+      "installSuccessTitle": "Информация",
+      "installSuccessMessage": "MSFS2024 VFRNav' Server успешно установлен!",
+      "startServer": "Запустить сервер",
+      "close": "Закрыть",
+      "warningTitle": "Предупреждение",
+      "removingFolder": "Удаление папки:",
+      "continue": "Продолжить",
+      "cancel": "Отмена"
+   },
+   "trailer": {
+      "continue": "Продолжить",
+      "abort": "Прервать"
+   }
+}

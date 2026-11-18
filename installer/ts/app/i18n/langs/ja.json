@@ -1,0 +1,35 @@
+{
+   "body": {
+      "invalidPath": "無効なパスです！",
+      "communityPlaceholder": "MSFS 2024 の Community フォルダの場所",
+      "serverPlaceholder": "MSFS2024 VFRNav' Server のインストール先パス",
+      "installingTitle": "インストール中",
+      "installingMessage": "MSFS2024 VFRNav' Server をインストールしています...",
+      "infoTitle": "情報",
+      "infoDescription1": "このプログラムは、ファイル参照リクエストをオペレーティングシステムに中継し、Webサーバー経由でアプリを提供するために設計されています。",
+      "infoDescription2Line1": "プラグインを Community フォルダにドラッグするだけで、このプログラムなしでも MSFS2024 VFRNav' を使用できます。",
+      "infoDescription2Line2": "ただし、その場合はコンピューターからPDFファイルを開いたり、Webブラウザや外部デバイスからUIにアクセスしたりすることはできません。",
+      "startupTitle": "起動設定",
+      "autoStartLabel": "MSFS2024 VFRNav' Server の自動起動：",
+      "startupLogin": "Windows ログイン時",
+      "startupMsfs": "MSFS 起動時",
+      "startupNever": "自動起動しない",
+      "installPathTitle": "インストール先パス",
+      "addonLabel": "アドオン：",
+      "serverLabel": "サーバー："
+   },
+   "popup": {
+      "installSuccessTitle": "情報",
+      "installSuccessMessage": "MSFS2024 VFRNav' Server のインストールが完了しました！",
+      "startServer": "サーバーを起動",
+      "close": "閉じる",
+      "warningTitle": "警告",
+      "removingFolder": "フォルダを削除しています：",
+      "continue": "続行",
+      "cancel": "キャンセル"
+   },
+   "trailer": {
+      "continue": "続行",
+      "abort": "中止"
+   }
+}
