@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-17T21:07:34.586Z",
+  "checkedAt": "2026-11-18T07:44:32.610Z",
   "files": {
     "05156db823f6adebea8c37fada0161db9ab8cbb0d1549cf8266bdc7855d91b6d": {
       "analyzedAt": "2026-11-15T13:33:13.000Z",
@@ -23,13 +23,18 @@
       "vendors": []
     },
     "7b18bbb4ff34bf8bdfd2b5e09ba42a390d4ebaa1ec0c289cbd6a26e6e69aa7f3": {
-      "analyzedAt": "2026-11-17T15:46:22.000Z",
-      "score": "8 / 57",
+      "analyzedAt": "2026-11-18T02:49:02.000Z",
+      "score": "12 / 68",
       "vendors": [
         {
           "name": "Antiy-AVL",
           "category": "malicious",
           "label": "Trojan/Win32.Inject"
+        },
+        {
+          "name": "Bkav",
+          "category": "malicious",
+          "label": "W32.Malware.344CEF1"
         },
         {
           "name": "Cylance",
@@ -42,14 +47,29 @@
           "label": "MALICIOUS"
         },
         {
+          "name": "Fortinet",
+          "category": "malicious",
+          "label": "W32/PossibleThreat"
+        },
+        {
           "name": "Gridinsoft",
           "category": "malicious",
           "label": "Trojan.Win64.Downloader.cl"
         },
         {
+          "name": "Kaspersky",
+          "category": "malicious",
+          "label": "Trojan.Win32.Inject.aqyzy"
+        },
+        {
           "name": "Kingsoft",
           "category": "malicious",
           "label": "Win32.Trojan.Inject.aqyzy"
+        },
+        {
+          "name": "MaxSecure",
+          "category": "malicious",
+          "label": "Trojan.Malware.697412972.susgen"
         },
         {
           "name": "McAfeeD",
