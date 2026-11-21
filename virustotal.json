@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-20T20:34:25.884Z",
+  "checkedAt": "2026-11-21T07:27:42.667Z",
   "files": {
     "05156db823f6adebea8c37fada0161db9ab8cbb0d1549cf8266bdc7855d91b6d": {
       "analyzedAt": "2026-11-15T13:33:13.000Z",
@@ -23,8 +23,8 @@
       "vendors": []
     },
     "7b18bbb4ff34bf8bdfd2b5e09ba42a390d4ebaa1ec0c289cbd6a26e6e69aa7f3": {
-      "analyzedAt": "2026-11-18T02:49:02.000Z",
-      "score": "12 / 68",
+      "analyzedAt": "2026-11-20T20:40:09.000Z",
+      "score": "13 / 71",
       "vendors": [
         {
           "name": "Antiy-AVL",
@@ -45,6 +45,11 @@
           "name": "DeepInstinct",
           "category": "malicious",
           "label": "MALICIOUS"
+        },
+        {
+          "name": "Elastic",
+          "category": "malicious",
+          "label": "malicious (moderate confidence)"
         },
         {
           "name": "Fortinet",
@@ -72,14 +77,14 @@
           "label": "Trojan.Malware.697412972.susgen"
         },
         {
-          "name": "McAfeeD",
-          "category": "malicious",
-          "label": "ti!7B18BBB4FF34"
-        },
-        {
           "name": "Rising",
           "category": "malicious",
           "label": "Trojan.Inject!8.103 (CLOUD)"
+        },
+        {
+          "name": "TrellixENS",
+          "category": "malicious",
+          "label": "Artemis!9D7C01791C81"
         },
         {
           "name": "TrendMicro-HouseCall",
