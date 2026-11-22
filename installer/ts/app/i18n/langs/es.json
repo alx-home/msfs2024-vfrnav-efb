@@ -1,0 +1,35 @@
+{
+   "body": {
+      "invalidPath": "¡Ruta no válida!",
+      "communityPlaceholder": "Ubicación de la carpeta Community de MSFS 2024",
+      "serverPlaceholder": "Ruta de instalación de MSFS2024 VFRNav' Server",
+      "installingTitle": "Instalando",
+      "installingMessage": "Instalando MSFS2024 VFRNav' Server...",
+      "infoTitle": "Información",
+      "infoDescription1": "Este programa está diseñado para redirigir las solicitudes de exploración de archivos al sistema operativo y servir la aplicación a través de un servidor web.",
+      "infoDescription2Line1": "Ten en cuenta que MSFS2024 VFRNav' puede funcionar sin este programa simplemente arrastrando el complemento a la carpeta Community.",
+      "infoDescription2Line2": "Sin embargo, hacerlo no te permitirá abrir archivos PDF desde el ordenador ni acceder a la interfaz mediante un navegador web o un dispositivo externo.",
+      "startupTitle": "Inicio",
+      "autoStartLabel": "Inicio automático de MSFS2024 VFRNav' Server:",
+      "startupLogin": "Al iniciar sesión en Windows",
+      "startupMsfs": "Al iniciar MSFS",
+      "startupNever": "Nunca",
+      "installPathTitle": "Ruta de instalación",
+      "addonLabel": "Complemento:",
+      "serverLabel": "Servidor:"
+   },
+   "popup": {
+      "installSuccessTitle": "Información",
+      "installSuccessMessage": "¡MSFS2024 VFRNav' Server instalado correctamente!",
+      "startServer": "Iniciar servidor",
+      "close": "Cerrar",
+      "warningTitle": "Advertencia",
+      "removingFolder": "Eliminando carpeta:",
+      "continue": "Continuar",
+      "cancel": "Cancelar"
+   },
+   "trailer": {
+      "continue": "Continuar",
+      "abort": "Cancelar"
+   }
+}

@@ -1,0 +1,280 @@
+{
+   "serverState": {
+      "start": "Sunucuyu Başlat",
+      "stop": "Sunucuyu Durdur",
+      "invalidPort": "Geçersiz port",
+      "inProgress": "Devam ediyor"
+   },
+   "taskbar": {
+      "configure": "Yapılandır",
+      "close": "Kapat",
+      "openInApp": "Uygulamada Aç",
+      "openInBrowser": "Tarayıcıda Aç"
+   },
+   "taskbar_tooltip": {
+      "stay_minimized": "Uygulama simge durumunda kalır",
+      "got_it": "Anladım"
+   },
+   "donation": {
+      "title": "VFRNav'ı Destekle",
+      "intro": "VFRNav'ı beğeniyor musunuz?",
+      "soloDeveloper": "VFRNav tek bir kişi tarafından geliştirilmekte ve boş zamanlarda sürdürülmektedir.",
+      "copilotCost": "Tek başıma çalışırken geliştirmeyi sürdürmek için Copilot'a güveniyorum, ancak bunun bir maliyeti var.",
+      "supportImpact": "Bağışınız bu masrafların karşılanmasına yardımcı olur ve VFRNav'ın arkasındaki zamanı ve emeği destekler.",
+      "thankYou": "Çok teşekkürler!",
+      "donateAlt": "Bağış Yap",
+      "liberapaySubtitle": "Bağışınızın daha büyük bir kısmı geliştirmeyi destekler",
+      "preferredBadge": "Önerilen",
+      "paypalAriaLabel": "PayPal ile bağış yap",
+      "paypalAlt": "PayPal ile bağış yap",
+      "donateButton": "Bağış Yap",
+      "paypalSubtitle": "Kullanışlı ve yaygın olarak güvenilen",
+      "convenientBadge": "Kullanışlı",
+      "buyMeACoffeeAlt": "Buy Me a Coffee",
+      "buyMeACoffeeSubtitle": "Daha fazla platform ücreti içerir"
+   },
+   "app": {
+      "title": "MSFS2024 VFRNav' Sunucusu",
+      "openInBrowser": "Tarayıcıda Aç",
+      "openInApp": "Uygulamada Aç",
+      "terminate": "Sonlandır"
+   },
+   "body": {
+      "tabs": {
+         "settings": "Ayarlar",
+         "tablet3d": "3D Tablet",
+         "donation": "Bağış"
+      }
+   },
+   "efbAircraft": {
+      "title": "Kokpit EFB uçak yamaları",
+      "introLine1": "Seçilen uçakların tüm seçilebilir ön ayarlarını taşınabilir 3D tablet ile yamalayın.",
+      "introLine2": "Ayrı Community katman paketleri, diskteki kaynak uçak dosyalarını düzenlemeden mevcut tabletlerin yerini alır.",
+      "scanSettings": "Tarama ayarları",
+      "aircraftSource": "Uçak kaynağı :",
+      "modeStandard": "Standart",
+      "modeDeep": "Derin (VFS yansıtma)",
+      "modeStandardDesc": "Standart mod, Community klasöründeki açılmış uçakları tarar; simülatörün çalışıyor olması gerekmez.",
+      "modeDeepDesc": "Derin mod, VFS yansıtma yoluyla sunulan uçakları tarar. Geliştirici Modu ve VFS yansıtma etkinken MSFS'yi açık tutun. Bağlı katmanlar alttaki temel güncellemeleri gizleyebilir.",
+      "scanNoteLine1": "Tarama salt okunurdur.",
+      "scanNoteLine2": "Kaynak karmaları simülatör güncellemelerini algılar. Güncel olmayan yamaları yeniden oluşturmak için yeniden tarayın ve Uygula'ya tıklayın.",
+      "loadingInstalled": "Yüklü uçak yamaları yükleniyor...",
+      "careerNoticeLine1": "Kariyer modu: simülatör yamalanmış uçakları Kariyer görevlerinden hariç tutar.",
+      "careerNoticeLine2": "Kariyer oynamadan önce uçak yamalarını kaldırın ve MSFS'yi yeniden başlatın; 2D EFB Kariyer modunda çalışmaya devam eder.",
+      "gotIt": "Anladım",
+      "listSeparator": " ve ",
+      "careerRiskWarningOne": "Kariyer modu uyarısı: {{aircraft}} uçağını yamalamak, yamalı uçakların Kariyer görevlerinden hariç tutulmasının ötesinde tüm Kariyer modunu kullanılamaz hale getirebilir. Kariyer modunu kullanıyorsanız bu uçağı yamasız bırakın.",
+      "careerRiskWarningMany": "Kariyer modu uyarısı: {{aircraft}} uçaklarını yamalamak, yamalı uçakların Kariyer görevlerinden hariç tutulmasının ötesinde tüm Kariyer modunu kullanılamaz hale getirebilir. Kariyer modunu kullanıyorsanız bu uçakları yamasız bırakın.",
+      "confirm": "Onayla",
+      "cancel": "İptal",
+      "scanButton": "Uçakları tara",
+      "applyButton": "Uygula",
+      "reportSummary": "{{total}} uçak; {{selected}} seçili; {{patched}} yamalı; {{outdated}} güncel değil.",
+      "lastOperationSummary": "Son işlem: {{generated}} yamalandı/güncellendi; {{removed}} kaldırıldı.",
+      "reportsTitle": "Raporlar:",
+      "reportsAriaLabel": "Uçak işlem sonuçları"
+   },
+   "settings": {
+      "startup": {
+         "title": "Başlangıç",
+         "autoStart": "MSFS2024 VFRNav' Sunucusunu otomatik başlat :",
+         "windowsLogin": "Windows oturum açma",
+         "msfsStartup": "MSFS başlangıcı",
+         "never": "Asla"
+      },
+      "general": {
+         "title": "Ayarlar",
+         "language": "Dil :"
+      },
+      "embedServer": {
+         "title": "Dahili sunucu",
+         "descriptionLine1": "EFB harici bir cihaz veya web tarayıcısı üzerinden açıldığında dahili sunucu gereklidir.",
+         "descriptionLine2": "Ayrıca, EFB'ye doğrudan uygulama içinden erişildiğinde bile simülatörle senkronizasyonu sağlamak için başlatılmalıdır.",
+         "startAtLaunch": "Açılışta sunucuyu başlat :",
+         "port": "Bağlantı noktası :",
+         "portPlaceholder": "Sunucu dinleme bağlantı noktası",
+         "invalidPort": "Geçersiz bağlantı noktası (999 < değer < 65'536) !"
+      }
+   },
+   "vfsHelp": {
+      "title": "VFS yansıtmayı etkinleştir",
+      "close": "Kapat",
+      "step1": {
+         "title": "1. Geliştirici Modunu Etkinleştirin",
+         "description": "MSFS'de Seçenekler > Genel > Gelişmiş Seçenekler'i açın ve Geliştirici Modu'nu etkinleştirin.",
+         "alt": "Genel ayarlar: Gelişmiş Seçenekler'i seçin, ardından Geliştirici Modu'nu işaretleyin"
+      },
+      "step2": {
+         "title": "2. Virtual File System'ı Açın",
+         "description": "Üstteki geliştirici araç çubuğundan Tools > Virtual File System'ı seçin.",
+         "alt": "Geliştirici araç çubuğu: Tools'u açın ve Virtual File System'ı seçin"
+      },
+      "step3": {
+         "title": "3. Yansıtmayı başlatın",
+         "description": "VFS Projector bölümünde Start'a tıklayın. Projection started yazısını bekleyin. MSFS'yi açık tutun; derin tarama otomatik olarak kullanılabilir hale gelir.",
+         "alt": "VFS Projector: Start'a tıklayın ve Projection started yazısını bekleyin"
+      }
+   },
+   "aircraftResults": {
+      "title": "Uçaklar",
+      "status": {
+         "ariaLabel": "Uçak işlem durumu",
+         "vfsHelpLabel": "VFS yansıtma nasıl etkinleştirilir",
+         "restartRequired": "Paket değişikliklerinin geçerli olması için MSFS'yi yeniden başlatın.",
+         "gotIt": "Anladım"
+      },
+      "vfs": {
+         "NOT_ENABLED": "VFS yansıtma etkin değil. MSFS'yi başlatın, Geliştirici Modu'nu etkinleştirin ve ardından VFS Projector'ı başlatın.",
+         "NO_AIRCRAFT": "VFS yansıtma hiç uçak içermiyor. VFS Projector'ı başlatın veya yenileyin.",
+         "ACCESS_ERROR": "VFS yansıtmaya erişilemiyor: {{error}}",
+         "READ_ERROR": "VFS yansıtma okunamıyor: {{error}}",
+         "MONITORING_FAILED": "VFS izleme başarısız oldu: {{error}}",
+         "invalidResponse": "Geçersiz VFS izleme yanıtı.",
+         "monitoringFailedLog": "VFS yansıtma izleme başarısız oldu:"
+      },
+      "errors": {
+         "inventoryRefreshLog": "Yüklü EFB yama envanteri yenilenemedi:",
+         "inventoryRefreshFailed": "Uçak işlemi tamamlandı ancak yüklü yama envanteri yenilenemedi: {{error}}",
+         "managementFailedLog": "EFB uçak yönetimi başarısız oldu:",
+         "inventoryLoadLog": "Yüklü EFB yama envanteri yüklenemedi:",
+         "inventoryLoadFailed": "Yüklü uçak yamaları yüklenemiyor: {{error}}",
+         "invalidText": "Geçersiz uçak yöneticisi metni.",
+         "invalidCount": "Geçersiz uçak yöneticisi sayısı.",
+         "invalidResponse": "Geçersiz uçak yöneticisi yanıtı.",
+         "invalidAircraftEntry": "Geçersiz uçak girdisi.",
+         "invalidAircraftStatus": "Geçersiz uçak durumu.",
+         "invalidOperationEntry": "Geçersiz işlem girdisi."
+      },
+      "fleet": {
+         "errors": {
+            "msfsNotFound": "MSFS kurulumu bulunamıyor.",
+            "communityFromCfgNotFound": "MSFS UserCfg.opt dosyasından Community klasörü bulunamıyor.",
+            "invalidOperation": "Geçersiz EFB uçak işlemi.",
+            "operationRunning": "Başka bir EFB uçak işlemi zaten çalışıyor.",
+            "communityMissing": "Community dizini eksik.",
+            "selectionNotArray": "Uçak seçimi bir JSON dizisi olmalıdır.",
+            "selectionIdsNotStrings": "Uçak kimlikleri dize (string) olmalıdır.",
+            "sha256InitFailed": "SHA256 başlatılamadı.",
+            "reparsePathUnsupported": "Bağlantılı yollar veya yeniden ayrıştırma noktaları desteklenmiyor: {{path}}",
+            "cannotReadFile": "{{path}} okunamıyor. Derin modda VFS yansıtmayı etkinleştirin veya yenileyin; korumalı dosyalar erişilemez kalabilir.",
+            "readFailed": "Okuma başarısız oldu: {{path}}",
+            "invalidUtf16File": "Geçersiz UTF-16 dosyası: {{path}}",
+            "invalidUtf16Config": "Geçersiz UTF-16 yapılandırması.",
+            "sha256Failed": "SHA256 hesaplaması başarısız oldu.",
+            "emptyVirtualPath": "Boş sanal yol desteklenmiyor.",
+            "absoluteAttachmentPath": "Mutlak ek yolu desteklenmiyor.",
+            "attachmentTraversal": "Ek yollarında dizin geçişi desteklenmiyor.",
+            "dependencyNotReadable": "Gerekli bağımlılık okunamıyor: {{path}}",
+            "cannotWritePatchFile": "EFB yama dosyası {{path}} yazılamıyor: {{error}}",
+            "malformedIniSection": "Hatalı biçimlendirilmiş INI bölümü.",
+            "duplicateIniSection": "Yinelenen INI bölümü: {{section}}",
+            "managedPackageWrongAircraft": "Yönetilen paket farklı bir uçağa veya modele ait.",
+            "invalidTemplateReplacement": "Geçersiz veya yinelenen şablon değişimi: {{name}}",
+            "missingTemplateReplacement": "Eksik şablon değişimi: {{name}}",
+            "unusedTemplateReplacement": "Kullanılmayan şablon değişimi: {{name}}",
+            "rigDestinationExists": "Rig hedefi zaten mevcut.",
+            "cannotWatchVfs": "VFS yansıtma izlenemiyor: {{error}}",
+            "vfsWatcherFailed": "VFS izleyicisi başarısız oldu: {{error}}",
+            "cannotRearmVfsWatcher": "VFS izleyicisi yeniden etkinleştirilemiyor: {{error}}",
+            "vfsWatchDirNotFound": "VFS yansıtma için izlenecek bir dizin bulunamıyor.",
+            "invalidOwnershipMetadata": "Geçersiz sahiplik meta verileri.",
+            "invalidOwnershipFileList": "Geçersiz sahiplik dosya listesi.",
+            "emptyOwnershipFileList": "Boş sahiplik dosya listesi.",
+            "packageModified": "Paket değiştirilmiş; değişiklik reddedildi: {{path}}",
+            "packageIncomplete": "Paket eksik; değişiklik reddedildi.",
+            "missingGeneratorResource": "SDK tarafından derlenen tablet oluşturucu kaynağı eksik: {{name}}. VFRNav sunucusunu yeniden derleyin.",
+            "invalidGeneratorResource": "Geçersiz SDK derlemeli tablet oluşturucu kaynağı.",
+            "invalidAttachOffset": "Tablet montajı geçersiz bir attach_offset değerine sahip.",
+            "nonFiniteAttachOffset": "Tablet montajı sonlu olmayan bir attach_offset değerine sahip.",
+            "sourceOutsideRoots": "Kaynak dosya uçak içerik kök dizinlerinin dışında.",
+            "unreadableTabletAttachment": "Tabletin okunabilir bir ek referansı yok.",
+            "multifunctionCockpitEfb": "EFB çok işlevli bir kokpit ekinin parçasıdır; kaldırılması güvenli değildir.",
+            "invalidCameraCoordinates": "Geçersiz kamera koordinatları: {{name}}",
+            "missingCameraEyepoint": "Kamera bakış noktası (eyepoint) eksik.",
+            "nonFiniteCameraPosition": "Hesaplanan kamera konumu sonlu değil.",
+            "noReadableAttachedObjects": "Ön ayarda okunabilir bir attached_objects.cfg dosyası yok.",
+            "tabletNestedTooDeep": "Tablet bir ek seviyesinden daha derine yerleştirilmiş.",
+            "cannotDetermineNestedPath": "İç içe ek yolu belirlenemiyor.",
+            "noModularPresets": "Eski veya modüler olmayan uçakta modüler ön ayar yok.",
+            "noSelectableModularPresets": "Kullanıcı tarafından seçilebilir modüler ön ayar yok.",
+            "dependencyRequiresDeepScan": "Gerekli bağımlılık okunamıyor: {{path}}; derin tarama gerektiriyor.",
+            "rigPathMustBeRelative": "Rig yolları göreli olmalıdır.",
+            "rigPathTraversal": "Rig yolları dizinler arasında geçiş yapamaz.",
+            "rigFragmentTerminalLf": "Rig parçaları sonunda bir LF satır sonu gerektirir.",
+            "unknownAircraftSelection": "Bilinmeyen uçak seçimi; uygulamadan önce tekrar tarayın.",
+            "cannotPatchAircraft": "Seçilen uçak yamalanamıyor: {{error}}",
+            "unableToAllocateStaging": "Geçici hazırlama dizini ayrılamıyor."
+         },
+         "messages": {
+            "packageRemoved": "Doğrulanmış yönetilen paket kaldırıldı.",
+            "duplicateContainer": "Birden fazla açılmış paket aynı uçak kapsayıcısını sağlıyor.",
+            "vfsMaskStockUpdates": "VFS yansıtma, bağlı katmanların altındaki temel güncellemeleri gizleyebilir; açılmış kaynak paketler için Standart modu kullanın veya yamaları ayırıp yeniden tarayın.",
+            "cannotInspectManifest": "Kaynak paket bildirimi {{path}} incelenemiyor: {{error}}",
+            "cannotVerifyOverlay": "{{path}} için katman sahipliği doğrulanamıyor: {{error}}",
+            "nonOwnedOverlay": "Harici bir paket bu uçağın üzerine biniyor: {{path}}",
+            "legacyManagedPackage": "Eski yönetilen paket; uçak ayrıntıları mevcut değil.",
+            "installedVerifiedLocally": "Yüklü paket yerel olarak doğrulandı. Kaynak güncellemelerini kontrol etmek için uçakları tarayın.",
+            "vfsMonitoringStopped": "VFS izleme durduruldu.",
+            "cannotReadPilotCamera": "Pilot kamerası {{path}} okunamıyor: {{error}}",
+            "positionEstimated": "konum tahmin edildi; kokpit içindeki taşıma koluyla ayarlayın",
+            "cannotRecoverStockMetadata": "{{path}} konumundan önceki orijinal meta veriler kurtarılamıyor: {{error}}",
+            "presetNoFltsim0": "{{name}}: aircraft.cfg dosyasında okunabilir FLTSIM.0 bölümü yok; seçilebilir ön ayar varsayıldı.",
+            "presetAircraftCfgUnreadable": "{{name}}: aircraft.cfg korumalı veya okunamıyor; seçilebilir ön ayar varsayıldı. {{error}}"
+         }
+      },
+      "operations": {
+         "scan": "Uçaklar taranıyor...",
+         "apply": "Uçak yamaları uygulanıyor...",
+         "remove": "Uçak yamaları kaldırılıyor..."
+      },
+      "statuses": {
+         "patched": "yamalı",
+         "outdated": "güncel değil",
+         "unsupported": "desteklenmiyor",
+         "available": "kullanılabilir",
+         "foreign": "harici"
+      },
+      "row": {
+         "warningOne": "{{count}} uyarı",
+         "warningMany": "{{count}} uyarı",
+         "reason": "neden",
+         "keepLabel": "{{name}} uçağını koru",
+         "patchLabel": "{{name}} uçağını yamala",
+         "blocksCareerBadge": "Tüm Kariyer modunu engeller",
+         "blocksCareerTooltip": "Bu uçağı yamalamak yalnızca bu uçağı değil, tüm Kariyer modunu kullanılamaz hale getirebilir",
+         "presets": "Ön ayarlar: {{presets}}"
+      },
+      "table": {
+         "patch": "Yama",
+         "aircraftContainer": "Uçak / kapsayıcı",
+         "presets": "Ön ayarlar",
+         "status": "Durum",
+         "existingEfb": "Mevcut EFB"
+      },
+      "filters": {
+         "filterTitle": "Uçakları filtrele",
+         "filterLabel": "Uçakları filtrele :",
+         "filterPlaceholder": "Uçak, kapsayıcı veya ön ayar",
+         "statusLabel": "Durum :",
+         "statusAll": "Tümü",
+         "sortByLabel": "Sırala :",
+         "sortName": "Uçak",
+         "sortContainer": "Kapsayıcı",
+         "sortStatus": "Durum",
+         "sortPresets": "Ön ayarlar",
+         "sortWarnings": "Uyarılar",
+         "descendingTitle": "Azalan sıralama",
+         "descendingLabel": "Azalan sıralama :"
+      },
+      "empty": "Uçak bulunamadı (yüklü veya kullanılabilir uçak yamalarını tarayarak başlayın).",
+      "selectAll": "Gösterilenlerin tümünü seç",
+      "selectNone": "Gösterilenlerin seçimini kaldır"
+   },
+   "patchPlan": {
+      "title": "Bekleyen uçak değişiklikleri",
+      "none": "Yok.",
+      "toPatchTitle": "Yamalanacak / güncellenecek uçaklar",
+      "toUnpatchTitle": "Yaması kaldırılacak uçaklar",
+      "removeWarning": "Mevcut taramanın dışındaki paketler dahil olmak üzere doğrulanmış tüm yönetilen EFB paketlerini kaldırır. Değiştirilmiş veya harici paketlere dokunulmayacaktır."
+   }
+}

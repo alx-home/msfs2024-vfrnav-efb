@@ -18,6 +18,22 @@ ts_app(TARGET_NAME installer_app
       ${CMAKE_CURRENT_SOURCE_DIR}/app/main.tsx
       ${CMAKE_CURRENT_SOURCE_DIR}/app/tsconfig.json
 
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/I18nContext.tsx
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/en.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/fr.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/de.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/it.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/es.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/ja.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/nl.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/pl.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/pt.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/pt-BR.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/ru.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/sv.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/tr.json
+      ${CMAKE_CURRENT_SOURCE_DIR}/app/i18n/langs/zh-CN.json
+
       ${CMAKE_CURRENT_SOURCE_DIR}/app/App/App.tsx
       ${CMAKE_CURRENT_SOURCE_DIR}/app/App/Body.tsx
 

@@ -36,11 +36,11 @@ Planner::CompensateRigDefaultPose(Section& sec) {
    std::istringstream input{offset};
    double             x{}, y{}, z{};
    if (!input.eof() && !(input >> x >> y >> z)) {
-      throw std::runtime_error("Tablet mount has an invalid attach_offset.");
+      throw FleetError(FleetError::Code::INVALID_ATTACH_OFFSET);
    }
 
    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z)) {
-      throw std::runtime_error("Tablet mount has a non-finite attach_offset.");
+      throw FleetError(FleetError::Code::NON_FINITE_ATTACH_OFFSET);
    }
 
    std::ostringstream corrected{};
@@ -153,7 +153,7 @@ Planner::Track(Plan& plan, fs::path const& file, std::vector<fs::path> const& ro
    }
 
    if (relative.empty()) {
-      throw std::runtime_error("Source file is outside the aircraft content roots.");
+      throw FleetError(FleetError::Code::SOURCE_OUTSIDE_ROOTS);
    }
 
    auto bytes{FileSystem::ReadBytes(origin)};
@@ -223,7 +223,7 @@ Planner::IsTablet(Section const& sec, std::vector<fs::path> const& roots, Plan& 
    auto model{Planner::AttachmentModel(sec, roots)};
    if (model.empty()) {
       if (named) {
-         throw std::runtime_error("Tablet has no readable attachment reference.");
+         throw FleetError(FleetError::Code::UNREADABLE_TABLET_ATTACHMENT);
       }
 
       return false;
@@ -240,9 +240,7 @@ Planner::IsTablet(Section const& sec, std::vector<fs::path> const& roots, Plan& 
      (named || efb)
      && (text.find("vcockpit") != std::string::npos || text.find("[window0") != std::string::npos)
    ) {
-      throw std::runtime_error(
-        "EFB is part of a multifunction cockpit attachment; removal is unsafe."
-      );
+      throw FleetError(FleetError::Code::MULTIFUNCTION_COCKPIT_EFB);
    }
 
    return named || efb;
@@ -266,10 +264,7 @@ Planner::ReplaceTabletsWithRig(
       changed = true;
       if (!rigPlaced) {
          Planner::ConfigureRigAttachment(
-           sec,
-           Package::RigRoot(plan.info_.id_),
-           Package::RigAlias(plan.info_.id_),
-           true
+           sec, Package::RigRoot(plan.info_.id_), Package::RigAlias(plan.info_.id_), true
          );
          rigPlaced = true;
       } else {
@@ -295,7 +290,7 @@ Planner::PilotOffset(Plan& plan, fs::path const& preset, std::vector<fs::path> c
         !(input >> position[0] >> position[1] >> position[2]) || !(input >> std::ws).eof()
         || !std::ranges::all_of(position, [](double value) { return std::isfinite(value); })
       ) {
-         throw std::runtime_error("Invalid camera coordinates: " + text);
+         throw FleetError::WithName(FleetError::Code::INVALID_CAMERA_COORDINATES, text);
       }
 
       return position;
@@ -319,7 +314,7 @@ Planner::PilotOffset(Plan& plan, fs::path const& preset, std::vector<fs::path> c
             }
 
             if (eye_text.empty()) {
-               throw std::runtime_error("Missing camera eyepoint.");
+               throw FleetError(FleetError::Code::MISSING_CAMERA_EYEPOINT);
             }
 
             eye = parse(eye_text);
@@ -344,7 +339,7 @@ Planner::PilotOffset(Plan& plan, fs::path const& preset, std::vector<fs::path> c
                if (!std::ranges::all_of(position, [](double value) {
                       return std::isfinite(value);
                    })) {
-                  throw std::runtime_error("Calculated camera position is non-finite.");
+                  throw FleetError(FleetError::Code::NON_FINITE_CAMERA_POSITION);
                }
 
                return position;
@@ -352,12 +347,12 @@ Planner::PilotOffset(Plan& plan, fs::path const& preset, std::vector<fs::path> c
          }
       } catch (std::exception const& error) {
          plan.info_.warnings_.push_back(
-           "Cannot read pilot camera " + file.string() + ": " + error.what()
+           FleetMessage::Make(FleetMessage::Code::CANNOT_READ_PILOT_CAMERA, file, error.what())
          );
       }
    }
 
-   plan.info_.warnings_.emplace_back("position estimated; adjust with the in-cockpit move handle");
+   plan.info_.warnings_.emplace_back(FleetMessage::Make(FleetMessage::Code::POSITION_ESTIMATED));
    return {0, .8, 0};
 }
 
@@ -369,7 +364,7 @@ Planner::PatchPreset(Plan& plan, fs::path const& preset, std::vector<fs::path> c
    }
 
    if (!fs::is_regular_file(attached)) {
-      throw std::runtime_error("Preset has no readable attached_objects.cfg.");
+      throw FleetError(FleetError::Code::NO_READABLE_ATTACHED_OBJECTS);
    }
 
    Ini  cfg{Planner::Track(plan, attached, roots)};
@@ -417,7 +412,7 @@ Planner::PatchPreset(Plan& plan, fs::path const& preset, std::vector<fs::path> c
                Ini  grandchild{Planner::Track(plan, deeper, roots)};
                bool deeper_rig_placed{false};
                if (Planner::ReplaceTabletsWithRig(grandchild, roots, plan, deeper_rig_placed)) {
-                  throw std::runtime_error("Tablet is nested deeper than one attachment level.");
+                  throw FleetError(FleetError::Code::TABLET_NESTED_TOO_DEEP);
                }
             }
          }
@@ -430,7 +425,7 @@ Planner::PatchPreset(Plan& plan, fs::path const& preset, std::vector<fs::path> c
             return item.second.origin_ == nested.lexically_normal().string();
          })};
          if (stock == plan.stock_.end()) {
-            throw std::runtime_error("Cannot determine nested attachment path.");
+            throw FleetError(FleetError::Code::CANNOT_DETERMINE_NESTED_PATH);
          }
 
          plan.files_[stock->second.path_] = child.Text();
@@ -494,8 +489,9 @@ Planner::Inspect(
             }
          } catch (std::exception const& error) {
             plan.info_.warnings_.push_back(
-              "Cannot recover previous stock metadata from " + package.string() + ": "
-              + error.what()
+              FleetMessage::Make(
+                FleetMessage::Code::CANNOT_RECOVER_STOCK_METADATA, package, error.what()
+              )
             );
          }
       }
@@ -504,7 +500,7 @@ Planner::Inspect(
    try {
       FileSystem::SafePath(aircraft);
       if (!fs::is_directory(aircraft / "presets")) {
-         throw std::runtime_error("Legacy/non-modular aircraft has no modular presets.");
+         throw FleetError(FleetError::Code::NO_MODULAR_PRESETS);
       }
 
       for (auto const& vendor : fs::directory_iterator{aircraft / "presets"}) {
@@ -532,8 +528,9 @@ Planner::Inspect(
                       return sec.name_ == "fltsim.0";
                    })) {
                   plan.info_.warnings_.push_back(
-                    preset.path().filename().string()
-                    + ": aircraft.cfg has no readable FLTSIM.0; selectable preset assumed."
+                    FleetMessage::MakeWithName(
+                      FleetMessage::Code::PRESET_NO_FLTSIM0, preset.path().filename().string()
+                    )
                   );
                }
 
@@ -569,8 +566,11 @@ Planner::Inspect(
                }
             } catch (std::exception const& error) {
                plan.info_.warnings_.push_back(
-                 preset.path().filename().string()
-                 + ": aircraft.cfg protected/unreadable; selectable preset assumed. " + error.what()
+                 FleetMessage::MakeWithName(
+                   FleetMessage::Code::PRESET_AIRCRAFT_CFG_UNREADABLE,
+                   preset.path().filename().string(),
+                   error.what()
+                 )
                );
             }
 
@@ -585,17 +585,20 @@ Planner::Inspect(
       }
 
       if (!plan.info_.preset_count_) {
-         throw std::runtime_error("No user-selectable modular presets.");
+         throw FleetError(FleetError::Code::NO_SELECTABLE_MODULAR_PRESETS);
       }
 
+   } catch (FleetError const& error) {
+      plan.info_.status_ = "unsupported";
+      if (mode == "standard" && error.GetCode() == FleetError::Code::DEPENDENCY_NOT_READABLE) {
+         plan.info_.reason_ =
+           FleetError(FleetError::Code::DEPENDENCY_REQUIRES_DEEP_SCAN, error.GetPath()).what();
+      } else {
+         plan.info_.reason_ = error.what();
+      }
    } catch (std::exception const& error) {
       plan.info_.status_ = "unsupported";
       plan.info_.reason_ = error.what();
-      if (
-        mode == "standard" && plan.info_.reason_.find("Required dependency") != std::string::npos
-      ) {
-         plan.info_.reason_ += "; requires Deep scan.";
-      }
    }
 
    std::ranges::sort(plan.info_.preset_names_);

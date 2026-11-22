@@ -49,7 +49,7 @@ win32_library(TARGET_NAME tablet_templates
         Templates.cpp
         "${CMAKE_CURRENT_BINARY_DIR}/TemplateResources.cpp"
 )
-target_link_libraries(tablet_templates PRIVATE tablet_template_resources)
+target_link_libraries(tablet_templates PRIVATE tablet_template_resources Boost::json)
 
 win32_library(TARGET_NAME tablet_vfs
     STATIC
@@ -57,6 +57,7 @@ win32_library(TARGET_NAME tablet_vfs
     FILES VfsWatcher.cpp
 )
 target_compile_definitions(tablet_vfs PRIVATE WIN32_LEAN_AND_MEAN)
+target_link_libraries(tablet_vfs PRIVATE Boost::json)
 
 win32_library(TARGET_NAME tablet_rig
     STATIC

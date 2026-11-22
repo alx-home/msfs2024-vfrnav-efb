@@ -63,6 +63,10 @@ declare global {
       switchServer: () => Promise<void>;
       watchServerState: () => Promise<ServerState>;
       getServerState: () => Promise<ServerState>;
+
+      getLang: () => Promise<string>;
+      setLang: (_value: string) => Promise<void>;
+      watchLang: () => Promise<string>;
    }
 }
 

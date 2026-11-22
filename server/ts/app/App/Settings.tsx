@@ -16,8 +16,8 @@
 import { CheckBox, Input, Scroll, Select, SelectOption } from "@alx-home/Utils";
 import { StartupOption } from "@server-common/env";
 import { PropsWithChildren, useEffect, useRef, useState } from "react";
-
 import { useEvent } from 'react-use-event-hook';
+import { useTranslation, Language, LANGUAGES } from "@vfrnav/i18n";
 
 
 const Elem = ({ children }: PropsWithChildren) => {
@@ -26,11 +26,11 @@ const Elem = ({ children }: PropsWithChildren) => {
    </div>
 }
 
-type Language = 'English';
 const MIN_PORT = 1000;
 const MAX_PORT = 65535;
 
 export const Settings = () => {
+   const { t, lang, setLang } = useTranslation();
    const [startupOption, setStartupOption] = useState<StartupOption>('Login');
    const [startServer, setStartServer] = useState(true);
    const portInput = useRef<HTMLInputElement>(null);
@@ -69,8 +69,6 @@ export const Settings = () => {
       return Promise.resolve(result);
    })
 
-   const doNothing = useEvent(() => { });
-
    useEffect(() => {
       (async () => {
          setStartServer(await globalThis.window.autostartServer());
@@ -91,52 +89,54 @@ export const Settings = () => {
 
    return <Scroll className='flex-col grow'>
       <div className='flex flex-col grow mx-auto min-w-[80%] justify-center p-5 gap-3 py-6'>
-         <h2 className='mt-1 text-lg'>Startup</h2>
+         <h2 className='mt-1 text-lg'>{t('settings.startup.title')}</h2>
          <Elem>
-            <div className='m-auto mr-5 grow min-w-0'>Auto start MSFS2024 VFRNav&apos; Server :</div>
+            <div className='m-auto mr-5 grow min-w-0'>{t('settings.startup.autoStart')}</div>
             <div className='shrink'>
                <Select value={startupOption} active={true} onChange={_setStartupOption} className='min-w-40'>
-                  <SelectOption<StartupOption> id={'Login'}>Windows login</SelectOption>
-                  <SelectOption<StartupOption> id={'Startup'}>MSFS startup</SelectOption>
-                  <SelectOption<StartupOption> id={'Never'}>Never</SelectOption>
+                  <SelectOption<StartupOption> id={'Login'}>{t('settings.startup.windowsLogin')}</SelectOption>
+                  <SelectOption<StartupOption> id={'Startup'}>{t('settings.startup.msfsStartup')}</SelectOption>
+                  <SelectOption<StartupOption> id={'Never'}>{t('settings.startup.never')}</SelectOption>
                </Select>
             </div>
          </Elem>
-         <h2 className='mt-2 text-lg'>Settings</h2>
+         <h2 className='mt-2 text-lg'>{t('settings.general.title')}</h2>
          <Elem>
-            <div className='m-auto mr-5 grow min-w-0'>Language :</div>
+            <div className='m-auto mr-5 grow min-w-0'>{t('settings.general.language')}</div>
             <div className='shrink'>
-               <Select value={'English'} disabled={true} active={false} className='min-w-40' onChange={doNothing}>
-                  <SelectOption<Language> id={'English'}>English</SelectOption>
+               <Select value={lang} active={true} className='min-w-40' onChange={setLang}>
+                  {LANGUAGES.map(lang => (
+                     <SelectOption<Language> key={lang.id} id={lang.id}>{lang.label}</SelectOption>
+                  ))}
                </Select>
             </div>
          </Elem>
-         <h2 className='mt-2 text-lg'>Embed server</h2>
+         <h2 className='mt-2 text-lg'>{t('settings.embedServer.title')}</h2>
          <blockquote className="p-4  border-s-4 border-gray-500 bg-gray-800">
             <p className="text-sm italic font-medium leading-relaxed text-white">
-               The embed server is required when opening the EFB via an external device or web browser.<br />
-               Additionally, even when accessing the EFB directly within the app, it must be launched to ensure synchronization with the simulator.
+               {t('settings.embedServer.descriptionLine1')}<br />
+               {t('settings.embedServer.descriptionLine2')}
             </p>
          </blockquote>
          <Elem>
-            <div className='flex flex-row grow m-auto mr-5'>Start server at launch :</div>
+            <div className='flex flex-row grow m-auto mr-5'>{t('settings.embedServer.startAtLaunch')}</div>
             <CheckBox value={startServer} active={!invalidPort} onChange={_setStartServer} />
          </Elem>
          <Elem>
             <div className="peer flex flex-row grow">
-               <div className='flex flex-row m-auto mr-5 grow drop-shadow-md'>Port :</div>
+               <div className='flex flex-row m-auto mr-5 grow drop-shadow-md'>{t('settings.embedServer.port')}</div>
                {/* peer-[.invalid]:flex peer-[.invalid]:opacity-100 */}
                <div className="flex flex-col grow [&:has(.invalid)_:last-child]:opacity-100">
                   <div className="flex flex-row transition-all [&>.invalid]:mt-[-10px] justify-end">
                      <Input ref={portInput} className='peer transition-all max-w-40 px-2' inputClass='text-right'
                         active={true} placeholder={
-                           "Server listening port"
+                           t('settings.embedServer.portPlaceholder')
                         } inputMode={'decimal'}
                         validate={validatePort} onChange={_setPort} />
                   </div>
                   <div className="flex flex-row grow opacity-0 transition-all justify-end">
                      <p className="pt-1 text-red-500 text-xs h-0">
-                        Invalid port (999 {'<'} value {'<'} 65&apos;536) !
+                        {t('settings.embedServer.invalidPort')}
                      </p>
                   </div>
                </div>

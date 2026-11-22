@@ -14,9 +14,9 @@
  */
 
 #include "RigText.h"
+#include "FleetError.h"
 
 #include <fstream>
-#include <stdexcept>
 
 namespace tablet {
 
@@ -32,13 +32,13 @@ RigText::Write(std::filesystem::path const& path, std::string const& text) {
 
 void
 RigText::ValidateRelativePath(std::filesystem::path const& path) {
-   if (path.empty() || path.has_root_path()) {
-      throw std::invalid_argument("Rig paths must be relative");
+   if (path.empty() || path.has_root_path()) {
+      throw FleetError(FleetError::Code::RIG_PATH_MUST_BE_RELATIVE);
    }
 
    for (auto const& part : path) {
       if (part == ".." || part == ".") {
-         throw std::invalid_argument("Rig paths cannot traverse directories");
+         throw FleetError(FleetError::Code::RIG_PATH_TRAVERSAL);
       }
    }
 }
@@ -73,7 +73,7 @@ std::string
 RigText::Fragment(std::string_view name, Templates::Replacements replacements) {
    auto text{Templates::Render(name, replacements)};
    if (text.empty() || text.back() != '\n') {
-      throw std::invalid_argument("Rig fragments require an authored terminal LF");
+      throw FleetError(FleetError::Code::RIG_FRAGMENT_TERMINAL_LF);
    }
 
    text.pop_back();

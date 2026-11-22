@@ -1,0 +1,280 @@
+{
+   "serverState": {
+      "start": "Server starten",
+      "stop": "Server stoppen",
+      "invalidPort": "Ongeldige poort",
+      "inProgress": "Bezig"
+   },
+   "taskbar": {
+      "configure": "Configureren",
+      "close": "Sluiten",
+      "openInApp": "Openen in app",
+      "openInBrowser": "Openen in browser"
+   },
+   "taskbar_tooltip": {
+      "stay_minimized": "De app blijft geminimaliseerd",
+      "got_it": "Begrepen"
+   },
+   "donation": {
+      "title": "Steun VFRNav",
+      "intro": "Geniet je van VFRNav?",
+      "soloDeveloper": "VFRNav wordt door één persoon ontwikkeld en in de vrije tijd onderhouden.",
+      "copilotCost": "Omdat ik alleen werk, vertrouw ik op Copilot om de ontwikkeling gaande te houden, maar daar zijn kosten aan verbonden.",
+      "supportImpact": "Jouw donatie helpt deze kosten te dekken en ondersteunt de tijd en moeite achter VFRNav.",
+      "thankYou": "Hartelijk dank!",
+      "donateAlt": "Doneren",
+      "liberapaySubtitle": "Een groter deel van je donatie ondersteunt de ontwikkeling",
+      "preferredBadge": "Aanbevolen",
+      "paypalAriaLabel": "Doneren met PayPal",
+      "paypalAlt": "Doneren met PayPal",
+      "donateButton": "Doneren",
+      "paypalSubtitle": "Handig en breed vertrouwd",
+      "convenientBadge": "Handig",
+      "buyMeACoffeeAlt": "Buy Me a Coffee",
+      "buyMeACoffeeSubtitle": "Bevat meer platformkosten"
+   },
+   "app": {
+      "title": "MSFS2024 VFRNav' Server",
+      "openInBrowser": "Openen in browser",
+      "openInApp": "Openen in app",
+      "terminate": "Beëindigen"
+   },
+   "body": {
+      "tabs": {
+         "settings": "Instellingen",
+         "tablet3d": "3D-tablet",
+         "donation": "Doneren"
+      }
+   },
+   "efbAircraft": {
+      "title": "Cockpit EFB-vliegtuigpatches",
+      "introLine1": "Patch alle selecteerbare presets van geselecteerde vliegtuigen met de verplaatsbare 3D-tablet.",
+      "introLine2": "Afzonderlijke Community-overlaypakketten vervangen bestaande tablets zonder bronbestanden van vliegtuigen op schijf te wijzigen.",
+      "scanSettings": "Scaninstellingen",
+      "aircraftSource": "Vliegtuigbron :",
+      "modeStandard": "Standaard",
+      "modeDeep": "Diep (VFS-projectie)",
+      "modeStandardDesc": "Standaard scant uitgepakte Community-vliegtuigen; geen draaiende simulator vereist.",
+      "modeDeepDesc": "Diep scant vliegtuigen die via VFS-projectie beschikbaar zijn. Houd MSFS actief met Ontwikkelaarsmodus en VFS-projectie ingeschakeld. Geactiveerde overlays kunnen onderliggende standaardupdates verbergen.",
+      "scanNoteLine1": "Scannen is alleen-lezen.",
+      "scanNoteLine2": "Bron-hashes detecteren simulatorupdates. Scan opnieuw en klik op Toepassen om verouderde patches opnieuw te genereren.",
+      "loadingInstalled": "Geïnstalleerde vliegtuigpatches laden...",
+      "careerNoticeLine1": "Carrièremodus: de simulator sluit gepatchte vliegtuigen uit van Carrière-missies.",
+      "careerNoticeLine2": "Verwijder de vliegtuigpatches en herstart MSFS voordat je Carrière speelt; de 2D-EFB blijft werken in Carrière.",
+      "gotIt": "Begrepen",
+      "listSeparator": " en ",
+      "careerRiskWarningOne": "Waarschuwing Carrièremodus: het patchen van {{aircraft}} kan de volledige Carrièremodus onbeschikbaar maken, naast het uitsluiten van gepatchte vliegtuigen uit Carrière-missies. Laat dit vliegtuig ongepatcht als je de Carrièremodus gebruikt.",
+      "careerRiskWarningMany": "Waarschuwing Carrièremodus: het patchen van {{aircraft}} kan de volledige Carrièremodus onbeschikbaar maken, naast het uitsluiten van gepatchte vliegtuigen uit Carrière-missies. Laat deze vliegtuigen ongepatcht als je de Carrièremodus gebruikt.",
+      "confirm": "Bevestigen",
+      "cancel": "Annuleren",
+      "scanButton": "Vliegtuigen scannen",
+      "applyButton": "Toepassen",
+      "reportSummary": "{{total}} vliegtuigen; {{selected}} geselecteerd; {{patched}} gepatcht; {{outdated}} verouderd.",
+      "lastOperationSummary": "Laatste bewerking: {{generated}} gepatcht/bijgewerkt; {{removed}} verwijderd.",
+      "reportsTitle": "Rapporten:",
+      "reportsAriaLabel": "Resultaten van vliegtuigbewerkingen"
+   },
+   "settings": {
+      "startup": {
+         "title": "Opstarten",
+         "autoStart": "MSFS2024 VFRNav' Server automatisch starten :",
+         "windowsLogin": "Windows-aanmelding",
+         "msfsStartup": "MSFS-opstart",
+         "never": "Nooit"
+      },
+      "general": {
+         "title": "Instellingen",
+         "language": "Taal :"
+      },
+      "embedServer": {
+         "title": "Geïntegreerde server",
+         "descriptionLine1": "De geïntegreerde server is vereist bij het openen van de EFB via een extern apparaat of webbrowser.",
+         "descriptionLine2": "Bovendien moet deze ook bij directe toegang tot de EFB in de app worden gestart om synchronisatie met de simulator te garanderen.",
+         "startAtLaunch": "Server starten bij opstarten :",
+         "port": "Poort :",
+         "portPlaceholder": "Luisterpoort van de server",
+         "invalidPort": "Ongeldige poort (999 < waarde < 65'536) !"
+      }
+   },
+   "vfsHelp": {
+      "title": "VFS-projectie inschakelen",
+      "close": "Sluiten",
+      "step1": {
+         "title": "1. Ontwikkelaarsmodus inschakelen",
+         "description": "Open in MSFS Instellingen > Algemeen > Geavanceerde opties en schakel Ontwikkelaarsmodus in.",
+         "alt": "Algemene instellingen: selecteer Geavanceerde opties en vink Ontwikkelaarsmodus aan"
+      },
+      "step2": {
+         "title": "2. Virtual File System openen",
+         "description": "Kies in de ontwikkelaarswerkbalk bovenaan Tools > Virtual File System.",
+         "alt": "Ontwikkelaarswerkbalk: open Tools en kies Virtual File System"
+      },
+      "step3": {
+         "title": "3. Projectie starten",
+         "description": "Klik in het gedeelte VFS Projector op Start. Wacht op Projection started. Laat MSFS actief; diep scannen wordt automatisch beschikbaar.",
+         "alt": "VFS Projector: klik op Start en wacht op Projection started"
+      }
+   },
+   "aircraftResults": {
+      "title": "Vliegtuigen",
+      "status": {
+         "ariaLabel": "Status van vliegtuigbewerking",
+         "vfsHelpLabel": "Hoe VFS-projectie inschakelen",
+         "restartRequired": "Herstart MSFS om pakketwijzigingen door te voeren.",
+         "gotIt": "Begrepen"
+      },
+      "vfs": {
+         "NOT_ENABLED": "VFS-projectie is niet ingeschakeld. Start MSFS, schakel de Ontwikkelaarsmodus in en start vervolgens de VFS Projector.",
+         "NO_AIRCRAFT": "VFS-projectie bevat geen vliegtuigen. Start of vernieuw de VFS Projector.",
+         "ACCESS_ERROR": "Kan geen toegang krijgen tot de VFS-projectie: {{error}}",
+         "READ_ERROR": "Kan de VFS-projectie niet lezen: {{error}}",
+         "MONITORING_FAILED": "VFS-monitoring mislukt: {{error}}",
+         "invalidResponse": "Ongeldige reactie van VFS-monitoring.",
+         "monitoringFailedLog": "Monitoring van VFS-projectie mislukt:"
+      },
+      "errors": {
+         "inventoryRefreshLog": "Vernieuwen van inventaris met geïnstalleerde EFB-patches mislukt:",
+         "inventoryRefreshFailed": "Vliegtuigbewerking voltooid, maar de inventaris met geïnstalleerde patches kon niet worden vernieuwd: {{error}}",
+         "managementFailedLog": "EFB-vliegtuigbeheer mislukt:",
+         "inventoryLoadLog": "Laden van inventaris met geïnstalleerde EFB-patches mislukt:",
+         "inventoryLoadFailed": "Kan geïnstalleerde vliegtuigpatches niet laden: {{error}}",
+         "invalidText": "Ongeldige tekst van vliegtuigbeheer.",
+         "invalidCount": "Ongeldig aantal van vliegtuigbeheer.",
+         "invalidResponse": "Ongeldige reactie van vliegtuigbeheer.",
+         "invalidAircraftEntry": "Ongeldige vliegtuigvermelding.",
+         "invalidAircraftStatus": "Ongeldige vliegtuigstatus.",
+         "invalidOperationEntry": "Ongeldige bewerkingsvermelding."
+      },
+      "fleet": {
+         "errors": {
+            "msfsNotFound": "Kan de MSFS-installatie niet vinden.",
+            "communityFromCfgNotFound": "Kan de map Community niet vinden vanuit MSFS UserCfg.opt.",
+            "invalidOperation": "Ongeldige EFB-vliegtuigbewerking.",
+            "operationRunning": "Er wordt al een andere EFB-vliegtuigbewerking uitgevoerd.",
+            "communityMissing": "De map Community ontbreekt.",
+            "selectionNotArray": "Vliegtuigselectie moet een JSON-array zijn.",
+            "selectionIdsNotStrings": "Vliegtuig-ID's moeten tekenreeksen zijn.",
+            "sha256InitFailed": "SHA256-initialisatie mislukt.",
+            "reparsePathUnsupported": "Gekoppelde paden of reparse-punten worden niet ondersteund: {{path}}",
+            "cannotReadFile": "Kan {{path}} niet lezen. Schakel in de diepe modus VFS-projectie in of vernieuw deze; beveiligde bestanden kunnen ontoegankelijk blijven.",
+            "readFailed": "Lezen mislukt: {{path}}",
+            "invalidUtf16File": "Ongeldig UTF-16-bestand: {{path}}",
+            "invalidUtf16Config": "Ongeldige UTF-16-configuratie.",
+            "sha256Failed": "SHA256-berekening mislukt.",
+            "emptyVirtualPath": "Een leeg virtueel pad wordt niet ondersteund.",
+            "absoluteAttachmentPath": "Een absoluut bijlagepad wordt niet ondersteund.",
+            "attachmentTraversal": "Directorytraversal in bijlagen wordt niet ondersteund.",
+            "dependencyNotReadable": "Vereiste afhankelijkheid is niet leesbaar: {{path}}",
+            "cannotWritePatchFile": "Kan EFB-patchbestand {{path}} niet schrijven: {{error}}",
+            "malformedIniSection": "Ongeldige INI-sectie.",
+            "duplicateIniSection": "Dubbele INI-sectie: {{section}}",
+            "managedPackageWrongAircraft": "Het beheerde pakket hoort bij een ander vliegtuig of model.",
+            "invalidTemplateReplacement": "Ongeldige of dubbele sjabloonvervanging: {{name}}",
+            "missingTemplateReplacement": "Ontbrekende sjabloonvervanging: {{name}}",
+            "unusedTemplateReplacement": "Ongebruikte sjabloonvervanging: {{name}}",
+            "rigDestinationExists": "De rig-bestemming bestaat al.",
+            "cannotWatchVfs": "Kan VFS-projectie niet volgen: {{error}}",
+            "vfsWatcherFailed": "VFS-watcher mislukt: {{error}}",
+            "cannotRearmVfsWatcher": "Kan VFS-watcher niet opnieuw activeren: {{error}}",
+            "vfsWatchDirNotFound": "Kan geen map vinden om te volgen voor VFS-projectie.",
+            "invalidOwnershipMetadata": "Ongeldige eigendomsmetadata.",
+            "invalidOwnershipFileList": "Ongeldige eigendomsbestandenlijst.",
+            "emptyOwnershipFileList": "Lege eigendomsbestandenlijst.",
+            "packageModified": "Pakket is gewijzigd; wijziging geweigerd: {{path}}",
+            "packageIncomplete": "Pakket is onvolledig; wijziging geweigerd.",
+            "missingGeneratorResource": "Door SDK gecompileerde tabletgeneratorbron ontbreekt: {{name}}. Bouw de VFRNav-server opnieuw.",
+            "invalidGeneratorResource": "Ongeldige door SDK gecompileerde tabletgeneratorbron.",
+            "invalidAttachOffset": "Tabletbevestiging heeft een ongeldige attach_offset.",
+            "nonFiniteAttachOffset": "Tabletbevestiging heeft een niet-eindige attach_offset.",
+            "sourceOutsideRoots": "Bronbestand bevindt zich buiten de inhoudsbasismappen van het vliegtuig.",
+            "unreadableTabletAttachment": "Tablet heeft geen leesbare bijlagereferentie.",
+            "multifunctionCockpitEfb": "EFB maakt deel uit van een multifunctionele cockpitbijlage; verwijderen is onveilig.",
+            "invalidCameraCoordinates": "Ongeldige cameracoördinaten: {{name}}",
+            "missingCameraEyepoint": "Camera-eyepoint ontbreekt.",
+            "nonFiniteCameraPosition": "Berekende camerapositie is niet eindig.",
+            "noReadableAttachedObjects": "Preset heeft geen leesbaar bestand attached_objects.cfg.",
+            "tabletNestedTooDeep": "Tablet is dieper dan één bijlageniveau genest.",
+            "cannotDetermineNestedPath": "Kan het pad van de geneste bijlage niet bepalen.",
+            "noModularPresets": "Verouderd/niet-modulair vliegtuig heeft geen modulaire presets.",
+            "noSelectableModularPresets": "Geen door de gebruiker selecteerbare modulaire presets.",
+            "dependencyRequiresDeepScan": "Vereiste afhankelijkheid is niet leesbaar: {{path}}; vereist diepe scan.",
+            "rigPathMustBeRelative": "Rig-paden moeten relatief zijn.",
+            "rigPathTraversal": "Rig-paden mogen geen mappen doorlopen.",
+            "rigFragmentTerminalLf": "Rig-fragmenten vereisen een afsluitende LF-regeleinde.",
+            "unknownAircraftSelection": "Onbekende vliegtuigselectie; scan opnieuw voordat je toepast.",
+            "cannotPatchAircraft": "Kan geselecteerd vliegtuig niet patchen: {{error}}",
+            "unableToAllocateStaging": "Kan tijdelijke staging-map niet toewijzen."
+         },
+         "messages": {
+            "packageRemoved": "Geverifieerd beheerd pakket verwijderd.",
+            "duplicateContainer": "Meerdere uitgepakte pakketten bieden dezelfde vliegtuigcontainer.",
+            "vfsMaskStockUpdates": "VFS-projectie kan standaardupdates onder geactiveerde overlays verbergen; gebruik de standaardmodus voor uitgepakte bronpakketten of scan opnieuw met uitgeschakelde patches.",
+            "cannotInspectManifest": "Kan manifest van bronpakket {{path}} niet inspecteren: {{error}}",
+            "cannotVerifyOverlay": "Kan overlay-eigendom voor {{path}} niet verifiëren: {{error}}",
+            "nonOwnedOverlay": "Extern pakket overlapt dit vliegtuig: {{path}}",
+            "legacyManagedPackage": "Verouderd beheerd pakket; vliegtuiggegevens zijn niet beschikbaar.",
+            "installedVerifiedLocally": "Geïnstalleerd pakket lokaal geverifieerd. Scan vliegtuigen om bronupdates te controleren.",
+            "vfsMonitoringStopped": "VFS-monitoring gestopt.",
+            "cannotReadPilotCamera": "Kan pilootcamera {{path}} niet lezen: {{error}}",
+            "positionEstimated": "positie geschat; pas aan met de verplaatsingshendel in de cockpit",
+            "cannotRecoverStockMetadata": "Kan eerdere standaardmetadata niet herstellen uit {{path}}: {{error}}",
+            "presetNoFltsim0": "{{name}}: aircraft.cfg heeft geen leesbare FLTSIM.0; selecteerbare preset aangenomen.",
+            "presetAircraftCfgUnreadable": "{{name}}: aircraft.cfg beveiligd of onleesbaar; selecteerbare preset aangenomen. {{error}}"
+         }
+      },
+      "operations": {
+         "scan": "Vliegtuigen scannen...",
+         "apply": "Vliegtuigpatches toepassen...",
+         "remove": "Vliegtuigpatches verwijderen..."
+      },
+      "statuses": {
+         "patched": "gepatcht",
+         "outdated": "verouderd",
+         "unsupported": "niet ondersteund",
+         "available": "beschikbaar",
+         "foreign": "extern"
+      },
+      "row": {
+         "warningOne": "{{count}} waarschuwing",
+         "warningMany": "{{count}} waarschuwingen",
+         "reason": "reden",
+         "keepLabel": "{{name}} behouden",
+         "patchLabel": "{{name}} patchen",
+         "blocksCareerBadge": "Blokkeert volledige Carrièremodus",
+         "blocksCareerTooltip": "Het patchen van dit vliegtuig kan de volledige Carrièremodus onbeschikbaar maken, niet alleen dit vliegtuig",
+         "presets": "Presets: {{presets}}"
+      },
+      "table": {
+         "patch": "Patchen",
+         "aircraftContainer": "Vliegtuig / container",
+         "presets": "Presets",
+         "status": "Status",
+         "existingEfb": "Bestaande EFB"
+      },
+      "filters": {
+         "filterTitle": "Vliegtuigen filteren",
+         "filterLabel": "Vliegtuigen filteren :",
+         "filterPlaceholder": "Vliegtuig, container of preset",
+         "statusLabel": "Status :",
+         "statusAll": "Alle",
+         "sortByLabel": "Sorteren op :",
+         "sortName": "Vliegtuig",
+         "sortContainer": "Container",
+         "sortStatus": "Status",
+         "sortPresets": "Presets",
+         "sortWarnings": "Waarschuwingen",
+         "descendingTitle": "Aflopende volgorde",
+         "descendingLabel": "Aflopende volgorde :"
+      },
+      "empty": "Geen vliegtuigen gevonden (begin met het scannen naar geïnstalleerde of beschikbare vliegtuigpatches).",
+      "selectAll": "Alles weergegeven selecteren",
+      "selectNone": "Niets weergegeven selecteren"
+   },
+   "patchPlan": {
+      "title": "Openstaande vliegtuigwijzigingen",
+      "none": "Geen.",
+      "toPatchTitle": "Te patchen / bij te werken vliegtuigen",
+      "toUnpatchTitle": "Te depatchen vliegtuigen",
+      "removeWarning": "Verwijdert alle geverifieerde beheerde EFB-pakketten, inclusief pakketten buiten de huidige scan. Aangepaste of externe pakketten blijven ongemoeid."
+   }
+}

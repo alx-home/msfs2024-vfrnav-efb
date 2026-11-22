@@ -15,26 +15,28 @@
 
 import { ServerState } from "@server-common/env";
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "@vfrnav/i18n"
 
 export const useServer = () => {
+   const { t, lang } = useTranslation();
    const [serverState, setServerState] = useState<ServerState>('switching');
 
-   const serverLock = useMemo(() => serverState == 'invalid_port' || serverState == 'switching', [serverState]);
+   const serverLock = useMemo(() => serverState === 'invalid_port' || serverState === 'switching', [serverState]);
    const serverStateStr = useMemo(() => {
-      if (serverState == 'stopped') {
-         return "Start Server"
-      } else if (serverState == 'running') {
-         return "Stop Server"
-      } else if (serverState == 'invalid_port') {
-         return "Invalid Port"
+      if (serverState === 'stopped') {
+         return t("serverState.start")
+      } else if (serverState === 'running') {
+         return t("serverState.stop")
+      } else if (serverState === 'invalid_port') {
+         return t("serverState.invalidPort")
       } else {
-         return "In progress"
+         return t("serverState.inProgress")
       }
-   }, [serverState]);
+   }, [serverState, lang]);
 
 
    const switchServer = useCallback(() => {
-      if (serverState == 'switching') {
+      if (serverState === 'switching') {
          return;
       }
 

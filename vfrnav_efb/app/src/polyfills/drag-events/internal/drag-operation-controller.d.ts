@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Config } from "../index";
 export declare const enum DragOperationState {
     POTENTIAL = 0,

@@ -100,6 +100,10 @@ private:
    Promise<> HideTaskbar();
    Promise<> ShowTaskbar();
 
+   Promise<std::string> WatchLang();
+   Promise<std::string> GetLang();
+   Promise<>            SetLang(std::string lang);
+
    Promise<> ShowSettings();
    /** @brief Run a fleet operation and return its serialized report to the settings UI.
     *
@@ -125,8 +129,8 @@ private:
 
    Promise<> VDispatchMessage(ws::Message message);
 
-   Promise<bool>                                  AutostartServer(std::optional<bool> value);
-   Promise<uint16_t>                              ServerPort(std::optional<uint16_t> port);
+   Promise<bool>     AutostartServer(std::optional<bool> value);
+   Promise<uint16_t> ServerPort(std::optional<uint16_t> port);
    /** @brief Read or persistently store the Career mode notice acknowledgement.
     *
     * @param value Acknowledgement to store, or nullopt to read the stored state.

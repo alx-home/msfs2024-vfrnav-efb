@@ -15,11 +15,11 @@
 
 #include "Inventory.h"
 #include "FileSystem.h"
+#include "FleetError.h"
 #include "Package.h"
 #include "Planner.h"
 #include <boost/json.hpp>
 #include <algorithm>
-#include <stdexcept>
 
 namespace tablet {
 namespace fs = std::filesystem;
@@ -39,7 +39,7 @@ Inventory::MarkInstalled(Plan& plan, fs::path const& output, bool deep) {
         owner.schema_ != 3
         || FileSystem::Lower(owner.container_) != FileSystem::Lower(plan.info_.container_)
       ) {
-         throw std::runtime_error("Managed package belongs to a different aircraft/model.");
+         throw FleetError(FleetError::Code::MANAGED_PACKAGE_WRONG_AIRCRAFT);
       }
 
       if (plan.info_.status_ != "unsupported") {
@@ -52,8 +52,7 @@ Inventory::MarkInstalled(Plan& plan, fs::path const& output, bool deep) {
 
       if (deep) {
          plan.info_.warnings_.emplace_back(
-           "VFS projection may mask stock updates beneath mounted overlays; use Standard mode for "
-           "unpacked source packages, or rescan with patches unmounted."
+           FleetMessage::Make(FleetMessage::Code::VFS_MASK_STOCK_UPDATES)
          );
       }
    } catch (std::exception const& error) {
@@ -99,8 +98,9 @@ Inventory::MarkForeign(Plan& plan, Paths const& paths) {
             }
          } catch (std::exception const& error) {
             plan.info_.warnings_.push_back(
-              "Cannot inspect source package manifest " + package.path().string() + ": "
-              + error.what()
+              FleetMessage::Make(
+                FleetMessage::Code::CANNOT_INSPECT_MANIFEST, package.path(), error.what()
+              )
             );
             continue;
          }
@@ -140,13 +140,15 @@ Inventory::MarkForeign(Plan& plan, Paths const& paths) {
          }
       } catch (std::exception const& error) {
          plan.info_.warnings_.push_back(
-           "Cannot verify overlay ownership for " + package.path().string() + ": " + error.what()
+           FleetMessage::Make(
+             FleetMessage::Code::CANNOT_VERIFY_OVERLAY, package.path(), error.what()
+           )
          );
       }
 
       plan.info_.status_ = "foreign";
       plan.info_.reason_ =
-        "Non-owned package overlays this aircraft: " + package.path().filename().string();
+        FleetMessage::Make(FleetMessage::Code::NON_OWNED_OVERLAY, package.path().filename());
       return;
    }
 }
@@ -190,7 +192,7 @@ Inventory::ReadInstalled(Report& report, fs::path const& output) {
             report.entries_.push_back(
               {.source_  = name,
                .state_   = "legacy",
-               .message_ = "Legacy managed package; aircraft details are unavailable."}
+               .message_ = FleetMessage::Make(FleetMessage::Code::LEGACY_MANAGED_PACKAGE)}
             );
             continue;
          }
@@ -204,9 +206,7 @@ Inventory::ReadInstalled(Report& report, fs::path const& output) {
            .efb_          = owner.efb_,
            .reason_       = {},
            .preset_count_ = 0,
-           .warnings_     = {
-             "Installed package verified locally. Scan aircraft to check source updates."
-           }
+           .warnings_     = {FleetMessage::Make(FleetMessage::Code::INSTALLED_VERIFIED_LOCALLY)}
          };
 
          auto manifest{

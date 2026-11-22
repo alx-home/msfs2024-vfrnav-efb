@@ -22,6 +22,7 @@ win32_executable(TARGET_NAME installer
         Bindings/openFolder.cpp
         Bindings/parentExists.cpp
         Bindings/validate.cpp
+        Bindings/Lang.cpp
 
     COMPILE_OPTIONS
         "${COMPILE_OPTIONS}"

@@ -1,0 +1,280 @@
+{
+   "serverState": {
+      "start": "Server starten",
+      "stop": "Server stoppen",
+      "invalidPort": "Ungültiger Port",
+      "inProgress": "In Bearbeitung"
+   },
+   "taskbar": {
+      "configure": "Konfigurieren",
+      "close": "Schließen",
+      "openInApp": "In der App öffnen",
+      "openInBrowser": "Im Browser öffnen"
+   },
+   "taskbar_tooltip": {
+      "stay_minimized": "Die App bleibt minimiert",
+      "got_it": "Verstanden"
+   },
+   "donation": {
+      "title": "VFRNav unterstützen",
+      "intro": "Gefällt dir VFRNav?",
+      "soloDeveloper": "VFRNav wird von einer einzelnen Person entwickelt und in der Freizeit gepflegt.",
+      "copilotCost": "Als Einzelentwickler nutze ich Copilot, um die Entwicklung voranzutreiben, was jedoch mit Kosten verbunden ist.",
+      "supportImpact": "Deine Spende hilft, diese Ausgaben zu decken, und unterstützt die Zeit und Arbeit hinter VFRNav.",
+      "thankYou": "Vielen Dank!",
+      "donateAlt": "Spenden",
+      "liberapaySubtitle": "Ein größerer Anteil deiner Spende unterstützt die Entwicklung",
+      "preferredBadge": "Empfohlen",
+      "paypalAriaLabel": "Mit PayPal spenden",
+      "paypalAlt": "Mit PayPal spenden",
+      "donateButton": "Spenden",
+      "paypalSubtitle": "Bequem und weit verbreitet",
+      "convenientBadge": "Bequem",
+      "buyMeACoffeeAlt": "Buy Me a Coffee",
+      "buyMeACoffeeSubtitle": "Beinhaltet höhere Plattformgebühren"
+   },
+   "app": {
+      "title": "MSFS2024 VFRNav' Server",
+      "openInBrowser": "Im Browser öffnen",
+      "openInApp": "In der App öffnen",
+      "terminate": "Beenden"
+   },
+   "body": {
+      "tabs": {
+         "settings": "Einstellungen",
+         "tablet3d": "3D-Tablet",
+         "donation": "Spenden"
+      }
+   },
+   "efbAircraft": {
+      "title": "Cockpit-EFB-Flugzeug-Patches",
+      "introLine1": "Patche alle auswählbaren Voreinstellungen ausgewählter Flugzeuge mit dem beweglichen 3D-Tablet.",
+      "introLine2": "Separate Community-Overlay-Pakete ersetzen vorhandene Tablets, ohne Quelldateien der Flugzeuge auf der Festplatte zu verändern.",
+      "scanSettings": "Scan-Einstellungen",
+      "aircraftSource": "Flugzeugquelle :",
+      "modeStandard": "Standard",
+      "modeDeep": "Tiefenscan (VFS-Projektion)",
+      "modeStandardDesc": "Standard scannt entpackte Community-Flugzeuge; ein laufender Simulator ist nicht erforderlich.",
+      "modeDeepDesc": "Tiefenscan durchsucht Flugzeuge über die VFS-Projektion. Lasse MSFS mit aktiviertem Entwicklermodus und VFS-Projektion laufen. Eingebundene Overlays können zugrunde liegende Standard-Updates verdecken.",
+      "scanNoteLine1": "Der Scan ist schreibgeschützt.",
+      "scanNoteLine2": "Quell-Hashes erkennen Simulator-Updates. Scanne erneut und klicke auf Anwenden, um veraltete Patches neu zu erstellen.",
+      "loadingInstalled": "Installierte Flugzeug-Patches werden geladen...",
+      "careerNoticeLine1": "Karrieremodus: Der Simulator schließt alle gepatchten Flugzeuge von Karrieremissionen aus.",
+      "careerNoticeLine2": "Entferne die Flugzeug-Patches und starte MSFS neu, bevor du Karriere spielst; das 2D-EFB funktioniert im Karrieremodus weiterhin.",
+      "gotIt": "Verstanden",
+      "listSeparator": " und ",
+      "careerRiskWarningOne": "Karrieremodus-Warnung: Das Patchen von {{aircraft}} kann den gesamten Karrieremodus unzugänglich machen, über den bloßen Ausschluss gepatchter Flugzeuge aus Karrieremissionen hinaus. Lasse dieses Flugzeug ungepatcht, wenn du den Karrieremodus nutzt.",
+      "careerRiskWarningMany": "Karrieremodus-Warnung: Das Patchen von {{aircraft}} kann den gesamten Karrieremodus unzugänglich machen, über den bloßen Ausschluss gepatchter Flugzeuge aus Karrieremissionen hinaus. Lasse diese Flugzeuge ungepatcht, wenn du den Karrieremodus nutzt.",
+      "confirm": "Bestätigen",
+      "cancel": "Abbrechen",
+      "scanButton": "Flugzeuge scannen",
+      "applyButton": "Anwenden",
+      "reportSummary": "{{total}} Flugzeuge; {{selected}} ausgewählt; {{patched}} gepatcht; {{outdated}} veraltet.",
+      "lastOperationSummary": "Letzter Vorgang: {{generated}} gepatcht/aktualisiert; {{removed}} entfernt.",
+      "reportsTitle": "Berichte:",
+      "reportsAriaLabel": "Ergebnisse der Flugzeugvorgänge"
+   },
+   "settings": {
+      "startup": {
+         "title": "Systemstart",
+         "autoStart": "MSFS2024 VFRNav' Server automatisch starten :",
+         "windowsLogin": "Windows-Anmeldung",
+         "msfsStartup": "MSFS-Start",
+         "never": "Nie"
+      },
+      "general": {
+         "title": "Einstellungen",
+         "language": "Sprache :"
+      },
+      "embedServer": {
+         "title": "Integrierter Server",
+         "descriptionLine1": "Der integrierte Server wird benötigt, wenn das EFB über ein externes Gerät oder einen Webbrowser geöffnet wird.",
+         "descriptionLine2": "Zudem muss er auch bei direkter Nutzung des EFB in der App gestartet sein, um die Synchronisation mit dem Simulator sicherzustellen.",
+         "startAtLaunch": "Server beim Start ausführen :",
+         "port": "Port :",
+         "portPlaceholder": "Server-Listening-Port",
+         "invalidPort": "Ungültiger Port (999 < Wert < 65'536) !"
+      }
+   },
+   "vfsHelp": {
+      "title": "VFS-Projektion aktivieren",
+      "close": "Schließen",
+      "step1": {
+         "title": "1. Entwicklermodus aktivieren",
+         "description": "Öffne in MSFS Einstellungen > Allgemein > Erweiterte Optionen und aktiviere den Entwicklermodus.",
+         "alt": "Allgemeine Einstellungen: Erweiterte Optionen auswählen und Entwicklermodus aktivieren"
+      },
+      "step2": {
+         "title": "2. Virtual File System öffnen",
+         "description": "Wähle in der Entwickler-Symbolleiste oben Tools > Virtual File System.",
+         "alt": "Entwickler-Symbolleiste: Tools öffnen und Virtual File System auswählen"
+      },
+      "step3": {
+         "title": "3. Projektion starten",
+         "description": "Klicke im Bereich VFS Projector auf Start. Warte auf Projection started. Lasse MSFS geöffnet; der Tiefenscan wird automatisch verfügbar.",
+         "alt": "VFS Projector: Auf Start klicken und auf Projection started warten"
+      }
+   },
+   "aircraftResults": {
+      "title": "Flugzeuge",
+      "status": {
+         "ariaLabel": "Status der Flugzeugvorgänge",
+         "vfsHelpLabel": "So aktivierst du die VFS-Projektion",
+         "restartRequired": "Starte MSFS neu, damit die Paketänderungen wirksam werden.",
+         "gotIt": "Verstanden"
+      },
+      "vfs": {
+         "NOT_ENABLED": "Die VFS-Projektion ist nicht aktiviert. Starte MSFS, aktiviere den Entwicklermodus und starte anschließend den VFS Projector.",
+         "NO_AIRCRAFT": "Die VFS-Projektion enthält keine Flugzeuge. Starte oder aktualisiere den VFS Projector.",
+         "ACCESS_ERROR": "Zugriff auf die VFS-Projektion nicht möglich: {{error}}",
+         "READ_ERROR": "VFS-Projektion kann nicht gelesen werden: {{error}}",
+         "MONITORING_FAILED": "VFS-Überwachung fehlgeschlagen: {{error}}",
+         "invalidResponse": "Ungültige Antwort der VFS-Überwachung.",
+         "monitoringFailedLog": "Überwachung der VFS-Projektion fehlgeschlagen:"
+      },
+      "errors": {
+         "inventoryRefreshLog": "Aktualisierung des Inventars installierter EFB-Patches fehlgeschlagen:",
+         "inventoryRefreshFailed": "Flugzeugvorgang abgeschlossen, aber das Inventar der installierten Patches konnte nicht aktualisiert werden: {{error}}",
+         "managementFailedLog": "EFB-Flugzeugverwaltung fehlgeschlagen:",
+         "inventoryLoadLog": "Laden des Inventars installierter EFB-Patches fehlgeschlagen:",
+         "inventoryLoadFailed": "Installierte Flugzeug-Patches können nicht geladen werden: {{error}}",
+         "invalidText": "Ungültiger Text des Flugzeug-Managers.",
+         "invalidCount": "Ungültige Anzahl des Flugzeug-Managers.",
+         "invalidResponse": "Ungültige Antwort des Flugzeug-Managers.",
+         "invalidAircraftEntry": "Ungültiger Flugzeugeintrag.",
+         "invalidAircraftStatus": "Ungültiger Flugzeugstatus.",
+         "invalidOperationEntry": "Ungültiger Vorgangseintrag."
+      },
+      "fleet": {
+         "errors": {
+            "msfsNotFound": "Die MSFS-Installation konnte nicht gefunden werden.",
+            "communityFromCfgNotFound": "Der Community-Ordner konnte in der MSFS-Datei UserCfg.opt nicht gefunden werden.",
+            "invalidOperation": "Ungültiger EFB-Flugzeugvorgang.",
+            "operationRunning": "Es läuft bereits ein anderer EFB-Flugzeugvorgang.",
+            "communityMissing": "Das Community-Verzeichnis fehlt.",
+            "selectionNotArray": "Die Flugzeugauswahl muss ein JSON-Array sein.",
+            "selectionIdsNotStrings": "Flugzeug-IDs müssen Zeichenketten sein.",
+            "sha256InitFailed": "SHA256-Initialisierung fehlgeschlagen.",
+            "reparsePathUnsupported": "Verknüpfte Pfade oder Analysepunkte werden nicht unterstützt: {{path}}",
+            "cannotReadFile": "{{path}} kann nicht gelesen werden. Aktiviere oder aktualisiere im Tiefenscan-Modus die VFS-Projektion; geschützte Dateien bleiben möglicherweise unzugänglich.",
+            "readFailed": "Lesevorgang fehlgeschlagen: {{path}}",
+            "invalidUtf16File": "Ungültige UTF-16-Datei: {{path}}",
+            "invalidUtf16Config": "Ungültige UTF-16-Konfiguration.",
+            "sha256Failed": "SHA256-Berechnung fehlgeschlagen.",
+            "emptyVirtualPath": "Ein leerer virtueller Pfad wird nicht unterstützt.",
+            "absoluteAttachmentPath": "Ein absoluter Anhangspfad wird nicht unterstützt.",
+            "attachmentTraversal": "Verzeichniswechsel in Anhangspfaden werden nicht unterstützt.",
+            "dependencyNotReadable": "Erforderliche Abhängigkeit ist nicht lesbar: {{path}}",
+            "cannotWritePatchFile": "EFB-Patchdatei {{path}} kann nicht geschrieben werden: {{error}}",
+            "malformedIniSection": "Fehlerhafter INI-Abschnitt.",
+            "duplicateIniSection": "Doppelter INI-Abschnitt: {{section}}",
+            "managedPackageWrongAircraft": "Das verwaltete Paket gehört zu einem anderen Flugzeug oder Modell.",
+            "invalidTemplateReplacement": "Ungültige oder doppelte Vorlagenersetzung: {{name}}",
+            "missingTemplateReplacement": "Fehlende Vorlagenersetzung: {{name}}",
+            "unusedTemplateReplacement": "Unbenutzte Vorlagenersetzung: {{name}}",
+            "rigDestinationExists": "Das Rig-Ziel existiert bereits.",
+            "cannotWatchVfs": "VFS-Projektion kann nicht überwacht werden: {{error}}",
+            "vfsWatcherFailed": "VFS-Überwachung fehlgeschlagen: {{error}}",
+            "cannotRearmVfsWatcher": "VFS-Überwachung kann nicht neu gestartet werden: {{error}}",
+            "vfsWatchDirNotFound": "Es konnte kein Verzeichnis zur Überwachung der VFS-Projektion gefunden werden.",
+            "invalidOwnershipMetadata": "Ungültige Eigentums-Metadaten.",
+            "invalidOwnershipFileList": "Ungültige Eigentums-Dateiliste.",
+            "emptyOwnershipFileList": "Leere Eigentums-Dateiliste.",
+            "packageModified": "Das Paket wurde geändert; Änderung verweigert: {{path}}",
+            "packageIncomplete": "Das Paket ist unvollständig; Änderung verweigert.",
+            "missingGeneratorResource": "Vom SDK kompilierte Tablet-Generator-Ressource fehlt: {{name}}. Kompiliere den VFRNav-Server neu.",
+            "invalidGeneratorResource": "Ungültige vom SDK kompilierte Tablet-Generator-Ressource.",
+            "invalidAttachOffset": "Die Tablet-Halterung hat einen ungültigen attach_offset.",
+            "nonFiniteAttachOffset": "Die Tablet-Halterung hat einen nicht-endlichen attach_offset.",
+            "sourceOutsideRoots": "Die Quelldatei liegt außerhalb der Inhalts-Stammverzeichnisse des Flugzeugs.",
+            "unreadableTabletAttachment": "Das Tablet hat keine lesbare Anhangsreferenz.",
+            "multifunctionCockpitEfb": "Das EFB ist Teil eines Multifunktions-Cockpit-Anhangs; das Entfernen ist unsicher.",
+            "invalidCameraCoordinates": "Ungültige Kamerakoordinaten: {{name}}",
+            "missingCameraEyepoint": "Kamera-Augenpunkt (eyepoint) fehlt.",
+            "nonFiniteCameraPosition": "Die berechnete Kameraposition ist nicht endlich.",
+            "noReadableAttachedObjects": "Die Voreinstellung enthält keine lesbare Datei attached_objects.cfg.",
+            "tabletNestedTooDeep": "Das Tablet ist tiefer als eine Anhangsebene verschachtelt.",
+            "cannotDetermineNestedPath": "Der Pfad des verschachtelten Anhangs kann nicht bestimmt werden.",
+            "noModularPresets": "Älteres/nicht-modulares Flugzeug hat keine modularen Voreinstellungen.",
+            "noSelectableModularPresets": "Keine vom Benutzer auswählbaren modularen Voreinstellungen.",
+            "dependencyRequiresDeepScan": "Erforderliche Abhängigkeit ist nicht lesbar: {{path}}; erfordert Tiefenscan.",
+            "rigPathMustBeRelative": "Rig-Pfade müssen relativ sein.",
+            "rigPathTraversal": "Rig-Pfade dürfen keine Verzeichnisse durchlaufen.",
+            "rigFragmentTerminalLf": "Rig-Fragmente erfordern einen abschließenden LF-Zeilenumbruch.",
+            "unknownAircraftSelection": "Unbekannte Flugzeugauswahl; führe vor dem Anwenden einen erneuten Scan durch.",
+            "cannotPatchAircraft": "Ausgewähltes Flugzeug kann nicht gepatched werden: {{error}}",
+            "unableToAllocateStaging": "Temporäres Staging-Verzeichnis konnte nicht erstellt werden."
+         },
+         "messages": {
+            "packageRemoved": "Verifiziertes verwaltetes Paket entfernt.",
+            "duplicateContainer": "Mehrere entpackte Pakete stellen denselben Flugzeug-Container bereit.",
+            "vfsMaskStockUpdates": "Die VFS-Projektion kann Standard-Updates unter eingebundenen Overlays verdecken; verwende den Standard-Modus für entpackte Quellpakete oder scanne erneut ohne eingebundene Patches.",
+            "cannotInspectManifest": "Quellpaket-Manifest {{path}} kann nicht geprüft werden: {{error}}",
+            "cannotVerifyOverlay": "Overlay-Eigentümerschaft für {{path}} kann nicht verifiziert werden: {{error}}",
+            "nonOwnedOverlay": "Ein externes Paket überlagert dieses Flugzeug: {{path}}",
+            "legacyManagedPackage": "Älteres verwaltetes Paket; Flugzeugdetails sind nicht verfügbar.",
+            "installedVerifiedLocally": "Installiertes Paket lokal verifiziert. Scanne Flugzeuge, um nach Quell-Updates zu suchen.",
+            "vfsMonitoringStopped": "VFS-Überwachung gestoppt.",
+            "cannotReadPilotCamera": "Pilotenkamera {{path}} kann nicht gelesen werden: {{error}}",
+            "positionEstimated": "Position geschätzt; passe sie mit dem Griff im Cockpit an",
+            "cannotRecoverStockMetadata": "Vorherige Standard-Metadaten konnten aus {{path}} nicht wiederhergestellt werden: {{error}}",
+            "presetNoFltsim0": "{{name}}: aircraft.cfg enthält keinen lesbaren Abschnitt FLTSIM.0; auswählbare Voreinstellung angenommen.",
+            "presetAircraftCfgUnreadable": "{{name}}: aircraft.cfg geschützt oder nicht lesbar; auswählbare Voreinstellung angenommen. {{error}}"
+         }
+      },
+      "operations": {
+         "scan": "Flugzeuge werden gescannt...",
+         "apply": "Flugzeug-Patches werden angewendet...",
+         "remove": "Flugzeug-Patches werden entfernt..."
+      },
+      "statuses": {
+         "patched": "gepatcht",
+         "outdated": "veraltet",
+         "unsupported": "nicht unterstützt",
+         "available": "verfügbar",
+         "foreign": "extern"
+      },
+      "row": {
+         "warningOne": "{{count}} Warnung",
+         "warningMany": "{{count}} Warnungen",
+         "reason": "Grund",
+         "keepLabel": "{{name}} behalten",
+         "patchLabel": "{{name}} patchen",
+         "blocksCareerBadge": "Blockiert gesamten Karrieremodus",
+         "blocksCareerTooltip": "Das Patchen dieses Flugzeugs kann den gesamten Karrieremodus unzugänglich machen, nicht nur dieses Flugzeug",
+         "presets": "Voreinstellungen: {{presets}}"
+      },
+      "table": {
+         "patch": "Patchen",
+         "aircraftContainer": "Flugzeug / Container",
+         "presets": "Voreinstellungen",
+         "status": "Status",
+         "existingEfb": "Vorhandenes EFB"
+      },
+      "filters": {
+         "filterTitle": "Flugzeuge filtern",
+         "filterLabel": "Flugzeuge filtern :",
+         "filterPlaceholder": "Flugzeug, Container oder Voreinstellung",
+         "statusLabel": "Status :",
+         "statusAll": "Alle",
+         "sortByLabel": "Sortieren nach :",
+         "sortName": "Flugzeug",
+         "sortContainer": "Container",
+         "sortStatus": "Status",
+         "sortPresets": "Voreinstellungen",
+         "sortWarnings": "Warnungen",
+         "descendingTitle": "Absteigende Reihenfolge",
+         "descendingLabel": "Absteigende Reihenfolge :"
+      },
+      "empty": "Keine Flugzeuge gefunden (Starte mit einem Scan nach installierten/verfügbaren Flugzeug-Patches).",
+      "selectAll": "Alle angezeigten auswählen",
+      "selectNone": "Keine angezeigten auswählen"
+   },
+   "patchPlan": {
+      "title": "Ausstehende Flugzeugänderungen",
+      "none": "Keine.",
+      "toPatchTitle": "Zu patchende / aktualisierende Flugzeuge",
+      "toUnpatchTitle": "Zu entfernende Flugzeug-Patches",
+      "removeWarning": "Entfernt alle verifizierten verwalteten EFB-Pakete, einschließlich Paketen außerhalb des aktuellen Scans. Geänderte oder externe Pakete bleiben unberührt."
+   }
+}

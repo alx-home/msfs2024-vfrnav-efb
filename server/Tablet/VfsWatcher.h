@@ -23,9 +23,12 @@
 #include <vector>
 
 namespace tablet {
+enum class VfsState { OK, NOT_ENABLED, NO_AIRCRAFT, ACCESS_ERROR, READ_ERROR };
+
 struct VfsStatus {
    bool        available_{};
-   std::string message_{};
+   VfsState    state_{VfsState::NOT_ENABLED};
+   std::string detail_{};
 
    /**
     * @brief Inspect whether a VFS projection exposes at least one aircraft.

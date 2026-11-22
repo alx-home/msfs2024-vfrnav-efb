@@ -15,6 +15,7 @@
 
 #include "Transaction.h"
 #include "FileSystem.h"
+#include "FleetError.h"
 #include "Package.h"
 #include <windows.h>
 #include <algorithm>
@@ -22,7 +23,6 @@
 #include <iostream>
 #include <random>
 #include <set>
-#include <stdexcept>
 #include <utility>
 
 namespace tablet {
@@ -54,13 +54,15 @@ Transaction::Apply(
    for (auto const& id : selected) {
       auto found{plans.find(id)};
       if (found == plans.end()) {
-         throw std::runtime_error("Unknown aircraft selection; scan again before applying.");
+         throw FleetError(FleetError::Code::UNKNOWN_AIRCRAFT_SELECTION);
       }
 
       if (
         found->second.info_.status_ == "foreign" || found->second.info_.status_ == "unsupported"
       ) {
-         throw std::runtime_error("Cannot patch selected aircraft: " + found->second.info_.reason_);
+         throw FleetError::WithDetail(
+           FleetError::Code::CANNOT_PATCH_AIRCRAFT, found->second.info_.reason_
+         );
       }
    }
 
@@ -92,7 +94,7 @@ Transaction::Apply(
       };
       auto stage{output / (".efb-stage-" + suffix)};
       if (!fs::create_directory(stage)) {
-         throw std::runtime_error("Unable to allocate staging directory.");
+         throw FleetError(FleetError::Code::UNABLE_TO_ALLOCATE_STAGING);
       }
 
       StagingDirectory cleanup{stage};

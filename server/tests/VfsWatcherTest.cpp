@@ -33,6 +33,7 @@ main() {
          throw std::runtime_error("Test directory already exists.");
       }
       fs::create_directory(root);
+
       struct Cleanup {
          fs::path root_;
          ~Cleanup() {
@@ -40,11 +41,13 @@ main() {
             fs::remove_all(root_, error);
          }
       } cleanup{root};
+
       auto projection = root / "VFSProjection";
       auto initial    = tablet::VfsStatus::Read(projection);
       if (initial.available_ || initial.message_.empty()) {
          throw std::runtime_error("Missing projection must explain why scanning is blocked.");
       }
+
       tablet::VfsWatcher watcher{projection};
       auto               next = [&watcher](tablet::VfsStatus const& previous) {
          auto result = std::make_shared<std::promise<tablet::VfsStatus>>();

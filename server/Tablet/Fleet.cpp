@@ -14,6 +14,7 @@
  */
 
 #include "Fleet.h"
+#include "FleetError.h"
 #include "VfsWatcher.h"
 #include "Fleet/FileSystem.h"
 #include "Fleet/Package.h"
@@ -28,7 +29,6 @@
 #include <map>
 #include <regex>
 #include <set>
-#include <stdexcept>
 #include <utility>
 
 namespace tablet {
@@ -40,7 +40,7 @@ Paths
 Fleet::FindPaths() {
    auto simulator{::FindMSFS()};
    if (simulator.empty()) {
-      throw std::runtime_error("Cannot locate the MSFS installation.");
+      throw FleetError(FleetError::Code::MSFS_NOT_FOUND);
    }
 
    fs::path root{simulator};
@@ -70,7 +70,7 @@ Fleet::FindPaths() {
       }
    }
 
-   throw std::runtime_error("Cannot locate Community from MSFS UserCfg.opt.");
+   throw FleetError(FleetError::Code::COMMUNITY_FROM_CFG_NOT_FOUND);
 }
 
 WPromise<Report>
@@ -96,12 +96,12 @@ Fleet::ManageTask(
      (mode != "standard" && mode != "deep")
      || (action != "scan" && action != "apply" && action != "remove" && action != "installed")
    ) {
-      throw std::runtime_error("Invalid EFB aircraft operation.");
+      throw FleetError(FleetError::Code::INVALID_OPERATION);
    }
 
    // Inventories wait for the running operation; mutating operations fail fast instead.
    if (action != "installed" && management_mutex_.OwnsLock()) {
-      throw std::runtime_error("Another EFB aircraft operation is running.");
+      throw FleetError(FleetError::Code::OPERATION_RUNNING);
    }
 
    promise::LockGuard lock{management_mutex_};
@@ -113,7 +113,7 @@ Fleet::ManageTask(
    FileSystem::SafePath(paths.community_);
 
    if (!fs::is_directory(paths.community_)) {
-      throw std::runtime_error("Community directory is missing.");
+      throw FleetError(FleetError::Code::COMMUNITY_MISSING);
    }
 
    auto output{FileSystem::ExtendedPath(paths.output_.empty() ? paths.community_ : paths.output_)};
@@ -171,7 +171,7 @@ Fleet::ManageTask(
                entries[index] = {
                  .source_  = package.filename().string(),
                  .state_   = "removed",
-                 .message_ = "Verified managed package removed."
+                 .message_ = FleetMessage::Make(FleetMessage::Code::PACKAGE_REMOVED)
                };
             } catch (std::exception const& error) {
                entries[index] = {
@@ -215,7 +215,7 @@ Fleet::ManageTask(
 
       auto status{VfsStatus::Read(paths.projection_)};
       if (!status.available_) {
-         throw std::runtime_error(status.message_);
+         throw FleetError(status);
       }
 
       scan_roots = {paths.projection_};
@@ -301,8 +301,7 @@ Fleet::ManageTask(
       auto id{plan.info_.id_};
       if (plans.contains(id)) {
          plans.at(id).info_.status_ = "foreign";
-         plans.at(id).info_.reason_ =
-           "Multiple unpacked packages provide the same aircraft container.";
+         plans.at(id).info_.reason_ = FleetMessage::Make(FleetMessage::Code::DUPLICATE_CONTAINER);
       } else {
          plans.emplace(id, std::move(plan));
       }
@@ -314,7 +313,9 @@ Fleet::ManageTask(
       // Installed patches remain keep/remove candidates even when their source is unavailable.
       Report installed{};
       Inventory::ReadInstalled(installed, output);
-      report.entries_.insert(report.entries_.end(), installed.entries_.begin(), installed.entries_.end());
+      report.entries_.insert(
+        report.entries_.end(), installed.entries_.begin(), installed.entries_.end()
+      );
 
       std::set<std::string> installed_only{};
       for (auto& aircraft : installed.aircraft_) {
@@ -364,21 +365,23 @@ Fleet::ManageJsonTask(
    auto value{boost::json::parse(selectionJson)};
 
    if (!value.is_array()) {
-      throw std::runtime_error("Aircraft selection must be a JSON array.");
+      throw FleetError(FleetError::Code::SELECTION_NOT_ARRAY);
    }
 
    std::vector<std::string> selection{};
 
    for (auto const& item : value.as_array()) {
       if (!item.is_string()) {
-         throw std::runtime_error("Aircraft ids must be strings.");
+         throw FleetError(FleetError::Code::SELECTION_IDS_NOT_STRINGS);
       }
 
       selection.emplace_back(item.as_string());
    }
 
-   co_return js::Stringify(co_await MakePromise(
-     ManageTask, std::move(dispatch), Fleet::FindPaths(), mode, action, selection
-   ));
+   co_return js::Stringify(
+     co_await MakePromise(
+       ManageTask, std::move(dispatch), Fleet::FindPaths(), mode, action, selection
+     )
+   );
 }
 }  // namespace tablet

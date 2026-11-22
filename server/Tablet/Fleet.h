@@ -26,6 +26,7 @@
 #include <json/json.h>
 
 namespace tablet {
+
 /** @brief Per-source state and diagnostic emitted by a fleet operation. */
 struct Entry {
    std::string source_{};

@@ -22,6 +22,7 @@ import { PatchPlan } from "./EfbAircraft/PatchPlan";
 import { useAircraftManager } from "./EfbAircraft/useAircraftManager";
 import type { Mode, Report } from "./EfbAircraft/types";
 import { pendingAircraftChanges, selectedCareerRisks } from "./EfbAircraft/types";
+import { useTranslation } from "@vfrnav/i18n";
 
 const Elem = ({ children }: PropsWithChildren) =>
    <div className='flex flex-row bg-slate-800 p-3 text-left h-14'>{children}</div>;
@@ -30,6 +31,7 @@ const Elem = ({ children }: PropsWithChildren) =>
  *
  * @returns The aircraft management view. */
 export const EfbAircraft = () => {
+   const { t } = useTranslation();
    const { mode, operation, busy, loadingInstalled, error, installed, report, selected, setSelected, confirmation, setConfirmation, hasScanned,
       vfs, deepBlocked, run, changeMode } = useAircraftManager();
    const blocked = busy || deepBlocked;
@@ -45,7 +47,6 @@ export const EfbAircraft = () => {
    const [restartNoticeDismissed, setRestartNoticeDismissed] = useState(true);
 
    const applyBlocked = busy || (hasScanned && deepBlocked) || !hasPendingChanges;
-   const vfsMessage = deepBlocked ? vfs.message : "";
    const restartRequired = (report?.restartRequired ?? false) && report !== dismissedRestartReport
       && !restartNoticeDismissed;
    const dismissRestart = useEvent(() => {
@@ -85,57 +86,62 @@ export const EfbAircraft = () => {
 
    return <Scroll className='flex-col grow'>
       <div className='flex flex-col grow w-full min-w-0 box-border justify-center p-5 gap-3 py-6'>
-         <section className="flex flex-col gap-3" aria-label="Cockpit EFB aircraft patches" aria-busy={busy}>
-            <h2 className="mt-1 text-lg">Cockpit EFB aircraft patches</h2>
+         <section className="flex flex-col gap-3" aria-label={t('efbAircraft.title')} aria-busy={busy}>
+            <h2 className="mt-1 text-lg">{t('efbAircraft.title')}</h2>
             <blockquote className="p-4 border-s-4 border-gray-500 bg-gray-800">
-               <p className="text-sm italic font-medium leading-relaxed text-white">Patch all selectable presets of selected aircraft with the 3d movable tablet.<br />
-                  Separate Community overlay packages replace existing tablets without editing source aircraft files on disk.
+               <p className="text-sm italic font-medium leading-relaxed text-white">
+                  {t('efbAircraft.introLine1')}<br />
+                  {t('efbAircraft.introLine2')}
                </p>
             </blockquote>
             <div className="flex items-center gap-3 mt-2">
-               <h2 className="text-lg">Scan settings</h2>
+               <h2 className="text-lg">{t('efbAircraft.scanSettings')}</h2>
             </div>
             <Elem>
-               <div className="m-auto mr-5 grow min-w-0">Aircraft source :</div>
+               <div className="m-auto mr-5 grow min-w-0">{t('efbAircraft.aircraftSource')}</div>
                <div className="shrink">
                   <Select<Mode> value={mode} active={!busy} disabled={busy} onChange={changeMode} className="min-w-40">
-                     <SelectOption<Mode> id="standard">Standard</SelectOption>
-                     <SelectOption<Mode> id="deep">Deep (VFS projection)</SelectOption>
+                     <SelectOption<Mode> id="standard">{t('efbAircraft.modeStandard')}</SelectOption>
+                     <SelectOption<Mode> id="deep">{t('efbAircraft.modeDeep')}</SelectOption>
                   </Select>
                </div>
             </Elem>
             <blockquote className="p-4 border-s-4 border-gray-500 bg-gray-800">
                <p className="text-sm italic font-medium leading-relaxed text-white">{mode === "standard"
-                  ? "Standard scans unpacked Community aircraft; no running simulator required."
-                  : "Deep scans aircraft exposed through VFS projection. Keep MSFS running with Developer Mode and VFS projection enabled. Mounted overlays may mask underlying stock updates."}</p>
+                  ? t('efbAircraft.modeStandardDesc')
+                  : t('efbAircraft.modeDeepDesc')}</p>
             </blockquote>
             <blockquote className="p-4 border-s-4 border-gray-500 bg-gray-800">
-               <p className="text-sm italic font-medium leading-relaxed text-white">Scan is read-only.
-                  <br /> Source hashes detect simulator updates. rescan and Apply to regenerate outdated patches.
+               <p className="text-sm italic font-medium leading-relaxed text-white">
+                  {t('efbAircraft.scanNoteLine1')}<br />
+                  {t('efbAircraft.scanNoteLine2')}
                </p>
             </blockquote>
             {loadingInstalled && <output className="flex items-center gap-3 p-4 border-s-4 border-sky-500 bg-gray-800 text-sm text-sky-200">
                <img src={loadingIcon} alt="" className="w-12 h-6 shrink-0" />
-               <span>Loading installed aircraft patches...</span>
+               <span>{t('efbAircraft.loadingInstalled')}</span>
             </output>}
             <div className="sticky top-0 z-30 flex shrink-0 flex-col gap-3">
                {!careerNoticeDismissed && <div className="flex items-center gap-3 p-4 border-s-4 border-yellow-500 bg-gray-800 text-sm text-yellow-300 shadow-lg shadow-black/40">
-                  <output>Career mode: the simulator excludes any patched aircraft from Career missions.
-                     <br /> Remove the aircraft patches and restart MSFS before playing Career; the 2D EFB keeps working in Career.
+                  <output>
+                     {t('efbAircraft.careerNoticeLine1')}<br />
+                     {t('efbAircraft.careerNoticeLine2')}
                   </output>
                   <div className="flex flex-1 ml-auto mr-4 max-w-32">
-                     <Button active={true} onClick={dismissCareerNotice}>Got it</Button>
+                     <Button active={true} onClick={dismissCareerNotice}>{t('efbAircraft.gotIt')}</Button>
                   </div>
                </div>}
                {careerRisk.length > 0 && <p role="alert" className="p-4 border-s-4 border-yellow-500 bg-gray-800 text-sm text-yellow-300 shadow-lg shadow-black/40">
-                  Career mode warning: patching {careerRisk.map(item => item.name).join(" and ")} can make the entire Career mode unavailable, beyond the simulator excluding patched aircraft from Career missions. Leave {careerRisk.length === 1 ? "this aircraft" : "these aircraft"} unpatched if you use Career mode.
+                  {t(careerRisk.length === 1 ? 'efbAircraft.careerRiskWarningOne' : 'efbAircraft.careerRiskWarningMany', {
+                     aircraft: careerRisk.map(item => item.name).join(t('efbAircraft.listSeparator'))
+                  })}
                </p>}
-               <OperationStatus mode={mode} operation={operation} error={error} vfsMessage={vfsMessage} restartRequired={restartRequired} onDismissRestart={dismissRestart} />
+               <OperationStatus mode={mode} operation={operation} error={error} vfs={deepBlocked ? vfs : undefined} restartRequired={restartRequired} onDismissRestart={dismissRestart} />
                {confirmation && <div role="alert" className="flex flex-col gap-3 p-4 border-s-4 border-yellow-500 bg-gray-800 text-sm shadow-lg shadow-black/40">
                   <PatchPlan action={confirmation} report={report} installed={installed} selected={selected} />
                   <div className="flex gap-2">
-                     <Button active={!confirmationBlocked} disabled={confirmationBlocked} onClick={confirm}>Confirm</Button>
-                     <Button active={!busy} disabled={busy} onClick={cancel}>Cancel</Button>
+                     <Button active={!confirmationBlocked} disabled={confirmationBlocked} onClick={confirm}>{t('efbAircraft.confirm')}</Button>
+                     <Button active={!busy} disabled={busy} onClick={cancel}>{t('efbAircraft.cancel')}</Button>
                   </div>
                </div>}
             </div>
@@ -143,26 +149,34 @@ export const EfbAircraft = () => {
             <div className="flex flex-col gap-3 bg-gray-800 p-2">
                <div className="flex flex-row gap-3">
                   <div className="flex flex-1">
-                     <Button active={!blocked} disabled={blocked} onClick={scan}>Scan aircraft</Button>
+                     <Button active={!blocked} disabled={blocked} onClick={scan}>{t('efbAircraft.scanButton')}</Button>
                   </div>
                   <div className="flex flex-1">
-                     <Button active={!applyBlocked} disabled={applyBlocked} onClick={requestApply}>Apply</Button>
+                     <Button active={!applyBlocked} disabled={applyBlocked} onClick={requestApply}>{t('efbAircraft.applyButton')}</Button>
                   </div>
                </div>
                {report && <div className="flex flex-col gap-2 bg-slate-800 p-3 text-left text-sm border border-slate-700 shadow-md">
                   <p className="break-all">{report.community}</p>
-                  <p>{report.aircraft.length} aircraft; {selected.size} selected; {installedCount} patched; {outdatedCount} outdated.</p>
-                  {report.restartRequired && <p>Last operation: {report.generated} patched/updated; {report.removed} removed.</p>}
+                  <p>{t('efbAircraft.reportSummary', {
+                     total: report.aircraft.length,
+                     selected: selected.size,
+                     patched: installedCount,
+                     outdated: outdatedCount
+                  })}</p>
+                  {report.restartRequired && <p>{t('efbAircraft.lastOperationSummary', {
+                     generated: report.generated,
+                     removed: report.removed
+                  })}</p>}
                </div>
                }
             </div>
             {(reports.length > 0) &&
                <div className="flex flex-col bg-slate-800">
                   <div className="flex flex-col pl-4 p-2 w-full shadow-black/20 shadow-lg border-b border-slate-700">
-                     Reports:
+                     {t('efbAircraft.reportsTitle')}
                   </div>
                   <Scroll className="max-h-32 gap-2">
-                     <ul aria-label="Aircraft operation results" className="flex flex-col w-full gap-2 pl-8 p-4 h-fit text-sm">
+                     <ul aria-label={t('efbAircraft.reportsAriaLabel')} className="flex flex-col w-full gap-2 pl-8 p-4 h-fit text-sm">
                         {reports}
                      </ul>
                   </Scroll>

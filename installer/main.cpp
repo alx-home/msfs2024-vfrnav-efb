@@ -108,7 +108,7 @@ Main::Main()
 });)_");
 #endif
 
-   webview_.SetSize(960, 640, webview::Hint::NONE);
+   webview_.SetSize(1020, 680, webview::Hint::NONE);
    webview_.SetSize(480, 320, webview::Hint::MIN);
 
    InstallBindings();
@@ -172,6 +172,16 @@ Main::Bind(std::string_view name, RETURN (Main::*member_ptr)(ARGS...)) {
    }(std::make_index_sequence<sizeof...(ARGS)>());
 }
 
+template <class RETURN, class... ARGS>
+void
+Main::Bind(std::string_view name, RETURN (Main::*member_ptr)(ARGS...) const) {
+   [&]<std::size_t... INDEX>(std::index_sequence<INDEX...>) {
+      webview_.Bind(
+        name, std::function<RETURN(ARGS...)>{std::bind(member_ptr, this, std::_Ph<INDEX + 1>{}...)}
+      );
+   }(std::make_index_sequence<sizeof...(ARGS)>());
+}
+
 void
 Main::InstallBindings() {
    Bind("abort", &Main::Abort);
@@ -188,4 +198,7 @@ Main::InstallBindings() {
    Bind("defaultInstallPath", &Main::DefaultInstallPath);
 
    Bind("validate", &Main::Validate);
+
+   Bind("getLang", &Main::GetLang);
+   Bind("setLang", &Main::SetLang);
 }

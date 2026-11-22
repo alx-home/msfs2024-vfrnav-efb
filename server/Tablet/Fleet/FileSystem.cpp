@@ -14,6 +14,7 @@
  */
 
 #include "FileSystem.h"
+#include "FleetError.h"
 #include <windows.h>
 #include <bcrypt.h>
 #include <algorithm>
@@ -24,7 +25,6 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <stdexcept>
 
 namespace tablet {
 namespace fs = std::filesystem;
@@ -52,7 +52,7 @@ private:
 
 HashProvider::HashProvider() {
    if (BCryptOpenAlgorithmProvider(&handle_, BCRYPT_SHA256_ALGORITHM, nullptr, 0) < 0) {
-      throw std::runtime_error("SHA256 initialization failed.");
+      throw FleetError(FleetError::Code::SHA256_INIT_FAILED);
    }
 }
 
@@ -103,7 +103,7 @@ FileSystem::SafePath(fs::path path) {
    for (; !path.empty(); path = path.parent_path()) {
       auto attributes{GetFileAttributesW(path.c_str())};
       if (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
-         throw std::runtime_error("Linked/reparse paths are not supported: " + path.string());
+         throw FleetError(FleetError::Code::REPARSE_PATH_UNSUPPORTED, path);
       }
 
       if (path == path.parent_path()) {
@@ -118,17 +118,14 @@ FileSystem::ReadBytes(fs::path const& path) {
 
    std::ifstream input{FileSystem::ExtendedPath(path), std::ios::binary};
    if (!input) {
-      throw std::runtime_error(
-        "Cannot read " + path.string()
-        + ". In Deep mode enable/refresh VFS projection; protected files may remain inaccessible."
-      );
+      throw FleetError(FleetError::Code::CANNOT_READ_FILE, path);
    }
 
    std::ostringstream result{};
 
    result << input.rdbuf();
    if (input.bad()) {
-      throw std::runtime_error("Read failed: " + path.string());
+      throw FleetError(FleetError::Code::READ_FAILED, path);
    }
 
    return result.str();
@@ -139,7 +136,7 @@ FileSystem::Read(fs::path const& path) {
    auto text{FileSystem::ReadBytes(path)};
    if (text.starts_with("\xFF\xFE")) {
       if (text.size() % 2) {
-         throw std::runtime_error("Invalid UTF-16 file: " + path.string());
+         throw FleetError(FleetError::Code::INVALID_UTF16_FILE, path);
       }
 
       std::wstring wide{};
@@ -161,7 +158,7 @@ FileSystem::Read(fs::path const& path) {
         nullptr
       )};
       if (!size && !wide.empty()) {
-         throw std::runtime_error("Invalid UTF-16 configuration.");
+         throw FleetError(FleetError::Code::INVALID_UTF16_CONFIG, path);
       }
 
       text.resize(size);
@@ -200,7 +197,7 @@ FileSystem::Hash(std::string_view text) {
           static_cast<ULONG>(output.size())
         ) < 0
    ) {
-      throw std::runtime_error("SHA256 failed.");
+      throw FleetError(FleetError::Code::SHA256_FAILED);
    }
 
    std::ostringstream stream{};
@@ -232,19 +229,19 @@ FileSystem::Files(fs::path const& root) {
 fs::path
 FileSystem::VirtualPath(std::string text) {
    if (text.empty()) {
-      throw std::runtime_error("Empty virtual path is unsupported.");
+      throw FleetError(FleetError::Code::EMPTY_VIRTUAL_PATH);
    }
 
    std::ranges::replace(text, '/', '\\');
 
    fs::path result{text};
    if (result.is_absolute() || result.has_root_name()) {
-      throw std::runtime_error("Absolute attachment path is unsupported.");
+      throw FleetError(FleetError::Code::ABSOLUTE_ATTACHMENT_PATH);
    }
 
    for (auto const& part : result) {
       if (part == ".." || part == ".") {
-         throw std::runtime_error("Attachment traversal is unsupported.");
+         throw FleetError(FleetError::Code::ATTACHMENT_TRAVERSAL);
       }
    }
 
@@ -262,7 +259,7 @@ FileSystem::Resolve(std::vector<fs::path> const& roots, fs::path const& relative
       }
    }
 
-   throw std::runtime_error("Required dependency is not readable: " + relative.string());
+   throw FleetError(FleetError::Code::DEPENDENCY_NOT_READABLE, relative);
 }
 
 std::string
@@ -295,9 +292,7 @@ FileSystem::Write(fs::path const& path, std::string_view bytes) {
       out.write(bytes.data(), static_cast<std::streamsize>(bytes.size()));
       out.close();
    } catch (std::ios_base::failure const& error) {
-      throw std::runtime_error(
-        "Cannot write EFB patch file " + path.string() + ": " + error.what()
-      );
+      throw FleetError(FleetError::Code::CANNOT_WRITE_PATCH_FILE, path, error.what());
    }
 }
 

@@ -1,0 +1,280 @@
+{
+   "serverState": {
+      "start": "サーバーを起動",
+      "stop": "サーバーを停止",
+      "invalidPort": "無効なポート",
+      "inProgress": "進行中"
+   },
+   "taskbar": {
+      "configure": "設定",
+      "close": "閉じる",
+      "openInApp": "アプリで開く",
+      "openInBrowser": "ブラウザで開く"
+   },
+   "taskbar_tooltip": {
+      "stay_minimized": "アプリは最小化されたままになります",
+      "got_it": "了解"
+   },
+   "donation": {
+      "title": "VFRNav を支援する",
+      "intro": "VFRNav をお楽しみいただけていますか？",
+      "soloDeveloper": "VFRNav は個人で開発され、余暇の時間を使ってメンテナンスされています。",
+      "copilotCost": "一人での開発を進めるために Copilot を活用していますが、維持には費用がかかります。",
+      "supportImpact": "皆様からのご寄付はこれらの費用の補填に役立ち、VFRNav の開発に費やす時間と労力を支える大きな力になります。",
+      "thankYou": "ありがとうございます！",
+      "donateAlt": "寄付する",
+      "liberapaySubtitle": "寄付金のより多くが開発の支援に充てられます",
+      "preferredBadge": "推奨",
+      "paypalAriaLabel": "PayPal で寄付する",
+      "paypalAlt": "PayPal で寄付する",
+      "donateButton": "寄付する",
+      "paypalSubtitle": "手軽で広く信頼されています",
+      "convenientBadge": "便利",
+      "buyMeACoffeeAlt": "Buy Me a Coffee",
+      "buyMeACoffeeSubtitle": "プラットフォーム手数料がやや高めになります"
+   },
+   "app": {
+      "title": "MSFS2024 VFRNav' サーバー",
+      "openInBrowser": "ブラウザで開く",
+      "openInApp": "アプリで開く",
+      "terminate": "終了"
+   },
+   "body": {
+      "tabs": {
+         "settings": "設定",
+         "tablet3d": "3D タブレット",
+         "donation": "寄付"
+      }
+   },
+   "efbAircraft": {
+      "title": "コックピット EFB 機体パッチ",
+      "introLine1": "選択した機体のすべての選択可能なプリセットに、移動可能な 3D タブレットを適用します。",
+      "introLine2": "独立した Community オーバーレイパッケージにより、ディスク上の元機体ファイルを変更せずに既存のタブレットを置き換えます。",
+      "scanSettings": "スキャン設定",
+      "aircraftSource": "機体ソース :",
+      "modeStandard": "標準",
+      "modeDeep": "ディープ (VFS プロジェクション)",
+      "modeStandardDesc": "標準モードでは展開済みの Community 機体をスキャンします。シミュレーターの起動は不要です。",
+      "modeDeepDesc": "ディープモードでは VFS プロジェクション経由で公開されている機体をスキャンします。開発者モードと VFS プロジェクションを有効にした状態で MSFS を起動したままにしてください。マウントされたオーバーレイにより、元の標準アップデートが隠れる場合があります。",
+      "scanNoteLine1": "スキャンは読み取り専用です。",
+      "scanNoteLine2": "ソースハッシュでシミュレーターの更新を検出します。再スキャンして「適用」をクリックすると古いパッチを再生成できます。",
+      "loadingInstalled": "インストール済みの機体パッチを読み込み中...",
+      "careerNoticeLine1": "キャリアモード: パッチを適用した機体はシミュレーターによってキャリアミッションから除外されます。",
+      "careerNoticeLine2": "キャリアモードをプレイする前に機体パッチを削除して MSFS を再起動してください。2D EFB はキャリアモードでも動作します。",
+      "gotIt": "了解",
+      "listSeparator": " と ",
+      "careerRiskWarningOne": "キャリアモードの警告: {{aircraft}} にパッチを適用すると、パッチ適用機体がキャリアミッションから除外されるだけでなく、キャリアモード全体が利用できなくなる可能性があります。キャリアモードを使用する場合は、この機体にパッチを適用しないでください。",
+      "careerRiskWarningMany": "キャリアモードの警告: {{aircraft}} にパッチを適用すると、パッチ適用機体がキャリアミッションから除外されるだけでなく、キャリアモード全体が利用できなくなる可能性があります。キャリアモードを使用する場合は、これらの機体にパッチを適用しないでください。",
+      "confirm": "確認",
+      "cancel": "キャンセル",
+      "scanButton": "機体をスキャン",
+      "applyButton": "適用",
+      "reportSummary": "{{total}} 機体; {{selected}} 選択済み; {{patched}} パッチ済み; {{outdated}} 更新が必要。",
+      "lastOperationSummary": "前回の操作: {{generated}} パッチ適用/更新; {{removed}} 削除。",
+      "reportsTitle": "レポート:",
+      "reportsAriaLabel": "機体操作の結果"
+   },
+   "settings": {
+      "startup": {
+         "title": "起動",
+         "autoStart": "MSFS2024 VFRNav' サーバーを自動起動 :",
+         "windowsLogin": "Windows ログイン時",
+         "msfsStartup": "MSFS 起動時",
+         "never": "しない"
+      },
+      "general": {
+         "title": "設定",
+         "language": "言語 :"
+      },
+      "embedServer": {
+         "title": "内蔵サーバー",
+         "descriptionLine1": "外部デバイスや Web ブラウザから EFB を開くには内蔵サーバーが必要です。",
+         "descriptionLine2": "また、アプリ内で直接 EFB にアクセスする場合でも、シミュレーターとの同期を確保するために起動しておく必要があります。",
+         "startAtLaunch": "起動時にサーバーを開始 :",
+         "port": "ポート :",
+         "portPlaceholder": "サーバーの待受ポート",
+         "invalidPort": "無効なポートです (999 < 値 < 65'536) !"
+      }
+   },
+   "vfsHelp": {
+      "title": "VFS プロジェクションを有効にする",
+      "close": "閉じる",
+      "step1": {
+         "title": "1. 開発者モードを有効にする",
+         "description": "MSFS で [設定] > [一般] > [詳細オプション] を開き、開発者モードを有効にします。",
+         "alt": "一般設定: 詳細オプションを選択し、開発者モードにチェックを入れる"
+      },
+      "step2": {
+         "title": "2. Virtual File System を開く",
+         "description": "画面上部の開発者ツールバーから [Tools] > [Virtual File System] を選択します。",
+         "alt": "開発者ツールバー: Tools を開き Virtual File System を選択"
+      },
+      "step3": {
+         "title": "3. プロジェクションを開始する",
+         "description": "VFS Projector セクションで [Start] をクリックし、Projection started と表示されるまで待ちます。MSFS を起動したままにすると、ディープスキャンが自動的に利用可能になります。",
+         "alt": "VFS Projector: Start をクリックして Projection started を待つ"
+      }
+   },
+   "aircraftResults": {
+      "title": "機体",
+      "status": {
+         "ariaLabel": "機体操作のステータス",
+         "vfsHelpLabel": "VFS プロジェクションの有効化方法",
+         "restartRequired": "パッケージの変更を有効にするには MSFS を再起動してください。",
+         "gotIt": "了解"
+      },
+      "vfs": {
+         "NOT_ENABLED": "VFS プロジェクションが有効になっていません。MSFS を起動し、開発者モードを有効にしてから、VFS Projector を開始してください。",
+         "NO_AIRCRAFT": "VFS プロジェクションに機体が含まれていません。VFS Projector を開始または更新してください。",
+         "ACCESS_ERROR": "VFS プロジェクションにアクセスできません: {{error}}",
+         "READ_ERROR": "VFS プロジェクションを読み取れません: {{error}}",
+         "MONITORING_FAILED": "VFS の監視に失敗しました: {{error}}",
+         "invalidResponse": "VFS 監視の応答が無効です。",
+         "monitoringFailedLog": "VFS プロジェクションの監視に失敗しました:"
+      },
+      "errors": {
+         "inventoryRefreshLog": "インストール済み EFB パッチ一覧の更新に失敗しました:",
+         "inventoryRefreshFailed": "機体の操作は完了しましたが、インストール済みパッチ一覧を更新できませんでした: {{error}}",
+         "managementFailedLog": "EFB 機体管理に失敗しました:",
+         "inventoryLoadLog": "インストール済み EFB パッチ一覧の読み込みに失敗しました:",
+         "inventoryLoadFailed": "インストール済みの機体パッチを読み込めません: {{error}}",
+         "invalidText": "機体マネージャーのテキストが無効です。",
+         "invalidCount": "機体マネージャーの数値が無効です。",
+         "invalidResponse": "機体マネージャーの応答が無効です。",
+         "invalidAircraftEntry": "機体エントリが無効です。",
+         "invalidAircraftStatus": "機体ステータスが無効です。",
+         "invalidOperationEntry": "操作エントリが無効です。"
+      },
+      "fleet": {
+         "errors": {
+            "msfsNotFound": "MSFS のインストール先が見つかりません。",
+            "communityFromCfgNotFound": "MSFS の UserCfg.opt から Community フォルダを特定できません。",
+            "invalidOperation": "無効な EFB 機体操作です。",
+            "operationRunning": "別の EFB 機体操作がすでに実行中です。",
+            "communityMissing": "Community ディレクトリが見つかりません。",
+            "selectionNotArray": "機体の選択は JSON 配列である必要があります。",
+            "selectionIdsNotStrings": "機体 ID は文字列である必要があります。",
+            "sha256InitFailed": "SHA256 の初期化に失敗しました。",
+            "reparsePathUnsupported": "リンクされたパスまたは再解析ポイントはサポートされていません: {{path}}",
+            "cannotReadFile": "{{path}} を読み取れません。ディープモードでは VFS プロジェクションを有効にするか更新してください。保護されたファイルにはアクセスできない場合があります。",
+            "readFailed": "読み取りに失敗しました: {{path}}",
+            "invalidUtf16File": "無効な UTF-16 ファイルです: {{path}}",
+            "invalidUtf16Config": "無効な UTF-16 設定です。",
+            "sha256Failed": "SHA256 の計算に失敗しました。",
+            "emptyVirtualPath": "空の仮想パスはサポートされていません。",
+            "absoluteAttachmentPath": "絶対アタッチメントパスはサポートされていません。",
+            "attachmentTraversal": "アタッチメントパスでのディレクトリトラバーサルはサポートされていません。",
+            "dependencyNotReadable": "必要な依存関係を読み取れません: {{path}}",
+            "cannotWritePatchFile": "EFB パッチファイル {{path}} を書き込めません: {{error}}",
+            "malformedIniSection": "不正な形式の INI セクションです。",
+            "duplicateIniSection": "重複する INI セクションです: {{section}}",
+            "managedPackageWrongAircraft": "管理対象パッケージは別の機体またはモデルに属しています。",
+            "invalidTemplateReplacement": "無効または重複するテンプレート置換です: {{name}}",
+            "missingTemplateReplacement": "テンプレート置換が見つかりません: {{name}}",
+            "unusedTemplateReplacement": "未使用のテンプレート置換です: {{name}}",
+            "rigDestinationExists": "リグの出力先はすでに存在します。",
+            "cannotWatchVfs": "VFS プロジェクションを監視できません: {{error}}",
+            "vfsWatcherFailed": "VFS 監視に失敗しました: {{error}}",
+            "cannotRearmVfsWatcher": "VFS 監視を再設定できません: {{error}}",
+            "vfsWatchDirNotFound": "VFS プロジェクションを監視するディレクトリが見つかりません。",
+            "invalidOwnershipMetadata": "所有権メタデータが無効です。",
+            "invalidOwnershipFileList": "所有権ファイルリストが無効です。",
+            "emptyOwnershipFileList": "所有権ファイルリストが空です。",
+            "packageModified": "パッケージが変更されているため、変更を拒否しました: {{path}}",
+            "packageIncomplete": "パッケージが不完全なため、変更を拒否しました。",
+            "missingGeneratorResource": "SDK でコンパイルされたタブレット生成リソースが見つかりません: {{name}}。VFRNav サーバーを再ビルドしてください。",
+            "invalidGeneratorResource": "SDK でコンパイルされたタブレット生成リソースが無効です。",
+            "invalidAttachOffset": "タブレットマウントの attach_offset が無効です。",
+            "nonFiniteAttachOffset": "タブレットマウントの attach_offset が有限値ではありません。",
+            "sourceOutsideRoots": "ソースファイルが機体コンテンツのルート外にあります。",
+            "unreadableTabletAttachment": "タブレットに読み取り可能なアタッチメント参照がありません。",
+            "multifunctionCockpitEfb": "EFB は多機能コックピットアタッチメントの一部であるため、削除は安全ではありません。",
+            "invalidCameraCoordinates": "無効なカメラ座標です: {{name}}",
+            "missingCameraEyepoint": "カメラのアイポイント (eyepoint) が見つかりません。",
+            "nonFiniteCameraPosition": "計算されたカメラ位置が有限値ではありません。",
+            "noReadableAttachedObjects": "プリセットに読み取り可能な attached_objects.cfg がありません。",
+            "tabletNestedTooDeep": "タブレットが1階層を超えるアタッチメントレベルにネストされています。",
+            "cannotDetermineNestedPath": "ネストされたアタッチメントパスを特定できません。",
+            "noModularPresets": "レガシーまたは非モジュラー機体にはモジュラープリセットがありません。",
+            "noSelectableModularPresets": "ユーザーが選択可能なモジュラープリセットがありません。",
+            "dependencyRequiresDeepScan": "必要な依存関係を読み取れません: {{path}}。ディープスキャンが必要です。",
+            "rigPathMustBeRelative": "リグのパスは相対パスである必要があります。",
+            "rigPathTraversal": "リグのパスでディレクトリトラバーサルは使用できません。",
+            "rigFragmentTerminalLf": "リグのフラグメントには末尾の LF 改行が必要です。",
+            "unknownAircraftSelection": "不明な機体が選択されています。適用前にもう一度スキャンしてください。",
+            "cannotPatchAircraft": "選択した機体にパッチを適用できません: {{error}}",
+            "unableToAllocateStaging": "一時ステージングディレクトリを割り当てられません。"
+         },
+         "messages": {
+            "packageRemoved": "検証済みの管理対象パッケージを削除しました。",
+            "duplicateContainer": "複数の展開済みパッケージが同じ機体コンテナを提供しています。",
+            "vfsMaskStockUpdates": "VFS プロジェクションによりマウントされたオーバーレイの下の標準アップデートが隠れる場合があります。展開済みのソースパッケージには標準モードを使用するか、パッチをアンマウントして再スキャンしてください。",
+            "cannotInspectManifest": "ソースパッケージのマニフェスト {{path}} を検査できません: {{error}}",
+            "cannotVerifyOverlay": "{{path}} のオーバーレイ所有権を確認できません: {{error}}",
+            "nonOwnedOverlay": "外部パッケージがこの機体をオーバーレイしています: {{path}}",
+            "legacyManagedPackage": "レガシー管理対象パッケージのため、機体の詳細は利用できません。",
+            "installedVerifiedLocally": "インストール済みパッケージをローカルで検証しました。ソースの更新を確認するには機体をスキャンしてください。",
+            "vfsMonitoringStopped": "VFS の監視を停止しました。",
+            "cannotReadPilotCamera": "パイロットカメラ {{path}} を読み取れません: {{error}}",
+            "positionEstimated": "推定位置です。コックピット内の移動ハンドルで調整してください",
+            "cannotRecoverStockMetadata": "{{path}} から以前の標準メタデータを復元できません: {{error}}",
+            "presetNoFltsim0": "{{name}}: aircraft.cfg に読み取り可能な FLTSIM.0 がありません。選択可能なプリセットとみなします。",
+            "presetAircraftCfgUnreadable": "{{name}}: aircraft.cfg が保護されているか読み取れません。選択可能なプリセットとみなします。 {{error}}"
+         }
+      },
+      "operations": {
+         "scan": "機体をスキャン中...",
+         "apply": "機体パッチを適用中...",
+         "remove": "機体パッチを削除中..."
+      },
+      "statuses": {
+         "patched": "パッチ済み",
+         "outdated": "更新が必要",
+         "unsupported": "非対応",
+         "available": "利用可能",
+         "foreign": "外部"
+      },
+      "row": {
+         "warningOne": "{{count}} 件の警告",
+         "warningMany": "{{count}} 件の警告",
+         "reason": "理由",
+         "keepLabel": "{{name}} を維持",
+         "patchLabel": "{{name}} にパッチを適用",
+         "blocksCareerBadge": "キャリアモード全体をブロック",
+         "blocksCareerTooltip": "この機体にパッチを適用すると、この機体だけでなくキャリアモード全体が利用できなくなる可能性があります",
+         "presets": "プリセット: {{presets}}"
+      },
+      "table": {
+         "patch": "パッチ",
+         "aircraftContainer": "機体 / コンテナ",
+         "presets": "プリセット",
+         "status": "ステータス",
+         "existingEfb": "既存の EFB"
+      },
+      "filters": {
+         "filterTitle": "機体をフィルター",
+         "filterLabel": "機体をフィルター :",
+         "filterPlaceholder": "機体、コンテナ、またはプリセット",
+         "statusLabel": "ステータス :",
+         "statusAll": "すべて",
+         "sortByLabel": "並び替え :",
+         "sortName": "機体",
+         "sortContainer": "コンテナ",
+         "sortStatus": "ステータス",
+         "sortPresets": "プリセット",
+         "sortWarnings": "警告",
+         "descendingTitle": "降順",
+         "descendingLabel": "降順 :"
+      },
+      "empty": "機体が見つかりません（まずインストール済み/利用可能な機体パッチをスキャンしてください）。",
+      "selectAll": "表示中をすべて選択",
+      "selectNone": "表示中の選択をすべて解除"
+   },
+   "patchPlan": {
+      "title": "保留中の機体変更",
+      "none": "なし。",
+      "toPatchTitle": "パッチ適用 / 更新する機体",
+      "toUnpatchTitle": "パッチ解除する機体",
+      "removeWarning": "現在のスキャン対象外のパッケージを含め、検証済みの管理対象 EFB パッケージをすべて削除します。変更されたパッケージや外部パッケージには一切触れません。"
+   }
+}

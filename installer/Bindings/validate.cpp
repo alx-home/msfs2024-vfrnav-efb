@@ -18,7 +18,6 @@
 #include "Registry/Install.h"
 #include "Registry/Registry.h"
 #include "Utils/LaunchMode.h"
-#include "promise/promise.h"
 #include "windows/Env.h"
 #include "windows/Lock.h"
 #include "windows/Process.h"
@@ -245,6 +244,8 @@ Main::Validate(
    settings->auto_start_server_ = true;
    settings->server_port_ = server_port == -1 ? 48578ui16 : static_cast<uint16_t>(server_port);
 
+   settings->lang_ = lang_;
+
    if (default_deviation_preset.size()) {
       settings->default_deviation_preset_ = default_deviation_preset;
    }
@@ -371,8 +372,7 @@ Main::Validate(
       auto const last_slash = name.find_last_of("/");
       auto const file_name  = name.substr(last_slash == std::string::npos ? 0 : last_slash + 1);
       auto const directory =
-        addonPath + "/html_ui/"
-        + name.substr(0, last_slash == std::string::npos ? 0 : last_slash);
+        addonPath + "/html_ui/" + name.substr(0, last_slash == std::string::npos ? 0 : last_slash);
       std::error_code ec{};
       std::filesystem::create_directories(directory, ec);
       if (ec) {

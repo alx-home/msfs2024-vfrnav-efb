@@ -12,16 +12,27 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
-
 {
    "extends": "../tsconfig.base.json",
    "references": [
-      { "path": "../../../submodules/ts-utils/tsconfig.json" },
-      { "path": "../common/tsconfig.json" },
-      { "path": "../../../common/ts/tsconfig.json" }
+      {
+         "path": "../../../submodules/ts-utils/tsconfig.json"
+      },
+      {
+         "path": "../common/tsconfig.json"
+      },
+      {
+         "path": "../../../common/ts/tsconfig.json"
+      },
+      {
+         "path": "../i18n/tsconfig.json"
+      }
    ],
    "compilerOptions": {
-      "outDir": "../../../build/server/ts-dist/app/"
+      "outDir": "../../../build/server/ts-dist/app/",
    },
-   "include": ["./**/*.ts", "./**/*.tsx"]
+   "include": [
+      "./**/*.ts",
+      "./**/*.tsx",
+   ]
 }

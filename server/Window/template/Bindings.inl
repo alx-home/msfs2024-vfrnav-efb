@@ -67,5 +67,9 @@ Window<WINDOW>::InstallBindings() {
    Bind("getServerState", &Window::GetServerState);
    Bind("switchServer", &Window::SwitchServer);
 
+   Bind("setLang", &Window::SetLang);
+   Bind("getLang", &Window::GetLang);
+   Bind("watchLang", &Window::WatchLang);
+
    Bind("vfrnav_postMessage", &Window::VDispatchMessage);
 }

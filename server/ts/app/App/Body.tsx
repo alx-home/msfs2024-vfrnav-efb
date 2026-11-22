@@ -10,7 +10,7 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If
- * not, see <https://www.gnu.org/licenses/>.
+ * not, see <https://gnu.org>.
  */
 
 import { EfbAircraft } from "./EfbAircraft";
@@ -20,18 +20,20 @@ import settingsImg from '@alx-home/images/settings.svg';
 import tabletImg from '@vfrnav/images/COCKPIT_TABLET_OUTLINE.svg';
 import donationImg from '@vfrnav/images/donation.svg';
 import { Donation } from "./Donation";
+import { useTranslation } from "@vfrnav/i18n";
 
 export type Tabs = 'settings' | '3dtablet' | 'donation';
 
 export const Body = () => {
    const [tab, setTab] = useState<Tabs>('settings');
+   const { t } = useTranslation();
 
    return <div className='flex flex-row grow min-h-0 overflow-hidden'>
       <div className='flex flex-col shrink-0 w-16 h-full gap-2 p-2 bg-menu border-r border-slate-700/50 shadow-lg'>
          {([
-            { id: 'settings', label: 'Settings', icon: settingsImg },
-            { id: '3dtablet', label: '3D tablet', icon: tabletImg },
-            { id: 'donation', label: 'Donation', icon: donationImg }
+            { id: 'settings', label: t('body.tabs.settings'), icon: settingsImg },
+            { id: '3dtablet', label: t('body.tabs.tablet3d'), icon: tabletImg },
+            { id: 'donation', label: t('body.tabs.donation'), icon: donationImg }
          ] as const).map(({ id, label, icon }) =>
             <button key={id} type='button' title={label} aria-label={label}
                aria-pressed={tab === id}

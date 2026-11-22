@@ -13,22 +13,26 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useEvent } from "react-use-event-hook";
-import type { Aircraft, Confirmation, Entry, Mode, Operation, Report } from "./types";
-import { statuses } from "./types";
+import type { Aircraft, Confirmation, Entry, Mode, Operation, Report, VfsStatus } from "./types";
+
+import { statuses, VfsState, vfsStateKey } from "./types";
+import { useTranslation } from "@vfrnav/i18n";
+type TranslateFn = ReturnType<typeof useTranslation>['t'];
+
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object";
 
-const text = (value: unknown): string => {
+const parseText = (value: unknown, t: TranslateFn): string => {
    if (typeof value !== "string") {
-      throw new TypeError("Invalid aircraft manager text.");
+      throw new TypeError(t('aircraftResults.errors.invalidText'));
    }
    return value;
 };
 
-const count = (value: unknown): number => {
+const parseCount = (value: unknown, t: TranslateFn): number => {
    if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
-      throw new Error("Invalid aircraft manager count.");
+      throw new Error(t('aircraftResults.errors.invalidCount'));
    }
    return value;
 };
@@ -37,43 +41,57 @@ const count = (value: unknown): number => {
  * @brief Validate and decode an aircraft-management response from the native bridge.
  *
  * @param json Serialized fleet report.
+ * @param t Translation function.
  *
  * @returns The validated report.
  *
  * @throws If the JSON is malformed or the response or an aircraft entry has an invalid shape.
  */
-const parseReport = (json: string): Report => {
+const parseReport = (json: string, t: TranslateFn): Report => {
    const value: unknown = JSON.parse(json);
    if (!record(value) || typeof value.restartRequired !== "boolean" || !Array.isArray(value.aircraft) || !Array.isArray(value.entries)) {
-      throw new Error("Invalid aircraft manager response.");
+      throw new Error(t('aircraftResults.errors.invalidResponse'));
    }
 
    const aircraft = value.aircraft.map((item: unknown): Aircraft => {
       if (!record(item) || !Array.isArray(item.warnings) || !Array.isArray(item.presetNames)) {
-         throw new Error("Invalid aircraft entry.");
+         throw new Error(t('aircraftResults.errors.invalidAircraftEntry'));
       }
       const status = statuses.find(candidate => candidate === item.status);
       if (!status) {
-         throw new Error("Invalid aircraft status.");
+         throw new Error(t('aircraftResults.errors.invalidAircraftStatus'));
       }
       return {
          status,
-         id: text(item.id), name: text(item.name), container: text(item.container), presetCount: count(item.presetCount),
-         efb: text(item.efb), reason: text(item.reason), presetNames: item.presetNames.map(text),
-         warnings: item.warnings.map(text)
+         id: parseText(item.id, t),
+         name: parseText(item.name, t),
+         container: parseText(item.container, t),
+         presetCount: parseCount(item.presetCount, t),
+         efb: parseText(item.efb, t),
+         reason: formatOperationError(translateFleetMessage(parseText(item.reason, t), t), t),
+         presetNames: item.presetNames.map(entry => parseText(entry, t)),
+         warnings: item.warnings.map(entry => translateFleetMessage(parseText(entry, t), t))
       };
    });
 
    const entries = value.entries.map((item: unknown): Entry => {
       if (!record(item)) {
-         throw new Error("Invalid operation entry.");
+         throw new Error(t('aircraftResults.errors.invalidOperationEntry'));
       }
-      return { source: text(item.source), state: text(item.state), message: text(item.message) };
+      return {
+         source: parseText(item.source, t),
+         state: parseText(item.state, t),
+         message: formatOperationError(translateFleetMessage(parseText(item.message, t), t), t)
+      };
    });
 
    return {
-      community: text(value.community), restartRequired: value.restartRequired,
-      generated: count(value.generated), removed: count(value.removed), aircraft, entries
+      community: parseText(value.community, t),
+      restartRequired: value.restartRequired,
+      generated: parseCount(value.generated, t),
+      removed: parseCount(value.removed, t),
+      aircraft,
+      entries
    };
 };
 
@@ -83,7 +101,7 @@ const parseReport = (json: string): Report => {
  * @returns Current availability and its diagnostic message.
  */
 const useVfsStatus = () => {
-   const [vfs, setVfs] = useState({ available: false, message: "Checking VFS projection..." });
+   const [vfs, setVfs] = useState<VfsStatus>({ available: false, state: VfsState.NOT_ENABLED, detail: "" });
 
    useEffect(() => {
       let stopped = false;
@@ -96,22 +114,32 @@ const useVfsStatus = () => {
                const json = await globalThis.window.watchVfsProjection(previous);
                const status: unknown = JSON.parse(json);
 
-               if (!record(status) || typeof status.available !== "boolean" || typeof status.message !== "string") {
+
+               if (!record(status)
+                  || typeof status.available !== "boolean"
+                  || typeof status.detail !== "string"
+                  || typeof status.status !== "number"
+                  || !(status.status in VfsState)) {
                   throw new Error("Invalid VFS monitoring response.");
                }
+
 
                if (stopped) {
                   return;
                }
 
-               setVfs({ available: status.available, message: status.message });
+               setVfs({ available: status.available, state: status.status, detail: status.detail });
                previous = json;
             }
          } catch (reason) {
             console.info("VFS projection monitoring failed:", reason);
 
             if (!stopped) {
-               setVfs({ available: false, message: `VFS monitoring failed: ${reason instanceof Error ? reason.message : String(reason)}` });
+               setVfs({
+                  available: false,
+                  state: VfsState.ACCESS_ERROR,
+                  detail: reason instanceof Error ? reason.message : String(reason)
+               });
             }
          }
       };
@@ -131,13 +159,189 @@ let installedRequest: Promise<Report> | null = null;
  *
  * @throws If the native request fails or its response is invalid.
  */
-const loadInstalled = (): Promise<Report> => {
+const loadInstalled = (t: TranslateFn): Promise<Report> => {
    installedRequest ??= globalThis.window.manageEfbAircraft("standard", "installed", "[]")
-      .then(parseReport)
+      .then(json => parseReport(json, t))
       .finally(() => { installedRequest = null; });
 
    return installedRequest;
 };
+
+type TranslationKey = Parameters<TranslateFn>[0];
+
+const FLEET_ERROR_KEYS: Record<string, TranslationKey> = {
+   msfsNotFound: "aircraftResults.fleet.errors.msfsNotFound",
+   communityFromCfgNotFound: "aircraftResults.fleet.errors.communityFromCfgNotFound",
+   invalidOperation: "aircraftResults.fleet.errors.invalidOperation",
+   operationRunning: "aircraftResults.fleet.errors.operationRunning",
+   communityMissing: "aircraftResults.fleet.errors.communityMissing",
+   selectionNotArray: "aircraftResults.fleet.errors.selectionNotArray",
+   selectionIdsNotStrings: "aircraftResults.fleet.errors.selectionIdsNotStrings",
+   sha256InitFailed: "aircraftResults.fleet.errors.sha256InitFailed",
+   reparsePathUnsupported: "aircraftResults.fleet.errors.reparsePathUnsupported",
+   cannotReadFile: "aircraftResults.fleet.errors.cannotReadFile",
+   readFailed: "aircraftResults.fleet.errors.readFailed",
+   invalidUtf16File: "aircraftResults.fleet.errors.invalidUtf16File",
+   invalidUtf16Config: "aircraftResults.fleet.errors.invalidUtf16Config",
+   sha256Failed: "aircraftResults.fleet.errors.sha256Failed",
+   emptyVirtualPath: "aircraftResults.fleet.errors.emptyVirtualPath",
+   absoluteAttachmentPath: "aircraftResults.fleet.errors.absoluteAttachmentPath",
+   attachmentTraversal: "aircraftResults.fleet.errors.attachmentTraversal",
+   dependencyNotReadable: "aircraftResults.fleet.errors.dependencyNotReadable",
+   cannotWritePatchFile: "aircraftResults.fleet.errors.cannotWritePatchFile",
+
+   malformedIniSection: "aircraftResults.fleet.errors.malformedIniSection",
+   duplicateIniSection: "aircraftResults.fleet.errors.duplicateIniSection",
+   managedPackageWrongAircraft: "aircraftResults.fleet.errors.managedPackageWrongAircraft",
+
+   invalidTemplateReplacement: "aircraftResults.fleet.errors.invalidTemplateReplacement",
+   missingTemplateReplacement: "aircraftResults.fleet.errors.missingTemplateReplacement",
+   unusedTemplateReplacement: "aircraftResults.fleet.errors.unusedTemplateReplacement",
+
+   rigDestinationExists: "aircraftResults.fleet.errors.rigDestinationExists",
+
+   cannotWatchVfs: "aircraftResults.fleet.errors.cannotWatchVfs",
+   vfsWatcherFailed: "aircraftResults.fleet.errors.vfsWatcherFailed",
+   cannotRearmVfsWatcher: "aircraftResults.fleet.errors.cannotRearmVfsWatcher",
+   vfsWatchDirNotFound: "aircraftResults.fleet.errors.vfsWatchDirNotFound",
+
+   invalidOwnershipMetadata: "aircraftResults.fleet.errors.invalidOwnershipMetadata",
+   invalidOwnershipFileList: "aircraftResults.fleet.errors.invalidOwnershipFileList",
+   emptyOwnershipFileList: "aircraftResults.fleet.errors.emptyOwnershipFileList",
+   packageModified: "aircraftResults.fleet.errors.packageModified",
+   packageIncomplete: "aircraftResults.fleet.errors.packageIncomplete",
+   missingGeneratorResource: "aircraftResults.fleet.errors.missingGeneratorResource",
+   invalidGeneratorResource: "aircraftResults.fleet.errors.invalidGeneratorResource",
+
+   invalidAttachOffset: "aircraftResults.fleet.errors.invalidAttachOffset",
+   nonFiniteAttachOffset: "aircraftResults.fleet.errors.nonFiniteAttachOffset",
+   sourceOutsideRoots: "aircraftResults.fleet.errors.sourceOutsideRoots",
+   unreadableTabletAttachment: "aircraftResults.fleet.errors.unreadableTabletAttachment",
+   multifunctionCockpitEfb: "aircraftResults.fleet.errors.multifunctionCockpitEfb",
+   invalidCameraCoordinates: "aircraftResults.fleet.errors.invalidCameraCoordinates",
+   missingCameraEyepoint: "aircraftResults.fleet.errors.missingCameraEyepoint",
+   nonFiniteCameraPosition: "aircraftResults.fleet.errors.nonFiniteCameraPosition",
+   noReadableAttachedObjects: "aircraftResults.fleet.errors.noReadableAttachedObjects",
+   tabletNestedTooDeep: "aircraftResults.fleet.errors.tabletNestedTooDeep",
+   cannotDetermineNestedPath: "aircraftResults.fleet.errors.cannotDetermineNestedPath",
+   noModularPresets: "aircraftResults.fleet.errors.noModularPresets",
+   noSelectableModularPresets: "aircraftResults.fleet.errors.noSelectableModularPresets",
+   dependencyRequiresDeepScan: "aircraftResults.fleet.errors.dependencyRequiresDeepScan",
+
+   rigPathMustBeRelative: "aircraftResults.fleet.errors.rigPathMustBeRelative",
+   rigPathTraversal: "aircraftResults.fleet.errors.rigPathTraversal",
+   rigFragmentTerminalLf: "aircraftResults.fleet.errors.rigFragmentTerminalLf",
+
+   unknownAircraftSelection: "aircraftResults.fleet.errors.unknownAircraftSelection",
+   cannotPatchAircraft: "aircraftResults.fleet.errors.cannotPatchAircraft",
+   unableToAllocateStaging: "aircraftResults.fleet.errors.unableToAllocateStaging",
+};
+const FLEET_MESSAGE_KEYS: Record<string, TranslationKey> = {
+   packageRemoved: "aircraftResults.fleet.messages.packageRemoved",
+   duplicateContainer: "aircraftResults.fleet.messages.duplicateContainer",
+   vfsMaskStockUpdates: "aircraftResults.fleet.messages.vfsMaskStockUpdates",
+   cannotInspectManifest: "aircraftResults.fleet.messages.cannotInspectManifest",
+   cannotVerifyOverlay: "aircraftResults.fleet.messages.cannotVerifyOverlay",
+   nonOwnedOverlay: "aircraftResults.fleet.messages.nonOwnedOverlay",
+   legacyManagedPackage: "aircraftResults.fleet.messages.legacyManagedPackage",
+   installedVerifiedLocally: "aircraftResults.fleet.messages.installedVerifiedLocally",
+
+   vfsMonitoringStopped: "aircraftResults.fleet.messages.vfsMonitoringStopped",
+
+   cannotReadPilotCamera: "aircraftResults.fleet.messages.cannotReadPilotCamera",
+   positionEstimated: "aircraftResults.fleet.messages.positionEstimated",
+   cannotRecoverStockMetadata: "aircraftResults.fleet.messages.cannotRecoverStockMetadata",
+   presetNoFltsim0: "aircraftResults.fleet.messages.presetNoFltsim0",
+   presetAircraftCfgUnreadable: "aircraftResults.fleet.messages.presetAircraftCfgUnreadable",
+
+};
+
+const translateFleetMessage = (value: string, t: TranslateFn): string => {
+   if (value.startsWith("FLEET_MSG:")) {
+      try {
+         const parsed: unknown = JSON.parse(value.slice("FLEET_MSG:".length));
+         if (record(parsed) && typeof parsed.code === "string") {
+            const key = FLEET_MESSAGE_KEYS[parsed.code];
+            if (key) {
+               const params: Record<string, string> = {};
+               if (typeof parsed.path === "string") {
+                  params.path = parsed.path;
+               }
+               if (typeof parsed.error === "string") {
+                  params.error = formatOperationError(parsed.error, t);
+               }
+               if (typeof parsed.name === "string") {
+                  params.name = parsed.name;
+               }
+               return t(key, params);
+            }
+         }
+      } catch {
+         // Fallback to raw message
+      }
+   }
+   return value;
+};
+
+const formatFleetError = (raw: string, t: TranslateFn): string => {
+   try {
+      const parsed: unknown = JSON.parse(raw);
+      if (record(parsed) && typeof parsed.code === "string") {
+         const key = FLEET_ERROR_KEYS[parsed.code];
+         if (key) {
+            const params: Record<string, string> = {};
+            if (typeof parsed.path === "string") {
+               params.path = parsed.path;
+            }
+            if (typeof parsed.error === "string") {
+               params.error = formatOperationError(translateFleetMessage(parsed.error, t), t);
+            }
+            if (typeof parsed.section === "string") {
+               params.section = parsed.section;
+            }
+            if (typeof parsed.name === "string") {
+               params.name = parsed.name;
+            }
+            return t(key, params);
+         }
+      }
+   } catch {
+      // Fallback to raw message
+   }
+   return `FLEET_ERR:${raw}`;
+};
+
+const formatOperationError = (reason: unknown, t: TranslateFn): string => {
+   const message = reason instanceof Error ? reason.message : String(reason);
+
+   if (message.startsWith("FLEET_ERR:")) {
+      return formatFleetError(message.slice("FLEET_ERR:".length), t);
+   }
+
+   if (message.startsWith("VFS_STATUS:")) {
+      try {
+         const parsed: unknown = JSON.parse(message.slice("VFS_STATUS:".length));
+         if (
+            record(parsed)
+            && typeof parsed.status === "number"
+            && parsed.status !== VfsState.OK
+            && parsed.status in vfsStateKey
+            && typeof parsed.detail === "string"
+         ) {
+            return t(`aircraftResults.vfs.${vfsStateKey[parsed.status as Exclude<VfsState, VfsState.OK>]}`, {
+               error: parsed.detail
+            });
+         }
+      } catch {
+         // Fallback to raw message
+      }
+   }
+
+   return message;
+};
+
+export const formatVfsDetail = (detail: string, t: TranslateFn): string =>
+   formatOperationError(translateFleetMessage(detail, t), t);
 
 /**
  * @brief Coordinate scans, selections, VFS availability, and managed patch operations.
@@ -145,6 +349,7 @@ const loadInstalled = (): Promise<Report> => {
  * @returns State and actions for the aircraft management view.
  */
 export const useAircraftManager = () => {
+   const { t } = useTranslation();
    const [mode, setMode] = useState<Mode>("deep");
    const [operation, setOperation] = useState<Operation>();
    const [loadingInstalled, setLoadingInstalled] = useState(true);
@@ -167,12 +372,15 @@ export const useAircraftManager = () => {
    const vfs = useVfsStatus();
    const deepBlocked = mode === "deep" && !vfs.available;
 
+   const tRef = useRef(t);
+   tRef.current = t;
+
    useEffect(() => {
       let stopped = false;
 
       const load = async () => {
          try {
-            const result = await loadInstalled();
+            const result = await loadInstalled(tRef.current);
             if (!stopped) {
                const aircraft = result.aircraft.map(item => ({ ...item, installedOnly: true }));
                const ids = aircraft.map(item => item.id);
@@ -183,10 +391,12 @@ export const useAircraftManager = () => {
                }));
             }
          } catch (reason) {
-            console.info("Installed EFB patch inventory failed:", reason);
+            console.info(tRef.current('aircraftResults.errors.inventoryLoadLog'), reason);
 
             if (!stopped) {
-               setError(`Cannot load installed aircraft patches: ${reason instanceof Error ? reason.message : String(reason)}`);
+               setError(tRef.current('aircraftResults.errors.inventoryLoadFailed', {
+                  error: reason instanceof Error ? reason.message : String(reason)
+               }));
             }
          } finally {
             if (!stopped) {
@@ -213,6 +423,21 @@ export const useAircraftManager = () => {
       });
    });
 
+   const refreshInstalled = useEvent(async (result: Report) => {
+      try {
+         const inventory = await loadInstalled(t);
+         const aircraft = inventory.aircraft.map(item => ({ ...item, installedOnly: true }));
+         setInstalled({ ...inventory, ...result, aircraft });
+         const ids = aircraft.map(item => item.id);
+         setSelections({ standard: new Set(ids), deep: new Set(ids) });
+      } catch (reason) {
+         console.info(t('aircraftResults.errors.inventoryRefreshLog'), reason);
+         setError(t('aircraftResults.errors.inventoryRefreshFailed', {
+            error: reason instanceof Error ? reason.message : String(reason)
+         }));
+      }
+   });
+
    const run = useEvent(async (action: Operation) => {
       if (busy) {
          return;
@@ -220,7 +445,9 @@ export const useAircraftManager = () => {
 
       const applyInstalled = action === "apply" && !scanned;
       if (deepBlocked && action !== "remove" && !applyInstalled) {
-         setError(vfs.message);
+         if (vfs.state !== VfsState.OK) {
+            setError(t(`aircraftResults.vfs.${vfsStateKey[vfs.state]}`, { error: formatVfsDetail(vfs.detail, t) }));
+         }
          return;
       }
 
@@ -230,36 +457,30 @@ export const useAircraftManager = () => {
 
       try {
          const operationMode = applyInstalled ? "standard" : mode;
-         const result = parseReport(await globalThis.window.manageEfbAircraft(operationMode, action, JSON.stringify([...selected])));
+         const result = parseReport(
+            await globalThis.window.manageEfbAircraft(operationMode, action, JSON.stringify([...selected])),
+            t
+         );
 
          if (action === "scan") {
             updateReport(result);
          } else {
             setReports({});
             setSelections({ standard: new Set(), deep: new Set() });
-
-            try {
-               const inventory = await loadInstalled();
-               const aircraft = inventory.aircraft.map(item => ({ ...item, installedOnly: true }));
-               setInstalled({
-                  ...inventory, ...result,
-                  aircraft
-               });
-               const ids = aircraft.map(item => item.id);
-               setSelections({ standard: new Set(ids), deep: new Set(ids) });
-            } catch (reason) {
-               console.info("Installed EFB patch inventory refresh failed:", reason);
-               setError(`Aircraft operation completed, but installed patch inventory could not be refreshed: ${reason instanceof Error ? reason.message : String(reason)}`);
-            }
+            await refreshInstalled(result);
          }
       } catch (reason) {
-         console.info("EFB aircraft management failed:", reason);
-         setError(reason instanceof Error ? reason.message : String(reason));
+         console.info(t('aircraftResults.errors.managementFailedLog'), reason);
+         setError(formatOperationError(reason, t));
       } finally {
          setOperation(undefined);
       }
    });
 
    const changeMode = useEvent((next: Mode) => { setMode(next); setConfirmation(undefined); setError(""); });
-   return { mode, operation, busy, loadingInstalled, error, installed, report, selected, setSelected, confirmation, setConfirmation, vfs, deepBlocked, hasScanned: !!scanned, run, changeMode };
+   return {
+      mode, operation, busy, loadingInstalled, error,
+      installed, report, selected, setSelected, confirmation,
+      setConfirmation, vfs, deepBlocked, hasScanned: !!scanned, run, changeMode
+   };
 };

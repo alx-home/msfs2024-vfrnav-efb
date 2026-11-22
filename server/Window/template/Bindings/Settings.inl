@@ -55,14 +55,19 @@ Window<WINDOW>::WatchVfsProjection(
       auto value = boost::json::parse(previous).as_object();
       last       = {
         .available_ = value.at("available").as_bool(),
-        .message_   = std::string{value.at("message").as_string()}
+        .state_     = static_cast<tablet::VfsState>(value.at("status").as_int64()),
+        .detail_    = std::string{value.at("detail").as_string()}
       };
    }
 
    vfs_watcher_->Watch(
      last, [callback = resolve.shared_from_this()](tablet::VfsStatus const& status) {
         (*callback)(boost::json::serialize(
-          boost::json::object{{"available", status.available_}, {"message", status.message_}}
+          boost::json::object{
+            {"available", status.available_},
+            {"status", static_cast<int64_t>(status.state_)},
+            {"detail", status.detail_}
+          }
         ));
      }
    );
@@ -206,4 +211,22 @@ template <WIN WINDOW>
 Promise<>
 Window<WINDOW>::SwitchServer() {
    co_return main_.SwitchServer();
+}
+
+template <WIN WINDOW>
+Promise<>
+Window<WINDOW>::SetLang(std::string lang) {
+   co_return main_.SetLang(lang);
+}
+
+template <WIN WINDOW>
+Promise<std::string>
+Window<WINDOW>::GetLang() {
+   co_return main_.GetLang();
+}
+
+template <WIN WINDOW>
+Promise<std::string>
+Window<WINDOW>::WatchLang() {
+   co_return co_await main_.WatchLang();
 }

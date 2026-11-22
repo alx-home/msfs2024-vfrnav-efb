@@ -14,11 +14,10 @@
  */
 
 #include "TransformRig.h"
+#include "FleetError.h"
 #include "Rig/RigAssets.h"
 #include "Rig/RigModel.h"
 #include "Rig/RigText.h"
-
-#include <stdexcept>
 
 namespace tablet {
 
@@ -34,7 +33,7 @@ TransformRig::Write(
 
    auto const destination{packageRoot / relative};
    if (std::filesystem::exists(destination)) {
-      throw std::invalid_argument("Rig destination already exists");
+      throw FleetError(FleetError::Code::RIG_DESTINATION_EXISTS);
    }
 
    // Kept only for caller compatibility; no stock source is read or copied.

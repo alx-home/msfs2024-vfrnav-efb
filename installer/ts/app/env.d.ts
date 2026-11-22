@@ -33,6 +33,8 @@ declare global {
       validate: (_startupOption: StartupOption, _communityPath: string, _installPath: string) => Promise<void>;
       start_program: () => Promise<boolean>;
       clean_path: (_path: string) => Promise<boolean>;
+      setLang: (_lang: Language) => void;
+      getLang: () => Promise<Language>;
    }
 }
 

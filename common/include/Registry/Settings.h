@@ -35,6 +35,8 @@ public:
    Value<bool, Settings, "CareerNoticeDismissed">         career_notice_dismissed_;
    Value<bool, Settings, "RestartNoticeDismissed">        restart_notice_dismissed_;
 
+   Value<std::string, Settings, "Lang"> lang_;
+
    static constexpr Values VALUES{
      &Settings::launch_mode_,
      &Settings::community_,
@@ -46,6 +48,7 @@ public:
      &Settings::server_port_,
      &Settings::career_notice_dismissed_,
      &Settings::restart_notice_dismissed_,
+     &Settings::lang_,
    };
    static constexpr KeysPtr<> KEYS{};
 };

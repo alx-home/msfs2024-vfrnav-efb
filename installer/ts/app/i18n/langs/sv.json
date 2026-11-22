@@ -1,0 +1,35 @@
+{
+   "body": {
+      "invalidPath": "Ogiltig sökväg!",
+      "communityPlaceholder": "Plats för MSFS 2024 Community-mappen",
+      "serverPlaceholder": "Installationssökväg för MSFS2024 VFRNav' Server",
+      "installingTitle": "Installerar",
+      "installingMessage": "Installerar MSFS2024 VFRNav' Server...",
+      "infoTitle": "Info",
+      "infoDescription1": "Detta program är utformat för att vidarebefordra filbläddringsförfrågningar till operativsystemet och tillhandahålla appen via en webbserver.",
+      "infoDescription2Line1": "Observera att MSFS2024 VFRNav' kan fungera utan detta program genom att helt enkelt dra insticksprogrammet till Community-mappen.",
+      "infoDescription2Line2": "Detta gör dock att du inte kan öppna PDF-filer från datorn eller komma åt gränssnittet via en webbläsare eller en extern enhet.",
+      "startupTitle": "Start",
+      "autoStartLabel": "Starta MSFS2024 VFRNav' Server automatiskt:",
+      "startupLogin": "Vid inloggning i Windows",
+      "startupMsfs": "Vid start av MSFS",
+      "startupNever": "Aldrig",
+      "installPathTitle": "Installationssökväg",
+      "addonLabel": "Tillägg:",
+      "serverLabel": "Server:"
+   },
+   "popup": {
+      "installSuccessTitle": "Info",
+      "installSuccessMessage": "MSFS2024 VFRNav' Server har installerats!",
+      "startServer": "Starta server",
+      "close": "Stäng",
+      "warningTitle": "Varning",
+      "removingFolder": "Tar bort mapp:",
+      "continue": "Fortsätt",
+      "cancel": "Avbryt"
+   },
+   "trailer": {
+      "continue": "Fortsätt",
+      "abort": "Avbryt"
+   }
+}

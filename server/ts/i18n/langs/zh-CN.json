@@ -1,0 +1,280 @@
+{
+   "serverState": {
+      "start": "启动服务器",
+      "stop": "停止服务器",
+      "invalidPort": "无效端口",
+      "inProgress": "进行中"
+   },
+   "taskbar": {
+      "configure": "配置",
+      "close": "关闭",
+      "openInApp": "在应用中打开",
+      "openInBrowser": "在浏览器中打开"
+   },
+   "taskbar_tooltip": {
+      "stay_minimized": "应用将保持最小化",
+      "got_it": "知道了"
+   },
+   "donation": {
+      "title": "支持 VFRNav",
+      "intro": "喜欢 VFRNav 吗？",
+      "soloDeveloper": "VFRNav 由一人独立开发，并在业余时间维护。",
+      "copilotCost": "由于是独立开发，我依靠 Copilot 来保持开发进度，但这需要一定的费用。",
+      "supportImpact": "您的捐赠有助于分担这些开支，并支持 VFRNav 背后所投入的时间与精力。",
+      "thankYou": "非常感谢！",
+      "donateAlt": "捐赠",
+      "liberapaySubtitle": "您的捐款将有更大比例用于支持开发",
+      "preferredBadge": "推荐",
+      "paypalAriaLabel": "通过 PayPal 捐赠",
+      "paypalAlt": "通过 PayPal 捐赠",
+      "donateButton": "捐赠",
+      "paypalSubtitle": "便捷且广受信赖",
+      "convenientBadge": "便捷",
+      "buyMeACoffeeAlt": "Buy Me a Coffee",
+      "buyMeACoffeeSubtitle": "包含较高的平台手续费"
+   },
+   "app": {
+      "title": "MSFS2024 VFRNav' 服务器",
+      "openInBrowser": "在浏览器中打开",
+      "openInApp": "在应用中打开",
+      "terminate": "终止"
+   },
+   "body": {
+      "tabs": {
+         "settings": "设置",
+         "tablet3d": "3D 平板",
+         "donation": "捐赠"
+      }
+   },
+   "efbAircraft": {
+      "title": "驾驶舱 EFB 机型补丁",
+      "introLine1": "为所选机型的所有可选预设应用可移动 3D 平板。",
+      "introLine2": "独立的 Community 覆盖包会替换现有平板，而不会修改磁盘上的原始机型文件。",
+      "scanSettings": "扫描设置",
+      "aircraftSource": "机型来源 :",
+      "modeStandard": "标准",
+      "modeDeep": "深度（VFS 投影）",
+      "modeStandardDesc": "标准模式会扫描 Community 文件夹中已解压的机型；无需运行模拟器。",
+      "modeDeepDesc": "深度模式会扫描通过 VFS 投影公开的机型。请保持 MSFS 运行并启用开发者模式和 VFS 投影。已挂载的覆盖包可能会遮蔽底层的默认更新。",
+      "scanNoteLine1": "扫描为只读操作。",
+      "scanNoteLine2": "源文件哈希可检测模拟器更新。重新扫描并点击“应用”以重新生成过期补丁。",
+      "loadingInstalled": "正在加载已安装的机型补丁...",
+      "careerNoticeLine1": "生涯模式：模拟器会将所有已打补丁的机型排除在生涯任务之外。",
+      "careerNoticeLine2": "游玩生涯模式前请移除机型补丁并重启 MSFS；2D EFB 在生涯模式中仍可正常使用。",
+      "gotIt": "知道了",
+      "listSeparator": " 和 ",
+      "careerRiskWarningOne": "生涯模式警告：为 {{aircraft}} 打补丁不仅会导致已打补丁的机型被排除在生涯任务之外，还可能使整个生涯模式不可用。如果您使用生涯模式，请保持该机型未打补丁状态。",
+      "careerRiskWarningMany": "生涯模式警告：为 {{aircraft}} 打补丁不仅会导致已打补丁的机型被排除在生涯任务之外，还可能使整个生涯模式不可用。如果您使用生涯模式，请保持这些机型未打补丁状态。",
+      "confirm": "确认",
+      "cancel": "取消",
+      "scanButton": "扫描机型",
+      "applyButton": "应用",
+      "reportSummary": "共 {{total}} 架机型；已选择 {{selected}} 架；已打补丁 {{patched}} 架；已过期 {{outdated}} 架。",
+      "lastOperationSummary": "上次操作：已打补丁/更新 {{generated}} 架；已移除 {{removed}} 架。",
+      "reportsTitle": "报告：",
+      "reportsAriaLabel": "机型操作结果"
+   },
+   "settings": {
+      "startup": {
+         "title": "启动",
+         "autoStart": "自动启动 MSFS2024 VFRNav' 服务器 :",
+         "windowsLogin": "Windows 登录时",
+         "msfsStartup": "MSFS 启动时",
+         "never": "从不"
+      },
+      "general": {
+         "title": "设置",
+         "language": "语言 :"
+      },
+      "embedServer": {
+         "title": "内置服务器",
+         "descriptionLine1": "通过外部设备或网页浏览器打开 EFB 时需要运行内置服务器。",
+         "descriptionLine2": "此外，即使直接在应用内访问 EFB，也必须启动该服务器以确保与模拟器同步。",
+         "startAtLaunch": "启动时运行服务器 :",
+         "port": "端口 :",
+         "portPlaceholder": "服务器监听端口",
+         "invalidPort": "无效端口（999 < 值 < 65'536）！"
+      }
+   },
+   "vfsHelp": {
+      "title": "启用 VFS 投影",
+      "close": "关闭",
+      "step1": {
+         "title": "1. 启用开发者模式",
+         "description": "在 MSFS 中打开 选项 > 通用 > 高级选项，然后启用开发者模式。",
+         "alt": "通用设置：选择高级选项，然后勾选开发者模式"
+      },
+      "step2": {
+         "title": "2. 打开 Virtual File System",
+         "description": "从顶部的开发者工具栏中，选择 Tools > Virtual File System。",
+         "alt": "开发者工具栏：打开 Tools 并选择 Virtual File System"
+      },
+      "step3": {
+         "title": "3. 开始投影",
+         "description": "在 VFS Projector 部分中，点击 Start。等待显示 Projection started。保持 MSFS 运行；深度扫描将自动可用。",
+         "alt": "VFS Projector：点击 Start 并等待 Projection started"
+      }
+   },
+   "aircraftResults": {
+      "title": "机型",
+      "status": {
+         "ariaLabel": "机型操作状态",
+         "vfsHelpLabel": "如何启用 VFS 投影",
+         "restartRequired": "请重启 MSFS 以使程序包更改生效。",
+         "gotIt": "知道了"
+      },
+      "vfs": {
+         "NOT_ENABLED": "VFS 投影未启用。请启动 MSFS，启用开发者模式，然后启动 VFS Projector。",
+         "NO_AIRCRAFT": "VFS 投影中不包含任何机型。请启动或刷新 VFS Projector。",
+         "ACCESS_ERROR": "无法访问 VFS 投影：{{error}}",
+         "READ_ERROR": "无法读取 VFS 投影：{{error}}",
+         "MONITORING_FAILED": "VFS 监控失败：{{error}}",
+         "invalidResponse": "无效的 VFS 监控响应。",
+         "monitoringFailedLog": "VFS 投影监控失败："
+      },
+      "errors": {
+         "inventoryRefreshLog": "刷新已安装的 EFB 补丁清单失败：",
+         "inventoryRefreshFailed": "机型操作已完成，但无法刷新已安装的补丁清单：{{error}}",
+         "managementFailedLog": "EFB 机型管理失败：",
+         "inventoryLoadLog": "加载已安装的 EFB 补丁清单失败：",
+         "inventoryLoadFailed": "无法加载已安装的机型补丁：{{error}}",
+         "invalidText": "无效的机型管理器文本。",
+         "invalidCount": "无效的机型管理器计数。",
+         "invalidResponse": "无效的机型管理器响应。",
+         "invalidAircraftEntry": "无效的机型条目。",
+         "invalidAircraftStatus": "无效的机型状态。",
+         "invalidOperationEntry": "无效的操作条目。"
+      },
+      "fleet": {
+         "errors": {
+            "msfsNotFound": "无法找到 MSFS 安装路径。",
+            "communityFromCfgNotFound": "无法从 MSFS UserCfg.opt 中找到 Community 文件夹。",
+            "invalidOperation": "无效的 EFB 机型操作。",
+            "operationRunning": "另一项 EFB 机型操作正在运行中。",
+            "communityMissing": "缺少 Community 目录。",
+            "selectionNotArray": "机型选择必须是 JSON 数组。",
+            "selectionIdsNotStrings": "机型 ID 必须是字符串。",
+            "sha256InitFailed": "SHA256 初始化失败。",
+            "reparsePathUnsupported": "不支持链接路径或重解析点：{{path}}",
+            "cannotReadFile": "无法读取 {{path}}。在深度模式下请启用或刷新 VFS 投影；受保护的文件可能仍然无法访问。",
+            "readFailed": "读取失败：{{path}}",
+            "invalidUtf16File": "无效的 UTF-16 文件：{{path}}",
+            "invalidUtf16Config": "无效的 UTF-16 配置。",
+            "sha256Failed": "SHA256 计算失败。",
+            "emptyVirtualPath": "不支持空的虚拟路径。",
+            "absoluteAttachmentPath": "不支持绝对附件路径。",
+            "attachmentTraversal": "不支持附件路径中的目录遍历。",
+            "dependencyNotReadable": "必需的依赖项不可读：{{path}}",
+            "cannotWritePatchFile": "无法写入 EFB 补丁文件 {{path}}：{{error}}",
+            "malformedIniSection": "INI 节格式错误。",
+            "duplicateIniSection": "重复的 INI 节：{{section}}",
+            "managedPackageWrongAircraft": "受管程序包属于其他机型或型号。",
+            "invalidTemplateReplacement": "无效或重复的模板替换项：{{name}}",
+            "missingTemplateReplacement": "缺少模板替换项：{{name}}",
+            "unusedTemplateReplacement": "未使用的模板替换项：{{name}}",
+            "rigDestinationExists": "Rig 目标路径已存在。",
+            "cannotWatchVfs": "无法监控 VFS 投影：{{error}}",
+            "vfsWatcherFailed": "VFS 监控器失败：{{error}}",
+            "cannotRearmVfsWatcher": "无法重新启动 VFS 监控器：{{error}}",
+            "vfsWatchDirNotFound": "无法找到用于监控 VFS 投影的目录。",
+            "invalidOwnershipMetadata": "所有权元数据无效。",
+            "invalidOwnershipFileList": "所有权文件列表无效。",
+            "emptyOwnershipFileList": "所有权文件列表为空。",
+            "packageModified": "程序包已被修改；拒绝更改：{{path}}",
+            "packageIncomplete": "程序包不完整；拒绝更改。",
+            "missingGeneratorResource": "缺少 SDK 编译的平板生成器资源：{{name}}。请重新编译 VFRNav 服务器。",
+            "invalidGeneratorResource": "SDK 编译的平板生成器资源无效。",
+            "invalidAttachOffset": "平板支架的 attach_offset 无效。",
+            "nonFiniteAttachOffset": "平板支架的 attach_offset 不是有限数值。",
+            "sourceOutsideRoots": "源文件位于机型内容根目录之外。",
+            "unreadableTabletAttachment": "平板没有可读的附件引用。",
+            "multifunctionCockpitEfb": "EFB 是多功能驾驶舱附件的一部分；移除不安全。",
+            "invalidCameraCoordinates": "无效的相机坐标：{{name}}",
+            "missingCameraEyepoint": "缺少相机视点（eyepoint）。",
+            "nonFiniteCameraPosition": "计算出的相机位置不是有限数值。",
+            "noReadableAttachedObjects": "预设中没有可读的 attached_objects.cfg。",
+            "tabletNestedTooDeep": "平板嵌套超过了一层附件级别。",
+            "cannotDetermineNestedPath": "无法确定嵌套附件路径。",
+            "noModularPresets": "旧版或非模块化机型没有模块化预设。",
+            "noSelectableModularPresets": "没有用户可选的模块化预设。",
+            "dependencyRequiresDeepScan": "必需的依赖项不可读：{{path}}；需要执行深度扫描。",
+            "rigPathMustBeRelative": "Rig 路径必须是相对路径。",
+            "rigPathTraversal": "Rig 路径不能遍历目录。",
+            "rigFragmentTerminalLf": "Rig 片段末尾需要包含 LF 换行符。",
+            "unknownAircraftSelection": "未知的机型选择；请在应用前重新扫描。",
+            "cannotPatchAircraft": "无法为所选机型打补丁：{{error}}",
+            "unableToAllocateStaging": "无法分配临时暂存目录。"
+         },
+         "messages": {
+            "packageRemoved": "已移除经验证的受管程序包。",
+            "duplicateContainer": "多个已解压的程序包提供了相同的机型容器。",
+            "vfsMaskStockUpdates": "VFS 投影可能会遮蔽已挂载覆盖包下方的默认更新；对于已解压的源程序包请使用标准模式，或卸载补丁后重新扫描。",
+            "cannotInspectManifest": "无法检查源程序包清单 {{path}}：{{error}}",
+            "cannotVerifyOverlay": "无法验证 {{path}} 的覆盖包所有权：{{error}}",
+            "nonOwnedOverlay": "外部程序包覆盖了此机型：{{path}}",
+            "legacyManagedPackage": "旧版受管程序包；机型详细信息不可用。",
+            "installedVerifiedLocally": "已安装的程序包已在本地验证。请扫描机型以检查源文件更新。",
+            "vfsMonitoringStopped": "VFS 监控已停止。",
+            "cannotReadPilotCamera": "无法读取飞行员相机 {{path}}：{{error}}",
+            "positionEstimated": "位置为估算值；请使用驾驶舱内的移动手柄进行调整",
+            "cannotRecoverStockMetadata": "无法从 {{path}} 恢复先前的原始元数据：{{error}}",
+            "presetNoFltsim0": "{{name}}：aircraft.cfg 中没有可读的 FLTSIM.0 节；已假定为可选预设。",
+            "presetAircraftCfgUnreadable": "{{name}}：aircraft.cfg 受保护或不可读；已假定为可选预设。{{error}}"
+         }
+      },
+      "operations": {
+         "scan": "正在扫描机型...",
+         "apply": "正在应用机型补丁...",
+         "remove": "正在移除机型补丁..."
+      },
+      "statuses": {
+         "patched": "已打补丁",
+         "outdated": "已过期",
+         "unsupported": "不支持",
+         "available": "可用",
+         "foreign": "外部"
+      },
+      "row": {
+         "warningOne": "{{count}} 条警告",
+         "warningMany": "{{count}} 条警告",
+         "reason": "原因",
+         "keepLabel": "保留 {{name}}",
+         "patchLabel": "为 {{name}} 打补丁",
+         "blocksCareerBadge": "禁用整个生涯模式",
+         "blocksCareerTooltip": "为此机型打补丁不仅会影响该机型，还可能导致整个生涯模式不可用",
+         "presets": "预设：{{presets}}"
+      },
+      "table": {
+         "patch": "补丁",
+         "aircraftContainer": "机型 / 容器",
+         "presets": "预设",
+         "status": "状态",
+         "existingEfb": "现有 EFB"
+      },
+      "filters": {
+         "filterTitle": "筛选机型",
+         "filterLabel": "筛选机型 :",
+         "filterPlaceholder": "机型、容器或预设",
+         "statusLabel": "状态 :",
+         "statusAll": "全部",
+         "sortByLabel": "排序方式 :",
+         "sortName": "机型",
+         "sortContainer": "容器",
+         "sortStatus": "状态",
+         "sortPresets": "预设",
+         "sortWarnings": "警告",
+         "descendingTitle": "降序排列",
+         "descendingLabel": "降序排列 :"
+      },
+      "empty": "未找到机型（请先扫描已安装或可用的机型补丁）。",
+      "selectAll": "全选已显示项",
+      "selectNone": "取消全选已显示项"
+   },
+   "patchPlan": {
+      "title": "待处理的机型更改",
+      "none": "无。",
+      "toPatchTitle": "待打补丁 / 更新的机型",
+      "toUnpatchTitle": "待移除补丁的机型",
+      "removeWarning": "移除所有经验证的受管 EFB 程序包，包括当前扫描范围之外的程序包。已修改或外部程序包将不受影响。"
+   }
+}

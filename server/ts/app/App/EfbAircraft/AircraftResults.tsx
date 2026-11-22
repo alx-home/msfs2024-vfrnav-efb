@@ -17,13 +17,14 @@ import { useId, useState } from "react";
 import { Button, CheckBox, Input, Scroll, Select, SelectOption } from "@alx-home/Utils";
 import { useEvent } from "react-use-event-hook";
 import loadingIcon from "@alx-home/images/loading.svg";
-import type { Aircraft, Operation, Report, Sort, Mode } from "./types";
-import { blocksCareerMode, matchesAircraft, operationText, selectable, statusColors, statuses } from "./types";
+import type { Aircraft, Operation, Report, Sort, Mode, VfsStatus } from "./types";
+import { blocksCareerMode, matchesAircraft, selectable, statusColors, statuses, VfsState, vfsStateKey } from "./types";
 import { VfsHelpPopup } from "../VfsHelp";
 import { addPopup } from "@common/Popup";
+import { useTranslation } from "@vfrnav/i18n";
 
 import helpIcon from "../images/help.svg";
-
+import { formatVfsDetail } from "./useAircraftManager";
 /* eslint jsx-a11y/label-has-associated-control: ["error", { "controlComponents": ["Input", "CheckBox"], "depth": 3 }] */
 /**
  * @brief Display operation progress, VFS errors, and a dismissible restart reminder.
@@ -32,25 +33,27 @@ import helpIcon from "../images/help.svg";
  *
  * @returns The status panel, or null when there are no messages.
  */
-export const OperationStatus = ({ operation, mode, error, vfsMessage, restartRequired, onDismissRestart }: {
-   mode: Mode; operation?: Operation; error: string; vfsMessage: string; restartRequired: boolean;
+export const OperationStatus = ({ operation, mode, error, vfs, restartRequired, onDismissRestart }: {
+   mode: Mode; operation?: Operation; error: string; vfs?: VfsStatus; restartRequired: boolean;
    onDismissRestart: () => void;
 }) => {
-   const hasMessages = [operation, error, vfsMessage, restartRequired].some(Boolean);
+   const { t } = useTranslation();
+   const vfsErrorKey = vfs && vfs.state !== VfsState.OK ? vfsStateKey[vfs.state] : undefined;
+   const hasMessages = [operation, error, vfsErrorKey, restartRequired].some(Boolean);
    const showHelp = useEvent(() => addPopup(<VfsHelpPopup />, 0));
 
    if (!hasMessages) {
       return null;
    }
 
-   return <div className="flex shrink-0 flex-col gap-3 bg-gray-900 shadow-lg shadow-black/40" aria-label="Aircraft operation status">
+   return <div className="flex shrink-0 flex-col gap-3 bg-gray-900 shadow-lg shadow-black/40" aria-label={t('aircraftResults.status.ariaLabel')}>
       {
-         vfsMessage &&
+         vfsErrorKey &&
          <p role="alert" className="flex flex-row p-4 bg-gray-800 border-s-4 border-red-500 text-sm text-red-300">
-            {vfsMessage}
+            {t(`aircraftResults.vfs.${vfsErrorKey}`, { error: vfs ? formatVfsDetail(vfs.detail, t) : "" })}
             {
-               vfsMessage.startsWith('VFS projection is not enabled') &&
-               <button type="button" aria-label="How to enable VFS projection" title="How to enable VFS projection"
+               vfs?.state === VfsState.NOT_ENABLED &&
+               <button type="button" aria-label={t('aircraftResults.status.vfsHelpLabel')} title={t('aircraftResults.status.vfsHelpLabel')}
                   aria-haspopup="dialog"
                   onClick={showHelp}
                   className={`-mt-5 flex shrink-0 items-center justify-center text-white opacity-60 animate-breathe`
@@ -64,13 +67,13 @@ export const OperationStatus = ({ operation, mode, error, vfsMessage, restartReq
       }
       {operation && <output className="flex items-center gap-3 p-4 border-s-4 border-sky-500 bg-gray-800 text-sm text-sky-200">
          <img src={loadingIcon} alt="" className="w-12 h-6 shrink-0" />
-         <span>{operationText[operation]}</span>
+         <span>{t(`aircraftResults.operations.${operation}`)}</span>
       </output>}
       {error && <p role="alert" className="p-4 border-s-4 border-red-500 bg-gray-800 text-sm text-red-300 whitespace-pre-wrap break-words">{error}</p>}
       {restartRequired && <div className="flex items-center gap-3 p-3 py-2 border-s-4 border-yellow-500 bg-gray-800 text-sm text-yellow-300">
-         <output>Restart MSFS for package changes to take effect.</output>
+         <output>{t('aircraftResults.status.restartRequired')}</output>
          <div className="flex flex-1 ml-auto mr-4 max-w-32">
-            <Button active={true} onClick={onDismissRestart}>Got it</Button>
+            <Button active={true} onClick={onDismissRestart}>{t('aircraftResults.status.gotIt')}</Button>
          </div>
       </div>}
    </div>;
@@ -89,21 +92,24 @@ const AircraftRow = ({ item, checked, busy, onSelection }: {
    busy: boolean;
    onSelection: (_id: string, _checked: boolean) => void;
 }) => {
+   const { t } = useTranslation();
    const [expanded, setExpanded] = useState(false);
    const detailsId = useId();
    const changeSelection = useEvent((value: boolean) => onSelection(item.id, value));
-   const warningLabel = item.warnings.length === 1 ? "warning" : "warnings";
+   const warningSummary = item.warnings.length > 0
+      ? t(item.warnings.length === 1 ? 'aircraftResults.row.warningOne' : 'aircraftResults.row.warningMany', { count: item.warnings.length })
+      : "";
    const summary = [
-      item.warnings.length > 0 ? `${item.warnings.length} ${warningLabel}` : "",
-      item.reason ? "reason" : ""
+      warningSummary,
+      item.reason ? t('aircraftResults.row.reason') : ""
    ].filter(Boolean).join(" / ");
-   const selectionAction = item.installedOnly ? "Keep" : "Patch";
+   const selectionLabel = t(item.installedOnly ? 'aircraftResults.row.keepLabel' : 'aircraftResults.row.patchLabel', { name: item.name });
 
    return <>
       <tr className="border-t border-slate-700 hover:bg-gray-800">
          <td>
-            <label className="flex" title={`${selectionAction} ${item.name}`}>
-               <span className="sr-only">{selectionAction} {item.name}</span>
+            <label className="flex" title={selectionLabel}>
+               <span className="sr-only">{selectionLabel}</span>
                <CheckBox value={checked} active={!busy && (item.installedOnly || selectable(item))} onChange={changeSelection} />
             </label>
          </td>
@@ -111,17 +117,18 @@ const AircraftRow = ({ item, checked, busy, onSelection }: {
             <div className="flex flex-wrap items-center gap-2">
                <span>{item.name}</span>
                {blocksCareerMode(item) && <span className="ml-auto rounded-sm border border-amber-500/60 bg-amber-900 px-2 py-1 text-xs text-amber-100"
-                  title="Patching this aircraft can make the entire Career mode unavailable, not just this aircraft">Blocks entire Career mode</span>}
+                  title={t('aircraftResults.row.blocksCareerTooltip')}>{t('aircraftResults.row.blocksCareerBadge')}</span>}
             </div>
             <div className="text-xs break-all text-slate-400">{item.container}
             </div>
             {item.presetNames.length > 0 && <div className="text-xs break-words text-slate-400">
-               Presets: {item.presetNames.join(", ")}
+               {t('aircraftResults.row.presets', { presets: item.presetNames.join(", ") })}
             </div>}
          </td>
          <td>{item.presetCount}</td>
          <td>
-            <span className={`inline-block rounded-sm border px-2 py-1 shadow-md shadow-black/40 ${statusColors[item.status]}`} title={item.reason}>{item.status}
+            <span className={`inline-block rounded-sm border px-2 py-1 shadow-md shadow-black/40 ${statusColors[item.status]}`} title={item.reason}>
+               {t(`aircraftResults.statuses.${item.status}`)}
             </span>
          </td>
          <td>{item.efb}</td>
@@ -146,33 +153,19 @@ const AircraftRow = ({ item, checked, busy, onSelection }: {
    </>;
 };
 
-/**
- * @brief Keep the separate header and scrollable body columns aligned.
- *
- * @param props Column group options.
- * @param props.header Include the body scrollbar allowance in the last header column.
- *
- * @returns The shared column definitions.
- */
-const AircraftColumns = ({ header = false }: { header?: boolean }) =>
-   <colgroup>
-      <col className="w-16" />
-      <col />
-      <col className="w-20" />
-      <col className="w-28" />
-      <col className={header ? "w-[6.75rem]" : "w-24"} />
-   </colgroup>;
+const AircraftHeader = () => {
+   const { t } = useTranslation();
 
-const AircraftHeader = ({ hidden = false }: { hidden?: boolean }) =>
-   <thead className={hidden ? "sr-only" : "bg-gray-800 border-b border-gray-700"}>
+   return <thead className="sticky top-0 z-30 bg-gray-800 shadow-lg">
       <tr>
-         <th scope="col" className="border-r border-gray-700 shadow-md">Patch</th>
-         <th scope="col" className="border-r border-gray-700 shadow-md">Aircraft / container</th>
-         <th scope="col" className="border-r border-gray-700 shadow-md">Presets</th>
-         <th scope="col" className="border-r border-gray-700 shadow-md">Status</th>
-         <th scope="col">Existing EFB</th>
+         <th scope="col" className="w-px whitespace-nowrap border-b border-r border-gray-700 shadow-md">{t('aircraftResults.table.patch')}</th>
+         <th scope="col" className="w-full min-w-48 border-b border-r border-gray-700 shadow-md">{t('aircraftResults.table.aircraftContainer')}</th>
+         <th scope="col" className="w-px whitespace-nowrap border-b border-r border-gray-700 shadow-md">{t('aircraftResults.table.presets')}</th>
+         <th scope="col" className="w-px whitespace-nowrap border-b border-r border-gray-700 shadow-md">{t('aircraftResults.table.status')}</th>
+         <th scope="col" className="w-px whitespace-nowrap border-b border-gray-700">{t('aircraftResults.table.existingEfb')}</th>
       </tr>
    </thead>;
+};
 
 /**
  * @brief Filter, sort, and select aircraft from the current fleet report.
@@ -184,6 +177,7 @@ const AircraftHeader = ({ hidden = false }: { hidden?: boolean }) =>
 export const AircraftResults = ({ report, selected, setSelected, busy }: {
    report?: Report; selected: Set<string>; setSelected: (_selection: Set<string>) => void; busy: boolean;
 }) => {
+   const { t } = useTranslation();
    const [filter, setFilter] = useState("");
    const [statusFilter, setStatusFilter] = useState("all");
    const [sort, setSort] = useState<Sort>("name");
@@ -209,45 +203,38 @@ export const AircraftResults = ({ report, selected, setSelected, busy }: {
    });
 
    return <>
-      <h2 className="mt-2 text-lg">Aircraft</h2>
+      <h2 className="mt-2 text-lg">{t('aircraftResults.title')}</h2>
       <div className="flex flex-row items-end gap-3 bg-slate-800 p-3 text-left">
-         <label className="flex flex-col flex-1 gap-2 min-w-0" title="Filter aircraft">
-            <span>Filter aircraft :</span>
-            <Input active={true} value={filter} onChange={setFilter} placeholder="Aircraft, container or preset" className="min-w-0 w-full px-2" />
+         <label className="flex flex-col flex-1 gap-2 min-w-0" title={t('aircraftResults.filters.filterTitle')}>
+            <span>{t('aircraftResults.filters.filterLabel')}</span>
+            <Input active={true} value={filter} onChange={setFilter} placeholder={t('aircraftResults.filters.filterPlaceholder')} className="min-w-0 w-full px-2" />
          </label>
          <div className="flex flex-col flex-1 min-w-0 gap-2">
-            <div>Status :</div>
+            <div>{t('aircraftResults.filters.statusLabel')}</div>
             <Select value={statusFilter} active={true} onChange={setStatusFilter} className="min-w-0 w-full">
-               <SelectOption id="all">All</SelectOption>
-               {statuses.map(status => <SelectOption key={status} id={status}>{status}</SelectOption>)}
+               <SelectOption id="all">{t('aircraftResults.filters.statusAll')}</SelectOption>
+               {statuses.map(status => <SelectOption key={status} id={status}>{t(`aircraftResults.statuses.${status}`)}</SelectOption>)}
             </Select>
          </div>
          <div className="flex flex-col flex-1 min-w-0 gap-2">
-            <div>Sort by :</div>
+            <div>{t('aircraftResults.filters.sortByLabel')}</div>
             <Select<Sort> value={sort} active={true} onChange={setSort} className="min-w-0 w-full">
-               <SelectOption<Sort> id="name">Aircraft</SelectOption>
-               <SelectOption<Sort> id="container">Container</SelectOption>
-               <SelectOption<Sort> id="status">Status</SelectOption>
-               <SelectOption<Sort> id="presetCount">Presets</SelectOption>
-               <SelectOption<Sort> id="warnings">Warnings</SelectOption>
+               <SelectOption<Sort> id="name">{t('aircraftResults.filters.sortName')}</SelectOption>
+               <SelectOption<Sort> id="container">{t('aircraftResults.filters.sortContainer')}</SelectOption>
+               <SelectOption<Sort> id="status">{t('aircraftResults.filters.sortStatus')}</SelectOption>
+               <SelectOption<Sort> id="presetCount">{t('aircraftResults.filters.sortPresets')}</SelectOption>
+               <SelectOption<Sort> id="warnings">{t('aircraftResults.filters.sortWarnings')}</SelectOption>
             </Select>
          </div>
-         <label className="flex flex-col shrink-0 items-start gap-2" title="Descending order">
-            <span>Descending order :</span>
+         <label className="flex flex-col shrink-0 items-start gap-2" title={t('aircraftResults.filters.descendingTitle')}>
+            <span>{t('aircraftResults.filters.descendingLabel')}</span>
             <CheckBox value={descending} active={true} onChange={setDescending} />
          </label>
       </div>
       <div className="relative z-0 flex flex-col min-h-0 shrink-0 bg-slate-800 [&>div>div.absolute]:opacity-100 [&>div>div.absolute]:z-20 [&>div>div.absolute>div]:bg-slate-400">
-         <div className="relative z-30 shrink-0 bg-gray-800 shadow-lg" aria-hidden="true">
-            <table className="w-full table-fixed text-sm text-left [&_th]:p-3">
-               <AircraftColumns header />
-               <AircraftHeader />
-            </table>
-         </div>
          <Scroll className="flex-col max-h-96 bg-slate-800 pr-3">
-            <table className="w-full table-fixed text-sm text-left [&_td]:p-3">
-               <AircraftColumns />
-               <AircraftHeader hidden />
+            <table className="w-full border-separate border-spacing-0 text-sm text-left [&_th]:p-3 [&_td]:p-3 [&_tbody_td]:border-t [&_tbody_td]:border-slate-700">
+               <AircraftHeader />
                <tbody>
                   {visible.map(item => <AircraftRow key={item.id} item={item} checked={selected.has(item.id)} busy={busy} onSelection={selectAircraft} />)}
                </tbody>
@@ -256,17 +243,18 @@ export const AircraftResults = ({ report, selected, setSelected, busy }: {
          {
             visible.length === 0 &&
             <p className="bg-slate-800 p-3 text-left text-sm m-auto">
-               No aircraft found (Start by scanning for installed/available aircraft patches).
+               {t('aircraftResults.empty')}
             </p>
          }
          <div className="relative shadow-[0_-2px_8px_rgba(0,0,0,0.20)] flex p-2 border-t border-gray-700 gap-3 bg-gray-800">
             <div className="flex flex-1">
-               <Button active={!busy} disabled={busy} onClick={selectAll}>Select all shown</Button>
+               <Button active={!busy} disabled={busy} onClick={selectAll}>{t('aircraftResults.selectAll')}</Button>
             </div>
             <div className="flex flex-1">
-               <Button active={!busy} disabled={busy} onClick={selectNone}>Select none shown</Button>
+               <Button active={!busy} disabled={busy} onClick={selectNone}>{t('aircraftResults.selectNone')}</Button>
             </div>
          </div>
-      </div >
+      </div>
+
    </>;
 };

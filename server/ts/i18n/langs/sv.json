@@ -1,0 +1,280 @@
+{
+   "serverState": {
+      "start": "Starta server",
+      "stop": "Stoppa server",
+      "invalidPort": "Ogiltig port",
+      "inProgress": "Pågår"
+   },
+   "taskbar": {
+      "configure": "Konfigurera",
+      "close": "Stäng",
+      "openInApp": "Öppna i appen",
+      "openInBrowser": "Öppna i webbläsare"
+   },
+   "taskbar_tooltip": {
+      "stay_minimized": "Appen förblir minimerad",
+      "got_it": "Förstått"
+   },
+   "donation": {
+      "title": "Stöd VFRNav",
+      "intro": "Gillar du VFRNav?",
+      "soloDeveloper": "VFRNav utvecklas av en enda person och underhålls på fritiden.",
+      "copilotCost": "Eftersom jag arbetar ensam förlitar jag mig på Copilot för att hålla utvecklingen igång, men det medför en kostnad.",
+      "supportImpact": "Din donation hjälper till att täcka dessa utgifter och stöder den tid och det arbete som läggs ner på VFRNav.",
+      "thankYou": "Stort tack!",
+      "donateAlt": "Donera",
+      "liberapaySubtitle": "En större del av din donation stöder utvecklingen",
+      "preferredBadge": "Rekommenderas",
+      "paypalAriaLabel": "Donera med PayPal",
+      "paypalAlt": "Donera med PayPal",
+      "donateButton": "Donera",
+      "paypalSubtitle": "Smidigt och brett betrott",
+      "convenientBadge": "Smidigt",
+      "buyMeACoffeeAlt": "Buy Me a Coffee",
+      "buyMeACoffeeSubtitle": "Innebär högre plattformsavgifter"
+   },
+   "app": {
+      "title": "MSFS2024 VFRNav' Server",
+      "openInBrowser": "Öppna i webbläsare",
+      "openInApp": "Öppna i appen",
+      "terminate": "Avsluta"
+   },
+   "body": {
+      "tabs": {
+         "settings": "Inställningar",
+         "tablet3d": "3D-surfplatta",
+         "donation": "Donera"
+      }
+   },
+   "efbAircraft": {
+      "title": "Cockpit EFB-flygplanspatchar",
+      "introLine1": "Patcha alla valbara förinställningar för valda flygplan med den flyttbara 3D-surfplattan.",
+      "introLine2": "Separata Community-överläggspaket ersätter befintliga surfplattor utan att ändra flygplanens källfiler på disken.",
+      "scanSettings": "Skanningsinställningar",
+      "aircraftSource": "Flygplanskölla :",
+      "modeStandard": "Standard",
+      "modeDeep": "Djup (VFS-projektion)",
+      "modeStandardDesc": "Standard skannar uppackade Community-flygplan; ingen körande simulator krävs.",
+      "modeDeepDesc": "Djup skannar flygplan som exponeras via VFS-projektion. Håll MSFS igång med utvecklarläge och VFS-projektion aktiverat. Monterade överlägg kan dölja underliggande standarduppdateringar.",
+      "scanNoteLine1": "Skanningen är skrivskyddad.",
+      "scanNoteLine2": "Källhashar upptäcker simulatoruppdateringar. Skanna igen och klicka på Verkställ för att återskapa föråldrade patchar.",
+      "loadingInstalled": "Läser in installerade flygplanspatchar...",
+      "careerNoticeLine1": "Karriärläge: simulatorn utesluter alla patchade flygplan från karriäruppdrag.",
+      "careerNoticeLine2": "Ta bort flygplanspatcharna och starta om MSFS innan du spelar karriärläge; 2D-EFB fortsätter att fungera i karriärläget.",
+      "gotIt": "Uppfattat",
+      "listSeparator": " och ",
+      "careerRiskWarningOne": "Varning för karriärläge: att patcha {{aircraft}} kan göra hela karriärläget otillgängligt, utöver att simulatorn utesluter patchade flygplan från karriäruppdrag. Lämna detta flygplan opatchat om du använder karriärläget.",
+      "careerRiskWarningMany": "Varning för karriärläge: att patcha {{aircraft}} kan göra hela karriärläget otillgängligt, utöver att simulatorn utesluter patchade flygplan från karriäruppdrag. Lämna dessa flygplan opatchade om du använder karriärläget.",
+      "confirm": "Bekräfta",
+      "cancel": "Avbryt",
+      "scanButton": "Skanna flygplan",
+      "applyButton": "Verkställ",
+      "reportSummary": "{{total}} flygplan; {{selected}} valda; {{patched}} patchade; {{outdated}} föråldrade.",
+      "lastOperationSummary": "Senaste åtgärd: {{generated}} patchade/uppdaterade; {{removed}} borttagna.",
+      "reportsTitle": "Rapporter:",
+      "reportsAriaLabel": "Resultat för flygplansåtgärder"
+   },
+   "settings": {
+      "startup": {
+         "title": "Start",
+         "autoStart": "Starta MSFS2024 VFRNav' Server automatiskt :",
+         "windowsLogin": "Windows-inloggning",
+         "msfsStartup": "MSFS-start",
+         "never": "Aldrig"
+      },
+      "general": {
+         "title": "Inställningar",
+         "language": "Språk :"
+      },
+      "embedServer": {
+         "title": "Inbyggd server",
+         "descriptionLine1": "Den inbyggda servern krävs när EFB öppnas via en extern enhet eller webbläsare.",
+         "descriptionLine2": "Dessutom måste den startas även vid direkt åtkomst till EFB i appen för att säkerställa synkronisering med simulatorn.",
+         "startAtLaunch": "Starta server vid uppstart :",
+         "port": "Port :",
+         "portPlaceholder": "Serverns lyssningsport",
+         "invalidPort": "Ogiltig port (999 < värde < 65'536) !"
+      }
+   },
+   "vfsHelp": {
+      "title": "Aktivera VFS-projektion",
+      "close": "Stäng",
+      "step1": {
+         "title": "1. Aktivera utvecklarläge",
+         "description": "I MSFS öppnar du Inställningar > Allmänt > Avancerade alternativ och aktiverar Utvecklarläge.",
+         "alt": "Allmänna inställningar: välj Avancerade alternativ och markera Utvecklarläge"
+      },
+      "step2": {
+         "title": "2. Öppna Virtual File System",
+         "description": "I utvecklarverktygsfältet högst upp väljer du Tools > Virtual File System.",
+         "alt": "Utvecklarverktygsfält: öppna Tools och välj Virtual File System"
+      },
+      "step3": {
+         "title": "3. Starta projektion",
+         "description": "I avsnittet VFS Projector klickar du på Start. Vänta på Projection started. Låt MSFS vara igång; djupskanning blir tillgänglig automatiskt.",
+         "alt": "VFS Projector: klicka på Start och vänta på Projection started"
+      }
+   },
+   "aircraftResults": {
+      "title": "Flygplan",
+      "status": {
+         "ariaLabel": "Status för flygplansåtgärd",
+         "vfsHelpLabel": "Så aktiverar du VFS-projektion",
+         "restartRequired": "Starta om MSFS för att paketändringarna ska träda i kraft.",
+         "gotIt": "Uppfattat"
+      },
+      "vfs": {
+         "NOT_ENABLED": "VFS-projektion är inte aktiverad. Starta MSFS, aktivera utvecklarläge och starta sedan VFS Projector.",
+         "NO_AIRCRAFT": "VFS-projektionen innehåller inga flygplan. Starta eller uppdatera VFS Projector.",
+         "ACCESS_ERROR": "Det går inte att komma åt VFS-projektionen: {{error}}",
+         "READ_ERROR": "Det går inte att läsa VFS-projektionen: {{error}}",
+         "MONITORING_FAILED": "VFS-övervakning misslyckades: {{error}}",
+         "invalidResponse": "Ogiltigt svar från VFS-övervakningen.",
+         "monitoringFailedLog": "Övervakning av VFS-projektion misslyckades:"
+      },
+      "errors": {
+         "inventoryRefreshLog": "Uppdatering av inventeringen av installerade EFB-patchar misslyckades:",
+         "inventoryRefreshFailed": "Flygplansåtgärden slutfördes, men inventeringen av installerade patchar kunde inte uppdateras: {{error}}",
+         "managementFailedLog": "EFB-flygplanshantering misslyckades:",
+         "inventoryLoadLog": "Inläsning av inventeringen av installerade EFB-patchar misslyckades:",
+         "inventoryLoadFailed": "Det går inte att läsa in installerade flygplanspatchar: {{error}}",
+         "invalidText": "Ogiltig text från flygplanshanteraren.",
+         "invalidCount": "Ogiltigt antal från flygplanshanteraren.",
+         "invalidResponse": "Ogiltigt svar från flygplanshanteraren.",
+         "invalidAircraftEntry": "Ogiltig flygplanspost.",
+         "invalidAircraftStatus": "Ogiltig flygplansstatus.",
+         "invalidOperationEntry": "Ogiltig åtgärdspost."
+      },
+      "fleet": {
+         "errors": {
+            "msfsNotFound": "Det går inte att hitta MSFS-installationen.",
+            "communityFromCfgNotFound": "Det går inte att hitta Community-mappen från MSFS UserCfg.opt.",
+            "invalidOperation": "Ogiltig EFB-flygplansåtgärd.",
+            "operationRunning": "En annan EFB-flygplansåtgärd körs redan.",
+            "communityMissing": "Katalogen Community saknas.",
+            "selectionNotArray": "Flygplansvalet måste vara en JSON-array.",
+            "selectionIdsNotStrings": "Flygplans-ID:n måste vara strängar.",
+            "sha256InitFailed": "SHA256-initieringen misslyckades.",
+            "reparsePathUnsupported": "Länkade sökvägar eller reparse-punkter stöds inte: {{path}}",
+            "cannotReadFile": "Det går inte att läsa {{path}}. Aktivera eller uppdatera VFS-projektionen i djupläge; skyddade filer kan förbli otillgängliga.",
+            "readFailed": "Läsningen misslyckades: {{path}}",
+            "invalidUtf16File": "Ogiltig UTF-16-fil: {{path}}",
+            "invalidUtf16Config": "Ogiltig UTF-16-konfiguration.",
+            "sha256Failed": "SHA256-beräkningen misslyckades.",
+            "emptyVirtualPath": "En tom virtuell sökväg stöds inte.",
+            "absoluteAttachmentPath": "En absolut bilagesökväg stöds inte.",
+            "attachmentTraversal": "Katalogtraversering i bilagesökvägar stöds inte.",
+            "dependencyNotReadable": "Nödvändigt beroende är inte läsbart: {{path}}",
+            "cannotWritePatchFile": "Det går inte att skriva EFB-patchfilen {{path}}: {{error}}",
+            "malformedIniSection": "Felaktigt utformat INI-avsnitt.",
+            "duplicateIniSection": "Dubblett av INI-avsnitt: {{section}}",
+            "managedPackageWrongAircraft": "Det hanterade paketet tillhör ett annat flygplan eller en annan modell.",
+            "invalidTemplateReplacement": "Ogiltig eller duplicerad mallersättning: {{name}}",
+            "missingTemplateReplacement": "Mallersättning saknas: {{name}}",
+            "unusedTemplateReplacement": "Oanvänd mallersättning: {{name}}",
+            "rigDestinationExists": "Rig-destinationen finns redan.",
+            "cannotWatchVfs": "Det går inte att övervaka VFS-projektionen: {{error}}",
+            "vfsWatcherFailed": "VFS-övervakaren misslyckades: {{error}}",
+            "cannotRearmVfsWatcher": "Det går inte att återaktivera VFS-övervakaren: {{error}}",
+            "vfsWatchDirNotFound": "Det går inte att hitta en katalog att övervaka för VFS-projektionen.",
+            "invalidOwnershipMetadata": "Ogiltig ägarskapsmetadata.",
+            "invalidOwnershipFileList": "Ogiltig ägarskapsfillista.",
+            "emptyOwnershipFileList": "Tom ägarskapsfillista.",
+            "packageModified": "Paketet har ändrats; vägrar att ändra det: {{path}}",
+            "packageIncomplete": "Paketet är ofullständigt; vägrar att ändra det.",
+            "missingGeneratorResource": "SDK-kompilerad surfplattegeneratorresurs saknas: {{name}}. Bygg om VFRNav-servern.",
+            "invalidGeneratorResource": "Ogiltig SDK-kompilerad surfplattegeneratorresurs.",
+            "invalidAttachOffset": "Surfplattefästet har ett ogiltigt attach_offset.",
+            "nonFiniteAttachOffset": "Surfplattefästet har ett icke-ändligt attach_offset.",
+            "sourceOutsideRoots": "Källfilen ligger utanför flygplanets innehållsrötter.",
+            "unreadableTabletAttachment": "Surfplattan har ingen läsbar bilagereferens.",
+            "multifunctionCockpitEfb": "EFB är en del av en multifunktionsbilaga i cockpit; borttagning är osäker.",
+            "invalidCameraCoordinates": "Ogiltiga kamerakoordinater: {{name}}",
+            "missingCameraEyepoint": "Kamerans ögonpunkt (eyepoint) saknas.",
+            "nonFiniteCameraPosition": "Den beräknade kamerapositionen är inte ändlig.",
+            "noReadableAttachedObjects": "Förinställningen saknar en läsbar attached_objects.cfg.",
+            "tabletNestedTooDeep": "Surfplattan är kapslad djupare än en bilagenivå.",
+            "cannotDetermineNestedPath": "Det går inte att fastställa sökvägen för den kapslade bilagan.",
+            "noModularPresets": "Äldre eller icke-modulärt flygplan saknar modulära förinställningar.",
+            "noSelectableModularPresets": "Inga användarvalbara modulära förinställningar.",
+            "dependencyRequiresDeepScan": "Nödvändigt beroende är inte läsbart: {{path}}; kräver djupskanning.",
+            "rigPathMustBeRelative": "Rig-sökvägar måste vara relativa.",
+            "rigPathTraversal": "Rig-sökvägar får inte traversera kataloger.",
+            "rigFragmentTerminalLf": "Rig-fragment kräver ett avslutande LF-radslut.",
+            "unknownAircraftSelection": "Okänt flygplansval; skanna igen innan du verkställer.",
+            "cannotPatchAircraft": "Det går inte att patcha det valda flygplanet: {{error}}",
+            "unableToAllocateStaging": "Det går inte att allokera en tillfällig staging-katalog."
+         },
+         "messages": {
+            "packageRemoved": "Verifierat hanterat paket har tagits bort.",
+            "duplicateContainer": "Flera uppackade paket tillhandahåller samma flygplanscontainer.",
+            "vfsMaskStockUpdates": "VFS-projektionen kan dölja standarduppdateringar under monterade överlägg; använd standardläge för uppackade källpaket eller skanna igen med patchar avmonterade.",
+            "cannotInspectManifest": "Det går inte att inspektera källpaketets manifest {{path}}: {{error}}",
+            "cannotVerifyOverlay": "Det går inte att verifiera överläggets ägarskap för {{path}}: {{error}}",
+            "nonOwnedOverlay": "Ett externt paket överlagrar detta flygplan: {{path}}",
+            "legacyManagedPackage": "Äldre hanterat paket; flygplansdetaljer är inte tillgängliga.",
+            "installedVerifiedLocally": "Installerat paket har verifierats lokalt. Skanna flygplan för att kontrollera källuppdateringar.",
+            "vfsMonitoringStopped": "VFS-övervakningen har stoppats.",
+            "cannotReadPilotCamera": "Det går inte att läsa pilotkameran {{path}}: {{error}}",
+            "positionEstimated": "position uppskattad; justera med flytthandtaget i cockpit",
+            "cannotRecoverStockMetadata": "Det går inte att återställa tidigare originalmetadata från {{path}}: {{error}}",
+            "presetNoFltsim0": "{{name}}: aircraft.cfg saknar ett läsbart FLTSIM.0-avsnitt; valbar förinställning antas.",
+            "presetAircraftCfgUnreadable": "{{name}}: aircraft.cfg skyddad eller oläsbar; valbar förinställning antas. {{error}}"
+         }
+      },
+      "operations": {
+         "scan": "Skannar flygplan...",
+         "apply": "Tillämpar flygplanspatchar...",
+         "remove": "Tar bort flygplanspatchar..."
+      },
+      "statuses": {
+         "patched": "patchad",
+         "outdated": "föråldrad",
+         "unsupported": "stöds ej",
+         "available": "tillgänglig",
+         "foreign": "extern"
+      },
+      "row": {
+         "warningOne": "{{count}} varning",
+         "warningMany": "{{count}} varningar",
+         "reason": "orsak",
+         "keepLabel": "Behåll {{name}}",
+         "patchLabel": "Patcha {{name}}",
+         "blocksCareerBadge": "Blockerar hela karriärläget",
+         "blocksCareerTooltip": "Att patcha detta flygplan kan göra hela karriärläget otillgängligt, inte bara detta flygplan",
+         "presets": "Förinställningar: {{presets}}"
+      },
+      "table": {
+         "patch": "Patch",
+         "aircraftContainer": "Flygplan / container",
+         "presets": "Förinställningar",
+         "status": "Status",
+         "existingEfb": "Befintlig EFB"
+      },
+      "filters": {
+         "filterTitle": "Filtrera flygplan",
+         "filterLabel": "Filtrera flygplan :",
+         "filterPlaceholder": "Flygplan, container eller förinställning",
+         "statusLabel": "Status :",
+         "statusAll": "Alla",
+         "sortByLabel": "Sortera efter :",
+         "sortName": "Flygplan",
+         "sortContainer": "Container",
+         "sortStatus": "Status",
+         "sortPresets": "Förinställningar",
+         "sortWarnings": "Varningar",
+         "descendingTitle": "Fallande ordning",
+         "descendingLabel": "Fallande ordning :"
+      },
+      "empty": "Inga flygplan hittades (börja med att skanna efter installerade eller tillgängliga flygplanspatchar).",
+      "selectAll": "Markera alla visade",
+      "selectNone": "Avmarkera alla visade"
+   },
+   "patchPlan": {
+      "title": "Väntande flygplansändringar",
+      "none": "Inga.",
+      "toPatchTitle": "Flygplan att patcha / uppdatera",
+      "toUnpatchTitle": "Flygplan att ta bort patch från",
+      "removeWarning": "Tar bort alla verifierade hanterade EFB-paket, inklusive paket utanför den aktuella skanningen. Ändrade eller externa paket rörs inte."
+   }
+}

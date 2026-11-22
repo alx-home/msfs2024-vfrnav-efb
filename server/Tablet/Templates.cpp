@@ -14,11 +14,11 @@
  */
 
 #include "Templates.h"
+#include "FleetError.h"
 
 #include <algorithm>
 #include <map>
 #include <set>
-#include <stdexcept>
 
 namespace tablet {
 
@@ -53,9 +53,7 @@ Templates::Replace(std::string_view text, Replacements replacements) {
 
    for (auto const& [name, value] : replacements) {
       if (!IsMarker(name) || !values.emplace(name, value).second) {
-         throw std::invalid_argument(
-           "Invalid or duplicate template replacement: " + std::string{name}
-         );
+         throw FleetError::WithName(FleetError::Code::INVALID_TEMPLATE_REPLACEMENT, name);
       }
    }
 
@@ -83,7 +81,7 @@ Templates::Replace(std::string_view text, Replacements replacements) {
 
       auto const value{values.find(name)};
       if (value == values.end()) {
-         throw std::invalid_argument("Missing template replacement: " + std::string{name});
+         throw FleetError::WithName(FleetError::Code::MISSING_TEMPLATE_REPLACEMENT, name);
       }
 
       output.append(value->second);
@@ -93,7 +91,7 @@ Templates::Replace(std::string_view text, Replacements replacements) {
 
    for (auto const& [name, value] : values) {
       if (!used.contains(name)) {
-         throw std::invalid_argument("Unused template replacement: " + std::string{name});
+         throw FleetError::WithName(FleetError::Code::UNUSED_TEMPLATE_REPLACEMENT, name);
       }
    }
 

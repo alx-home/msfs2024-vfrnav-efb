@@ -52,6 +52,10 @@ public:
    void OpenSettings();
    void CloseSettings();
 
+   std::string           GetLang() const;
+   WPromise<std::string> WatchLang();
+   void                  SetLang(std::string lang);
+
    void OpenTaskbar() const;
    void CloseTaskbar() const;
 
@@ -84,6 +88,13 @@ private:
 
    CVPromise         terminate_promise_{};
    std::atomic<bool> terminated_{false};
+
+   std::mutex watch_lang_promises_mutex_;
+   struct WatchLangPromise {
+      std::shared_ptr<promise::Resolve<std::string>> resolve_;
+      std::shared_ptr<promise::Reject>               reject_;
+   };
+   std::vector<WatchLangPromise> watch_lang_promises_{};
 
    // Must be before windows to resolve every promises
    ::SimConnect sim_connect_{*this};

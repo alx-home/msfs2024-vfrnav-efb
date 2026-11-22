@@ -20,6 +20,7 @@
 #include "Server/WebSockets/Messages/Messages.h"
 #include "Window/template/Window.h"
 #include "windows/Process.h"
+#include "windows/Registry/impl/Registry.h"
 #include "windows/SystemTray.h"
 
 #include <windows/Lock.h>
@@ -43,6 +44,7 @@
 
 #include <chrono>
 #include <memory>
+#include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
 #include <stop_token>
@@ -142,7 +144,34 @@ Main::OnTrayNotification(WPARAM wParam, LPARAM lParam) {
       POINT pos;
       GetCursorPos(&pos);
 
-      taskbar_.SetPos(pos.x, pos.y - taskbar_.Height());
+      int width  = taskbar_.Width();
+      int height = taskbar_.Height();
+
+      int x = pos.x;
+      int y = pos.y - height;
+
+      // Récupère les limites de l'écran où se trouve le curseur (hors barre des tâches Windows)
+      HMONITOR    h_monitor = MonitorFromPoint(pos, MONITOR_DEFAULTTONEAREST);
+      MONITORINFO mi        = {.cbSize = sizeof(mi), .rcMonitor = {}, .rcWork = {}, .dwFlags = 0};
+      if (GetMonitorInfo(h_monitor, &mi)) {
+         // if the taskbar would go off the right edge of the screen, move it to the left of the
+         // cursor
+         if (x + width > mi.rcWork.right) {
+            x = pos.x - width;
+         }
+         // if the taskbar would go off the left edge of the screen, move it to the right edge of
+         // the work area
+         if (x < mi.rcWork.left) {
+            x = mi.rcWork.left;
+         }
+
+         // if the taskbar would go off the top edge of the screen, move it below the cursor
+         if (y < mi.rcWork.top) {
+            y = pos.y;
+         }
+      }
+
+      taskbar_.SetPos(x, y);
       taskbar_.Show();
    } else if (LOWORD(lParam) == WM_LBUTTONUP) {
       OpenEFB();
@@ -182,6 +211,51 @@ Main::OpenSettings() {
 void
 Main::CloseSettings() {
    settings_.Hide();
+}
+
+void
+Main::SetLang(std::string lang) {
+   auto& registry  = registry::Get();
+   auto& settings  = registry.alx_home_->settings_;
+   settings->lang_ = std::move(lang);
+
+   std::vector<WatchLangPromise> promises{};
+   {
+      std::scoped_lock lock(watch_lang_promises_mutex_);
+      watch_lang_promises_.swap(promises);
+   }
+
+   for (auto& promise : promises) {
+      (*promise.resolve_)(lang);
+   }
+}
+
+std::string
+Main::GetLang() const {
+   auto& registry = registry::Get();
+   auto& settings = registry.alx_home_->settings_;
+
+   try {
+      return *settings->lang_;
+   } catch (registry::AccessError const&) {
+      return "default";
+   }
+}
+
+WPromise<std::string>
+Main::WatchLang() {
+   auto [promise, resolve, reject] = Promise<std::string>::Create();
+
+   std::scoped_lock lock(watch_lang_promises_mutex_);
+   if (!terminated_) {
+      watch_lang_promises_.emplace_back(
+        WatchLangPromise{.resolve_ = std::move(resolve), .reject_ = std::move(reject)}
+      );
+   } else {
+      (*reject)("App is stopping !");
+   }
+
+   return std::move(promise);
 }
 
 void
@@ -284,6 +358,16 @@ void
 Main::Terminate() {
    if (terminated_.exchange(true)) {
       return;
+   }
+
+   std::vector<WatchLangPromise> promises{};
+   {
+      std::scoped_lock lock(watch_lang_promises_mutex_);
+      watch_lang_promises_.swap(promises);
+
+      for (auto& promise : promises) {
+         MakeReject<AppStopping>(*promise.reject_);
+      }
    }
 
    sim_connect_.Stop();

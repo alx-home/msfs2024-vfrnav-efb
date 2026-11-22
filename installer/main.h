@@ -49,6 +49,9 @@ private:
    Promise<std::string> FindMSFS();
    Promise<std::string> DefaultInstallPath();
 
+   Promise<>            SetLang(std::string lang);
+   Promise<std::string> GetLang();
+
    Promise<> Validate(
      js::Enum<"Startup", "Login", "Never"> startupOption,
      std::string                           communityPath,
@@ -73,6 +76,7 @@ private:
       Resolvers resolvers_;
    };
 
+   std::string                    lang_{"default"};
    std::unique_ptr<InstallSucess> install_success_{};
    std::mutex                     install_success_mutex_;
    std::condition_variable        install_success_cv_;
@@ -81,6 +85,9 @@ private:
 
    template <class RETURN, class... ARGS>
    void Bind(std::string_view name, RETURN (Main::*member_ptr)(ARGS...));
+
+   template <class RETURN, class... ARGS>
+   void Bind(std::string_view name, RETURN (Main::*member_ptr)(ARGS...) const);
 };
 
 template <class... STR>

@@ -16,6 +16,7 @@
 #pragma once
 
 #include "FileSystem.h"
+#include "FleetError.h"
 #include <string>
 #include <vector>
 #include <list>
@@ -24,7 +25,6 @@
 #include <algorithm>
 #include <cctype>
 #include <sstream>
-#include <stdexcept>
 #include <utility>
 
 namespace tablet {
@@ -151,12 +151,12 @@ public:
          if (trimmed.starts_with('[')) {
             auto end{trimmed.find(']')};
             if (end == std::string::npos) {
-               throw std::runtime_error("Malformed INI section.");
+               throw FleetError(FleetError::Code::MALFORMED_INI_SECTION);
             }
 
             auto name{FileSystem::Lower(trimmed.substr(1, end - 1))};
             if (!names.insert(name).second) {
-               throw std::runtime_error("Duplicate INI section: " + name);
+               throw FleetError(FleetError::Code::DUPLICATE_INI_SECTION, name);
             }
 
             sections_.emplace_back(std::move(name), std::vector<std::string>{}, line);

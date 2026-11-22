@@ -1,0 +1,280 @@
+{
+   "serverState": {
+      "start": "Start Server",
+      "stop": "Stop Server",
+      "invalidPort": "Invalid Port",
+      "inProgress": "In progress"
+   },
+   "taskbar": {
+      "configure": "Configure",
+      "close": "Close",
+      "openInApp": "Open In App",
+      "openInBrowser": "Open In Browser"
+   },
+   "taskbar_tooltip": {
+      "stay_minimized": "App will stays minimized",
+      "got_it": "Got it"
+   },
+   "donation": {
+      "title": "Support VFRNav",
+      "intro": "Enjoying VFRNav?",
+      "soloDeveloper": "VFRNav is developed by one person and maintained in spare time.",
+      "copilotCost": "Working solo, I rely on Copilot to keep development moving, but it comes at a cost.",
+      "supportImpact": "Your donation helps cover these expenses and supports the time and effort behind VFRNav.",
+      "thankYou": "Thank you!",
+      "donateAlt": "Donate",
+      "liberapaySubtitle": "More of your donation supports development",
+      "preferredBadge": "Preferred",
+      "paypalAriaLabel": "Donate with PayPal",
+      "paypalAlt": "Donate with PayPal",
+      "donateButton": "Donate",
+      "paypalSubtitle": "Convenient and widely trusted",
+      "convenientBadge": "Convenient",
+      "buyMeACoffeeAlt": "Buy Me a Coffee",
+      "buyMeACoffeeSubtitle": "Includes more platform fees"
+   },
+   "app": {
+      "title": "MSFS2024 VFRNav' Server",
+      "openInBrowser": "Open In Browser",
+      "openInApp": "Open In App",
+      "terminate": "Terminate"
+   },
+   "body": {
+      "tabs": {
+         "settings": "Settings",
+         "tablet3d": "3D tablet",
+         "donation": "Donation"
+      }
+   },
+   "efbAircraft": {
+      "title": "Cockpit EFB aircraft patches",
+      "introLine1": "Patch all selectable presets of selected aircraft with the 3d movable tablet.",
+      "introLine2": "Separate Community overlay packages replace existing tablets without editing source aircraft files on disk.",
+      "scanSettings": "Scan settings",
+      "aircraftSource": "Aircraft source :",
+      "modeStandard": "Standard",
+      "modeDeep": "Deep (VFS projection)",
+      "modeStandardDesc": "Standard scans unpacked Community aircraft; no running simulator required.",
+      "modeDeepDesc": "Deep scans aircraft exposed through VFS projection. Keep MSFS running with Developer Mode and VFS projection enabled. Mounted overlays may mask underlying stock updates.",
+      "scanNoteLine1": "Scan is read-only.",
+      "scanNoteLine2": "Source hashes detect simulator updates. Rescan and Apply to regenerate outdated patches.",
+      "loadingInstalled": "Loading installed aircraft patches...",
+      "careerNoticeLine1": "Career mode: the simulator excludes any patched aircraft from Career missions.",
+      "careerNoticeLine2": "Remove the aircraft patches and restart MSFS before playing Career; the 2D EFB keeps working in Career.",
+      "gotIt": "Got it",
+      "listSeparator": " and ",
+      "careerRiskWarningOne": "Career mode warning: patching {{aircraft}} can make the entire Career mode unavailable, beyond the simulator excluding patched aircraft from Career missions. Leave this aircraft unpatched if you use Career mode.",
+      "careerRiskWarningMany": "Career mode warning: patching {{aircraft}} can make the entire Career mode unavailable, beyond the simulator excluding patched aircraft from Career missions. Leave these aircraft unpatched if you use Career mode.",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "scanButton": "Scan aircraft",
+      "applyButton": "Apply",
+      "reportSummary": "{{total}} aircraft; {{selected}} selected; {{patched}} patched; {{outdated}} outdated.",
+      "lastOperationSummary": "Last operation: {{generated}} patched/updated; {{removed}} removed.",
+      "reportsTitle": "Reports:",
+      "reportsAriaLabel": "Aircraft operation results"
+   },
+   "settings": {
+      "startup": {
+         "title": "Startup",
+         "autoStart": "Auto start MSFS2024 VFRNav' Server :",
+         "windowsLogin": "Windows login",
+         "msfsStartup": "MSFS startup",
+         "never": "Never"
+      },
+      "general": {
+         "title": "Settings",
+         "language": "Language :"
+      },
+      "embedServer": {
+         "title": "Embed server",
+         "descriptionLine1": "The embed server is required when opening the EFB via an external device or web browser.",
+         "descriptionLine2": "Additionally, even when accessing the EFB directly within the app, it must be launched to ensure synchronization with the simulator.",
+         "startAtLaunch": "Start server at launch :",
+         "port": "Port :",
+         "portPlaceholder": "Server listening port",
+         "invalidPort": "Invalid port (999 < value < 65'536) !"
+      }
+   },
+   "vfsHelp": {
+      "title": "Enable VFS projection",
+      "close": "Close",
+      "step1": {
+         "title": "1. Enable Developer Mode",
+         "description": "In MSFS, open Settings > General > Advanced Options and enable Developer Mode.",
+         "alt": "General settings: select Advanced Options, then check Developer Mode"
+      },
+      "step2": {
+         "title": "2. Open Virtual File System",
+         "description": "From the developer toolbar at the top, choose Tools > Virtual File System.",
+         "alt": "Developer toolbar: open Tools and choose Virtual File System"
+      },
+      "step3": {
+         "title": "3. Start projection",
+         "description": "In the VFS Projector section, click Start. Wait for Projection started. Keep MSFS running; Deep scanning becomes available automatically.",
+         "alt": "VFS Projector: click Start and wait for Projection started"
+      }
+   },
+   "aircraftResults": {
+      "title": "Aircraft",
+      "status": {
+         "ariaLabel": "Aircraft operation status",
+         "vfsHelpLabel": "How to enable VFS projection",
+         "restartRequired": "Restart MSFS for package changes to take effect.",
+         "gotIt": "Got it"
+      },
+      "vfs": {
+         "NOT_ENABLED": "VFS projection is not enabled. Start MSFS, enable Developer Mode, then start the VFS Projector.",
+         "NO_AIRCRAFT": "VFS projection contains no aircraft. Start or refresh the VFS Projector.",
+         "ACCESS_ERROR": "Cannot access VFS projection: {{error}}",
+         "READ_ERROR": "Cannot read VFS projection: {{error}}",
+         "MONITORING_FAILED": "VFS monitoring failed: {{error}}",
+         "invalidResponse": "Invalid VFS monitoring response.",
+         "monitoringFailedLog": "VFS projection monitoring failed:"
+      },
+      "errors": {
+         "inventoryRefreshLog": "Installed EFB patch inventory refresh failed:",
+         "inventoryRefreshFailed": "Aircraft operation completed, but installed patch inventory could not be refreshed: {{error}}",
+         "managementFailedLog": "EFB aircraft management failed:",
+         "inventoryLoadLog": "Installed EFB patch inventory failed:",
+         "inventoryLoadFailed": "Cannot load installed aircraft patches: {{error}}",
+         "invalidText": "Invalid aircraft manager text.",
+         "invalidCount": "Invalid aircraft manager count.",
+         "invalidResponse": "Invalid aircraft manager response.",
+         "invalidAircraftEntry": "Invalid aircraft entry.",
+         "invalidAircraftStatus": "Invalid aircraft status.",
+         "invalidOperationEntry": "Invalid operation entry."
+      },
+      "fleet": {
+         "errors": {
+            "msfsNotFound": "Cannot locate the MSFS installation.",
+            "communityFromCfgNotFound": "Cannot locate Community from MSFS UserCfg.opt.",
+            "invalidOperation": "Invalid EFB aircraft operation.",
+            "operationRunning": "Another EFB aircraft operation is running.",
+            "communityMissing": "Community directory is missing.",
+            "selectionNotArray": "Aircraft selection must be a JSON array.",
+            "selectionIdsNotStrings": "Aircraft ids must be strings.",
+            "sha256InitFailed": "SHA256 initialization failed.",
+            "reparsePathUnsupported": "Linked/reparse paths are not supported: {{path}}",
+            "cannotReadFile": "Cannot read {{path}}. In Deep mode enable/refresh VFS projection; protected files may remain inaccessible.",
+            "readFailed": "Read failed: {{path}}",
+            "invalidUtf16File": "Invalid UTF-16 file: {{path}}",
+            "invalidUtf16Config": "Invalid UTF-16 configuration.",
+            "sha256Failed": "SHA256 failed.",
+            "emptyVirtualPath": "Empty virtual path is unsupported.",
+            "absoluteAttachmentPath": "Absolute attachment path is unsupported.",
+            "attachmentTraversal": "Attachment traversal is unsupported.",
+            "dependencyNotReadable": "Required dependency is not readable: {{path}}",
+            "cannotWritePatchFile": "Cannot write EFB patch file {{path}}: {{error}}",
+            "malformedIniSection": "Malformed INI section.",
+            "duplicateIniSection": "Duplicate INI section: {{section}}",
+            "managedPackageWrongAircraft": "Managed package belongs to a different aircraft/model.",
+            "invalidTemplateReplacement": "Invalid or duplicate template replacement: {{name}}",
+            "missingTemplateReplacement": "Missing template replacement: {{name}}",
+            "unusedTemplateReplacement": "Unused template replacement: {{name}}",
+            "rigDestinationExists": "Rig destination already exists.",
+            "cannotWatchVfs": "Cannot watch VFS projection: {{error}}",
+            "vfsWatcherFailed": "VFS watcher failed: {{error}}",
+            "cannotRearmVfsWatcher": "Cannot rearm VFS watcher: {{error}}",
+            "vfsWatchDirNotFound": "Cannot locate a directory to watch for VFS projection.",
+            "invalidOwnershipMetadata": "Invalid ownership metadata.",
+            "invalidOwnershipFileList": "Invalid ownership file list.",
+            "emptyOwnershipFileList": "Empty ownership file list.",
+            "packageModified": "Package was modified; refusing to alter it: {{path}}",
+            "packageIncomplete": "Package is incomplete; refusing to alter it.",
+            "missingGeneratorResource": "Missing SDK-compiled tablet generator resource: {{name}}. Rebuild the VFRNav server.",
+            "invalidGeneratorResource": "Invalid SDK-compiled tablet generator resource.",
+            "invalidAttachOffset": "Tablet mount has an invalid attach_offset.",
+            "nonFiniteAttachOffset": "Tablet mount has a non-finite attach_offset.",
+            "sourceOutsideRoots": "Source file is outside the aircraft content roots.",
+            "unreadableTabletAttachment": "Tablet has no readable attachment reference.",
+            "multifunctionCockpitEfb": "EFB is part of a multifunction cockpit attachment; removal is unsafe.",
+            "invalidCameraCoordinates": "Invalid camera coordinates: {{name}}",
+            "missingCameraEyepoint": "Missing camera eyepoint.",
+            "nonFiniteCameraPosition": "Calculated camera position is non-finite.",
+            "noReadableAttachedObjects": "Preset has no readable attached_objects.cfg.",
+            "tabletNestedTooDeep": "Tablet is nested deeper than one attachment level.",
+            "cannotDetermineNestedPath": "Cannot determine nested attachment path.",
+            "noModularPresets": "Legacy/non-modular aircraft has no modular presets.",
+            "noSelectableModularPresets": "No user-selectable modular presets.",
+            "dependencyRequiresDeepScan": "Required dependency is not readable: {{path}}; requires Deep scan.",
+            "rigPathMustBeRelative": "Rig paths must be relative.",
+            "rigPathTraversal": "Rig paths cannot traverse directories.",
+            "rigFragmentTerminalLf": "Rig fragments require an authored terminal LF.",
+            "unknownAircraftSelection": "Unknown aircraft selection; scan again before applying.",
+            "cannotPatchAircraft": "Cannot patch selected aircraft: {{error}}",
+            "unableToAllocateStaging": "Unable to allocate staging directory."
+         },
+         "messages": {
+            "packageRemoved": "Verified managed package removed.",
+            "duplicateContainer": "Multiple unpacked packages provide the same aircraft container.",
+            "vfsMaskStockUpdates": "VFS projection may mask stock updates beneath mounted overlays; use Standard mode for unpacked source packages, or rescan with patches unmounted.",
+            "cannotInspectManifest": "Cannot inspect source package manifest {{path}}: {{error}}",
+            "cannotVerifyOverlay": "Cannot verify overlay ownership for {{path}}: {{error}}",
+            "nonOwnedOverlay": "Non-owned package overlays this aircraft: {{path}}",
+            "legacyManagedPackage": "Legacy managed package; aircraft details are unavailable.",
+            "installedVerifiedLocally": "Installed package verified locally. Scan aircraft to check source updates.",
+            "vfsMonitoringStopped": "VFS monitoring stopped.",
+            "cannotReadPilotCamera": "Cannot read pilot camera {{path}}: {{error}}",
+            "positionEstimated": "position estimated; adjust with the in-cockpit move handle",
+            "cannotRecoverStockMetadata": "Cannot recover previous stock metadata from {{path}}: {{error}}",
+            "presetNoFltsim0": "{{name}}: aircraft.cfg has no readable FLTSIM.0; selectable preset assumed.",
+            "presetAircraftCfgUnreadable": "{{name}}: aircraft.cfg protected/unreadable; selectable preset assumed. {{error}}"
+         }
+      },
+      "operations": {
+         "scan": "Scanning aircraft...",
+         "apply": "Applying aircraft patches...",
+         "remove": "Removing aircraft patches..."
+      },
+      "statuses": {
+         "patched": "patched",
+         "outdated": "outdated",
+         "unsupported": "unsupported",
+         "available": "available",
+         "foreign": "foreign"
+      },
+      "row": {
+         "warningOne": "{{count}} warning",
+         "warningMany": "{{count}} warnings",
+         "reason": "reason",
+         "keepLabel": "Keep {{name}}",
+         "patchLabel": "Patch {{name}}",
+         "blocksCareerBadge": "Blocks entire Career mode",
+         "blocksCareerTooltip": "Patching this aircraft can make the entire Career mode unavailable, not just this aircraft",
+         "presets": "Presets: {{presets}}"
+      },
+      "table": {
+         "patch": "Patch",
+         "aircraftContainer": "Aircraft / container",
+         "presets": "Presets",
+         "status": "Status",
+         "existingEfb": "Existing EFB"
+      },
+      "filters": {
+         "filterTitle": "Filter aircraft",
+         "filterLabel": "Filter aircraft :",
+         "filterPlaceholder": "Aircraft, container or preset",
+         "statusLabel": "Status :",
+         "statusAll": "All",
+         "sortByLabel": "Sort by :",
+         "sortName": "Aircraft",
+         "sortContainer": "Container",
+         "sortStatus": "Status",
+         "sortPresets": "Presets",
+         "sortWarnings": "Warnings",
+         "descendingTitle": "Descending order",
+         "descendingLabel": "Descending order :"
+      },
+      "empty": "No aircraft found (Start by scanning for installed/available aircraft patches).",
+      "selectAll": "Select all shown",
+      "selectNone": "Select none shown"
+   },
+   "patchPlan": {
+      "title": "Pending aircraft changes",
+      "none": "None.",
+      "toPatchTitle": "Aircraft to patch/update",
+      "toUnpatchTitle": "Aircraft to unpatch",
+      "removeWarning": "Remove all verified managed EFB packages, including packages outside the current scan. Modified or foreign packages will not be touched."
+   }
+}

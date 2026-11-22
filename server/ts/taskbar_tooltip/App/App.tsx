@@ -19,8 +19,10 @@ import Logo from '@vfrnav/images/app-icon.svg?react';
 import Arrow from "@alx-home/images/arrow.svg?react";
 
 import { useCallback } from "react";
+import { useTranslation } from '@vfrnav/i18n';
 
 export const App = () => {
+  const { t } = useTranslation();
   const close = useCallback(() => {
     window.hideTaskbarToolTip();
   }, []);
@@ -33,11 +35,11 @@ export const App = () => {
       </div>
       <blockquote className="flex flex-col p-2 grow text-center justify-center">
         <p className="text-sm italic font-medium leading-relaxed text-white">
-          App will stays minimized
+          {t('taskbar_tooltip.stay_minimized')}
         </p>
       </blockquote>
       <div className="flex flex-row grow bg-slate-800 p-3 px-5 pb-0 h-12 max-h-12">
-        <Button active={true} onClick={close}>Got it</Button>
+        <Button active={true} onClick={close}>{t('taskbar_tooltip.got_it')}</Button>
       </div>
     </div>
     <div className="relative flex flex-row shrink grow-0 w-full h-4 bg-slate-800 overflow-visible z-0">

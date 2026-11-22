@@ -101,12 +101,7 @@ export default [...fixupConfigRules(compat.extends(
         'react-hooks/set-state-in-effect': 'warn', // @todo error
         "react-hooks/refs": 'warn', // @todo error
         "react-hooks/exhaustive-deps": "error",
-        "no-unused-vars": ["error", {
-            vars: "all",
-            args: "after-used",
-            ignoreRestSiblings: true,
-            argsIgnorePattern: "^_",
-        }],
+        "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": ["error", {
             vars: "all",
             args: "after-used",

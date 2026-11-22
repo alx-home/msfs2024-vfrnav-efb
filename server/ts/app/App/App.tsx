@@ -19,15 +19,19 @@ import { Body } from './Body';
 import { useCallback } from 'react';
 import { useServer } from '@server-common/Hooks';
 import { Popup, PopupContextProvider } from '@common/Popup';
+import { I18nProvider, useTranslation } from '@vfrnav/i18n';
 
 const Header = () => {
+  const { t } = useTranslation();
+
   return <div className='flex flex-row shrink bg-msfs px-5 pb-5 shadow-color-default/80 shadow-md [&>*]:drop-shadow-xl'>
     <Logo height={"2.5rem"} width={"2.5rem"} />
-    <h1 className='text-2xl ml-2'>MSFS2024 VFRNav&apos; Server</h1>
+    <h1 className='text-2xl ml-2'>{t('app.title')}</h1>
   </div>
 }
 
 const Trailer = () => {
+  const { t } = useTranslation();
   const { serverState, serverStateStr, switchServer, serverLock } = useServer();
   const abort = useCallback(() => {
     window.display_appstopping();
@@ -43,23 +47,25 @@ const Trailer = () => {
       {serverStateStr}
     </Button>
     <Button className='px-4' active={serverState == 'running'} disabled={serverState != 'running'}
-      onClick={openWebEFB}>Open In Browser</Button>
-    <Button className='px-4' active={true} onClick={openEFB}>Open In App</Button>
+      onClick={openWebEFB}>{t('app.openInBrowser')}</Button>
+    <Button className='px-4' active={true} onClick={openEFB}>{t('app.openInApp')}</Button>
     <div className='[&>*]:bg-red-800 [&>*]:hover:bg-red-500 [&>*]:hover:border-white'>
-      <Button className='px-4' active={true} onClick={abort}>Terminate</Button>
+      <Button className='px-4' active={true} onClick={abort}>{t('app.terminate')}</Button>
     </div>
   </div>
 }
 
 export const App = () => {
-  return <PopupContextProvider>
-    <div className='flex flex-col h-full text-sm '>
-      <Header />
-      <div className='relative flex flex-col h-full w-full overflow-hidden'>
-        <Popup />
-        <Body />
-        <Trailer />
+  return <I18nProvider>
+    <PopupContextProvider>
+      <div className='flex flex-col h-full text-sm '>
+        <Header />
+        <div className='relative flex flex-col h-full w-full overflow-hidden'>
+          <Popup />
+          <Body />
+          <Trailer />
+        </div>
       </div>
-    </div>
-  </PopupContextProvider>
+    </PopupContextProvider>
+  </I18nProvider>
 }

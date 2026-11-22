@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-unused-vars */
 export declare const enum DragDataStoreMode {
     _DISCONNECTED = 0,
     READONLY = 1,

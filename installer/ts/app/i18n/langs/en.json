@@ -1,0 +1,35 @@
+{
+   "body": {
+      "invalidPath": "Invalid path!",
+      "communityPlaceholder": "Location of MSFS 2024 Community folder",
+      "serverPlaceholder": "MSFS2024 VFRNav' Server installation path",
+      "installingTitle": "Installing",
+      "installingMessage": "Installing MSFS2024 VFRNav' Server...",
+      "infoTitle": "Info",
+      "infoDescription1": "This program is designed to proxy file browsing requests to the operating system and serve the app through a web server.",
+      "infoDescription2Line1": "Please note that MSFS2024 VFRNav' can function without this program by simply dragging the plugin into the Community folder.",
+      "infoDescription2Line2": "However, doing so does not allow you to open PDF files from your computer or access the UI via a web browser or an external device.",
+      "startupTitle": "Startup",
+      "autoStartLabel": "Auto-start MSFS2024 VFRNav' Server:",
+      "startupLogin": "Windows login",
+      "startupMsfs": "MSFS startup",
+      "startupNever": "Never",
+      "installPathTitle": "Install Path",
+      "addonLabel": "Addon:",
+      "serverLabel": "Server:"
+   },
+   "popup": {
+      "installSuccessTitle": "Info",
+      "installSuccessMessage": "MSFS2024 VFRNav' Server successfully installed!",
+      "startServer": "Start Server",
+      "close": "Close",
+      "warningTitle": "Warning",
+      "removingFolder": "Removing folder:",
+      "continue": "Continue",
+      "cancel": "Cancel"
+   },
+   "trailer": {
+      "continue": "Continue",
+      "abort": "Abort"
+   }
+}

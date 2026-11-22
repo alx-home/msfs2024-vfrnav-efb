@@ -1,20 +1,6 @@
-/*
- * SPDX-License-Identifier: (GNU General Public License v3.0 only)
- * Copyright © 2024 Alexandre GARCIN
- *
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU General Public License as published by the Free Software Foundation, version 3.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with this program. If
- * not, see <https://www.gnu.org/licenses/>.
- */
-
 import { useCallback } from "react";
 import { useServer } from '@server-common/Hooks';
+import { useTranslation } from '@vfrnav/i18n';
 
 export const Element = ({ label, onClick, disabled, hideTaskbar }: {
   label: string,
@@ -22,8 +8,7 @@ export const Element = ({ label, onClick, disabled, hideTaskbar }: {
   hideTaskbar?: boolean,
   onClick?: () => void
 }) => {
-  return <button className="flex flex-row p-1 transition-all hocus:bg-gray-800 hocus:shadow-xl rounded-sm  hocus:pl-6 disabled:opacity-20"
-    disabled={disabled}
+  return <button className="flex flex-row items-center text-left whitespace-nowrap p-1 transition-all hocus:bg-gray-800 hocus:shadow-xl rounded-sm hocus:pl-6 disabled:opacity-20" disabled={disabled}
     onClick={e => {
       e.currentTarget.blur()
 
@@ -43,22 +28,22 @@ export const Separator = () => {
 }
 
 export const App = () => {
+  const { t } = useTranslation();
   const exit = useCallback(() => { window.abort() }, []);
   const showSettings = useCallback(() => { window.showSettings() }, []);
   const { serverState, serverStateStr, switchServer, serverLock } = useServer();
 
   return <div className='flex flex-col h-full text-sm '>
     <div className='relative flex flex-col h-full w-full border-2 overflow-hidden px-4 pt-2'>
-      <Element onClick={window.openEFB} label="Open In App" />
-      <Element disabled={serverState != 'running'} label="Open In Browser" onClick={window.openWebEFB} />
-      {/* todo */}
+      <Element onClick={window.openEFB} label={t('taskbar.openInApp')} />
+      <Element disabled={serverState != 'running'} label={t('taskbar.openInBrowser')} onClick={window.openWebEFB} />
       <Separator />
       <Element label={
         serverStateStr
       } disabled={serverLock} hideTaskbar={false} onClick={switchServer} />
-      <Element label="Configure" onClick={showSettings} />
+      <Element label={t('taskbar.configure')} onClick={showSettings} />
       <Separator />
-      <Element label="Close" onClick={exit} />
+      <Element label={t('taskbar.close')} onClick={exit} />
     </div>
   </div>
 }

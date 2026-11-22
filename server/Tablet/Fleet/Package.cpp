@@ -15,13 +15,13 @@
 
 #include "Package.h"
 #include "FileSystem.h"
+#include "FleetError.h"
 #include "../Templates.h"
 #include <boost/json.hpp>
 #include <windows.h>
 #include <algorithm>
 #include <map>
 #include <regex>
-#include <stdexcept>
 
 namespace tablet {
 namespace fs = std::filesystem;
@@ -97,7 +97,7 @@ Package::VerifyOwned(fs::path const& directory, Ownership const& owner) {
      || owner.package_ != directory.filename().string()
      || !std::regex_match(owner.package_, PACKAGE_PATTERN)
    ) {
-      throw std::runtime_error("Invalid ownership metadata.");
+      throw FleetError(FleetError::Code::INVALID_OWNERSHIP_METADATA);
    }
 
    std::map<std::string, std::string> expected{};
@@ -108,12 +108,12 @@ Package::VerifyOwned(fs::path const& directory, Ownership const& owner) {
         path.empty()
         || !expected.emplace(FileSystem::Lower(path.generic_string()), file.hash_).second
       ) {
-         throw std::runtime_error("Invalid ownership file list.");
+         throw FleetError(FleetError::Code::INVALID_OWNERSHIP_FILE_LIST);
       }
    }
 
    if (expected.empty()) {
-      throw std::runtime_error("Empty ownership file list.");
+      throw FleetError(FleetError::Code::EMPTY_OWNERSHIP_FILE_LIST);
    }
 
    for (auto const& file : FileSystem::Files(directory)) {
@@ -124,14 +124,14 @@ Package::VerifyOwned(fs::path const& directory, Ownership const& owner) {
       auto key{FileSystem::Lower(fs::relative(file, directory).generic_string())};
       auto it{expected.find(key)};
       if (it == expected.end() || FileSystem::Hash(FileSystem::ReadBytes(file)) != it->second) {
-         throw std::runtime_error("Package was modified; refusing to alter it: " + file.string());
+         throw FleetError(FleetError::Code::PACKAGE_MODIFIED, file);
       }
 
       expected.erase(it);
    }
 
    if (!expected.empty()) {
-      throw std::runtime_error("Package is incomplete; refusing to alter it.");
+      throw FleetError(FleetError::Code::PACKAGE_INCOMPLETE);
    }
 }
 
@@ -178,11 +178,11 @@ Package::WritePackageFiles(
    );
 
    auto manifest_text{[&](std::uint64_t total) {
-      auto encodedTitle{boost::json::serialize(boost::json::string{title})};
-      auto encodedTotal{boost::json::serialize(boost::json::string{std::to_string(total)})};
+      auto encoded_title{boost::json::serialize(boost::json::string{title})};
+      auto encoded_total{boost::json::serialize(boost::json::string{std::to_string(total)})};
 
       return Templates::Render(
-        "fleet/manifest.json", {{"TITLE", encodedTitle}, {"TOTAL_PACKAGE_SIZE", encodedTotal}}
+        "fleet/manifest.json", {{"TITLE", encoded_title}, {"TOTAL_PACKAGE_SIZE", encoded_total}}
       );
    }};
 
@@ -267,10 +267,7 @@ Package::CompiledRig() {
          auto loaded{resource ? LoadResource(module, resource) : nullptr};
          auto data{loaded ? LockResource(loaded) : nullptr};
          if (!data || !size) {
-            throw std::runtime_error(
-              "Missing SDK-compiled tablet generator resource: " + std::string{relative}
-              + ". Rebuild the VFRNav server."
-            );
+            throw FleetError::WithName(FleetError::Code::MISSING_GENERATOR_RESOURCE, relative);
          }
 
          result.emplace(
@@ -285,10 +282,7 @@ Package::CompiledRig() {
       auto loaded{resource ? LoadResource(module, resource) : nullptr};
       auto data{loaded ? LockResource(loaded) : nullptr};
       if (!data || !size) {
-         throw std::runtime_error(
-           "Missing SDK-compiled tablet generator resource: en-US.locPak. Rebuild the VFRNav "
-           "server."
-         );
+         throw FleetError::WithName(FleetError::Code::MISSING_GENERATOR_RESOURCE, "en-US.locPak");
       }
 
       result.emplace("en-US.locPak", std::string{static_cast<char const*>(data), size});
@@ -301,7 +295,7 @@ Package::CompiledRig() {
         || model.find("CompileBehaviors") != std::string::npos
         || model.find("model.behavior.xml") == std::string::npos
       ) {
-         throw std::runtime_error("Invalid SDK-compiled tablet generator resource.");
+         throw FleetError(FleetError::Code::INVALID_GENERATOR_RESOURCE);
       }
 
       result.emplace(

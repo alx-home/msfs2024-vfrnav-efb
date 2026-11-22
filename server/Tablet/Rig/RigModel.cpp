@@ -536,6 +536,6 @@ RigModel::Build() {
    b.Model().at("buffers").as_array().push_back(
      j::object{{"uri", "rig.bin"}, {"byteLength", b.Bytes().size()}}
    );
-   return {std::move(b.Model()), std::move(b.Bytes())};
+   return {.model_ = std::move(b.Model()), .bytes_ = std::move(b.Bytes())};
 }
 }  // namespace tablet

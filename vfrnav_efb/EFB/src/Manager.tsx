@@ -46,7 +46,6 @@ export class Manager {
    public readonly recordManager = new RecordManager(this);
 
 
-   /* eslint-disable no-unused-vars */
    constructor(private readonly bus: EventBus) {
       this.facilityLoader = new FacilityLoader(FacilityRepository.getRepository(this.bus));
       this.facilityManager.set(0, new FacilityManager(this.facilityLoader));

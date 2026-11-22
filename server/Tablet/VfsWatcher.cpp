@@ -14,6 +14,7 @@
  */
 
 #include "VfsWatcher.h"
+#include "FleetError.h"
 
 #include <windows.h>
 #include <system_error>
@@ -30,8 +31,9 @@ public:
           FindFirstChangeNotificationW(directory.c_str(), TRUE, FILE_NOTIFY_CHANGE_DIR_NAME)
         } {
       if (handle_ == INVALID_HANDLE_VALUE) {
-         throw std::system_error(
-           static_cast<int>(GetLastError()), std::system_category(), "Cannot watch VFS projection"
+         throw FleetError::WithDetail(
+           FleetError::Code::CANNOT_WATCH_VFS,
+           std::system_category().message(static_cast<int>(GetLastError()))
          );
       }
    }
@@ -49,14 +51,16 @@ public:
    void Wait() const {
       auto const result{WaitForSingleObject(handle_, 500)};
       if (result == WAIT_FAILED) {
-         throw std::system_error(
-           static_cast<int>(GetLastError()), std::system_category(), "VFS watcher failed"
+         throw FleetError::WithDetail(
+           FleetError::Code::VFS_WATCHER_FAILED,
+           std::system_category().message(static_cast<int>(GetLastError()))
          );
       }
 
       if (result == WAIT_OBJECT_0 && !FindNextChangeNotification(handle_)) {
-         throw std::system_error(
-           static_cast<int>(GetLastError()), std::system_category(), "Cannot rearm VFS watcher"
+         throw FleetError::WithDetail(
+           FleetError::Code::CANNOT_REARM_VFS_WATCHER,
+           std::system_category().message(static_cast<int>(GetLastError()))
          );
       }
    }
@@ -73,30 +77,29 @@ VfsStatus::Read(std::filesystem::path const& projection) {
    auto const      airplanes{projection / "SimObjects" / "Airplanes"};
    bool const      exists{std::filesystem::is_directory(airplanes, error)};
    if (error && error != std::errc::no_such_file_or_directory) {
-      return {.available_ = false, .message_ = "Cannot access VFS projection: " + error.message()};
+      return {.available_ = false, .state_ = VfsState::ACCESS_ERROR, .detail_ = error.message()};
    }
 
    if (!exists) {
       return {
         .available_ = false,
-        .message_ = "VFS projection is not enabled. Start MSFS, enable Developer Mode, then start "
-                    "the VFS Projector."
+        .state_     = VfsState::NOT_ENABLED,
       };
    }
 
    std::filesystem::directory_iterator entries{airplanes, error};
    if (error) {
-      return {.available_ = false, .message_ = "Cannot read VFS projection: " + error.message()};
+      return {.available_ = false, .state_ = VfsState::READ_ERROR, .detail_ = error.message()};
    }
 
    if (entries == std::filesystem::directory_iterator{}) {
       return {
         .available_ = false,
-        .message_   = "VFS projection contains no aircraft. Start or refresh the VFS Projector."
+        .state_     = VfsState::NO_AIRCRAFT,
       };
    }
 
-   return {.available_ = true, .message_ = ""};
+   return {.available_ = true, .state_ = VfsState::OK};
 }
 
 VfsWatcher::VfsWatcher(std::filesystem::path projection)
@@ -112,7 +115,7 @@ VfsWatcher::Run(std::stop_token stop) {
       while (!std::filesystem::is_directory(parent)) {
          auto const next{parent.parent_path()};
          if (next == parent || next.empty()) {
-            throw std::runtime_error("Cannot locate a directory to watch for VFS projection.");
+            throw FleetError(FleetError::Code::VFS_WATCH_DIR_NOT_FOUND);
          }
 
          parent = next;
@@ -126,14 +129,18 @@ VfsWatcher::Run(std::stop_token stop) {
          Publish(VfsStatus::Read(projection_));
       }
    } catch (std::exception const& error) {
-      Publish({.available_ = false, .message_ = error.what()});
+      Publish({.available_ = false, .state_ = VfsState::ACCESS_ERROR, .detail_ = error.what()});
    }
 }
 
 VfsWatcher::~VfsWatcher() {
    thread_.request_stop();
    thread_.join();
-   Publish({.available_ = false, .message_ = "VFS monitoring stopped."});
+   Publish(
+     {.available_ = false,
+      .state_     = VfsState::ACCESS_ERROR,
+      .detail_    = FleetMessage::Make(FleetMessage::Code::VFS_MONITORING_STOPPED)}
+   );
 }
 
 void

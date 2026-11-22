@@ -13,7 +13,6 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable no-unused-vars */
 import { GenRecord } from "./Types"
 
 export const enum FrequencyType {

@@ -57,6 +57,27 @@ export const operationText = {
 export type Operation = keyof typeof operationText;
 export type Confirmation = Exclude<Operation, "scan">;
 
+export enum VfsState {
+   OK = 0,
+   NOT_ENABLED = 1,
+   NO_AIRCRAFT = 2,
+   ACCESS_ERROR = 3,
+   READ_ERROR = 4
+};
+
+export type VfsStatus = {
+   available: boolean;
+   state: VfsState;
+   detail: string;
+};
+
+export const vfsStateKey: Record<Exclude<VfsState, VfsState.OK>, 'NOT_ENABLED' | 'NO_AIRCRAFT' | 'ACCESS_ERROR' | 'READ_ERROR'> = {
+   [VfsState.NOT_ENABLED]: 'NOT_ENABLED',
+   [VfsState.NO_AIRCRAFT]: 'NO_AIRCRAFT',
+   [VfsState.ACCESS_ERROR]: 'ACCESS_ERROR',
+   [VfsState.READ_ERROR]: 'READ_ERROR'
+};
+
 export const statuses: Status[] = ["available", "patched", "outdated", "unsupported", "foreign"];
 export const statusColors: Record<Status, string> = {
    available: "bg-sky-900 text-sky-100 border-sky-500/60",
