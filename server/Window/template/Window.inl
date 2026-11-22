@@ -137,6 +137,8 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
 
              SetThreadDescription(GetCurrentThread(), Params<WINDOW>::NAME);
 
+             auto init = std::make_shared<std::atomic<bool>>(true);
+
              webview_ = std::make_unique<webview::webview>(webview::webview::Args{
                .debug =
 #ifndef NDEBUG
@@ -156,9 +158,16 @@ Window<WINDOW>::Window(Main& main, std::function<void()> on_terminate)
                .on_terminate      = std::move(on_terminate),
                .invisible         = Params<WINDOW>::HIDDEN,
                .persistent_window = WINDOW == WIN::MAIN,
+               .on_hide_callback =
+                 [this, init]() constexpr {
+                    if (!*init) {
+                       DecRefcount();
+                    }
+                 },
              });
 
              webview_->Hide();
+             *init = false;
              if constexpr (Params<WINDOW>::HIDDEN) {
                 // Nothing to do, the window remains hidden
              } else if constexpr (Params<WINDOW>::MODAL) {
@@ -281,8 +290,6 @@ Window<WINDOW>::Hide() const {
    }
 
    webview_->Hide();
-
-   DecRefcount();
 }
 
 template <WIN WINDOW>
@@ -299,6 +306,7 @@ Window<WINDOW>::DecRefcount() const {
 template <WIN WINDOW>
 void
 Window<WINDOW>::Show() const {
+   assert(webview_);
    if (webview_->Hidden()) {
       ++s__refcount;
    }
@@ -309,42 +317,49 @@ Window<WINDOW>::Show() const {
 template <WIN WINDOW>
 void
 Window<WINDOW>::Restore() const {
+   assert(webview_);
    webview_->Restore();
 }
 
 template <WIN WINDOW>
 void
 Window<WINDOW>::SetPos(int x, int y) {
+   assert(webview_);
    webview_->SetPos(x, y);
 }
 
 template <WIN WINDOW>
 int
 Window<WINDOW>::Width() const {
+   assert(webview_);
    return webview_->Width();
 }
 
 template <WIN WINDOW>
 int
 Window<WINDOW>::Height() const {
+   assert(webview_);
    return webview_->Height();
 }
 
 template <WIN WINDOW>
 webview::Pos
 Window<WINDOW>::GetPos() const {
+   assert(webview_);
    return webview_->GetPos();
 }
 
 template <WIN WINDOW>
 webview::Size
 Window<WINDOW>::GetSize() const {
+   assert(webview_);
    return webview_->GetSize();
 }
 
 template <WIN WINDOW>
 webview::Bounds
 Window<WINDOW>::GetBounds() const {
+   assert(webview_);
    return webview_->GetBounds();
 }
 
