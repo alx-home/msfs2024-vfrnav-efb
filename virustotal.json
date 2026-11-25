@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-25T08:52:53.185Z",
+  "checkedAt": "2026-11-25T21:52:11.043Z",
   "files": {
     "05156db823f6adebea8c37fada0161db9ab8cbb0d1549cf8266bdc7855d91b6d": {
       "analyzedAt": "2026-11-15T13:33:13.000Z",
@@ -23,8 +23,8 @@
       "vendors": []
     },
     "7b18bbb4ff34bf8bdfd2b5e09ba42a390d4ebaa1ec0c289cbd6a26e6e69aa7f3": {
-      "analyzedAt": "2026-11-20T20:40:09.000Z",
-      "score": "13 / 71",
+      "analyzedAt": "2026-11-25T14:18:25.000Z",
+      "score": "13 / 70",
       "vendors": [
         {
           "name": "Antiy-AVL",
