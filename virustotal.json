@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-27T08:50:22.075Z",
+  "checkedAt": "2026-11-27T21:29:32.406Z",
   "files": {
     "05156db823f6adebea8c37fada0161db9ab8cbb0d1549cf8266bdc7855d91b6d": {
       "analyzedAt": "2026-11-15T13:33:13.000Z",
@@ -94,18 +94,13 @@
       ]
     },
     "2d7a8be78ba9791f02daf4b9b5373a6601332e0e4449c0f2b5f4809fe5bd0c5f": {
-      "analyzedAt": "2026-11-13T14:42:20.000Z",
-      "score": "2 / 71",
+      "analyzedAt": "2026-11-27T04:37:52.000Z",
+      "score": "1 / 66",
       "vendors": [
         {
           "name": "APEX",
           "category": "malicious",
           "label": "Malicious"
-        },
-        {
-          "name": "Trapmine",
-          "category": "malicious",
-          "label": "suspicious.low.ml.score"
         }
       ]
     },
